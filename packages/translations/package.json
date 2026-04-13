@@ -1,0 +1,14 @@
+{
+  "name": "@flama/translations",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./en": "./en/index.json",
+    "./es": "./es/index.json"
+  },
+  "scripts": {
+    "lint": "biome check ."
+  }
+}

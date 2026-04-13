@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Flama",
+    "slug": "flama",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "flama",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.flama.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.flama.app"
+    },
+    "plugins": ["expo-router", "expo-secure-store"]
+  }
+}

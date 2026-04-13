@@ -1,0 +1,42 @@
+{
+  "name": "@flama/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./di": {
+      "types": "./dist/di/index.d.ts",
+      "import": "./dist/di/index.js"
+    },
+    "./stores": {
+      "types": "./dist/presentation/stores/index.d.ts",
+      "import": "./dist/presentation/stores/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "clean": "rm -rf dist",
+    "lint": "biome check src/",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@flama/api-client": "workspace:*",
+    "@flama/shared": "workspace:*",
+    "@tanstack/query-core": "^5.62.0",
+    "inversify": "^7.0.0",
+    "reflect-metadata": "^0.2.2",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@flama/config": "workspace:^",
+    "typescript": "^6.0.2",
+    "vitest": "^3.0.0"
+  }
+}

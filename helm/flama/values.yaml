@@ -1,0 +1,65 @@
+api:
+  image: ghcr.io/your-org/flama-api:latest
+  replicas: 1
+  port: 3001
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  env:
+    NODE_ENV: production
+    DB_HOST: flama-postgres
+    DB_PORT: "5432"
+    REDIS_HOST: flama-redis
+    REDIS_PORT: "6379"
+
+web:
+  image: ghcr.io/your-org/flama-web:latest
+  replicas: 1
+  port: 3000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+docs:
+  image: ghcr.io/your-org/flama-docs:latest
+  replicas: 1
+  port: 80
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+  storage: 10Gi
+  env:
+    POSTGRES_USER: flama
+    POSTGRES_PASSWORD: flama
+    POSTGRES_DB: flama
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+  storage: 1Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    api: api.flama.dev
+    web: flama.dev
+    docs: docs.flama.dev
+  tls:
+    enabled: false

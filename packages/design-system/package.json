@@ -1,0 +1,35 @@
+{
+  "name": "@flama/design-system",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./tokens": {
+      "types": "./dist/tokens/index.d.ts",
+      "import": "./dist/tokens/index.js"
+    },
+    "./web": {
+      "types": "./dist/web/index.d.ts",
+      "import": "./dist/web/index.js"
+    },
+    "./mobile": {
+      "types": "./dist/mobile/index.d.ts",
+      "import": "./dist/mobile/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "clean": "rm -rf dist",
+    "lint": "biome check src/"
+  },
+  "dependencies": {
+    "@tamagui/core": "^1.116.0",
+    "react": "^19.0.0",
+    "react-native": "~0.78.0"
+  },
+  "devDependencies": {
+    "@flama/config": "workspace:^",
+    "@types/react": "^19.0.0",
+    "typescript": "^6.0.2"
+  }
+}

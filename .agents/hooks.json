@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/prettier-agent-edit.sh",
+        "timeout": 30
+      }
+    ],
+    "afterTabFileEdit": [
+      {
+        "command": ".cursor/hooks/prettier-agent-edit.sh",
+        "timeout": 30
+      }
+    ]
+  }
+}

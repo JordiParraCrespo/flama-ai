@@ -1,0 +1,26 @@
+{
+  "id": "deployment/tier-1-cheap",
+  "title": "Tier 1: Low-Cost Deployment (~€4/mo)",
+  "description": "For personal projects and MVPs.",
+  "source": "@site/docs/deployment/tier-1-cheap.md",
+  "sourceDirName": "deployment",
+  "slug": "/deployment/tier-1-cheap",
+  "permalink": "/deployment/tier-1-cheap",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Frontend Architecture",
+    "permalink": "/architecture/frontend-architecture"
+  },
+  "next": {
+    "title": "Tier 2: Production Deployment (~€15-35/mo)",
+    "permalink": "/deployment/tier-2-production"
+  }
+}

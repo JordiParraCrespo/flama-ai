@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-flama}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-flama}
+      POSTGRES_DB: ${DB_DATABASE:-flama}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-flama}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ${API_IMAGE:-ghcr.io/your-org/flama-api:latest}
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-flama}
+      DB_PASSWORD: ${DB_PASSWORD:-flama}
+      DB_DATABASE: ${DB_DATABASE:-flama}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+    ports:
+      - "3001:3001"
+
+  web:
+    image: ${WEB_IMAGE:-ghcr.io/your-org/flama-web:latest}
+    restart: always
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:3001}
+    ports:
+      - "3000:3000"
+
+  docs:
+    image: ${DOCS_IMAGE:-ghcr.io/your-org/flama-docs:latest}
+    restart: always
+    ports:
+      - "3002:80"
+
+volumes:
+  postgres_data:
+  redis_data:

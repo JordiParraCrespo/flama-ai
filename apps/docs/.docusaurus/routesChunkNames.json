@@ -1,0 +1,43 @@
+{
+  "/-f32": {
+    "__comp": "5e95c892",
+    "__context": {
+      "plugin": "aba21aa0"
+    }
+  },
+  "/-8f7": {
+    "__comp": "a7bd4aaa",
+    "__props": "22dd74f7"
+  },
+  "/-d19": {
+    "__comp": "a94703ab"
+  },
+  "/architecture/frontend-architecture-d10": {
+    "__comp": "17896441",
+    "content": "62225661"
+  },
+  "/architecture/overview-f3c": {
+    "__comp": "17896441",
+    "content": "0b1ac180"
+  },
+  "/deployment/tier-1-cheap-19c": {
+    "__comp": "17896441",
+    "content": "241b28a0"
+  },
+  "/deployment/tier-2-production-ac0": {
+    "__comp": "17896441",
+    "content": "33bbb007"
+  },
+  "/getting-started/installation-e0c": {
+    "__comp": "17896441",
+    "content": "54f44165"
+  },
+  "/getting-started/project-structure-508": {
+    "__comp": "17896441",
+    "content": "4c515ec3"
+  },
+  "/-7da": {
+    "__comp": "17896441",
+    "content": "0e384e19"
+  }
+}
