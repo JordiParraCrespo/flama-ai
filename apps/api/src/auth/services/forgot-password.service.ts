@@ -3,7 +3,7 @@ import { QUEUE_NAMES } from '@flama/shared';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import type { Queue } from 'bullmq';
-import type { UsersService } from '../../users/services/users.service';
+import { UsersService } from '../../users/services/users.service';
 
 @Injectable()
 export class ForgotPasswordService {

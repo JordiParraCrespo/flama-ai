@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, type VerifyCallback } from 'passport-google-oauth20';
-import type { ValidateOAuthService } from '../services/validate-oauth.service';
+import { ValidateOAuthService } from '../services/validate-oauth.service';
 
 interface GoogleProfile {
   id: string;
@@ -17,9 +17,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     private readonly validateOAuthService: ValidateOAuthService,
   ) {
     super({
-      clientID: configService.getOrThrow<string>('oauth.google.clientId'),
-      clientSecret: configService.getOrThrow<string>('oauth.google.clientSecret'),
-      callbackURL: configService.getOrThrow<string>('oauth.google.callbackUrl'),
+      clientID: configService.get<string>('oauth.google.clientId') || 'disabled',
+      clientSecret: configService.get<string>('oauth.google.clientSecret') || 'disabled',
+      callbackURL:
+        configService.get<string>('oauth.google.callbackUrl') || 'http://localhost/disabled',
       scope: ['email', 'profile'],
     });
   }

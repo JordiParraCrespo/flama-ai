@@ -1,8 +1,8 @@
 import type { TokenPair } from '@flama/shared';
 import { AUTH } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
-import type { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import type { Repository } from 'typeorm';

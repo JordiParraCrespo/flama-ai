@@ -1,4 +1,4 @@
-import type { EmailService } from '@flama/backend-email';
+import { EmailService } from '@flama/backend-email';
 import { QUEUE_NAMES } from '@flama/shared';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';

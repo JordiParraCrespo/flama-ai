@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-  type DiskHealthIndicator,
+  DiskHealthIndicator,
   HealthCheck,
-  type HealthCheckService,
-  type MemoryHealthIndicator,
-  type TypeOrmHealthIndicator,
+  HealthCheckService,
+  MemoryHealthIndicator,
+  TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
-import type { RedisHealthIndicator } from './redis-health.indicator';
+import { RedisHealthIndicator } from './redis-health.indicator';
 
 @ApiTags('Health')
 @Controller()

@@ -17,10 +17,10 @@ import { PoliciesGuard } from '../auth/guards/policies.guard';
 import { UserResponseDto } from './dtos/user-response.dto';
 import type { FindUsersRequest } from './requests/find-users.request';
 import type { UpdateUserRequest } from './requests/update-user.request';
-import type { DeleteUserService } from './services/delete-user.service';
-import type { UpdateUserService } from './services/update-user.service';
-import type { UsersService } from './services/users.service';
-import type { UserMapper } from './user.mapper';
+import { DeleteUserService } from './services/delete-user.service';
+import { UpdateUserService } from './services/update-user.service';
+import { UsersService } from './services/users.service';
+import { UserMapper } from './user.mapper';
 
 @ApiTags('Users')
 @ApiBearerAuth()

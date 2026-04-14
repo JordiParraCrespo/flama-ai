@@ -2,7 +2,7 @@ import { AppError } from '@flama/backend-core';
 import { AUTH } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import type { UsersService } from '../../users/services/users.service';
+import { UsersService } from '../../users/services/users.service';
 import { AuthErrors } from '../errors/auth.errors';
 
 @Injectable()

@@ -17,7 +17,8 @@
       },
       "style": {
         "noNonNullAssertion": "warn",
-        "useConst": "error"
+        "useConst": "error",
+        "useImportType": "off"
       },
       "suspicious": {
         "noExplicitAny": "warn"

@@ -2,10 +2,10 @@ import { AppError } from '@flama/backend-core';
 import type { TokenPair } from '@flama/shared';
 import { AUTH } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
-import type { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
-import type { UserTokenService } from '../../users/services/user-token.service';
-import type { UsersService } from '../../users/services/users.service';
+import { UserTokenService } from '../../users/services/user-token.service';
+import { UsersService } from '../../users/services/users.service';
 import { AuthErrors } from '../errors/auth.errors';
 import { UserRegisteredEvent } from '../events/user-registered.event';
 

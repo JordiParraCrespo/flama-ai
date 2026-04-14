@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-github2';
-import type { ValidateOAuthService } from '../services/validate-oauth.service';
+import { ValidateOAuthService } from '../services/validate-oauth.service';
 
 interface GitHubProfile {
   id: string;
@@ -18,9 +18,10 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
     private readonly validateOAuthService: ValidateOAuthService,
   ) {
     super({
-      clientID: configService.getOrThrow<string>('oauth.github.clientId'),
-      clientSecret: configService.getOrThrow<string>('oauth.github.clientSecret'),
-      callbackURL: configService.getOrThrow<string>('oauth.github.callbackUrl'),
+      clientID: configService.get<string>('oauth.github.clientId') || 'disabled',
+      clientSecret: configService.get<string>('oauth.github.clientSecret') || 'disabled',
+      callbackURL:
+        configService.get<string>('oauth.github.callbackUrl') || 'http://localhost/disabled',
       scope: ['user:email'],
     });
   }

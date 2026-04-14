@@ -1,6 +1,6 @@
 import { AppError } from '@flama/backend-core';
 import { Injectable } from '@nestjs/common';
-import type { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 import { UserErrors } from '../errors/user.errors';

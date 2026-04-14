@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UserTokenService } from '../../users/services/user-token.service';
+import { UserTokenService } from '../../users/services/user-token.service';
 
 @Injectable()
 export class LogoutService {

@@ -10,13 +10,13 @@ import {
   UseGuards,
   Version,
 } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
-import type { UsersService } from '../users/services/users.service';
-import type { AuthMapper } from './auth.mapper';
+import { UsersService } from '../users/services/users.service';
+import { AuthMapper } from './auth.mapper';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthResponseDto } from './dtos/auth-response.dto';
 import { ProfileResponseDto } from './dtos/profile-response.dto';
@@ -26,12 +26,12 @@ import type { ForgotPasswordRequest } from './requests/forgot-password.request';
 import type { LoginRequest } from './requests/login.request';
 import type { RegisterRequest } from './requests/register.request';
 import type { ResetPasswordRequest } from './requests/reset-password.request';
-import type { ForgotPasswordService } from './services/forgot-password.service';
-import type { LoginService } from './services/login.service';
-import type { LogoutService } from './services/logout.service';
-import type { RefreshTokensService } from './services/refresh-tokens.service';
-import type { RegisterService } from './services/register.service';
-import type { ResetPasswordService } from './services/reset-password.service';
+import { ForgotPasswordService } from './services/forgot-password.service';
+import { LoginService } from './services/login.service';
+import { LogoutService } from './services/logout.service';
+import { RefreshTokensService } from './services/refresh-tokens.service';
+import { RegisterService } from './services/register.service';
+import { ResetPasswordService } from './services/reset-password.service';
 
 @ApiTags('Auth')
 @Controller('auth')

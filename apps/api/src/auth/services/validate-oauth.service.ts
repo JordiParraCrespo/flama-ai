@@ -1,7 +1,7 @@
 import type { AuthProvider, TokenPair } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
-import type { UserTokenService } from '../../users/services/user-token.service';
-import type { UsersService } from '../../users/services/users.service';
+import { UserTokenService } from '../../users/services/user-token.service';
+import { UsersService } from '../../users/services/users.service';
 
 @Injectable()
 export class ValidateOAuthService {
