@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 4 apps and 6 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 4 apps and 11 shared packages.
 
 ## Monorepo structure
 
@@ -15,6 +15,12 @@ flama/
 │   └── web/              # Next.js
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
+│   ├── backend/
+│   │   ├── cache/        # Redis cache abstraction (@flama/backend-cache)
+│   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
+│   │   ├── email/        # Pluggable email + React Email templates (@flama/backend-email)
+│   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
+│   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
 │   ├── config/           # Shared TypeScript configs
 │   ├── design-system/    # Tokens + web (shadcn) + mobile (Tamagui)
 │   ├── frontend/         # Clean architecture, InversifyJS DI, Zustand stores
@@ -35,18 +41,22 @@ flama/
 - Independent versioning per package via Changesets
 - No git hooks — CI enforces quality
 
-### Backend (apps/api)
+### Backend (`apps/api` + `packages/backend/*`)
 
-- NestJS with decorator-based patterns
-- TypeORM for database (PostgreSQL)
-- Passport.js for auth (local + Google + GitHub OAuth strategies), JWT tokens
-- CASL for authorization (permissions defined in `packages/shared`)
-- Zod for validation (via nestjs-zod, schemas from `packages/shared`)
-- Pluggable services pattern: email (Console/Nodemailer/Resend), storage (Local/S3), cache (Redis default)
-- BullMQ for async job processing (Redis-backed)
-- Pino for structured JSON logging
-- Testcontainers for integration tests
-- Health endpoints: `/api/health` (liveness), `/api/ready` (readiness)
+Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api` and `packages/backend`):
+
+- `nestjs-di.md` — DI import rules, `import type` restrictions, biome `useImportType` policy
+- `nestjs-architecture.md` — Pluggable service pattern, single-responsibility services, mappers, errors, events
+- `typeorm.md` — Union-typed column rules, entity conventions
+- `backend-packages.md` — CJS exports, package structure, email template setup
+- `api-config.md` — OAuth graceful handling, Swagger decorators, rate limiting, versioning
+
+### Shared (packages/shared)
+
+- Zod schemas are the single source of truth for DTOs
+- CASL permission definitions shared between backend and frontend
+- Types: `Role`, `AuthProvider`, `JwtPayload`, `TokenPair`, `PaginationParams`, `PaginatedResponse<T>`
+- Constants: `AUTH` (token expiry, salt rounds), `PAGINATION`, `ROLES`, `QUEUE_NAMES`
 
 ### Frontend (packages/frontend)
 
@@ -77,21 +87,20 @@ flama/
 - Mobile components: Tamagui in `src/mobile/`
 - shadcn component API mirrored in Tamagui for consistency
 
-### Shared (packages/shared)
-
-- Zod schemas are the single source of truth for DTOs
-- CASL permission definitions shared between backend and frontend
-- Types and constants used across all apps
-
 ## Dependency flow
 
 ```
-packages/config        → used by all apps and packages (tsconfig extends)
-packages/shared        → used by api, frontend, api-client
-packages/translations  → used by web, mobile
-packages/design-system → used by web, mobile
-packages/api-client    → used by frontend
-packages/frontend      → used by web, mobile
+packages/config           → used by all apps and packages (tsconfig extends)
+packages/shared           → used by api, frontend, api-client
+packages/backend/core     → used by api, other backend packages
+packages/backend/email    → used by api
+packages/backend/cache    → used by api
+packages/backend/storage  → used by api
+packages/backend/queue    → used by api
+packages/translations     → used by web, mobile
+packages/design-system    → used by web, mobile
+packages/api-client       → used by frontend
+packages/frontend         → used by web, mobile
 ```
 
 ## Commands

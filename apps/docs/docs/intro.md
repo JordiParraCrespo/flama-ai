@@ -19,3 +19,13 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 - **packages/api-client** — Auto-generated typed API client
 - **packages/translations** — Shared i18n files
 - **packages/config** — Shared TypeScript and tooling configs
+
+### Backend packages
+
+Reusable NestJS modules under `packages/backend/`, each following a pluggable service pattern:
+
+- **@flama/backend-core** — Errors, filters, interceptors, pipes, mapper interface
+- **@flama/backend-email** — Pluggable email (Console / Nodemailer / Resend) with React Email templates
+- **@flama/backend-cache** — Redis cache abstraction
+- **@flama/backend-storage** — File storage (Local / S3)
+- **@flama/backend-queue** — BullMQ async jobs + Bull Board admin UI

@@ -11,7 +11,12 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Architecture',
-      items: ['architecture/overview', 'architecture/frontend-architecture'],
+      items: [
+        'architecture/overview',
+        'architecture/backend-packages',
+        'architecture/api-architecture',
+        'architecture/frontend-architecture',
+      ],
     },
     {
       type: 'category',
