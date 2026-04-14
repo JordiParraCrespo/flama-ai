@@ -1,8 +1,8 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { Injectable } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
-import { StorageService } from "./storage.service";
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { Injectable } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import { StorageService } from './storage.service';
 
 @Injectable()
 export class LocalStorageService extends StorageService {
@@ -10,7 +10,7 @@ export class LocalStorageService extends StorageService {
 
   constructor(private readonly configService: ConfigService) {
     super();
-    this.uploadDir = this.configService.get("storage.uploadDir") || "./uploads";
+    this.uploadDir = this.configService.get('storage.uploadDir') || './uploads';
   }
 
   async upload(file: Buffer, key: string, _mimeType: string): Promise<string> {

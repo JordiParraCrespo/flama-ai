@@ -1,19 +1,18 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes } from 'node:crypto';
 import {
   type CallHandler,
   type ExecutionContext,
   Injectable,
   type NestInterceptor,
-} from "@nestjs/common";
-import { Observable } from "rxjs";
-import { RequestContextService } from "../services/request-context.service";
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { RequestContextService } from '../services/request-context.service';
 
 @Injectable()
 export class RequestContextInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
-    const correlationId =
-      request.headers["x-correlation-id"] || randomBytes(8).toString("hex");
+    const correlationId = request.headers['x-correlation-id'] || randomBytes(8).toString('hex');
 
     return new Observable((subscriber) => {
       RequestContextService.run({ correlationId }, () => {

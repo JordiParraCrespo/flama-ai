@@ -1,5 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { EmailService } from "./email.service";
+import { Injectable, Logger } from '@nestjs/common';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class ConsoleEmailService extends EmailService {

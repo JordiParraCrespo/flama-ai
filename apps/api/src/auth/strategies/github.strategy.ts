@@ -4,6 +4,13 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-github2';
 import type { ValidateOAuthService } from '../services/validate-oauth.service';
 
+interface GitHubProfile {
+  id: string;
+  username: string;
+  displayName?: string;
+  emails?: { value: string }[];
+}
+
 @Injectable()
 export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(
@@ -21,8 +28,8 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
   async validate(
     _accessToken: string,
     _refreshToken: string,
-    profile: any,
-    done: (err: any, user: any) => void,
+    profile: GitHubProfile,
+    done: (err: Error | null, user: unknown) => void,
   ) {
     const tokens = await this.validateOAuthService.execute({
       email: profile.emails?.[0]?.value || `${profile.username}@github.local`,

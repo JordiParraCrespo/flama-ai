@@ -1,8 +1,4 @@
-import {
-  type ArgumentMetadata,
-  Injectable,
-  type PipeTransform,
-} from "@nestjs/common";
+import { type ArgumentMetadata, Injectable, type PipeTransform } from '@nestjs/common';
 
 @Injectable()
 export class SanitizePipe implements PipeTransform {
@@ -11,7 +7,7 @@ export class SanitizePipe implements PipeTransform {
   }
 
   private sanitize(value: unknown): unknown {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       return this.stripHtml(value);
     }
 
@@ -19,7 +15,7 @@ export class SanitizePipe implements PipeTransform {
       return value.map((item) => this.sanitize(item));
     }
 
-    if (value !== null && typeof value === "object") {
+    if (value !== null && typeof value === 'object') {
       const sanitized: Record<string, unknown> = {};
       for (const [key, val] of Object.entries(value)) {
         sanitized[key] = this.sanitize(val);
@@ -31,6 +27,6 @@ export class SanitizePipe implements PipeTransform {
   }
 
   private stripHtml(input: string): string {
-    return input.replace(/<[^>]*>/g, "").replace(/[<>]/g, "");
+    return input.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
   }
 }

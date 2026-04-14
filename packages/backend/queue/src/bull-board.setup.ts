@@ -1,14 +1,14 @@
-import { createBullBoard } from "@bull-board/api";
-import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
-import { ExpressAdapter } from "@bull-board/express";
-import type { INestApplication } from "@nestjs/common";
-import { getQueueToken } from "@nestjs/bullmq";
-import type { Queue } from "bullmq";
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { ExpressAdapter } from '@bull-board/express';
+import { getQueueToken } from '@nestjs/bullmq';
+import type { INestApplication } from '@nestjs/common';
+import type { Queue } from 'bullmq';
 
 export function setupBullBoard(
   app: INestApplication,
   queueNames: string[],
-  basePath = "/admin/queues"
+  basePath = '/admin/queues',
 ): void {
   const serverAdapter = new ExpressAdapter();
   serverAdapter.setBasePath(basePath);

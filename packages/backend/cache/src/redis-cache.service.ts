@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
-import Redis from "ioredis";
-import { CacheService } from "./cache.service";
+import { Injectable } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
+import { CacheService } from './cache.service';
 
 @Injectable()
 export class RedisCacheService extends CacheService {
@@ -10,8 +10,8 @@ export class RedisCacheService extends CacheService {
   constructor(private readonly configService: ConfigService) {
     super();
     this.redis = new Redis({
-      host: this.configService.get("redis.host"),
-      port: this.configService.get("redis.port"),
+      host: this.configService.get('redis.host'),
+      port: this.configService.get('redis.port'),
     });
   }
 
@@ -24,7 +24,7 @@ export class RedisCacheService extends CacheService {
   async set<T>(key: string, value: T, ttl?: number): Promise<void> {
     const serialized = JSON.stringify(value);
     if (ttl) {
-      await this.redis.set(key, serialized, "EX", ttl);
+      await this.redis.set(key, serialized, 'EX', ttl);
     } else {
       await this.redis.set(key, serialized);
     }

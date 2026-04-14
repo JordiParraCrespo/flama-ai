@@ -1,5 +1,5 @@
-import { AsyncLocalStorage } from "node:async_hooks";
-import { Injectable } from "@nestjs/common";
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { Injectable } from '@nestjs/common';
 
 interface RequestContext {
   correlationId: string;
@@ -10,15 +10,15 @@ export class RequestContextService {
   private static storage = new AsyncLocalStorage<RequestContext>();
 
   static run(context: RequestContext, fn: () => void) {
-    this.storage.run(context, fn);
+    RequestContextService.storage.run(context, fn);
   }
 
   static getCorrelationId(): string | undefined {
-    return this.storage.getStore()?.correlationId;
+    return RequestContextService.storage.getStore()?.correlationId;
   }
 
   static setCorrelationId(id: string) {
-    const store = this.storage.getStore();
+    const store = RequestContextService.storage.getStore();
     if (store) {
       store.correlationId = id;
     }

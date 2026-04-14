@@ -12,7 +12,8 @@
     "rules": {
       "recommended": true,
       "complexity": {
-        "noForEach": "warn"
+        "noForEach": "warn",
+        "noStaticOnlyClass": "off"
       },
       "style": {
         "noNonNullAssertion": "warn",
@@ -53,6 +54,7 @@
       "!**/.next",
       "!**/.expo",
       "!**/.turbo",
+      "!**/.docusaurus",
       "!**/coverage",
       "!**/packages/api-client/src/generated"
     ]

@@ -1,6 +1,6 @@
-import { type DynamicModule, Module } from "@nestjs/common";
-import { BullModule } from "@nestjs/bullmq";
-import { ConfigService } from "@nestjs/config";
+import { BullModule } from '@nestjs/bullmq';
+import { type DynamicModule, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Module({})
 export class QueueModule {
@@ -11,8 +11,8 @@ export class QueueModule {
         BullModule.forRootAsync({
           useFactory: (configService: ConfigService) => ({
             connection: {
-              host: configService.get("redis.host"),
-              port: configService.get("redis.port"),
+              host: configService.get('redis.host'),
+              port: configService.get('redis.port'),
             },
           }),
           inject: [ConfigService],

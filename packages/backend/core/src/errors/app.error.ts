@@ -1,4 +1,4 @@
-import { HttpException, type HttpStatus } from "@nestjs/common";
+import { HttpException, type HttpStatus } from '@nestjs/common';
 
 export interface ErrorDefinition {
   readonly code: string;

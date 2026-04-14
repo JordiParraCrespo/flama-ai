@@ -1,1 +1,219 @@
-{"allContent":{"docusaurus-plugin-content-docs":{"default":{"loadedVersions":[{"versionName":"current","label":"Next","banner":null,"badge":false,"noIndex":false,"className":"docs-version-current","path":"/","tagsPath":"/tags","isLast":true,"routePriority":-1,"sidebarFilePath":"/home/doctor/Documents/ai/flama/apps/docs/sidebars.ts","contentPath":"/home/doctor/Documents/ai/flama/apps/docs/docs","docs":[{"id":"architecture/frontend-architecture","title":"Frontend Architecture","description":"The packages/frontend package implements a clean architecture pattern shared between web and mobile.","source":"@site/docs/architecture/frontend-architecture.md","sourceDirName":"architecture","slug":"/architecture/frontend-architecture","permalink":"/architecture/frontend-architecture","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":2,"frontMatter":{"sidebar_position":2},"sidebar":"docs","previous":{"title":"Architecture Overview","permalink":"/architecture/overview"},"next":{"title":"Tier 1: Low-Cost Deployment (~€4/mo)","permalink":"/deployment/tier-1-cheap"}},{"id":"architecture/overview","title":"Architecture Overview","description":"Flama follows a monorepo architecture with clear separation of concerns.","source":"@site/docs/architecture/overview.md","sourceDirName":"architecture","slug":"/architecture/overview","permalink":"/architecture/overview","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":1,"frontMatter":{"sidebar_position":1},"sidebar":"docs","previous":{"title":"Project Structure","permalink":"/getting-started/project-structure"},"next":{"title":"Frontend Architecture","permalink":"/architecture/frontend-architecture"}},{"id":"deployment/tier-1-cheap","title":"Tier 1: Low-Cost Deployment (~€4/mo)","description":"For personal projects and MVPs.","source":"@site/docs/deployment/tier-1-cheap.md","sourceDirName":"deployment","slug":"/deployment/tier-1-cheap","permalink":"/deployment/tier-1-cheap","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":1,"frontMatter":{"sidebar_position":1},"sidebar":"docs","previous":{"title":"Frontend Architecture","permalink":"/architecture/frontend-architecture"},"next":{"title":"Tier 2: Production Deployment (~€15-35/mo)","permalink":"/deployment/tier-2-production"}},{"id":"deployment/tier-2-production","title":"Tier 2: Production Deployment (~€15-35/mo)","description":"For production applications with Kubernetes on Hetzner.","source":"@site/docs/deployment/tier-2-production.md","sourceDirName":"deployment","slug":"/deployment/tier-2-production","permalink":"/deployment/tier-2-production","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":2,"frontMatter":{"sidebar_position":2},"sidebar":"docs","previous":{"title":"Tier 1: Low-Cost Deployment (~€4/mo)","permalink":"/deployment/tier-1-cheap"}},{"id":"getting-started/installation","title":"Installation","description":"Prerequisites","source":"@site/docs/getting-started/installation.md","sourceDirName":"getting-started","slug":"/getting-started/installation","permalink":"/getting-started/installation","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":1,"frontMatter":{"sidebar_position":1},"sidebar":"docs","previous":{"title":"Flama","permalink":"/"},"next":{"title":"Project Structure","permalink":"/getting-started/project-structure"}},{"id":"getting-started/project-structure","title":"Project Structure","description":"","source":"@site/docs/getting-started/project-structure.md","sourceDirName":"getting-started","slug":"/getting-started/project-structure","permalink":"/getting-started/project-structure","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":2,"frontMatter":{"sidebar_position":2},"sidebar":"docs","previous":{"title":"Installation","permalink":"/getting-started/installation"},"next":{"title":"Architecture Overview","permalink":"/architecture/overview"}},{"id":"intro","title":"Flama","description":"Full-stack monorepo boilerplate for bootstrapping applications fast.","source":"@site/docs/intro.md","sourceDirName":".","slug":"/","permalink":"/","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":1,"frontMatter":{"slug":"/","sidebar_position":1},"sidebar":"docs","next":{"title":"Installation","permalink":"/getting-started/installation"}}],"drafts":[],"sidebars":{"docs":[{"type":"doc","id":"intro"},{"type":"category","label":"Getting Started","items":[{"type":"doc","id":"getting-started/installation"},{"type":"doc","id":"getting-started/project-structure"}],"collapsed":true,"collapsible":true},{"type":"category","label":"Architecture","items":[{"type":"doc","id":"architecture/overview"},{"type":"doc","id":"architecture/frontend-architecture"}],"collapsed":true,"collapsible":true},{"type":"category","label":"Deployment","items":[{"type":"doc","id":"deployment/tier-1-cheap"},{"type":"doc","id":"deployment/tier-2-production"}],"collapsed":true,"collapsible":true}]}}]}},"docusaurus-plugin-content-pages":{"default":[]},"docusaurus-plugin-debug":{},"docusaurus-plugin-svgr":{},"docusaurus-theme-classic":{},"docusaurus-bootstrap-plugin":{},"docusaurus-mdx-fallback-plugin":{}}}
+{
+  "allContent": {
+    "docusaurus-plugin-content-docs": {
+      "default": {
+        "loadedVersions": [
+          {
+            "versionName": "current",
+            "label": "Next",
+            "banner": null,
+            "badge": false,
+            "noIndex": false,
+            "className": "docs-version-current",
+            "path": "/",
+            "tagsPath": "/tags",
+            "isLast": true,
+            "routePriority": -1,
+            "sidebarFilePath": "/home/doctor/Documents/ai/flama/apps/docs/sidebars.ts",
+            "contentPath": "/home/doctor/Documents/ai/flama/apps/docs/docs",
+            "docs": [
+              {
+                "id": "architecture/frontend-architecture",
+                "title": "Frontend Architecture",
+                "description": "The packages/frontend package implements a clean architecture pattern shared between web and mobile.",
+                "source": "@site/docs/architecture/frontend-architecture.md",
+                "sourceDirName": "architecture",
+                "slug": "/architecture/frontend-architecture",
+                "permalink": "/architecture/frontend-architecture",
+                "draft": false,
+                "unlisted": false,
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 2,
+                "frontMatter": { "sidebar_position": 2 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Architecture Overview",
+                  "permalink": "/architecture/overview"
+                },
+                "next": {
+                  "title": "Tier 1: Low-Cost Deployment (~€4/mo)",
+                  "permalink": "/deployment/tier-1-cheap"
+                }
+              },
+              {
+                "id": "architecture/overview",
+                "title": "Architecture Overview",
+                "description": "Flama follows a monorepo architecture with clear separation of concerns.",
+                "source": "@site/docs/architecture/overview.md",
+                "sourceDirName": "architecture",
+                "slug": "/architecture/overview",
+                "permalink": "/architecture/overview",
+                "draft": false,
+                "unlisted": false,
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "sidebar_position": 1 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Project Structure",
+                  "permalink": "/getting-started/project-structure"
+                },
+                "next": {
+                  "title": "Frontend Architecture",
+                  "permalink": "/architecture/frontend-architecture"
+                }
+              },
+              {
+                "id": "deployment/tier-1-cheap",
+                "title": "Tier 1: Low-Cost Deployment (~€4/mo)",
+                "description": "For personal projects and MVPs.",
+                "source": "@site/docs/deployment/tier-1-cheap.md",
+                "sourceDirName": "deployment",
+                "slug": "/deployment/tier-1-cheap",
+                "permalink": "/deployment/tier-1-cheap",
+                "draft": false,
+                "unlisted": false,
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "sidebar_position": 1 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Frontend Architecture",
+                  "permalink": "/architecture/frontend-architecture"
+                },
+                "next": {
+                  "title": "Tier 2: Production Deployment (~€15-35/mo)",
+                  "permalink": "/deployment/tier-2-production"
+                }
+              },
+              {
+                "id": "deployment/tier-2-production",
+                "title": "Tier 2: Production Deployment (~€15-35/mo)",
+                "description": "For production applications with Kubernetes on Hetzner.",
+                "source": "@site/docs/deployment/tier-2-production.md",
+                "sourceDirName": "deployment",
+                "slug": "/deployment/tier-2-production",
+                "permalink": "/deployment/tier-2-production",
+                "draft": false,
+                "unlisted": false,
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 2,
+                "frontMatter": { "sidebar_position": 2 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Tier 1: Low-Cost Deployment (~€4/mo)",
+                  "permalink": "/deployment/tier-1-cheap"
+                }
+              },
+              {
+                "id": "getting-started/installation",
+                "title": "Installation",
+                "description": "Prerequisites",
+                "source": "@site/docs/getting-started/installation.md",
+                "sourceDirName": "getting-started",
+                "slug": "/getting-started/installation",
+                "permalink": "/getting-started/installation",
+                "draft": false,
+                "unlisted": false,
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "sidebar_position": 1 },
+                "sidebar": "docs",
+                "previous": { "title": "Flama", "permalink": "/" },
+                "next": {
+                  "title": "Project Structure",
+                  "permalink": "/getting-started/project-structure"
+                }
+              },
+              {
+                "id": "getting-started/project-structure",
+                "title": "Project Structure",
+                "description": "",
+                "source": "@site/docs/getting-started/project-structure.md",
+                "sourceDirName": "getting-started",
+                "slug": "/getting-started/project-structure",
+                "permalink": "/getting-started/project-structure",
+                "draft": false,
+                "unlisted": false,
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 2,
+                "frontMatter": { "sidebar_position": 2 },
+                "sidebar": "docs",
+                "previous": {
+                  "title": "Installation",
+                  "permalink": "/getting-started/installation"
+                },
+                "next": { "title": "Architecture Overview", "permalink": "/architecture/overview" }
+              },
+              {
+                "id": "intro",
+                "title": "Flama",
+                "description": "Full-stack monorepo boilerplate for bootstrapping applications fast.",
+                "source": "@site/docs/intro.md",
+                "sourceDirName": ".",
+                "slug": "/",
+                "permalink": "/",
+                "draft": false,
+                "unlisted": false,
+                "tags": [],
+                "version": "current",
+                "sidebarPosition": 1,
+                "frontMatter": { "slug": "/", "sidebar_position": 1 },
+                "sidebar": "docs",
+                "next": { "title": "Installation", "permalink": "/getting-started/installation" }
+              }
+            ],
+            "drafts": [],
+            "sidebars": {
+              "docs": [
+                { "type": "doc", "id": "intro" },
+                {
+                  "type": "category",
+                  "label": "Getting Started",
+                  "items": [
+                    { "type": "doc", "id": "getting-started/installation" },
+                    { "type": "doc", "id": "getting-started/project-structure" }
+                  ],
+                  "collapsed": true,
+                  "collapsible": true
+                },
+                {
+                  "type": "category",
+                  "label": "Architecture",
+                  "items": [
+                    { "type": "doc", "id": "architecture/overview" },
+                    { "type": "doc", "id": "architecture/frontend-architecture" }
+                  ],
+                  "collapsed": true,
+                  "collapsible": true
+                },
+                {
+                  "type": "category",
+                  "label": "Deployment",
+                  "items": [
+                    { "type": "doc", "id": "deployment/tier-1-cheap" },
+                    { "type": "doc", "id": "deployment/tier-2-production" }
+                  ],
+                  "collapsed": true,
+                  "collapsible": true
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "docusaurus-plugin-content-pages": { "default": [] },
+    "docusaurus-plugin-debug": {},
+    "docusaurus-plugin-svgr": {},
+    "docusaurus-theme-classic": {},
+    "docusaurus-bootstrap-plugin": {},
+    "docusaurus-mdx-fallback-plugin": {}
+  }
+}

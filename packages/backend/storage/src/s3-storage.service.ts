@@ -3,11 +3,11 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Injectable } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
-import { StorageService } from "./storage.service";
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Injectable } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import { StorageService } from './storage.service';
 
 @Injectable()
 export class S3StorageService extends StorageService {
@@ -16,14 +16,13 @@ export class S3StorageService extends StorageService {
 
   constructor(private readonly configService: ConfigService) {
     super();
-    this.bucket = this.configService.get("storage.s3Bucket") || "flama";
+    this.bucket = this.configService.get('storage.s3Bucket') || 'flama';
     this.s3 = new S3Client({
-      region: this.configService.get("storage.s3Region") || "auto",
-      endpoint: this.configService.get("storage.s3Endpoint"),
+      region: this.configService.get('storage.s3Region') || 'auto',
+      endpoint: this.configService.get('storage.s3Endpoint'),
       credentials: {
-        accessKeyId: this.configService.get("storage.s3AccessKeyId") || "",
-        secretAccessKey:
-          this.configService.get("storage.s3SecretAccessKey") || "",
+        accessKeyId: this.configService.get('storage.s3AccessKeyId') || '',
+        secretAccessKey: this.configService.get('storage.s3SecretAccessKey') || '',
       },
       forcePathStyle: true,
     });
@@ -36,15 +35,13 @@ export class S3StorageService extends StorageService {
         Key: key,
         Body: file,
         ContentType: mimeType,
-      })
+      }),
     );
     return key;
   }
 
   async delete(key: string): Promise<void> {
-    await this.s3.send(
-      new DeleteObjectCommand({ Bucket: this.bucket, Key: key })
-    );
+    await this.s3.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
   }
 
   async getSignedUrl(key: string, expiresIn = 3600): Promise<string> {

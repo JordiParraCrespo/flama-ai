@@ -1,5 +1,5 @@
-import { createZodDto } from "nestjs-zod";
-import { z } from "zod";
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

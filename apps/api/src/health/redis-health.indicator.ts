@@ -1,11 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import {
-  HealthCheckError,
-  HealthIndicator,
-  type HealthIndicatorResult,
-} from "@nestjs/terminus";
-import Redis from "ioredis";
+import { Injectable } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import { HealthCheckError, HealthIndicator, type HealthIndicatorResult } from '@nestjs/terminus';
+import Redis from 'ioredis';
 
 @Injectable()
 export class RedisHealthIndicator extends HealthIndicator {
@@ -14,8 +10,8 @@ export class RedisHealthIndicator extends HealthIndicator {
   constructor(configService: ConfigService) {
     super();
     this.redis = new Redis({
-      host: configService.get("redis.host"),
-      port: configService.get("redis.port"),
+      host: configService.get('redis.host'),
+      port: configService.get('redis.port'),
       lazyConnect: true,
     });
   }
@@ -25,10 +21,7 @@ export class RedisHealthIndicator extends HealthIndicator {
       await this.redis.ping();
       return this.getStatus(key, true);
     } catch (_error) {
-      throw new HealthCheckError(
-        "Redis health check failed",
-        this.getStatus(key, false),
-      );
+      throw new HealthCheckError('Redis health check failed', this.getStatus(key, false));
     }
   }
 }

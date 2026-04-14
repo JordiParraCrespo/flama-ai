@@ -1,5 +1,5 @@
 export interface Mapper<Entity, ServiceModel, ResponseDto> {
-  toRepository(data: any): Entity;
+  toRepository(data: Partial<Entity>): Entity;
   toService(entity: Entity): ServiceModel;
   toController(model: ServiceModel): ResponseDto;
 }

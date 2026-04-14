@@ -1,3 +1,3 @@
-export { PasswordResetEmail } from "./password-reset";
-export { EmailVerificationEmail } from "./email-verification";
-export { WelcomeEmail } from "./welcome";
+export { EmailVerificationEmail } from './email-verification';
+export { PasswordResetEmail } from './password-reset';
+export { WelcomeEmail } from './welcome';
