@@ -1,5 +1,4 @@
 import type { LoginDto, RegisterDto, TokenPair } from "@flama/shared";
-import { defineAbilitiesFor } from "@flama/shared";
 import { inject, injectable } from "inversify";
 import { TOKENS } from "../../di/tokens";
 import type { AuthRepository } from "./auth.repository";
@@ -11,17 +10,17 @@ export class AuthService {
     @inject(TOKENS.AuthRepository)
     private readonly authRepository: AuthRepository,
     @inject(TOKENS.AuthStore)
-    public readonly store: AuthStore
+    public readonly store: AuthStore,
   ) {}
 
   async login(dto: LoginDto): Promise<void> {
     await this.authRepository.login(dto);
-    await this.loadProfile();
+    this.store.setState({ isAuthenticated: true });
   }
 
   async register(dto: RegisterDto): Promise<void> {
     await this.authRepository.register(dto);
-    await this.loadProfile();
+    this.store.setState({ isAuthenticated: true });
   }
 
   async refreshToken(refreshToken: string): Promise<TokenPair> {
@@ -36,33 +35,8 @@ export class AuthService {
     return this.authRepository.resetPassword(token, password);
   }
 
-  async loadProfile(): Promise<void> {
-    try {
-      const user = await this.authRepository.getProfile();
-      const ability = defineAbilitiesFor(user.role);
-      this.store.setState({
-        user,
-        ability,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } catch {
-      this.store.setState({
-        user: null,
-        ability: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
-    }
-  }
-
   async logout(): Promise<void> {
     await this.authRepository.logout();
-    this.store.setState({
-      user: null,
-      ability: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
+    this.store.setState({ isAuthenticated: false });
   }
 }

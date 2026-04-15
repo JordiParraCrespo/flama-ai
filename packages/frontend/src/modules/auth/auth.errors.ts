@@ -13,8 +13,4 @@ export const AuthErrors = {
     code: "AUTH_CLIENT_003",
     message: "Token refresh failed",
   },
-  PROFILE_FAILED: {
-    code: "AUTH_CLIENT_004",
-    message: "Failed to fetch profile",
-  },
 } as const satisfies Record<string, ErrorDefinition>;
