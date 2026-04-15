@@ -58,11 +58,11 @@ function RegisterPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <Field>
                                     <FieldLabel htmlFor="firstName">First name</FieldLabel>
-                                    <Input id="firstName" name="firstName" required disabled={isPending} />
+                                    <Input id="firstName" name="firstName" placeholder="John" required disabled={isPending} />
                                 </Field>
                                 <Field>
                                     <FieldLabel htmlFor="lastName">Last name</FieldLabel>
-                                    <Input id="lastName" name="lastName" required disabled={isPending} />
+                                    <Input id="lastName" name="lastName" placeholder="Doe" required disabled={isPending} />
                                 </Field>
                             </div>
                             <Field>

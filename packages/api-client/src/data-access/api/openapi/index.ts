@@ -4,8 +4,8 @@
 /* eslint-disable */
 export { ApiError } from './core/ApiError';
 export { CancelablePromise, CancelError } from './core/CancelablePromise';
-export type { OpenAPIConfig } from './core/OpenAPI';
 export { OpenAPI } from './core/OpenAPI';
+export type { OpenAPIConfig } from './core/OpenAPI';
 
 export { $AuthResponseDto } from './schemas/$AuthResponseDto';
 export { $ChangePasswordRequest } from './schemas/$ChangePasswordRequest';

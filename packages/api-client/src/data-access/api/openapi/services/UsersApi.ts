@@ -10,13 +10,28 @@ import { request as __request } from '../core/request';
 export class UsersApi {
   /**
    * List all users
+   * @param search Search by name or email
+   * @param role Filter by role
+   * @param limit Items per page (default: 20, max: 100)
+   * @param page Page number (default: 1)
    * @returns any
    * @throws ApiError
    */
-  public static findAll(): CancelablePromise<any> {
+  public static findAll(
+    search?: string,
+    role?: 'admin' | 'user',
+    limit?: number,
+    page?: number,
+  ): CancelablePromise<any> {
     return __request(OpenAPI, {
       method: 'GET',
       url: '/api/v1/users',
+      query: {
+        search: search,
+        role: role,
+        limit: limit,
+        page: page,
+      },
     });
   }
   /**

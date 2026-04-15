@@ -1,9 +1,9 @@
-import { UsersApi } from '@flama/api-client';
-import type { AuthProvider, Role, UpdateUserDto } from '@flama/shared';
-import { injectable } from 'inversify';
-import { AppError } from '../core/errors';
-import { UserEntity } from './user.entity';
-import { UsersErrors } from './users.errors';
+import { UsersApi } from "@flama/api-client";
+import type { AuthProvider, Role, UpdateUserDto } from "@flama/shared";
+import { injectable } from "inversify";
+import { AppError } from "../core/errors";
+import { UserEntity } from "./user.entity";
+import { UsersErrors } from "./users.errors";
 
 function toEntity(data: {
   id: string;
@@ -31,10 +31,21 @@ function toEntity(data: {
 
 @injectable()
 export class UsersRepository {
-  async findAll(page = 1, pageSize = 20): Promise<UserEntity[]> {
-    const data = await UsersApi.findAll(page, pageSize);
-    if (!data) throw new AppError(UsersErrors.FETCH_LIST_FAILED);
-    return data.map(toEntity);
+  async findAll(
+    page?: number,
+    limit?: number,
+    search?: string,
+    role?: "admin" | "user",
+  ): Promise<{
+    data: UserEntity[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
+    const result = await UsersApi.findAll(search, role, limit, page);
+    if (!result) throw new AppError(UsersErrors.FETCH_LIST_FAILED);
+    return {
+      data: result.data.map(toEntity),
+      meta: result.meta,
+    };
   }
 
   async me(): Promise<UserEntity> {
