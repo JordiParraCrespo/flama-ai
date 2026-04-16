@@ -1,57 +1,7 @@
-import { Button } from "@flama/design-system-mobile/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@flama/design-system-mobile/card";
-import { Text } from "@flama/design-system-mobile/text";
-import * as React from "react";
-import { ScrollView, View } from "react-native";
+import { Redirect } from "expo-router";
+import { useAuthState } from "@flama/frontend/react";
 
-export default function HomeScreen() {
-  const [count, setCount] = React.useState(0);
-
-  return (
-    <ScrollView contentContainerClassName="p-6 gap-6">
-      <View className="gap-2">
-        <Text className="text-3xl font-bold text-foreground">
-          Welcome to Flama
-        </Text>
-        <Text className="text-base text-muted-foreground">
-          A simple mobile app using the design system.
-        </Text>
-      </View>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Counter</CardTitle>
-          <CardDescription>
-            A quick demo of the design system components.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="gap-4">
-          <Text className="text-center text-4xl font-bold text-foreground">
-            {count}
-          </Text>
-          <View className="flex-row gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onPress={() => setCount((c) => c - 1)}
-            >
-              <Text>-</Text>
-            </Button>
-            <Button className="flex-1" onPress={() => setCount((c) => c + 1)}>
-              <Text>+</Text>
-            </Button>
-          </View>
-          <Button variant="secondary" onPress={() => setCount(0)}>
-            <Text>Reset</Text>
-          </Button>
-        </CardContent>
-      </Card>
-    </ScrollView>
-  );
+export default function Index() {
+  const { isAuthenticated } = useAuthState();
+  return <Redirect href={isAuthenticated ? "/(app)" : "/(auth)/login"} />;
 }

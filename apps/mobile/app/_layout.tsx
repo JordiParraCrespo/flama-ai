@@ -1,5 +1,6 @@
 import "../global.css";
 import "react-native-gesture-handler";
+import "reflect-metadata";
 import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
@@ -7,13 +8,21 @@ import {
 
 configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 
-import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
-import { Stack } from "expo-router";
+import { ThemeProvider } from "@react-navigation/native";
+import { QueryClientProvider } from "@tanstack/react-query";
+import {
+  FlamaProvider,
+  useAuthState,
+  useSessionRestore,
+} from "@flama/frontend/react";
+import { Slot, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme, vars } from "nativewind";
 import * as React from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { app } from "../lib/flama";
+import { queryClient } from "../lib/query";
 import { NAV_THEME } from "../lib/theme";
 
 export default function RootLayout() {
@@ -22,37 +31,52 @@ export default function RootLayout() {
   const isDark = colorScheme === "dark";
 
   return (
-    <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
-      <View
-        style={vars(theme)}
-        className={
-          isDark ? "dark flex-1 bg-background" : "flex-1 bg-background"
-        }
-      >
-        <StatusBar style={isDark ? "light" : "dark"} />
-        <Stack
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: isDark ? "hsl(0 0% 3.9%)" : "hsl(0 0% 100%)",
-            },
-            headerTintColor: isDark ? "hsl(0 0% 98%)" : "hsl(0 0% 3.9%)",
-            contentStyle: {
-              backgroundColor: isDark ? "hsl(0 0% 3.9%)" : "hsl(0 0% 100%)",
-            },
-          }}
-        >
-          <Stack.Screen
-            name="index"
-            options={{
-              headerTitle: "Flama",
-              headerShadowVisible: false,
-            }}
-          />
-        </Stack>
-        <PortalHost />
-      </View>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <FlamaProvider app={app}>
+        <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
+          <View
+            style={vars(theme)}
+            className={
+              isDark ? "dark flex-1 bg-background" : "flex-1 bg-background"
+            }
+          >
+            <StatusBar style={isDark ? "light" : "dark"} />
+            <AuthGate />
+            <PortalHost />
+          </View>
+        </ThemeProvider>
+      </FlamaProvider>
+    </QueryClientProvider>
   );
+}
+
+function AuthGate() {
+  const { isAuthenticated } = useAuthState();
+  const { isLoading } = useSessionRestore();
+  const segments = useSegments();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isAuthenticated && !inAuthGroup) {
+      router.replace("/(auth)/login");
+    } else if (isAuthenticated && inAuthGroup) {
+      router.replace("/(app)");
+    }
+  }, [isAuthenticated, isLoading, segments, router]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return <Slot />;
 }
 
 const lightVars = {

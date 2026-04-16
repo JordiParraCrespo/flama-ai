@@ -1,0 +1,117 @@
+import { Button } from "@flama/design-system-mobile/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@flama/design-system-mobile/card";
+import { Input } from "@flama/design-system-mobile/input";
+import { Label } from "@flama/design-system-mobile/label";
+import { Text } from "@flama/design-system-mobile/text";
+import { useLogin } from "@flama/frontend/react";
+import { loginSchema } from "@flama/shared";
+import { Link, useRouter } from "expo-router";
+import * as React from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+} from "react-native";
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+
+  const login = useLogin({
+    onSuccess: () => {
+      router.replace("/(app)");
+    },
+    onError: (error) => {
+      Alert.alert(
+        "Login failed",
+        error.message ?? "Invalid email or password.",
+      );
+    },
+  });
+
+  const handleLogin = () => {
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      Alert.alert("Validation error", result.error.errors[0].message);
+      return;
+    }
+    login.mutate(result.data);
+  };
+
+  return (
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerClassName="flex-grow justify-center p-6"
+        keyboardShouldPersistTaps="handled"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome back</CardTitle>
+            <CardDescription>Sign in to your account</CardDescription>
+          </CardHeader>
+          <CardContent className="gap-4">
+            <View className="gap-2">
+              <Label nativeID="email">Email</Label>
+              <Input
+                placeholder="m@example.com"
+                aria-labelledby="email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoComplete="email"
+                keyboardType="email-address"
+                textContentType="emailAddress"
+              />
+            </View>
+            <View className="gap-2">
+              <Label nativeID="password">Password</Label>
+              <Input
+                placeholder="Password"
+                aria-labelledby="password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoComplete="password"
+                textContentType="password"
+              />
+            </View>
+            <Button
+              onPress={handleLogin}
+              disabled={login.isPending}
+              className="mt-2"
+            >
+              <Text>{login.isPending ? "Signing in..." : "Sign in"}</Text>
+            </Button>
+            <View className="flex-row items-center justify-center gap-1">
+              <Text className="text-sm text-muted-foreground">
+                Don't have an account?
+              </Text>
+              <Link href="/(auth)/register" asChild>
+                <Button variant="link" size="sm" className="px-1">
+                  <Text>Sign up</Text>
+                </Button>
+              </Link>
+            </View>
+            <Link href="/(auth)/forgot-password" asChild>
+              <Button variant="link" size="sm">
+                <Text>Forgot password?</Text>
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
