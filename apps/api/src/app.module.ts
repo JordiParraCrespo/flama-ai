@@ -41,7 +41,10 @@ import { UsersModule } from './users/users.module';
         password: configService.get('database.password'),
         database: configService.get('database.database'),
         autoLoadEntities: true,
-        synchronize: configService.get('app.nodeEnv') !== 'production',
+        // Schema is managed through versioned migrations, never auto-sync.
+        synchronize: false,
+        migrations: [`${__dirname}/migrations/*{.ts,.js}`],
+        migrationsRun: true,
       }),
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
