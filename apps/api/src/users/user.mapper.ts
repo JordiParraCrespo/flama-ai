@@ -1,8 +1,8 @@
-import type { Mapper } from "@flama/backend-core";
-import type { Role } from "@flama/shared";
-import { Injectable } from "@nestjs/common";
-import { UserResponseDto } from "./dtos/user-response.dto";
-import { User } from "./user.entity";
+import type { Mapper } from '@flama/backend-core';
+import type { Role } from '@flama/shared';
+import { Injectable } from '@nestjs/common';
+import { UserResponseDto } from './dtos/user-response.dto';
+import { User } from './user.entity';
 
 export interface UserServiceModel {
   id: string;
@@ -17,11 +17,7 @@ export interface UserServiceModel {
 }
 
 @Injectable()
-export class UserMapper implements Mapper<
-  User,
-  UserServiceModel,
-  UserResponseDto
-> {
+export class UserMapper implements Mapper<User, UserServiceModel, UserResponseDto> {
   toRepository(data: Partial<User>): User {
     const entity = new User();
     if (data.email) entity.email = data.email;

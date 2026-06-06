@@ -1,5 +1,5 @@
-import { registerAs } from "@nestjs/config";
-import { z } from "zod";
+import { registerAs } from '@nestjs/config';
+import { z } from 'zod';
 
 /**
  * OAuth provider credentials. Better Auth reads these from the environment
@@ -9,16 +9,16 @@ import { z } from "zod";
  */
 const schema = z.object({
   google: z.object({
-    clientId: z.string().default("not-set"),
-    clientSecret: z.string().default("not-set"),
+    clientId: z.string().default('not-set'),
+    clientSecret: z.string().default('not-set'),
   }),
   github: z.object({
-    clientId: z.string().default("not-set"),
-    clientSecret: z.string().default("not-set"),
+    clientId: z.string().default('not-set'),
+    clientSecret: z.string().default('not-set'),
   }),
 });
 
-export const oauthConfig = registerAs("oauth", () => {
+export const oauthConfig = registerAs('oauth', () => {
   return schema.parse({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,

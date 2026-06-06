@@ -1,7 +1,7 @@
-import type { IAuthClient } from "@flama/frontend";
-import type { Role } from "@flama/shared";
-import { inferAdditionalFields } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/react";
+import type { IAuthClient } from '@flama/frontend';
+import type { Role } from '@flama/shared';
+import { inferAdditionalFields } from 'better-auth/client/plugins';
+import { createAuthClient } from 'better-auth/react';
 
 /**
  * Better Auth browser client. Authentication is cookie-based: the API sets an
@@ -10,18 +10,18 @@ import { createAuthClient } from "better-auth/react";
  * API, keeping web and API same-origin so the cookie is sent without
  * cross-site restrictions.
  */
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? "";
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? '';
 
 export const authClient = createAuthClient({
   baseURL: `${apiBaseUrl}/api/auth`,
   plugins: [
     inferAdditionalFields({
       user: {
-        firstName: { type: "string", required: true },
-        lastName: { type: "string", required: true },
+        firstName: { type: 'string', required: true },
+        lastName: { type: 'string', required: true },
         // Server-managed fields: never part of sign-up input.
-        role: { type: "string", required: false, input: false },
-        isActive: { type: "boolean", required: false, input: false },
+        role: { type: 'string', required: false, input: false },
+        isActive: { type: 'boolean', required: false, input: false },
       },
     }),
   ],
@@ -29,7 +29,7 @@ export const authClient = createAuthClient({
 
 function unwrap(result: { error?: { message?: string } | null }): void {
   if (result.error) {
-    throw new Error(result.error.message ?? "Authentication request failed");
+    throw new Error(result.error.message ?? 'Authentication request failed');
   }
 }
 
@@ -54,8 +54,8 @@ export const webAuthClient: IAuthClient = {
     // Redirects the browser to the provider and back to /dashboard.
     await authClient.signIn.social({
       provider,
-      callbackURL: "/dashboard",
-      errorCallbackURL: "/login",
+      callbackURL: '/dashboard',
+      errorCallbackURL: '/login',
     });
   },
 
@@ -92,9 +92,9 @@ export const webAuthClient: IAuthClient = {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.firstName ?? "",
-        lastName: user.lastName ?? "",
-        role: (user.role as Role) ?? "user",
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        role: (user.role as Role) ?? 'user',
         emailVerified: user.emailVerified,
       },
     };

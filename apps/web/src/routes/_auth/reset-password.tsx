@@ -1,22 +1,20 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Button,
-  Input,
   Field,
   FieldGroup,
   FieldLabel,
-} from "@flama/design-system-web";
-import { useResetPassword } from "@flama/frontend/react";
+  Input,
+} from '@flama/design-system-web';
+import { useResetPassword } from '@flama/frontend/react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
-export const Route = createFileRoute("/_auth/reset-password")({
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { token?: string; error?: string } => ({
+export const Route = createFileRoute('/_auth/reset-password')({
+  validateSearch: (search: Record<string, unknown>): { token?: string; error?: string } => ({
     token: (search.token as string) || undefined,
     error: (search.error as string) || undefined,
   }),
@@ -33,8 +31,8 @@ function ResetPasswordPage() {
     if (!token) return;
     const form = new FormData(e.currentTarget);
     mutate(
-      { token, password: form.get("password") as string },
-      { onSuccess: () => navigate({ to: "/login" }) },
+      { token, password: form.get('password') as string },
+      { onSuccess: () => navigate({ to: '/login' }) },
     );
   }
 
@@ -45,24 +43,19 @@ function ResetPasswordPage() {
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Reset password</CardTitle>
-          <CardDescription>
-            Choose a new password for your account
-          </CardDescription>
+          <CardDescription>Choose a new password for your account</CardDescription>
         </CardHeader>
         <CardContent>
           {invalidLink ? (
             <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              This reset link is invalid or has expired. Please request a new
-              one.
+              This reset link is invalid or has expired. Please request a new one.
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               <FieldGroup>
                 {error && (
                   <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {error instanceof Error
-                      ? error.message
-                      : "Could not reset password"}
+                    {error instanceof Error ? error.message : 'Could not reset password'}
                   </div>
                 )}
                 <Field>
@@ -79,7 +72,7 @@ function ResetPasswordPage() {
                 </Field>
                 <Field>
                   <Button type="submit" disabled={isPending}>
-                    {isPending ? "Resetting..." : "Reset password"}
+                    {isPending ? 'Resetting...' : 'Reset password'}
                   </Button>
                 </Field>
               </FieldGroup>
@@ -88,10 +81,7 @@ function ResetPasswordPage() {
         </CardContent>
       </Card>
       <div className="text-center text-sm">
-        <Link
-          to="/login"
-          className="underline underline-offset-4 hover:text-primary"
-        >
+        <Link to="/login" className="underline underline-offset-4 hover:text-primary">
           Back to sign in
         </Link>
       </div>

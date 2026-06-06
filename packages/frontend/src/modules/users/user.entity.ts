@@ -1,4 +1,4 @@
-import type { Role } from "@flama/shared";
+import type { Role } from '@flama/shared';
 
 export class UserEntity {
   constructor(
@@ -17,6 +17,6 @@ export class UserEntity {
   }
 
   get isAdmin(): boolean {
-    return this.role === "admin";
+    return this.role === 'admin';
   }
 }

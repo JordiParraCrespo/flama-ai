@@ -1,8 +1,8 @@
-import { OpenAPI } from "@flama/api-client";
-import { ContainerModule } from "inversify";
-import { TOKENS } from "../../di/tokens";
-import type { IAuthClient } from "../auth/auth.client";
-import type { IStorageService } from "./storage.service";
+import { OpenAPI } from '@flama/api-client';
+import { ContainerModule } from 'inversify';
+import { TOKENS } from '../../di/tokens';
+import type { IAuthClient } from '../auth/auth.client';
+import type { IStorageService } from './storage.service';
 
 export interface CoreModuleConfig {
   apiBaseUrl: string;
@@ -18,12 +18,10 @@ export function createCoreModule(config: CoreModuleConfig): ContainerModule {
     // `getAuthHeaders()`, which we attach to every generated API request.
     OpenAPI.BASE = config.apiBaseUrl;
     OpenAPI.WITH_CREDENTIALS = true;
-    OpenAPI.CREDENTIALS = "include";
+    OpenAPI.CREDENTIALS = 'include';
     OpenAPI.HEADERS = () => config.authClient.getAuthHeaders();
 
-    bind<IStorageService>(TOKENS.StorageService).toConstantValue(
-      config.storage,
-    );
+    bind<IStorageService>(TOKENS.StorageService).toConstantValue(config.storage);
     bind<IAuthClient>(TOKENS.AuthClient).toConstantValue(config.authClient);
   });
 }

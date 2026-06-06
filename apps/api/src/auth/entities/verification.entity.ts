@@ -1,28 +1,22 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryColumn,
-  UpdateDateColumn,
-} from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * Maps the Better Auth `verification` table (email verification + password
  * reset tokens). Owned by Better Auth; declared here so TypeORM creates the
  * table.
  */
-@Entity("verification")
+@Entity('verification')
 export class Verification {
-  @PrimaryColumn({ type: "uuid" })
+  @PrimaryColumn({ type: 'uuid' })
   id!: string;
 
-  @Column({ type: "varchar" })
+  @Column({ type: 'varchar' })
   identifier!: string;
 
-  @Column({ type: "varchar" })
+  @Column({ type: 'varchar' })
   value!: string;
 
-  @Column({ type: "timestamp" })
+  @Column({ type: 'timestamp' })
   expiresAt!: Date;
 
   @CreateDateColumn()

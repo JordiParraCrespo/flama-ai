@@ -1,9 +1,9 @@
-import { UsersApi } from "@flama/api-client";
-import type { Role, UpdateUserDto } from "@flama/shared";
-import { injectable } from "inversify";
-import { AppError } from "../core/errors";
-import { UserEntity } from "./user.entity";
-import { UsersErrors } from "./users.errors";
+import { UsersApi } from '@flama/api-client';
+import type { Role, UpdateUserDto } from '@flama/shared';
+import { injectable } from 'inversify';
+import { AppError } from '../core/errors';
+import { UserEntity } from './user.entity';
+import { UsersErrors } from './users.errors';
 
 function toEntity(data: {
   id: string;
@@ -33,7 +33,7 @@ export class UsersRepository {
     page?: number,
     limit?: number,
     search?: string,
-    role?: "admin" | "user",
+    role?: 'admin' | 'user',
   ): Promise<{
     data: UserEntity[];
     meta: { total: number; page: number; limit: number; totalPages: number };

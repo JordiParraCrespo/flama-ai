@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { Account } from "./entities/account.entity";
-import { Session } from "./entities/session.entity";
-import { Verification } from "./entities/verification.entity";
-import { PoliciesGuard } from "./guards/policies.guard";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Account } from './entities/account.entity';
+import { Session } from './entities/session.entity';
+import { Verification } from './entities/verification.entity';
+import { PoliciesGuard } from './guards/policies.guard';
 
 /**
  * Registers the Better Auth tables with TypeORM (so the schema is created /

@@ -1,33 +1,27 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryColumn,
-  UpdateDateColumn,
-} from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * Maps the Better Auth `session` table. Owned by Better Auth; declared here so
  * TypeORM creates/migrates the table alongside the rest of the schema.
  */
-@Entity("session")
+@Entity('session')
 export class Session {
-  @PrimaryColumn({ type: "uuid" })
+  @PrimaryColumn({ type: 'uuid' })
   id!: string;
 
-  @Column({ type: "uuid" })
+  @Column({ type: 'uuid' })
   userId!: string;
 
-  @Column({ type: "varchar", unique: true })
+  @Column({ type: 'varchar', unique: true })
   token!: string;
 
-  @Column({ type: "timestamp" })
+  @Column({ type: 'timestamp' })
   expiresAt!: Date;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   ipAddress!: string | null;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   userAgent!: string | null;
 
   @CreateDateColumn()

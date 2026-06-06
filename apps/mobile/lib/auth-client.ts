@@ -1,30 +1,30 @@
-import { expoClient } from "@better-auth/expo/client";
-import type { IAuthClient } from "@flama/frontend";
-import type { Role } from "@flama/shared";
-import { inferAdditionalFields } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/react";
-import * as SecureStore from "expo-secure-store";
+import { expoClient } from '@better-auth/expo/client';
+import type { IAuthClient } from '@flama/frontend';
+import type { Role } from '@flama/shared';
+import { inferAdditionalFields } from 'better-auth/client/plugins';
+import { createAuthClient } from 'better-auth/react';
+import * as SecureStore from 'expo-secure-store';
 
-const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001";
+const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 // Must match the `scheme` in app.config.ts and MOBILE_SCHEME on the API so
 // OAuth and password-reset deep links resolve back into the app.
-const scheme = "flama";
+const scheme = 'flama';
 
 export const authClient = createAuthClient({
   baseURL: `${apiBaseUrl}/api/auth`,
   plugins: [
     expoClient({
       scheme,
-      storagePrefix: "flama",
+      storagePrefix: 'flama',
       storage: SecureStore,
     }),
     inferAdditionalFields({
       user: {
-        firstName: { type: "string", required: true },
-        lastName: { type: "string", required: true },
-        role: { type: "string", required: false, input: false },
-        isActive: { type: "boolean", required: false, input: false },
+        firstName: { type: 'string', required: true },
+        lastName: { type: 'string', required: true },
+        role: { type: 'string', required: false, input: false },
+        isActive: { type: 'boolean', required: false, input: false },
       },
     }),
   ],
@@ -32,7 +32,7 @@ export const authClient = createAuthClient({
 
 function unwrap(result: { error?: { message?: string } | null }): void {
   if (result.error) {
-    throw new Error(result.error.message ?? "Authentication request failed");
+    throw new Error(result.error.message ?? 'Authentication request failed');
   }
 }
 
@@ -96,9 +96,9 @@ export const mobileAuthClient: IAuthClient = {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.firstName ?? "",
-        lastName: user.lastName ?? "",
-        role: (user.role as Role) ?? "user",
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        role: (user.role as Role) ?? 'user',
         emailVerified: user.emailVerified,
       },
     };

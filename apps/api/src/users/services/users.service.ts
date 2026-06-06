@@ -1,11 +1,11 @@
-import { AppError } from "@flama/backend-core";
-import type { PaginationParams } from "@flama/shared";
-import { PAGINATION } from "@flama/shared";
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import type { Repository } from "typeorm";
-import { UserErrors } from "../errors/user.errors";
-import { User } from "../user.entity";
+import { AppError } from '@flama/backend-core';
+import type { PaginationParams } from '@flama/shared';
+import { PAGINATION } from '@flama/shared';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import type { Repository } from 'typeorm';
+import { UserErrors } from '../errors/user.errors';
+import { User } from '../user.entity';
 
 /**
  * Read/update access to the Better Auth `user` table for the `/users`
@@ -21,16 +21,13 @@ export class UsersService {
 
   async findAll(params?: PaginationParams) {
     const page = params?.page || PAGINATION.DEFAULT_PAGE;
-    const limit = Math.min(
-      params?.limit || PAGINATION.DEFAULT_LIMIT,
-      PAGINATION.MAX_LIMIT,
-    );
+    const limit = Math.min(params?.limit || PAGINATION.DEFAULT_LIMIT, PAGINATION.MAX_LIMIT);
     const skip = (page - 1) * limit;
 
     const [data, total] = await this.usersRepository.findAndCount({
       skip,
       take: limit,
-      order: { createdAt: "DESC" },
+      order: { createdAt: 'DESC' },
     });
 
     return {

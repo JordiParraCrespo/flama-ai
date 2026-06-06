@@ -1,19 +1,19 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Button,
-  Input,
   Field,
   FieldGroup,
   FieldLabel,
-} from "@flama/design-system-web";
-import { useLogin, useSocialLogin } from "@flama/frontend/react";
+  Input,
+} from '@flama/design-system-web';
+import { useLogin, useSocialLogin } from '@flama/frontend/react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
-export const Route = createFileRoute("/_auth/login")({
+export const Route = createFileRoute('/_auth/login')({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
     redirect: (search.redirect as string) || undefined,
   }),
@@ -29,14 +29,14 @@ function LoginPage() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const email = form.get("email") as string;
-    const password = form.get("password") as string;
+    const email = form.get('email') as string;
+    const password = form.get('password') as string;
 
     mutate(
       { email, password },
       {
         onSuccess: () => {
-          navigate({ to: redirectTo ?? "/dashboard" });
+          navigate({ to: redirectTo ?? '/dashboard' });
         },
       },
     );
@@ -54,9 +54,7 @@ function LoginPage() {
             <FieldGroup>
               {error && (
                 <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error instanceof Error
-                    ? error.message
-                    : "Invalid email or password"}
+                  {error instanceof Error ? error.message : 'Invalid email or password'}
                 </div>
               )}
               <Field>
@@ -91,7 +89,7 @@ function LoginPage() {
               </Field>
               <Field>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Signing in..." : "Sign in"}
+                  {isPending ? 'Signing in...' : 'Sign in'}
                 </Button>
               </Field>
             </FieldGroup>
@@ -101,9 +99,7 @@ function LoginPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
-              </span>
+              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -111,7 +107,7 @@ function LoginPage() {
               variant="outline"
               type="button"
               disabled={isPending || social.isPending}
-              onClick={() => social.mutate("google")}
+              onClick={() => social.mutate('google')}
             >
               Google
             </Button>
@@ -119,7 +115,7 @@ function LoginPage() {
               variant="outline"
               type="button"
               disabled={isPending || social.isPending}
-              onClick={() => social.mutate("github")}
+              onClick={() => social.mutate('github')}
             >
               GitHub
             </Button>
@@ -127,11 +123,8 @@ function LoginPage() {
         </CardContent>
       </Card>
       <div className="text-center text-sm">
-        Don&apos;t have an account?{" "}
-        <Link
-          to="/register"
-          className="underline underline-offset-4 hover:text-primary"
-        >
+        Don&apos;t have an account?{' '}
+        <Link to="/register" className="underline underline-offset-4 hover:text-primary">
           Sign up
         </Link>
       </div>

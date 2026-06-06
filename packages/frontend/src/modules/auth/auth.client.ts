@@ -1,4 +1,4 @@
-import type { Role } from "@flama/shared";
+import type { Role } from '@flama/shared';
 
 /**
  * Platform-agnostic authentication client contract.
@@ -29,7 +29,7 @@ export interface SignUpParams {
   lastName: string;
 }
 
-export type SocialProvider = "google" | "github";
+export type SocialProvider = 'google' | 'github';
 
 export interface IAuthClient {
   /** Sign in with email and password. Rejects on failure. */

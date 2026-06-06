@@ -1,5 +1,5 @@
-import type { Role } from "@flama/shared";
-import { ApiProperty } from "@nestjs/swagger";
+import type { Role } from '@flama/shared';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponseDto {
   @ApiProperty()

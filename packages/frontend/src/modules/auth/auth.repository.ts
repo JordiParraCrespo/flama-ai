@@ -1,11 +1,6 @@
-import { inject, injectable } from "inversify";
-import { TOKENS } from "../../di/tokens";
-import type {
-  AuthSession,
-  IAuthClient,
-  SignUpParams,
-  SocialProvider,
-} from "./auth.client";
+import { inject, injectable } from 'inversify';
+import { TOKENS } from '../../di/tokens';
+import type { AuthSession, IAuthClient, SignUpParams, SocialProvider } from './auth.client';
 
 /**
  * Thin adapter over the platform {@link IAuthClient}. Keeps the service layer
@@ -13,9 +8,7 @@ import type {
  */
 @injectable()
 export class AuthRepository {
-  constructor(
-    @inject(TOKENS.AuthClient) private readonly client: IAuthClient,
-  ) {}
+  constructor(@inject(TOKENS.AuthClient) private readonly client: IAuthClient) {}
 
   login(email: string, password: string): Promise<void> {
     return this.client.signIn(email, password);

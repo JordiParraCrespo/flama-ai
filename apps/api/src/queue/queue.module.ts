@@ -1,7 +1,7 @@
-import { QUEUE_NAMES } from "@flama/shared";
-import { BullModule } from "@nestjs/bullmq";
-import { Module } from "@nestjs/common";
-import { EmailProcessor } from "./email.processor";
+import { QUEUE_NAMES } from '@flama/shared';
+import { BullModule } from '@nestjs/bullmq';
+import { Module } from '@nestjs/common';
+import { EmailProcessor } from './email.processor';
 
 @Module({
   imports: [

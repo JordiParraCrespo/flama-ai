@@ -1,39 +1,33 @@
-import { Button } from "@flama/design-system-mobile/button";
+import { Button } from '@flama/design-system-mobile/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@flama/design-system-mobile/card";
-import { Input } from "@flama/design-system-mobile/input";
-import { Label } from "@flama/design-system-mobile/label";
-import { Text } from "@flama/design-system-mobile/text";
-import { useResetPassword } from "@flama/frontend/react";
-import { resetPasswordSchema } from "@flama/shared";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import * as React from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from "react-native";
+} from '@flama/design-system-mobile/card';
+import { Input } from '@flama/design-system-mobile/input';
+import { Label } from '@flama/design-system-mobile/label';
+import { Text } from '@flama/design-system-mobile/text';
+import { useResetPassword } from '@flama/frontend/react';
+import { resetPasswordSchema } from '@flama/shared';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import * as React from 'react';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token?: string }>();
-  const [password, setPassword] = React.useState("");
+  const [password, setPassword] = React.useState('');
 
   const reset = useResetPassword({
     onSuccess: () => {
-      Alert.alert("Password updated", "You can now sign in.", [
-        { text: "OK", onPress: () => router.replace("/(auth)/login") },
+      Alert.alert('Password updated', 'You can now sign in.', [
+        { text: 'OK', onPress: () => router.replace('/(auth)/login') },
       ]);
     },
     onError: (error) => {
-      Alert.alert("Reset failed", error.message ?? "Could not reset password.");
+      Alert.alert('Reset failed', error.message ?? 'Could not reset password.');
     },
   });
 
@@ -41,7 +35,7 @@ export default function ResetPasswordScreen() {
     if (!token) return;
     const result = resetPasswordSchema.safeParse({ token, password });
     if (!result.success) {
-      Alert.alert("Validation error", result.error.errors[0].message);
+      Alert.alert('Validation error', result.error.errors[0].message);
       return;
     }
     reset.mutate({ token: result.data.token, password: result.data.password });
@@ -54,8 +48,7 @@ export default function ResetPasswordScreen() {
           <CardHeader>
             <CardTitle>Invalid link</CardTitle>
             <CardDescription>
-              This reset link is invalid or has expired. Please request a new
-              one.
+              This reset link is invalid or has expired. Please request a new one.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -73,7 +66,7 @@ export default function ResetPasswordScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
         contentContainerClassName="flex-grow justify-center p-6"
@@ -82,9 +75,7 @@ export default function ResetPasswordScreen() {
         <Card>
           <CardHeader>
             <CardTitle>Reset password</CardTitle>
-            <CardDescription>
-              Choose a new password for your account
-            </CardDescription>
+            <CardDescription>Choose a new password for your account</CardDescription>
           </CardHeader>
           <CardContent className="gap-4">
             <View className="gap-2">
@@ -99,12 +90,8 @@ export default function ResetPasswordScreen() {
                 textContentType="newPassword"
               />
             </View>
-            <Button
-              onPress={handleSubmit}
-              disabled={reset.isPending}
-              className="mt-2"
-            >
-              <Text>{reset.isPending ? "Resetting..." : "Reset password"}</Text>
+            <Button onPress={handleSubmit} disabled={reset.isPending} className="mt-2">
+              <Text>{reset.isPending ? 'Resetting...' : 'Reset password'}</Text>
             </Button>
             <Link href="/(auth)/login" asChild>
               <Button variant="link" size="sm">

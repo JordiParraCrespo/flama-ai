@@ -1,11 +1,5 @@
-import type { Role } from "@flama/shared";
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryColumn,
-  UpdateDateColumn,
-} from "typeorm";
+import type { Role } from '@flama/shared';
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * Maps the Better Auth `user` table. Better Auth owns writes to this table
@@ -15,33 +9,33 @@ import {
  * `firstName`, `lastName`, `role` and `isActive` are Better Auth
  * "additional fields" declared in `auth.ts`.
  */
-@Entity("user")
+@Entity('user')
 export class User {
-  @PrimaryColumn({ type: "uuid" })
+  @PrimaryColumn({ type: 'uuid' })
   id!: string;
 
-  @Column({ type: "varchar" })
+  @Column({ type: 'varchar' })
   name!: string;
 
-  @Column({ type: "varchar", unique: true })
+  @Column({ type: 'varchar', unique: true })
   email!: string;
 
-  @Column({ type: "boolean", default: false })
+  @Column({ type: 'boolean', default: false })
   emailVerified!: boolean;
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   image!: string | null;
 
-  @Column({ type: "varchar" })
+  @Column({ type: 'varchar' })
   firstName!: string;
 
-  @Column({ type: "varchar" })
+  @Column({ type: 'varchar' })
   lastName!: string;
 
-  @Column({ type: "varchar", default: "user" })
+  @Column({ type: 'varchar', default: 'user' })
   role!: Role;
 
-  @Column({ type: "boolean", default: true })
+  @Column({ type: 'boolean', default: true })
   isActive!: boolean;
 
   @CreateDateColumn()

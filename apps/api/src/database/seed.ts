@@ -1,19 +1,19 @@
-import "dotenv/config";
-import type { Role } from "@flama/shared";
-import { DataSource } from "typeorm";
-import { auth } from "../auth/auth";
-import { Account } from "../auth/entities/account.entity";
-import { Session } from "../auth/entities/session.entity";
-import { Verification } from "../auth/entities/verification.entity";
-import { User } from "../users/user.entity";
+import 'dotenv/config';
+import type { Role } from '@flama/shared';
+import { DataSource } from 'typeorm';
+import { auth } from '../auth/auth';
+import { Account } from '../auth/entities/account.entity';
+import { Session } from '../auth/entities/session.entity';
+import { Verification } from '../auth/entities/verification.entity';
+import { User } from '../users/user.entity';
 
 const dataSource = new DataSource({
-  type: "postgres",
-  host: process.env.DB_HOST || "localhost",
-  port: Number.parseInt(process.env.DB_PORT || "5432", 10),
-  username: process.env.DB_USERNAME || "flama",
-  password: process.env.DB_PASSWORD || "flama",
-  database: process.env.DB_DATABASE || "flama",
+  type: 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: Number.parseInt(process.env.DB_PORT || '5432', 10),
+  username: process.env.DB_USERNAME || 'flama',
+  password: process.env.DB_PASSWORD || 'flama',
+  database: process.env.DB_DATABASE || 'flama',
   entities: [User, Session, Account, Verification],
 });
 
@@ -27,18 +27,18 @@ interface SeedUser {
 
 const seedUsers: SeedUser[] = [
   {
-    email: "admin@flama.dev",
-    password: "admin123456",
-    firstName: "Admin",
-    lastName: "User",
-    role: "admin",
+    email: 'admin@flama.dev',
+    password: 'admin123456',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin',
   },
   {
-    email: "user@flama.dev",
-    password: "user123456",
-    firstName: "Test",
-    lastName: "User",
-    role: "user",
+    email: 'user@flama.dev',
+    password: 'user123456',
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'user',
   },
 ];
 
@@ -63,19 +63,16 @@ async function seed() {
     });
 
     // Elevate the role and mark the email verified (not settable on sign-up).
-    await userRepo.update(
-      { email: seedUser.email },
-      { role: seedUser.role, emailVerified: true },
-    );
+    await userRepo.update({ email: seedUser.email }, { role: seedUser.role, emailVerified: true });
 
     console.log(`Created ${seedUser.role} user: ${seedUser.email}`);
   }
 
-  console.log("Seeding complete.");
+  console.log('Seeding complete.');
   await dataSource.destroy();
 }
 
 seed().catch((err) => {
-  console.error("Seeding failed:", err);
+  console.error('Seeding failed:', err);
   process.exit(1);
 });

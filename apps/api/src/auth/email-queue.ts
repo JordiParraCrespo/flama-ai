@@ -1,5 +1,5 @@
-import { QUEUE_NAMES } from "@flama/shared";
-import { Queue } from "bullmq";
+import { QUEUE_NAMES } from '@flama/shared';
+import { Queue } from 'bullmq';
 
 /**
  * Standalone BullMQ queue used by the Better Auth instance to enqueue
@@ -12,7 +12,7 @@ import { Queue } from "bullmq";
  */
 export const emailQueue = new Queue(QUEUE_NAMES.EMAIL, {
   connection: {
-    host: process.env.REDIS_HOST ?? "localhost",
-    port: Number.parseInt(process.env.REDIS_PORT ?? "6379", 10),
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: Number.parseInt(process.env.REDIS_PORT ?? '6379', 10),
   },
 });
