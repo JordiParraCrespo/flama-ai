@@ -1,5 +1,5 @@
-import type { AuthProvider, Role } from '@flama/shared';
-import { ApiProperty } from '@nestjs/swagger';
+import type { Role } from "@flama/shared";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class UserResponseDto {
   @ApiProperty()
@@ -18,10 +18,10 @@ export class UserResponseDto {
   role!: Role;
 
   @ApiProperty()
-  provider!: AuthProvider;
+  isActive!: boolean;
 
   @ApiProperty()
-  isActive!: boolean;
+  emailVerified!: boolean;
 
   @ApiProperty()
   createdAt!: Date;

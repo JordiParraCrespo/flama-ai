@@ -1,52 +1,48 @@
-import type { AuthProvider, Role } from '@flama/shared';
+import type { Role } from "@flama/shared";
 import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity('users')
+/**
+ * Maps the Better Auth `user` table. Better Auth owns writes to this table
+ * (sign-up, OAuth, verification); the application reads/updates it through
+ * TypeORM for the `/users` endpoints.
+ *
+ * `firstName`, `lastName`, `role` and `isActive` are Better Auth
+ * "additional fields" declared in `auth.ts`.
+ */
+@Entity("user")
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: "uuid" })
   id!: string;
 
-  @Column({ unique: true })
+  @Column({ type: "varchar" })
+  name!: string;
+
+  @Column({ type: "varchar", unique: true })
   email!: string;
 
-  @Column({ nullable: true })
-  password!: string;
+  @Column({ type: "boolean", default: false })
+  emailVerified!: boolean;
 
-  @Column()
+  @Column({ type: "varchar", nullable: true })
+  image!: string | null;
+
+  @Column({ type: "varchar" })
   firstName!: string;
 
-  @Column()
+  @Column({ type: "varchar" })
   lastName!: string;
 
-  @Column({ default: 'user' })
+  @Column({ type: "varchar", default: "user" })
   role!: Role;
 
-  @Column({ default: 'local' })
-  provider!: AuthProvider;
-
-  @Column({ nullable: true })
-  providerId!: string;
-
-  @Column({ default: true })
+  @Column({ type: "boolean", default: true })
   isActive!: boolean;
-
-  @Column({ nullable: true, type: 'timestamp' })
-  emailVerifiedAt!: Date | null;
-
-  @Column({ nullable: true, type: 'varchar' })
-  resetPasswordToken!: string | null;
-
-  @Column({ nullable: true, type: 'timestamp' })
-  resetPasswordExpires!: Date | null;
-
-  @Column({ nullable: true, type: 'varchar' })
-  refreshToken!: string | null;
 
   @CreateDateColumn()
   createdAt!: Date;

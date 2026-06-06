@@ -24,7 +24,7 @@ export function createSwaggerConfig() {
 export function createSwaggerDocument(
   app: ReturnType<typeof NestFactory.create> extends Promise<infer T>
     ? T
-    : never
+    : never,
 ) {
   return SwaggerModule.createDocument(app, createSwaggerConfig(), {
     operationIdFactory: (_controller, method) => method,
@@ -32,7 +32,13 @@ export function createSwaggerDocument(
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  // `bodyParser: false` is required by `@thallesp/nestjs-better-auth` so that
+  // Better Auth can read the raw request body. The module re-registers the
+  // JSON / urlencoded parsers for the rest of the controllers.
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    bodyParser: false,
+  });
   const configService = app.get(ConfigService);
 
   app.useLogger(app.get(Logger));

@@ -17,9 +17,9 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { CheckPolicies } from "../auth/decorators/check-policies.decorator";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { PoliciesGuard } from "../auth/guards/policies.guard";
 import { UserResponseDto } from "./dtos/user-response.dto";
 import { FindUsersRequest } from "./requests/find-users.request";
@@ -31,7 +31,7 @@ import { UserMapper } from "./user.mapper";
 
 @ApiTags("Users")
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PoliciesGuard)
+@UseGuards(AuthGuard, PoliciesGuard)
 @Controller("users")
 export class UsersController {
   constructor(
@@ -84,7 +84,7 @@ export class UsersController {
   @Version("1")
   @ApiOperation({ summary: "Get current user profile" })
   @ApiResponse({ status: 200, type: UserResponseDto })
-  async me(@CurrentUser("sub") userId: string) {
+  async me(@CurrentUser("id") userId: string) {
     const user = await this.usersService.findById(userId);
     return this.userMapper.toController(this.userMapper.toService(user));
   }

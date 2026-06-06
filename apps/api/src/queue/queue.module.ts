@@ -1,15 +1,14 @@
-import { QUEUE_NAMES } from '@flama/shared';
-import { BullModule } from '@nestjs/bullmq';
-import { Module } from '@nestjs/common';
-import { EmailProcessor } from './email.processor';
-import { UserRegisteredListener } from './listeners/user-registered.listener';
+import { QUEUE_NAMES } from "@flama/shared";
+import { BullModule } from "@nestjs/bullmq";
+import { Module } from "@nestjs/common";
+import { EmailProcessor } from "./email.processor";
 
 @Module({
   imports: [
     BullModule.registerQueue({ name: QUEUE_NAMES.EMAIL }),
     BullModule.registerQueue({ name: QUEUE_NAMES.FILE_PROCESSING }),
   ],
-  providers: [EmailProcessor, UserRegisteredListener],
+  providers: [EmailProcessor],
   exports: [BullModule],
 })
 export class QueueModule {}

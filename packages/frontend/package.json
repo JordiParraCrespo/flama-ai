@@ -23,8 +23,8 @@
     }
   },
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "@tanstack/react-query": "^5.0.0"
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -46,6 +46,7 @@
     "@flama/api-client": "workspace:*",
     "@flama/shared": "workspace:*",
     "@tanstack/query-core": "^5.62.0",
+    "better-auth": "^1.6.14",
     "inversify": "^7.0.0",
     "reflect-metadata": "^0.2.2",
     "zustand": "^5.0.0"
