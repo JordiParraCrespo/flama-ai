@@ -10,7 +10,7 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "biome format --write .",
-    "check": "biome check --write .",
+    "check": "biome check --write --unsafe .",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "clean": "turbo run clean && rm -rf node_modules",
@@ -30,5 +30,12 @@
     "@commitlint/config-conventional": "^19.0.0",
     "turbo": "^2.9.6",
     "typescript": "^6.0.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0",
+      "@types/react": "19.2.14"
+    }
   }
 }

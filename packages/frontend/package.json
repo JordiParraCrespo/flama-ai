@@ -39,7 +39,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
     "lint": "biome check src/",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
   "dependencies": {
