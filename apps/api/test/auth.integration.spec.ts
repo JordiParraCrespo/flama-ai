@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { GenericContainer, type StartedTestContainer } from 'testcontainers';
+import { GenericContainer, type StartedTestContainer, Wait } from 'testcontainers';
 
 describe('Auth (integration)', () => {
   let app: INestApplication;
@@ -16,10 +16,12 @@ describe('Auth (integration)', () => {
           POSTGRES_DB: 'test',
         })
         .withExposedPorts(5432)
+        .withWaitStrategy(Wait.forLogMessage(/database system is ready to accept connections/, 2))
         .start(),
       new GenericContainer('redis:7-alpine').withExposedPorts(6379).start(),
     ]);
 
+    process.env.NODE_ENV = 'test';
     process.env.DB_HOST = pgContainer.getHost();
     process.env.DB_PORT = pgContainer.getMappedPort(5432).toString();
     process.env.DB_USERNAME = 'test';

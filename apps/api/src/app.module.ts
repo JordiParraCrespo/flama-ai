@@ -44,7 +44,9 @@ import { UsersModule } from './users/users.module';
         // Schema is managed through versioned migrations, never auto-sync.
         synchronize: false,
         migrations: [`${__dirname}/migrations/*{.ts,.js}`],
-        migrationsRun: true,
+        // Run migrations on boot, except under the test runner where the
+        // migration files would be loaded through vitest's module system.
+        migrationsRun: configService.get('app.nodeEnv') !== 'test',
       }),
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
