@@ -9,7 +9,7 @@ import {
 import { Input } from "@flama/design-system-mobile/input";
 import { Label } from "@flama/design-system-mobile/label";
 import { Text } from "@flama/design-system-mobile/text";
-import { useLogin } from "@flama/frontend/react";
+import { useLogin, useSocialLogin } from "@flama/frontend/react";
 import { loginSchema } from "@flama/shared";
 import { Link, useRouter } from "expo-router";
 import * as React from "react";
@@ -35,6 +35,15 @@ export default function LoginScreen() {
         "Login failed",
         error.message ?? "Invalid email or password.",
       );
+    },
+  });
+
+  const social = useSocialLogin({
+    onSuccess: () => {
+      router.replace("/(app)");
+    },
+    onError: (error) => {
+      Alert.alert("Login failed", error.message ?? "Could not sign in.");
     },
   });
 
@@ -94,6 +103,31 @@ export default function LoginScreen() {
             >
               <Text>{login.isPending ? "Signing in..." : "Sign in"}</Text>
             </Button>
+            <View className="flex-row items-center gap-3 py-1">
+              <View className="h-px flex-1 bg-border" />
+              <Text className="text-xs uppercase text-muted-foreground">
+                Or continue with
+              </Text>
+              <View className="h-px flex-1 bg-border" />
+            </View>
+            <View className="flex-row gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={social.isPending}
+                onPress={() => social.mutate("google")}
+              >
+                <Text>Google</Text>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={social.isPending}
+                onPress={() => social.mutate("github")}
+              >
+                <Text>GitHub</Text>
+              </Button>
+            </View>
             <View className="flex-row items-center justify-center gap-1">
               <Text className="text-sm text-muted-foreground">
                 Don't have an account?
