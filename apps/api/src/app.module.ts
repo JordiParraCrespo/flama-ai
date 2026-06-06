@@ -33,21 +33,25 @@ import { UsersModule } from './users/users.module';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('database.host'),
-        port: configService.get('database.port'),
-        username: configService.get('database.username'),
-        password: configService.get('database.password'),
-        database: configService.get('database.database'),
-        autoLoadEntities: true,
-        // Schema is managed through versioned migrations, never auto-sync.
-        synchronize: false,
-        migrations: [`${__dirname}/migrations/*{.ts,.js}`],
-        // Run migrations on boot, except under the test runner where the
-        // migration files would be loaded through vitest's module system.
-        migrationsRun: configService.get('app.nodeEnv') !== 'test',
-      }),
+      useFactory: (configService: ConfigService) => {
+        // Under the test runner, skip migrations entirely: TypeORM would load
+        // the .ts migration files through vitest's module system and crash.
+        // Migrations are exercised separately against a real database.
+        const isTest = configService.get('app.nodeEnv') === 'test';
+        return {
+          type: 'postgres',
+          host: configService.get('database.host'),
+          port: configService.get('database.port'),
+          username: configService.get('database.username'),
+          password: configService.get('database.password'),
+          database: configService.get('database.database'),
+          autoLoadEntities: true,
+          // Schema is managed through versioned migrations, never auto-sync.
+          synchronize: false,
+          migrations: isTest ? [] : [`${__dirname}/migrations/*{.ts,.js}`],
+          migrationsRun: !isTest,
+        };
+      },
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     LoggerModule.forRootAsync({
