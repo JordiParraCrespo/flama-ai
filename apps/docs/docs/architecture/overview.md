@@ -10,7 +10,7 @@ Flama follows a monorepo architecture with clear separation of concerns.
 
 The API (`apps/api`) is built with NestJS and consumes 5 reusable backend packages from `packages/backend/`:
 
-- **Authentication**: Passport.js with JWT (local + Google/GitHub OAuth)
+- **Authentication**: Better Auth (email/password + Google/GitHub OAuth), cookie sessions
 - **Authorization**: CASL (role-based + attribute-based)
 - **Database**: PostgreSQL with TypeORM
 - **Caching**: Redis via [`@flama/backend-cache`](./backend-packages#flamabackend-cache)
