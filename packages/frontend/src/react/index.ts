@@ -7,9 +7,10 @@ export {
   useRegister,
   useResetPassword,
   useSessionRestore,
-} from './auth.queries';
-export { FlamaProvider, useFlamaApp } from './context';
-export { useAuthState } from './hooks';
+  useSocialLogin,
+} from "./auth.queries";
+export { FlamaProvider, useFlamaApp } from "./context";
+export { useAuthState } from "./hooks";
 export {
   profileQueryKey,
   useDeleteUser,
@@ -18,4 +19,4 @@ export {
   useUpdateUser,
   useUser,
   useUsers,
-} from './users.queries';
+} from "./users.queries";

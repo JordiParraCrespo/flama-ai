@@ -1,54 +1,51 @@
-import type { AuthResponseDto } from '@flama/api-client';
-import { AuthApi } from '@flama/api-client';
-import type { LoginDto, RegisterDto } from '@flama/shared';
-import { inject, injectable } from 'inversify';
-import { TOKENS } from '../../di/tokens';
-import { AppError } from '../core/errors';
-import type { IStorageService } from '../core/storage.service';
-import { AuthErrors } from './auth.errors';
+import { inject, injectable } from "inversify";
+import { TOKENS } from "../../di/tokens";
+import type {
+  AuthSession,
+  IAuthClient,
+  SignUpParams,
+  SocialProvider,
+} from "./auth.client";
 
+/**
+ * Thin adapter over the platform {@link IAuthClient}. Keeps the service layer
+ * decoupled from the concrete Better Auth client implementation.
+ */
 @injectable()
 export class AuthRepository {
-  constructor(@inject(TOKENS.StorageService) private readonly storage: IStorageService) {}
+  constructor(
+    @inject(TOKENS.AuthClient) private readonly client: IAuthClient,
+  ) {}
 
-  async login(dto: LoginDto): Promise<AuthResponseDto> {
-    const data = await AuthApi.login(dto);
-    if (!data) throw new AppError(AuthErrors.LOGIN_FAILED);
-    await this.storage.set('accessToken', data.accessToken);
-    await this.storage.set('refreshToken', data.refreshToken);
-    return data;
+  login(email: string, password: string): Promise<void> {
+    return this.client.signIn(email, password);
   }
 
-  async register(dto: RegisterDto): Promise<AuthResponseDto> {
-    const data = await AuthApi.register(dto);
-    if (!data) throw new AppError(AuthErrors.REGISTER_FAILED);
-    await this.storage.set('accessToken', data.accessToken);
-    await this.storage.set('refreshToken', data.refreshToken);
-    return data;
+  register(params: SignUpParams): Promise<void> {
+    return this.client.signUp(params);
   }
 
-  async refresh(): Promise<AuthResponseDto> {
-    const data = await AuthApi.refresh();
-    if (!data) throw new AppError(AuthErrors.REFRESH_FAILED);
-    await this.storage.set('accessToken', data.accessToken);
-    await this.storage.set('refreshToken', data.refreshToken);
-    return data;
+  socialLogin(provider: SocialProvider): Promise<void> {
+    return this.client.signInSocial(provider);
   }
 
-  async forgotPassword(email: string): Promise<void> {
-    await AuthApi.forgotPassword({ email });
+  getSession(): Promise<AuthSession | null> {
+    return this.client.getSession();
   }
 
-  async resetPassword(token: string, password: string): Promise<void> {
-    await AuthApi.resetPassword({ token, password });
+  forgotPassword(email: string): Promise<void> {
+    return this.client.forgotPassword(email);
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await AuthApi.changePassword({ currentPassword, newPassword });
+  resetPassword(token: string, password: string): Promise<void> {
+    return this.client.resetPassword(token, password);
   }
 
-  async logout(): Promise<void> {
-    await this.storage.remove('accessToken');
-    await this.storage.remove('refreshToken');
+  changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    return this.client.changePassword(currentPassword, newPassword);
+  }
+
+  logout(): Promise<void> {
+    return this.client.signOut();
   }
 }

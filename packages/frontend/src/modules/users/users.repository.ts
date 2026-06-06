@@ -1,5 +1,5 @@
 import { UsersApi } from "@flama/api-client";
-import type { AuthProvider, Role, UpdateUserDto } from "@flama/shared";
+import type { Role, UpdateUserDto } from "@flama/shared";
 import { injectable } from "inversify";
 import { AppError } from "../core/errors";
 import { UserEntity } from "./user.entity";
@@ -11,7 +11,6 @@ function toEntity(data: {
   firstName: string;
   lastName: string;
   role: string;
-  provider: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -22,7 +21,6 @@ function toEntity(data: {
     data.firstName,
     data.lastName,
     data.role as Role,
-    data.provider as AuthProvider,
     data.isActive,
     new Date(data.createdAt),
     new Date(data.updatedAt),
