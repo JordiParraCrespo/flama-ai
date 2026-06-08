@@ -18,7 +18,7 @@ const config: ExpoConfig = {
       backgroundColor: "#ffffff",
     },
   },
-  plugins: ["expo-router", "expo-secure-store"],
+  plugins: ["expo-router", "expo-secure-store", "expo-localization"],
 };
 
 export default config;

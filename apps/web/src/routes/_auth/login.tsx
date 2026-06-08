@@ -12,6 +12,7 @@ import {
 } from '@flama/design-system-web';
 import { useLogin, useSocialLogin } from '@flama/frontend/react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/_auth/login')({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
@@ -21,6 +22,7 @@ export const Route = createFileRoute('/_auth/login')({
 });
 
 function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { redirect: redirectTo } = Route.useSearch();
   const { mutate, isPending, error } = useLogin();
@@ -46,50 +48,50 @@ function LoginPage() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardTitle className="text-xl">{t('auth.login.title')}</CardTitle>
+          <CardDescription>{t('auth.login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
               {error && (
                 <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error instanceof Error ? error.message : 'Invalid email or password'}
+                  {error instanceof Error ? error.message : t('auth.login.invalidCredentials')}
                 </div>
               )}
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{t('auth.email')}</FieldLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   required
                   disabled={isPending}
                 />
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <FieldLabel htmlFor="password">{t('auth.password')}</FieldLabel>
                   <Link
                     to="/forgot-password"
                     className="ml-auto text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    {t('auth.login.forgotPassword')}
                   </Link>
                 </div>
                 <Input
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('auth.passwordPlaceholder')}
                   required
                   disabled={isPending}
                 />
               </Field>
               <Field>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? 'Signing in...' : 'Sign in'}
+                  {isPending ? t('auth.login.submitting') : t('auth.login.submit')}
                 </Button>
               </Field>
             </FieldGroup>
@@ -99,7 +101,9 @@ function LoginPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-card px-2 text-muted-foreground">
+                {t('common.orContinueWith')}
+              </span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -109,7 +113,7 @@ function LoginPage() {
               disabled={isPending || social.isPending}
               onClick={() => social.mutate('google')}
             >
-              Google
+              {t('common.google')}
             </Button>
             <Button
               variant="outline"
@@ -117,15 +121,15 @@ function LoginPage() {
               disabled={isPending || social.isPending}
               onClick={() => social.mutate('github')}
             >
-              GitHub
+              {t('common.github')}
             </Button>
           </div>
         </CardContent>
       </Card>
       <div className="text-center text-sm">
-        Don&apos;t have an account?{' '}
+        {t('auth.login.noAccount')}{' '}
         <Link to="/register" className="underline underline-offset-4 hover:text-primary">
-          Sign up
+          {t('auth.login.signUp')}
         </Link>
       </div>
     </div>

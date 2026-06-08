@@ -11,38 +11,101 @@
     "search": "Search",
     "back": "Back",
     "next": "Next",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "orContinueWith": "Or continue with",
+    "google": "Google",
+    "github": "GitHub"
+  },
+  "validation": {
+    "title": "Validation error"
   },
   "auth": {
-    "login": "Log in",
-    "logout": "Log out",
-    "register": "Sign up",
-    "forgotPassword": "Forgot password?",
-    "resetPassword": "Reset password",
     "email": "Email",
+    "emailPlaceholder": "name@example.com",
     "password": "Password",
-    "confirmPassword": "Confirm password",
+    "passwordPlaceholder": "Enter your password",
     "firstName": "First name",
     "lastName": "Last name",
-    "loginWith": "Log in with {{provider}}",
-    "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?",
-    "verifyEmail": "Please verify your email address",
-    "emailSent": "We've sent you an email with instructions"
+    "login": {
+      "title": "Welcome back",
+      "description": "Sign in to your account",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "invalidCredentials": "Invalid email or password",
+      "failedTitle": "Login failed",
+      "failedMessage": "Could not sign in."
+    },
+    "register": {
+      "title": "Create an account",
+      "description": "Enter your details to get started",
+      "passwordPlaceholder": "Create a password",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "failed": "Registration failed",
+      "successTitle": "Account created",
+      "successMessage": "You can now sign in."
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "description": "Enter your email and we'll send you a reset link",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "successTitle": "Check your email",
+      "successMessage": "If an account exists with that email, you will receive a reset link shortly.",
+      "backToSignIn": "Back to sign in",
+      "error": "Something went wrong"
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "description": "Choose a new password for your account",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "Enter a new password",
+      "submit": "Reset password",
+      "submitting": "Resetting...",
+      "invalidTitle": "Invalid link",
+      "invalidMessage": "This reset link is invalid or has expired. Please request a new one.",
+      "requestNewLink": "Request a new link",
+      "successTitle": "Password updated",
+      "successMessage": "You can now sign in.",
+      "failedTitle": "Reset failed",
+      "error": "Could not reset password"
+    }
   },
-  "errors": {
-    "required": "This field is required",
-    "invalidEmail": "Invalid email address",
-    "passwordTooShort": "Password must be at least 8 characters",
-    "passwordMismatch": "Passwords do not match",
-    "unauthorized": "You are not authorized to perform this action",
-    "notFound": "Resource not found",
-    "serverError": "Server error, please try again later"
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}.",
+    "totalUsers": "Total Users",
+    "activeSessions": "Active Sessions",
+    "apiCalls": "API Calls",
+    "uptime": "Uptime",
+    "gettingStarted": "Getting Started",
+    "gettingStartedDescription": "This is a placeholder dashboard. Connect your data and customize it.",
+    "accountStatus": "Your role is <role>{{role}}</role> and your account is <status>{{status}}</status>.",
+    "active": "active",
+    "inactive": "inactive"
   },
-  "navigation": {
-    "home": "Home",
+  "home": {
+    "title": "Welcome to Flama",
+    "subtitle": "You are signed in.",
+    "counter": "Counter",
+    "counterDescription": "A quick demo of the design system components.",
+    "reset": "Reset",
+    "signOut": "Sign out",
+    "signingOut": "Signing out..."
+  },
+  "nav": {
+    "menu": "Menu",
     "dashboard": "Dashboard",
-    "profile": "Profile",
-    "settings": "Settings"
+    "logOut": "Log out"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "es": "Español"
   }
 }

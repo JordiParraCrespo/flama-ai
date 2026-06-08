@@ -13,9 +13,12 @@ import { useLogin, useSocialLogin } from '@flama/frontend/react';
 import { loginSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { LanguageSwitcher } from '../../components/language-switcher';
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -25,7 +28,7 @@ export default function LoginScreen() {
       router.replace('/(app)');
     },
     onError: (error) => {
-      Alert.alert('Login failed', error.message ?? 'Invalid email or password.');
+      Alert.alert(t('auth.login.failedTitle'), error.message ?? t('auth.login.invalidCredentials'));
     },
   });
 
@@ -34,14 +37,14 @@ export default function LoginScreen() {
       router.replace('/(app)');
     },
     onError: (error) => {
-      Alert.alert('Login failed', error.message ?? 'Could not sign in.');
+      Alert.alert(t('auth.login.failedTitle'), error.message ?? t('auth.login.failedMessage'));
     },
   });
 
   const handleLogin = () => {
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
-      Alert.alert('Validation error', result.error.errors[0].message);
+      Alert.alert(t('validation.title'), result.error.errors[0].message);
       return;
     }
     login.mutate(result.data);
@@ -58,14 +61,14 @@ export default function LoginScreen() {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
-            <CardDescription>Sign in to your account</CardDescription>
+            <CardTitle>{t('auth.login.title')}</CardTitle>
+            <CardDescription>{t('auth.login.description')}</CardDescription>
           </CardHeader>
           <CardContent className="gap-4">
             <View className="gap-2">
-              <Label nativeID="email">Email</Label>
+              <Label nativeID="email">{t('auth.email')}</Label>
               <Input
-                placeholder="m@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 aria-labelledby="email"
                 value={email}
                 onChangeText={setEmail}
@@ -76,9 +79,9 @@ export default function LoginScreen() {
               />
             </View>
             <View className="gap-2">
-              <Label nativeID="password">Password</Label>
+              <Label nativeID="password">{t('auth.password')}</Label>
               <Input
-                placeholder="Password"
+                placeholder={t('auth.passwordPlaceholder')}
                 aria-labelledby="password"
                 value={password}
                 onChangeText={setPassword}
@@ -88,11 +91,13 @@ export default function LoginScreen() {
               />
             </View>
             <Button onPress={handleLogin} disabled={login.isPending} className="mt-2">
-              <Text>{login.isPending ? 'Signing in...' : 'Sign in'}</Text>
+              <Text>{login.isPending ? t('auth.login.submitting') : t('auth.login.submit')}</Text>
             </Button>
             <View className="flex-row items-center gap-3 py-1">
               <View className="h-px flex-1 bg-border" />
-              <Text className="text-xs uppercase text-muted-foreground">Or continue with</Text>
+              <Text className="text-xs uppercase text-muted-foreground">
+                {t('common.orContinueWith')}
+              </Text>
               <View className="h-px flex-1 bg-border" />
             </View>
             <View className="flex-row gap-3">
@@ -102,7 +107,7 @@ export default function LoginScreen() {
                 disabled={social.isPending}
                 onPress={() => social.mutate('google')}
               >
-                <Text>Google</Text>
+                <Text>{t('common.google')}</Text>
               </Button>
               <Button
                 variant="outline"
@@ -110,22 +115,23 @@ export default function LoginScreen() {
                 disabled={social.isPending}
                 onPress={() => social.mutate('github')}
               >
-                <Text>GitHub</Text>
+                <Text>{t('common.github')}</Text>
               </Button>
             </View>
             <View className="flex-row items-center justify-center gap-1">
-              <Text className="text-sm text-muted-foreground">Don't have an account?</Text>
+              <Text className="text-sm text-muted-foreground">{t('auth.login.noAccount')}</Text>
               <Link href="/(auth)/register" asChild>
                 <Button variant="link" size="sm" className="px-1">
-                  <Text>Sign up</Text>
+                  <Text>{t('auth.login.signUp')}</Text>
                 </Button>
               </Link>
             </View>
             <Link href="/(auth)/forgot-password" asChild>
               <Button variant="link" size="sm">
-                <Text>Forgot password?</Text>
+                <Text>{t('auth.login.forgotPassword')}</Text>
               </Button>
             </Link>
+            <LanguageSwitcher className="mt-2" />
           </CardContent>
         </Card>
       </ScrollView>
