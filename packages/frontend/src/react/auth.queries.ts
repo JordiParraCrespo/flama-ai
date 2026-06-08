@@ -8,6 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import type { SocialProvider } from '../modules/auth/auth.client';
 import { useFlamaApp } from './context';
 import { profileQueryKey } from './users.queries';
 
@@ -23,9 +24,20 @@ export function useSessionRestore(
 
   return useQuery({
     queryKey: authKeys.session,
-    queryFn: () => app.auth.refresh(),
+    queryFn: () => app.auth.restoreSession(),
     retry: false,
     staleTime: Infinity,
+    ...options,
+  });
+}
+
+export function useSocialLogin(
+  options?: Omit<UseMutationOptions<void, Error, SocialProvider>, 'mutationFn'>,
+) {
+  const app = useFlamaApp();
+
+  return useMutation({
+    mutationFn: (provider: SocialProvider) => app.auth.socialLogin(provider),
     ...options,
   });
 }

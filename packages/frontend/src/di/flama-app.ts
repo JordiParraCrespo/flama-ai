@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Container, type ContainerModule } from 'inversify';
 import type { AuthService } from '../modules/auth';
 import { AuthModule } from '../modules/auth';
+import type { IAuthClient } from '../modules/auth/auth.client';
 import { createCoreModule } from '../modules/core/core.module';
 import type { IStorageService } from '../modules/core/storage.service';
 import type { UsersService } from '../modules/users';
@@ -11,6 +12,8 @@ import { TOKENS } from './tokens';
 export interface FlamaAppConfig {
   apiBaseUrl: string;
   storage: IStorageService;
+  /** Platform-specific Better Auth client adapter. */
+  authClient: IAuthClient;
   modules?: ContainerModule[];
 }
 

@@ -1,5 +1,10 @@
-import * as bcrypt from 'bcrypt';
+import 'dotenv/config';
+import type { Role } from '@flama/shared';
 import { DataSource } from 'typeorm';
+import { auth } from '../auth/auth';
+import { Account } from '../auth/entities/account.entity';
+import { Session } from '../auth/entities/session.entity';
+import { Verification } from '../auth/entities/verification.entity';
 import { User } from '../users/user.entity';
 
 const dataSource = new DataSource({
@@ -9,41 +14,58 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME || 'flama',
   password: process.env.DB_PASSWORD || 'flama',
   database: process.env.DB_DATABASE || 'flama',
-  entities: [User],
+  entities: [User, Session, Account, Verification],
 });
+
+interface SeedUser {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+}
+
+const seedUsers: SeedUser[] = [
+  {
+    email: 'admin@flama.dev',
+    password: 'admin123456',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin',
+  },
+  {
+    email: 'user@flama.dev',
+    password: 'user123456',
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'user',
+  },
+];
 
 async function seed() {
   await dataSource.initialize();
   const userRepo = dataSource.getRepository(User);
 
-  const existingAdmin = await userRepo.findOneBy({ email: 'admin@flama.dev' });
-  if (!existingAdmin) {
-    const admin = userRepo.create({
-      email: 'admin@flama.dev',
-      password: await bcrypt.hash('admin123456', 12),
-      firstName: 'Admin',
-      lastName: 'User',
-      role: 'admin',
-      isActive: true,
-      emailVerifiedAt: new Date(),
-    });
-    await userRepo.save(admin);
-    console.log('Created admin user: admin@flama.dev');
-  }
+  for (const seedUser of seedUsers) {
+    const existing = await userRepo.findOneBy({ email: seedUser.email });
+    if (existing) continue;
 
-  const existingUser = await userRepo.findOneBy({ email: 'user@flama.dev' });
-  if (!existingUser) {
-    const user = userRepo.create({
-      email: 'user@flama.dev',
-      password: await bcrypt.hash('user123456', 12),
-      firstName: 'Test',
-      lastName: 'User',
-      role: 'user',
-      isActive: true,
-      emailVerifiedAt: new Date(),
+    // Create the user (and its credential account) through Better Auth so the
+    // password is hashed with the same algorithm used at login.
+    await auth.api.signUpEmail({
+      body: {
+        email: seedUser.email,
+        password: seedUser.password,
+        name: `${seedUser.firstName} ${seedUser.lastName}`,
+        firstName: seedUser.firstName,
+        lastName: seedUser.lastName,
+      },
     });
-    await userRepo.save(user);
-    console.log('Created test user: user@flama.dev');
+
+    // Elevate the role and mark the email verified (not settable on sign-up).
+    await userRepo.update({ email: seedUser.email }, { role: seedUser.role, emailVerified: true });
+
+    console.log(`Created ${seedUser.role} user: ${seedUser.email}`);
   }
 
   console.log('Seeding complete.');

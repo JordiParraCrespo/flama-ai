@@ -11,15 +11,13 @@ The NestJS API (`apps/api`) follows a pragmatic DDD approach with single-respons
 ```
 apps/api/src/
 ├── auth/                  # Authentication & authorization
-│   ├── services/          # One service per auth operation
-│   ├── strategies/        # Passport strategies (JWT, Google, GitHub)
-│   ├── guards/            # JwtAuthGuard, JwtRefreshGuard, PoliciesGuard
-│   ├── decorators/        # @CurrentUser, @CheckPolicies
-│   ├── dtos/              # Response DTOs
-│   ├── requests/          # Zod-validated request bodies
-│   └── events/            # Domain events
+│   ├── auth.ts            # Better Auth instance (providers, email, plugins)
+│   ├── email-queue.ts     # Standalone BullMQ queue for transactional emails
+│   ├── entities/          # user / session / account / verification tables
+│   ├── guards/            # PoliciesGuard (CASL)
+│   └── decorators/        # @CurrentUser, @CheckPolicies
 ├── users/                 # User management
-│   ├── services/          # UsersService, UserTokenService, Update, Delete
+│   ├── services/          # UsersService, Update, Delete
 │   ├── dtos/              # Response DTOs
 │   ├── requests/          # Zod-validated request bodies
 │   ├── errors/            # Error catalog
@@ -32,58 +30,51 @@ apps/api/src/
 
 ## Auth module
 
-### Services
+Authentication is handled by [Better Auth](https://www.better-auth.com/),
+mounted into NestJS via [`@thallesp/nestjs-better-auth`](https://github.com/ThallesP/nestjs-better-auth).
+The Better Auth instance lives in `auth/auth.ts` and is registered in
+`AppModule` with `AuthModule.forRoot({ auth })`.
 
-Each auth operation has its own service:
+### Configuration (`auth/auth.ts`)
 
-| Service                 | Responsibility                                                            |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `RegisterService`       | Check email unique, hash password, create user, emit event, return tokens |
-| `LoginService`          | Find by email, bcrypt compare, return tokens                              |
-| `RefreshTokensService`  | Validate refresh token, generate new pair                                 |
-| `LogoutService`         | Revoke refresh token                                                      |
-| `ForgotPasswordService` | Generate reset token, store with 1hr expiry, queue email                  |
-| `ResetPasswordService`  | Find by token, check expiry, hash new password, clear token               |
-| `ValidateOAuthService`  | Find or create OAuth user, generate tokens                                |
+| Feature            | Setup                                                                 |
+| ------------------ | --------------------------------------------------------------------- |
+| Database           | Native Postgres adapter over the shared `pg` pool                     |
+| Email / password   | `emailAndPassword` with `sendResetPassword` → BullMQ email queue      |
+| Email verification | `emailVerification.sendVerificationEmail` → BullMQ email queue        |
+| Social providers   | Google + GitHub (`socialProviders`), enabled when env vars are set    |
+| Mobile             | `@better-auth/expo` plugin (SecureStore cookie + deep-link callbacks) |
+| Custom user fields | `firstName`, `lastName`, `role`, `isActive` (additional fields)       |
+| Welcome email      | `databaseHooks.user.create.after` → BullMQ email queue                |
 
-### Strategies
+### Endpoints
 
-| Strategy                  | Guard         | Token source                    |
-| ------------------------- | ------------- | ------------------------------- |
-| `jwt.strategy.ts`         | `jwt`         | `Authorization: Bearer <token>` |
-| `jwt-refresh.strategy.ts` | `jwt-refresh` | `body.refreshToken`             |
-| `local.strategy.ts`       | `local`       | `body.email` + `body.password`  |
-| `google.strategy.ts`      | `google`      | Google OAuth2 callback          |
-| `github.strategy.ts`      | `github`      | GitHub OAuth2 callback          |
+Better Auth exposes its own handler under `/api/auth/*` (sign-in/up, sign-out,
+OAuth callbacks, password reset, email verification, session). Sessions are
+**cookie-based**: an httpOnly cookie on web, and a SecureStore-backed cookie on
+mobile via the Expo plugin.
 
-### Routes
+### Sessions & guards
 
-| Route                        | Auth            | Throttle | Handler               |
-| ---------------------------- | --------------- | -------- | --------------------- |
-| `POST /auth/register`        | none            | 5/min    | RegisterService       |
-| `POST /auth/login`           | none            | 10/min   | LoginService          |
-| `POST /auth/refresh`         | JwtRefreshGuard | -        | RefreshTokensService  |
-| `POST /auth/logout`          | JwtAuthGuard    | -        | LogoutService         |
-| `POST /auth/forgot-password` | none            | 3/min    | ForgotPasswordService |
-| `POST /auth/reset-password`  | none            | -        | ResetPasswordService  |
-| `GET /auth/profile`          | JwtAuthGuard    | -        | UsersService.findById |
-| `GET /auth/google`           | GoogleGuard     | -        | OAuth redirect        |
-| `GET /auth/google/callback`  | GoogleGuard     | -        | ValidateOAuthService  |
-| `GET /auth/github`           | GitHubGuard     | -        | OAuth redirect        |
-| `GET /auth/github/callback`  | GitHubGuard     | -        | ValidateOAuthService  |
+`@thallesp/nestjs-better-auth` provides the `AuthGuard` (attaches `req.user` /
+`req.session`) and the `@Session()` decorator. The global guard is disabled
+(`disableGlobalAuthGuard: true`); protected controllers opt in explicitly.
 
 ### Authorization
 
-CASL-based authorization via `PoliciesGuard` + `@CheckPolicies()` decorator:
+CASL-based authorization via `PoliciesGuard` + `@CheckPolicies()` decorator,
+layered on top of Better Auth's `AuthGuard`:
 
 ```typescript
-@UseGuards(JwtAuthGuard, PoliciesGuard)
+@UseGuards(AuthGuard, PoliciesGuard)
 @CheckPolicies({ action: 'read', subject: 'User' })
 @Get()
 findAll() { ... }
 ```
 
-Permissions are defined in `packages/shared` and shared with the frontend.
+The user `role` is stored as a Better Auth additional field and read from the
+session. Permissions are defined in `packages/shared` and shared with the
+frontend.
 
 ## Users module
 

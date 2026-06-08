@@ -17,10 +17,10 @@ export class EmailProcessor extends WorkerHost {
 
     switch (job.name) {
       case 'password-reset':
-        await this.emailService.sendPasswordReset(job.data.to, job.data.token);
+        await this.emailService.sendPasswordReset(job.data.to, job.data.url);
         break;
       case 'email-verification':
-        await this.emailService.sendEmailVerification(job.data.to, job.data.token);
+        await this.emailService.sendEmailVerification(job.data.to, job.data.url);
         break;
       case 'welcome':
         await this.emailService.sendWelcome(job.data.to, job.data.name);

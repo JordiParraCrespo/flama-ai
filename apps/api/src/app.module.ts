@@ -9,7 +9,9 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { LoggerModule } from 'nestjs-pino';
+import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
 import {
   appConfig,
@@ -31,16 +33,25 @@ import { UsersModule } from './users/users.module';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('database.host'),
-        port: configService.get('database.port'),
-        username: configService.get('database.username'),
-        password: configService.get('database.password'),
-        database: configService.get('database.database'),
-        autoLoadEntities: true,
-        synchronize: configService.get('app.nodeEnv') !== 'production',
-      }),
+      useFactory: (configService: ConfigService) => {
+        // Under the test runner, skip migrations entirely: TypeORM would load
+        // the .ts migration files through vitest's module system and crash.
+        // Migrations are exercised separately against a real database.
+        const isTest = configService.get('app.nodeEnv') === 'test';
+        return {
+          type: 'postgres',
+          host: configService.get('database.host'),
+          port: configService.get('database.port'),
+          username: configService.get('database.username'),
+          password: configService.get('database.password'),
+          database: configService.get('database.database'),
+          autoLoadEntities: true,
+          // Schema is managed through versioned migrations, never auto-sync.
+          synchronize: false,
+          migrations: isTest ? [] : [`${__dirname}/migrations/*{.ts,.js}`],
+          migrationsRun: !isTest,
+        };
+      },
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     LoggerModule.forRootAsync({
@@ -67,6 +78,7 @@ import { UsersModule } from './users/users.module';
     EmailModule.register(),
     StorageModule.register(),
     CacheModule.register(),
+    BetterAuthModule.forRoot({ auth, disableGlobalAuthGuard: true }),
     AuthModule,
     UsersModule,
     HealthModule,

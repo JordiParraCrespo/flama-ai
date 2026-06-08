@@ -7,6 +7,7 @@ export {
   useRegister,
   useResetPassword,
   useSessionRestore,
+  useSocialLogin,
 } from './auth.queries';
 export { FlamaProvider, useFlamaApp } from './context';
 export { useAuthState } from './hooks';

@@ -1,46 +1,22 @@
-import { QUEUE_NAMES } from "@flama/shared";
-import { BullModule } from "@nestjs/bullmq";
-import { Module } from "@nestjs/common";
-import { JwtModule } from "@nestjs/jwt";
-import { PassportModule } from "@nestjs/passport";
-import { UsersModule } from "../users/users.module";
-import { AuthController } from "./auth.controller";
-import { ChangePasswordService } from "./services/change-password.service";
-import { ForgotPasswordService } from "./services/forgot-password.service";
-import { LoginService } from "./services/login.service";
-import { LogoutService } from "./services/logout.service";
-import { RefreshTokensService } from "./services/refresh-tokens.service";
-import { RegisterService } from "./services/register.service";
-import { ResetPasswordService } from "./services/reset-password.service";
-import { ValidateOAuthService } from "./services/validate-oauth.service";
-import { GitHubStrategy } from "./strategies/github.strategy";
-import { GoogleStrategy } from "./strategies/google.strategy";
-import { JwtStrategy } from "./strategies/jwt.strategy";
-import { JwtRefreshStrategy } from "./strategies/jwt-refresh.strategy";
-import { LocalStrategy } from "./strategies/local.strategy";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Account } from './entities/account.entity';
+import { Session } from './entities/session.entity';
+import { Verification } from './entities/verification.entity';
+import { PoliciesGuard } from './guards/policies.guard';
 
+/**
+ * Registers the Better Auth tables with TypeORM (so the schema is created /
+ * migrated alongside the rest of the app) and exposes the CASL-based
+ * {@link PoliciesGuard} used for authorization.
+ *
+ * The Better Auth HTTP handler itself is wired up via
+ * `AuthModule.forRoot({ auth })` from `@thallesp/nestjs-better-auth` in
+ * the root `AppModule`.
+ */
 @Module({
-  imports: [
-    UsersModule,
-    PassportModule,
-    JwtModule.register({}),
-    BullModule.registerQueue({ name: QUEUE_NAMES.EMAIL }),
-  ],
-  controllers: [AuthController],
-  providers: [
-    RegisterService,
-    LoginService,
-    RefreshTokensService,
-    LogoutService,
-    ForgotPasswordService,
-    ResetPasswordService,
-    ChangePasswordService,
-    ValidateOAuthService,
-    JwtStrategy,
-    JwtRefreshStrategy,
-    LocalStrategy,
-    GoogleStrategy,
-    GitHubStrategy,
-  ],
+  imports: [TypeOrmModule.forFeature([Session, Account, Verification])],
+  providers: [PoliciesGuard],
+  exports: [PoliciesGuard],
 })
 export class AuthModule {}

@@ -49,7 +49,7 @@ pnpm dev
 - **Backend**: NestJS, TypeORM, PostgreSQL, Redis, BullMQ
 - **Web**: Next.js, Tailwind v4, shadcn/ui
 - **Mobile**: Expo, Tamagui
-- **Auth**: Passport.js (local + Google + GitHub), JWT
+- **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
 - **Authorization**: CASL
 - **Validation**: Zod
 - **State**: Zustand + TanStack Query

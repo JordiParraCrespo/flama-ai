@@ -6,7 +6,9 @@ dist/
 build/
 .next/
 .expo/
+.docusaurus/
 *.tsbuildinfo
+node-compile-cache/
 
 # Environment
 .env

@@ -21,7 +21,8 @@
         "useImportType": "off"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "warn",
+        "noUnknownAtRules": "off"
       },
       "correctness": {
         "noUnusedVariables": "error",
@@ -57,7 +58,16 @@
       "!**/.turbo",
       "!**/.docusaurus",
       "!**/coverage",
-      "!**/packages/api-client/src/generated"
+      "!**/node-compile-cache",
+      "!**/.agents",
+      "!**/*.md",
+      "!**/*.css",
+      "!**/*.gen.ts",
+      "!**/packages/api-client/src/data-access",
+      "!**/packages/api-client/src/common",
+      "!**/packages/design-system/*/src/components",
+      "!**/apps/web-showcase",
+      "!**/apps/mobile-showcase"
     ]
   }
 }

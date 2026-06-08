@@ -5,12 +5,12 @@ import { EmailService } from './email.service';
 export class ConsoleEmailService extends EmailService {
   private readonly logger = new Logger(ConsoleEmailService.name);
 
-  async sendPasswordReset(to: string, token: string): Promise<void> {
-    this.logger.log(`[PASSWORD RESET] To: ${to} | Token: ${token}`);
+  async sendPasswordReset(to: string, url: string): Promise<void> {
+    this.logger.log(`[PASSWORD RESET] To: ${to} | URL: ${url}`);
   }
 
-  async sendEmailVerification(to: string, token: string): Promise<void> {
-    this.logger.log(`[EMAIL VERIFICATION] To: ${to} | Token: ${token}`);
+  async sendEmailVerification(to: string, url: string): Promise<void> {
+    this.logger.log(`[EMAIL VERIFICATION] To: ${to} | URL: ${url}`);
   }
 
   async sendWelcome(to: string, name: string): Promise<void> {

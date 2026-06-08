@@ -17,10 +17,8 @@ export class ResendEmailService extends EmailService {
     this.resend = new Resend(this.configService.get('email.resendApiKey'));
   }
 
-  async sendPasswordReset(to: string, token: string): Promise<void> {
-    const frontendUrl = this.configService.get('app.frontendUrl');
-    const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
-    const html = await renderPasswordResetEmail(resetUrl);
+  async sendPasswordReset(to: string, url: string): Promise<void> {
+    const html = await renderPasswordResetEmail(url);
     await this.resend.emails.send({
       from: this.configService.get('email.from') || 'noreply@flama.dev',
       to,
@@ -29,10 +27,8 @@ export class ResendEmailService extends EmailService {
     });
   }
 
-  async sendEmailVerification(to: string, token: string): Promise<void> {
-    const frontendUrl = this.configService.get('app.frontendUrl');
-    const verifyUrl = `${frontendUrl}/auth/verify-email?token=${token}`;
-    const html = await renderEmailVerificationEmail(verifyUrl);
+  async sendEmailVerification(to: string, url: string): Promise<void> {
+    const html = await renderEmailVerificationEmail(url);
     await this.resend.emails.send({
       from: this.configService.get('email.from') || 'noreply@flama.dev',
       to,

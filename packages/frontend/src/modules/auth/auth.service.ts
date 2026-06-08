@@ -1,6 +1,7 @@
 import type { LoginDto, RegisterDto } from '@flama/shared';
 import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
+import type { SocialProvider } from './auth.client';
 import type { AuthRepository } from './auth.repository';
 import type { AuthStore } from './auth.state';
 
@@ -14,7 +15,7 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto): Promise<void> {
-    await this.authRepository.login(dto);
+    await this.authRepository.login(dto.email, dto.password);
     this.store.setState({ isAuthenticated: true });
   }
 
@@ -23,9 +24,17 @@ export class AuthService {
     this.store.setState({ isAuthenticated: true });
   }
 
-  async refresh(): Promise<void> {
-    await this.authRepository.refresh();
-    this.store.setState({ isAuthenticated: true });
+  async socialLogin(provider: SocialProvider): Promise<void> {
+    await this.authRepository.socialLogin(provider);
+  }
+
+  /**
+   * Restores the session on app start by asking the auth client whether a
+   * valid session exists, and syncs the `isAuthenticated` store accordingly.
+   */
+  async restoreSession(): Promise<void> {
+    const session = await this.authRepository.getSession();
+    this.store.setState({ isAuthenticated: Boolean(session) });
   }
 
   async forgotPassword(email: string): Promise<void> {

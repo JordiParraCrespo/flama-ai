@@ -1,3 +1,10 @@
+export type {
+  AuthSession,
+  AuthSessionUser,
+  IAuthClient,
+  SignUpParams,
+  SocialProvider,
+} from './auth.client';
 export { AuthErrors } from './auth.errors';
 export { AuthModule } from './auth.module';
 export { AuthRepository } from './auth.repository';

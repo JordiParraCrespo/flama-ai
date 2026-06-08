@@ -1,4 +1,4 @@
-import type { AuthProvider, Role } from '@flama/shared';
+import type { Role } from '@flama/shared';
 
 export class UserEntity {
   constructor(
@@ -7,7 +7,6 @@ export class UserEntity {
     public readonly firstName: string,
     public readonly lastName: string,
     public readonly role: Role,
-    public readonly provider: AuthProvider,
     public readonly isActive: boolean,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
