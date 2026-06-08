@@ -1,18 +1,18 @@
 {
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "jsx": "react-jsx",
-        "paths": {
-            "@/*": ["./src/*"]
-        },
-        "lib": ["ES2022", "DOM", "DOM.Iterable"],
-        "noEmit": true,
-        "declaration": false,
-        "declarationMap": false,
-        "types": ["vite/client"]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/*"]
     },
-    "include": ["src/**/*", "vite.config.ts"],
-    "exclude": ["node_modules"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*", "vite.config.ts"],
+  "exclude": ["node_modules"]
 }

@@ -1,7 +1,7 @@
-import * as SecureStore from "expo-secure-store";
-import type { IStorageService } from "@flama/frontend";
+import type { IStorageService } from '@flama/frontend';
+import * as SecureStore from 'expo-secure-store';
 
-const AUTH_KEYS = ["accessToken", "refreshToken"] as const;
+const AUTH_KEYS = ['accessToken', 'refreshToken'] as const;
 
 export class ExpoSecureStoreService implements IStorageService {
   async get(key: string): Promise<string | null> {

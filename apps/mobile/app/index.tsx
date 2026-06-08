@@ -1,7 +1,7 @@
-import { Redirect } from "expo-router";
-import { useAuthState } from "@flama/frontend/react";
+import { useAuthState } from '@flama/frontend/react';
+import { Redirect } from 'expo-router';
 
 export default function Index() {
   const { isAuthenticated } = useAuthState();
-  return <Redirect href={isAuthenticated ? "/(app)" : "/(auth)/login"} />;
+  return <Redirect href={isAuthenticated ? '/(app)' : '/(auth)/login'} />;
 }

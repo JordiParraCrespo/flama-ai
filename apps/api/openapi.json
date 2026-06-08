@@ -31,9 +31,7 @@
           }
         },
         "summary": "Register a new user",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/login": {
@@ -66,9 +64,7 @@
           }
         },
         "summary": "Login with email and password",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/refresh": {
@@ -91,9 +87,7 @@
           }
         },
         "summary": "Refresh access token",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/logout": {
@@ -111,9 +105,7 @@
           }
         ],
         "summary": "Logout",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/forgot-password": {
@@ -136,9 +128,7 @@
           }
         },
         "summary": "Request password reset",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/reset-password": {
@@ -164,9 +154,7 @@
           }
         },
         "summary": "Reset password with token",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/change-password": {
@@ -197,9 +185,7 @@
           }
         ],
         "summary": "Change password",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/google": {
@@ -212,9 +198,7 @@
           }
         },
         "summary": "Login with Google",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/google/callback": {
@@ -226,9 +210,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/github": {
@@ -241,9 +223,7 @@
           }
         },
         "summary": "Login with GitHub",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/auth/github/callback": {
@@ -255,9 +235,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/api/v1/users": {
@@ -279,10 +257,7 @@
             "in": "query",
             "description": "Filter by role",
             "schema": {
-              "enum": [
-                "admin",
-                "user"
-              ],
+              "enum": ["admin", "user"],
               "type": "string"
             }
           },
@@ -316,9 +291,7 @@
           }
         ],
         "summary": "List all users",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/api/v1/users/me": {
@@ -343,9 +316,7 @@
           }
         ],
         "summary": "Get current user profile",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/api/v1/users/{id}": {
@@ -382,9 +353,7 @@
           }
         ],
         "summary": "Get user by ID",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       },
       "patch": {
         "operationId": "update",
@@ -429,9 +398,7 @@
           }
         ],
         "summary": "Update user",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       },
       "delete": {
         "operationId": "remove",
@@ -459,9 +426,7 @@
           }
         ],
         "summary": "Delete user",
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/api/v1/health": {
@@ -489,9 +454,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -506,9 +469,7 @@
                       "example": {},
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -527,9 +488,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -563,9 +522,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -585,9 +542,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -610,9 +565,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -628,9 +581,7 @@
           }
         },
         "summary": "Liveness check",
-        "tags": [
-          "Health"
-        ]
+        "tags": ["Health"]
       }
     },
     "/api/v1/ready": {
@@ -658,9 +609,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -675,9 +624,7 @@
                       "example": {},
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -696,9 +643,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -732,9 +677,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -754,9 +697,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -779,9 +720,7 @@
                       },
                       "additionalProperties": {
                         "type": "object",
-                        "required": [
-                          "status"
-                        ],
+                        "required": ["status"],
                         "properties": {
                           "status": {
                             "type": "string"
@@ -797,9 +736,7 @@
           }
         },
         "summary": "Readiness check",
-        "tags": [
-          "Health"
-        ]
+        "tags": ["Health"]
       }
     }
   },
@@ -840,12 +777,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "email",
-          "password",
-          "firstName",
-          "lastName"
-        ]
+        "required": ["email", "password", "firstName", "lastName"]
       },
       "AuthResponseDto": {
         "type": "object",
@@ -857,10 +789,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "accessToken",
-          "refreshToken"
-        ]
+        "required": ["accessToken", "refreshToken"]
       },
       "LoginRequest": {
         "type": "object",
@@ -874,10 +803,7 @@
             "minLength": 8
           }
         },
-        "required": [
-          "email",
-          "password"
-        ]
+        "required": ["email", "password"]
       },
       "ForgotPasswordRequest": {
         "type": "object",
@@ -887,9 +813,7 @@
             "format": "email"
           }
         },
-        "required": [
-          "email"
-        ]
+        "required": ["email"]
       },
       "ResetPasswordRequest": {
         "type": "object",
@@ -903,10 +827,7 @@
             "minLength": 8
           }
         },
-        "required": [
-          "token",
-          "password"
-        ]
+        "required": ["token", "password"]
       },
       "ChangePasswordRequest": {
         "type": "object",
@@ -920,10 +841,7 @@
             "minLength": 8
           }
         },
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ]
+        "required": ["currentPassword", "newPassword"]
       },
       "UserResponseDto": {
         "type": "object",
@@ -983,10 +901,7 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "admin",
-              "user"
-            ],
+            "enum": ["admin", "user"],
             "default": "user"
           }
         }

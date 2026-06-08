@@ -1,12 +1,10 @@
-const { getDefaultConfig } = require("expo/metro-config");
-const { withNativeWind } = require("nativewind/metro");
-const {
-  wrapWithReanimatedMetroConfig,
-} = require("react-native-reanimated/metro-config");
-const path = require("path");
+const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
+const { wrapWithReanimatedMetroConfig } = require('react-native-reanimated/metro-config');
+const path = require('node:path');
 
 const projectRoot = __dirname;
-const workspaceRoot = path.resolve(projectRoot, "../..");
+const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
@@ -15,18 +13,18 @@ config.watchFolders = [workspaceRoot];
 
 // Resolve modules from the project first, then the monorepo root
 config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"),
+  path.resolve(projectRoot, 'node_modules'),
+  path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-config.resolver.sourceExts = [...config.resolver.sourceExts, "mjs", "cjs"];
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs', 'cjs'];
 
 // Prevent Metro from resolving duplicate React/RN copies from web-only packages
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  const singletons = ["react", "react-native", "react-native-css-interop"];
+  const singletons = ['react', 'react-native', 'react-native-css-interop'];
   if (singletons.includes(moduleName)) {
     return {
-      type: "sourceFile",
+      type: 'sourceFile',
       filePath: require.resolve(moduleName, {
         paths: [projectRoot, workspaceRoot],
       }),
@@ -36,6 +34,6 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
 };
 
 module.exports = withNativeWind(wrapWithReanimatedMetroConfig(config), {
-  input: "./global.css",
+  input: './global.css',
   inlineRem: 16,
 });

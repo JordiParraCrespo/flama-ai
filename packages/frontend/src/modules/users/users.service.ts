@@ -1,8 +1,8 @@
-import type { UpdateUserDto } from "@flama/shared";
-import { inject, injectable } from "inversify";
-import { TOKENS } from "../../di/tokens";
-import type { UserEntity } from "./user.entity";
-import type { UsersRepository } from "./users.repository";
+import type { UpdateUserDto } from '@flama/shared';
+import { inject, injectable } from 'inversify';
+import { TOKENS } from '../../di/tokens';
+import type { UserEntity } from './user.entity';
+import type { UsersRepository } from './users.repository';
 
 @injectable()
 export class UsersService {
@@ -11,12 +11,7 @@ export class UsersService {
     private readonly usersRepository: UsersRepository,
   ) {}
 
-  async findAll(
-    page?: number,
-    limit?: number,
-    search?: string,
-    role?: "admin" | "user",
-  ) {
+  async findAll(page?: number, limit?: number, search?: string, role?: 'admin' | 'user') {
     return this.usersRepository.findAll(page, limit, search, role);
   }
 

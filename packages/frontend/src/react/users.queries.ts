@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import type { UpdateUserDto } from "@flama/shared";
+import type { UpdateUserDto } from '@flama/shared';
 import {
   type UseMutationOptions,
   type UseQueryOptions,
   useMutation,
   useQuery,
   useQueryClient,
-} from "@tanstack/react-query";
-import type { UserEntity } from "../modules/users/user.entity";
-import { useFlamaApp } from "./context";
+} from '@tanstack/react-query';
+import type { UserEntity } from '../modules/users/user.entity';
+import { useFlamaApp } from './context';
 
 export interface UsersListParams {
   page?: number;
   limit?: number;
   search?: string;
-  role?: "admin" | "user";
+  role?: 'admin' | 'user';
 }
 
 export const usersKeys = {
-  all: ["users"] as const,
-  list: (params?: UsersListParams) => ["users", "list", params] as const,
-  detail: (id: string) => ["users", id] as const,
-  me: ["users", "me"] as const,
+  all: ['users'] as const,
+  list: (params?: UsersListParams) => ['users', 'list', params] as const,
+  detail: (id: string) => ['users', id] as const,
+  me: ['users', 'me'] as const,
 };
 
 export const profileQueryKey = usersKeys.me;
 
 export function useProfile(
-  options?: Omit<UseQueryOptions<UserEntity, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<UserEntity, Error>, 'queryKey' | 'queryFn'>,
 ) {
   const app = useFlamaApp();
 
@@ -54,27 +54,21 @@ export function useUsers(
       },
       Error
     >,
-    "queryKey" | "queryFn"
+    'queryKey' | 'queryFn'
   >,
 ) {
   const app = useFlamaApp();
 
   return useQuery({
     queryKey: usersKeys.list(params),
-    queryFn: () =>
-      app.users.findAll(
-        params?.page,
-        params?.limit,
-        params?.search,
-        params?.role,
-      ),
+    queryFn: () => app.users.findAll(params?.page, params?.limit, params?.search, params?.role),
     ...options,
   });
 }
 
 export function useUser(
   id: string,
-  options?: Omit<UseQueryOptions<UserEntity, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<UserEntity, Error>, 'queryKey' | 'queryFn'>,
 ) {
   const app = useFlamaApp();
 
@@ -89,15 +83,14 @@ export function useUser(
 export function useUpdateUser(
   options?: Omit<
     UseMutationOptions<UserEntity, Error, { id: string; dto: UpdateUserDto }>,
-    "mutationFn"
+    'mutationFn'
   >,
 ) {
   const app = useFlamaApp();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateUserDto }) =>
-      app.users.update(id, dto),
+    mutationFn: ({ id, dto }: { id: string; dto: UpdateUserDto }) => app.users.update(id, dto),
     onSuccess: (...args) => {
       queryClient.setQueryData(usersKeys.detail(args[1].id), args[0]);
       queryClient.invalidateQueries({ queryKey: usersKeys.all });
@@ -108,7 +101,7 @@ export function useUpdateUser(
 }
 
 export function useDeleteUser(
-  options?: Omit<UseMutationOptions<void, Error, string>, "mutationFn">,
+  options?: Omit<UseMutationOptions<void, Error, string>, 'mutationFn'>,
 ) {
   const app = useFlamaApp();
   const queryClient = useQueryClient();
