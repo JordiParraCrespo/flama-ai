@@ -11,38 +11,101 @@
     "search": "Buscar",
     "back": "Volver",
     "next": "Siguiente",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "orContinueWith": "O continúa con",
+    "google": "Google",
+    "github": "GitHub"
+  },
+  "validation": {
+    "title": "Error de validación"
   },
   "auth": {
-    "login": "Iniciar sesión",
-    "logout": "Cerrar sesión",
-    "register": "Registrarse",
-    "forgotPassword": "¿Olvidaste tu contraseña?",
-    "resetPassword": "Restablecer contraseña",
     "email": "Correo electrónico",
+    "emailPlaceholder": "nombre@ejemplo.com",
     "password": "Contraseña",
-    "confirmPassword": "Confirmar contraseña",
+    "passwordPlaceholder": "Introduce tu contraseña",
     "firstName": "Nombre",
     "lastName": "Apellido",
-    "loginWith": "Iniciar sesión con {{provider}}",
-    "noAccount": "¿No tienes una cuenta?",
-    "hasAccount": "¿Ya tienes una cuenta?",
-    "verifyEmail": "Por favor verifica tu correo electrónico",
-    "emailSent": "Te hemos enviado un correo con instrucciones"
+    "login": {
+      "title": "Bienvenido de nuevo",
+      "description": "Inicia sesión en tu cuenta",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión...",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Regístrate",
+      "invalidCredentials": "Correo electrónico o contraseña inválidos",
+      "failedTitle": "Error al iniciar sesión",
+      "failedMessage": "No se pudo iniciar sesión."
+    },
+    "register": {
+      "title": "Crea una cuenta",
+      "description": "Introduce tus datos para comenzar",
+      "passwordPlaceholder": "Crea una contraseña",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta...",
+      "hasAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Iniciar sesión",
+      "failed": "Error en el registro",
+      "successTitle": "Cuenta creada",
+      "successMessage": "Ya puedes iniciar sesión."
+    },
+    "forgotPassword": {
+      "title": "Olvidé mi contraseña",
+      "description": "Introduce tu correo y te enviaremos un enlace para restablecerla",
+      "submit": "Enviar enlace",
+      "submitting": "Enviando...",
+      "successTitle": "Revisa tu correo",
+      "successMessage": "Si existe una cuenta con ese correo, recibirás un enlace para restablecer tu contraseña en breve.",
+      "backToSignIn": "Volver a iniciar sesión",
+      "error": "Algo salió mal"
+    },
+    "resetPassword": {
+      "title": "Restablecer contraseña",
+      "description": "Elige una nueva contraseña para tu cuenta",
+      "newPassword": "Nueva contraseña",
+      "newPasswordPlaceholder": "Introduce una nueva contraseña",
+      "submit": "Restablecer contraseña",
+      "submitting": "Restableciendo...",
+      "invalidTitle": "Enlace no válido",
+      "invalidMessage": "Este enlace no es válido o ha expirado. Solicita uno nuevo.",
+      "requestNewLink": "Solicitar un nuevo enlace",
+      "successTitle": "Contraseña actualizada",
+      "successMessage": "Ya puedes iniciar sesión.",
+      "failedTitle": "Error al restablecer",
+      "error": "No se pudo restablecer la contraseña"
+    }
   },
-  "errors": {
-    "required": "Este campo es obligatorio",
-    "invalidEmail": "Correo electrónico inválido",
-    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
-    "passwordMismatch": "Las contraseñas no coinciden",
-    "unauthorized": "No estás autorizado para realizar esta acción",
-    "notFound": "Recurso no encontrado",
-    "serverError": "Error del servidor, por favor intenta de nuevo"
+  "dashboard": {
+    "title": "Panel",
+    "welcome": "Bienvenido de nuevo, {{name}}.",
+    "totalUsers": "Usuarios totales",
+    "activeSessions": "Sesiones activas",
+    "apiCalls": "Llamadas a la API",
+    "uptime": "Tiempo activo",
+    "gettingStarted": "Primeros pasos",
+    "gettingStartedDescription": "Este es un panel de ejemplo. Conecta tus datos y personalízalo.",
+    "accountStatus": "Tu rol es <role>{{role}}</role> y tu cuenta está <status>{{status}}</status>.",
+    "active": "activa",
+    "inactive": "inactiva"
   },
-  "navigation": {
-    "home": "Inicio",
+  "home": {
+    "title": "Bienvenido a Flama",
+    "subtitle": "Has iniciado sesión.",
+    "counter": "Contador",
+    "counterDescription": "Una demostración rápida de los componentes del sistema de diseño.",
+    "reset": "Reiniciar",
+    "signOut": "Cerrar sesión",
+    "signingOut": "Cerrando sesión..."
+  },
+  "nav": {
+    "menu": "Menú",
     "dashboard": "Panel",
-    "profile": "Perfil",
-    "settings": "Configuración"
+    "logOut": "Cerrar sesión"
+  },
+  "language": {
+    "label": "Idioma",
+    "en": "English",
+    "es": "Español"
   }
 }

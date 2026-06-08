@@ -1,4 +1,5 @@
 import "../global.css";
+import "../lib/i18n";
 import "react-native-gesture-handler";
 import "reflect-metadata";
 import {

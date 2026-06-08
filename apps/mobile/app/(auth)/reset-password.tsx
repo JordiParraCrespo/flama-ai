@@ -13,21 +13,26 @@ import { useResetPassword } from '@flama/frontend/react';
 import { resetPasswordSchema } from '@flama/shared';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 export default function ResetPasswordScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [password, setPassword] = React.useState('');
 
   const reset = useResetPassword({
     onSuccess: () => {
-      Alert.alert('Password updated', 'You can now sign in.', [
+      Alert.alert(t('auth.resetPassword.successTitle'), t('auth.resetPassword.successMessage'), [
         { text: 'OK', onPress: () => router.replace('/(auth)/login') },
       ]);
     },
     onError: (error) => {
-      Alert.alert('Reset failed', error.message ?? 'Could not reset password.');
+      Alert.alert(
+        t('auth.resetPassword.failedTitle'),
+        error.message ?? t('auth.resetPassword.error'),
+      );
     },
   });
 
@@ -35,7 +40,7 @@ export default function ResetPasswordScreen() {
     if (!token) return;
     const result = resetPasswordSchema.safeParse({ token, password });
     if (!result.success) {
-      Alert.alert('Validation error', result.error.errors[0].message);
+      Alert.alert(t('validation.title'), result.error.errors[0].message);
       return;
     }
     reset.mutate({ token: result.data.token, password: result.data.password });
@@ -46,15 +51,13 @@ export default function ResetPasswordScreen() {
       <ScrollView contentContainerClassName="flex-grow justify-center p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Invalid link</CardTitle>
-            <CardDescription>
-              This reset link is invalid or has expired. Please request a new one.
-            </CardDescription>
+            <CardTitle>{t('auth.resetPassword.invalidTitle')}</CardTitle>
+            <CardDescription>{t('auth.resetPassword.invalidMessage')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/(auth)/forgot-password" asChild>
               <Button variant="outline">
-                <Text>Request a new link</Text>
+                <Text>{t('auth.resetPassword.requestNewLink')}</Text>
               </Button>
             </Link>
           </CardContent>
@@ -74,14 +77,14 @@ export default function ResetPasswordScreen() {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Reset password</CardTitle>
-            <CardDescription>Choose a new password for your account</CardDescription>
+            <CardTitle>{t('auth.resetPassword.title')}</CardTitle>
+            <CardDescription>{t('auth.resetPassword.description')}</CardDescription>
           </CardHeader>
           <CardContent className="gap-4">
             <View className="gap-2">
-              <Label nativeID="rp-password">New password</Label>
+              <Label nativeID="rp-password">{t('auth.resetPassword.newPassword')}</Label>
               <Input
-                placeholder="Min. 8 characters"
+                placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
                 aria-labelledby="rp-password"
                 value={password}
                 onChangeText={setPassword}
@@ -91,11 +94,15 @@ export default function ResetPasswordScreen() {
               />
             </View>
             <Button onPress={handleSubmit} disabled={reset.isPending} className="mt-2">
-              <Text>{reset.isPending ? 'Resetting...' : 'Reset password'}</Text>
+              <Text>
+                {reset.isPending
+                  ? t('auth.resetPassword.submitting')
+                  : t('auth.resetPassword.submit')}
+              </Text>
             </Button>
             <Link href="/(auth)/login" asChild>
               <Button variant="link" size="sm">
-                <Text>Back to sign in</Text>
+                <Text>{t('auth.forgotPassword.backToSignIn')}</Text>
               </Button>
             </Link>
           </CardContent>
