@@ -7,9 +7,10 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/config/package.json ./packages/config/
-COPY packages/design-system/package.json ./packages/design-system/
+COPY packages/design-system/web/package.json ./packages/design-system/web/
 COPY packages/frontend/package.json ./packages/frontend/
 COPY packages/api-client/package.json ./packages/api-client/
+COPY packages/translations/package.json ./packages/translations/
 RUN pnpm install --frozen-lockfile --filter @flama/web...
 
 FROM base AS builder
