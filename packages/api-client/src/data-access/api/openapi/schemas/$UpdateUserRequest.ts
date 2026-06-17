@@ -3,17 +3,18 @@
 /* tslint:disable */
 /* eslint-disable */
 export const $UpdateUserRequest = {
-  properties: {
-    firstName: {
-      type: 'string',
-      minLength: 1,
+    properties: {
+        firstName: {
+            type: 'string',
+            minLength: 1,
+        },
+        lastName: {
+            type: 'string',
+            minLength: 1,
+        },
+        role: {
+            type: 'string',
+            minLength: 1,
+        },
     },
-    lastName: {
-      type: 'string',
-      minLength: 1,
-    },
-    role: {
-      type: 'Enum',
-    },
-  },
 } as const;

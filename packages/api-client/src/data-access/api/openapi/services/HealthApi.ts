@@ -6,42 +6,42 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class HealthApi {
-  /**
-   * Liveness check
-   * @returns any The Health Check is successful
-   * @throws ApiError
-   */
-  public static check(): CancelablePromise<{
-    status?: string;
-    info?: Record<string, Record<string, any>> | null;
-    error?: Record<string, Record<string, any>> | null;
-    details?: Record<string, Record<string, any>>;
-  }> {
-    return __request(OpenAPI, {
-      method: 'GET',
-      url: '/api/v1/health',
-      errors: {
-        503: `The Health Check is not successful`,
-      },
-    });
-  }
-  /**
-   * Readiness check
-   * @returns any The Health Check is successful
-   * @throws ApiError
-   */
-  public static readiness(): CancelablePromise<{
-    status?: string;
-    info?: Record<string, Record<string, any>> | null;
-    error?: Record<string, Record<string, any>> | null;
-    details?: Record<string, Record<string, any>>;
-  }> {
-    return __request(OpenAPI, {
-      method: 'GET',
-      url: '/api/v1/ready',
-      errors: {
-        503: `The Health Check is not successful`,
-      },
-    });
-  }
+    /**
+     * Liveness check
+     * @returns any The Health Check is successful
+     * @throws ApiError
+     */
+    public static check(): CancelablePromise<{
+        status?: string;
+        info?: Record<string, Record<string, any>> | null;
+        error?: Record<string, Record<string, any>> | null;
+        details?: Record<string, Record<string, any>>;
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/health',
+            errors: {
+                503: `The Health Check is not successful`,
+            },
+        });
+    }
+    /**
+     * Readiness check
+     * @returns any The Health Check is successful
+     * @throws ApiError
+     */
+    public static readiness(): CancelablePromise<{
+        status?: string;
+        info?: Record<string, Record<string, any>> | null;
+        error?: Record<string, Record<string, any>> | null;
+        details?: Record<string, Record<string, any>>;
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/ready',
+            errors: {
+                503: `The Health Check is not successful`,
+            },
+        });
+    }
 }

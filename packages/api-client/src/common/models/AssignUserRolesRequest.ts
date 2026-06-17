@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type ChangePasswordRequest = {
-  currentPassword: string;
-  newPassword: string;
+export type AssignUserRolesRequest = {
+    roleIds: Array<string>;
 };
+

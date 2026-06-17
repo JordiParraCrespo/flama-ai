@@ -7,15 +7,15 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
-export { $AuthResponseDto } from './schemas/$AuthResponseDto';
-export { $ChangePasswordRequest } from './schemas/$ChangePasswordRequest';
-export { $ForgotPasswordRequest } from './schemas/$ForgotPasswordRequest';
-export { $LoginRequest } from './schemas/$LoginRequest';
-export { $RegisterRequest } from './schemas/$RegisterRequest';
-export { $ResetPasswordRequest } from './schemas/$ResetPasswordRequest';
+
+export { $AssignUserRolesRequest } from './schemas/$AssignUserRolesRequest';
+export { $CreateRoleRequest } from './schemas/$CreateRoleRequest';
+export { $RoleResponseDto } from './schemas/$RoleResponseDto';
+export { $UpdateRolePermissionsRequest } from './schemas/$UpdateRolePermissionsRequest';
+export { $UpdateRoleRequest } from './schemas/$UpdateRoleRequest';
 export { $UpdateUserRequest } from './schemas/$UpdateUserRequest';
 export { $UserResponseDto } from './schemas/$UserResponseDto';
 
-export { AuthApi } from './services/AuthApi';
 export { HealthApi } from './services/HealthApi';
+export { RolesApi } from './services/RolesApi';
 export { UsersApi } from './services/UsersApi';

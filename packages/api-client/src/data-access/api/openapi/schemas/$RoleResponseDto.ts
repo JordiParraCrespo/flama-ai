@@ -2,34 +2,35 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export const $UserResponseDto = {
+export const $RoleResponseDto = {
     properties: {
         id: {
             type: 'string',
             isRequired: true,
         },
-        email: {
+        name: {
             type: 'string',
             isRequired: true,
         },
-        firstName: {
+        description: {
             type: 'string',
             isRequired: true,
+            isNullable: true,
         },
-        lastName: {
-            type: 'string',
-            isRequired: true,
-        },
-        role: {
-            type: 'string',
-            isRequired: true,
-        },
-        isActive: {
+        isSystem: {
             type: 'boolean',
+            description: `System roles cannot be deleted or renamed.`,
             isRequired: true,
         },
-        emailVerified: {
-            type: 'boolean',
+        permissions: {
+            type: 'array',
+            contains: {
+                type: 'dictionary',
+                contains: {
+                    properties: {
+                    },
+                },
+            },
             isRequired: true,
         },
         createdAt: {

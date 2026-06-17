@@ -3,7 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type UpdateUserRequest = {
-  firstName?: string;
-  lastName?: string;
-  role?: 'admin' | 'user';
+    firstName?: string;
+    lastName?: string;
+    role?: string;
 };
+
