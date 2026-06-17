@@ -7,16 +7,19 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/config/package.json ./packages/config/
+COPY packages/backend/core/package.json ./packages/backend/core/
+COPY packages/backend/ddd/package.json ./packages/backend/ddd/
+COPY packages/backend/cache/package.json ./packages/backend/cache/
+COPY packages/backend/email/package.json ./packages/backend/email/
+COPY packages/backend/queue/package.json ./packages/backend/queue/
+COPY packages/backend/storage/package.json ./packages/backend/storage/
 RUN pnpm install --frozen-lockfile --filter @flama/api...
 
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=deps /app ./
 COPY . .
-RUN pnpm --filter @flama/shared build
-RUN pnpm --filter @flama/api build
+RUN pnpm --filter @flama/api... build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
