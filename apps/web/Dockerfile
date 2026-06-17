@@ -17,8 +17,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app ./
 COPY . .
-RUN pnpm --filter @flama/shared build
-RUN pnpm --filter @flama/web build
+RUN pnpm --filter @flama/web... build
 
 FROM nginx:alpine AS runner
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
