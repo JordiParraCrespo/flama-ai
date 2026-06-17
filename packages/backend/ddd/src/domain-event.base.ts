@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { RequestContextService } from '@flama/backend-core';
 import { ArgumentNotProvidedException } from './exceptions';
 import { Guard } from './guard';
+import { RequestContextService } from './request-context.service';
 
 export interface DomainEventMetadata {
   /** Timestamp when this domain event occurred. */

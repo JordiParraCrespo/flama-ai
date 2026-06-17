@@ -23,6 +23,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - name: Architecture boundaries
+        run: pnpm arch
 
   test:
     name: Test

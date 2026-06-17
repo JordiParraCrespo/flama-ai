@@ -1,4 +1,16 @@
 /**
+ * A framework-agnostic error contract. Modules declare error catalogs of these
+ * in their domain layer; `@flama/backend-core`'s `AppError` turns one into an
+ * HTTP exception. `httpStatus` is a plain status number (e.g. 404) so the
+ * domain need not depend on any HTTP framework.
+ */
+export interface ErrorDefinition {
+  readonly code: string;
+  readonly message: string;
+  readonly httpStatus: number;
+}
+
+/**
  * Base domain/application exceptions used by the DDD building blocks.
  *
  * These are framework-agnostic. The HTTP exception filter in

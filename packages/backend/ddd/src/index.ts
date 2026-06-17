@@ -20,6 +20,7 @@ export {
   ArgumentNotProvidedException,
   ArgumentOutOfRangeException,
   ConflictException,
+  type ErrorDefinition,
   ExceptionBase,
   NotFoundException,
 } from './exceptions';
@@ -32,6 +33,7 @@ export {
   type PaginatedQueryParams,
   type RepositoryPort,
 } from './repository.port';
+export { RequestContextService } from './request-context.service';
 export { convertPropsToObject } from './utils';
 export {
   type DomainPrimitive,

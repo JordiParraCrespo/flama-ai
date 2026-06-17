@@ -17,7 +17,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@flama/backend-core": "workspace:*",
     "oxide.ts": "^1.1.0"
   },
   "devDependencies": {

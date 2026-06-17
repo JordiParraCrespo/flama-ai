@@ -1,10 +1,7 @@
-import { HttpException, type HttpStatus } from '@nestjs/common';
+import { type ErrorDefinition } from '@flama/backend-ddd';
+import { HttpException } from '@nestjs/common';
 
-export interface ErrorDefinition {
-  readonly code: string;
-  readonly message: string;
-  readonly httpStatus: HttpStatus;
-}
+export type { ErrorDefinition };
 
 export class AppError extends HttpException {
   public readonly code: string;
