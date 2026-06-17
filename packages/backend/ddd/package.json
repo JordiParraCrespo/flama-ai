@@ -1,0 +1,28 @@
+{
+  "name": "@flama/backend-ddd",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@flama/backend-core": "workspace:*",
+    "oxide.ts": "^1.1.0"
+  },
+  "devDependencies": {
+    "@flama/config": "workspace:^",
+    "@types/node": "^22.0.0",
+    "typescript": "^6.0.2"
+  }
+}

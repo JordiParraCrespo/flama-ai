@@ -2,15 +2,16 @@ import type { Role } from '@flama/shared';
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
- * Maps the Better Auth `user` table. Better Auth owns writes to this table
- * (sign-up, OAuth, verification); the application reads/updates it through
- * TypeORM for the `/users` endpoints.
+ * Persistence model for the Better Auth `user` table. This is infrastructure —
+ * the domain `UserEntity` is mapped to/from this record by `UserMapper`.
  *
- * `firstName`, `lastName`, `role` and `isActive` are Better Auth
- * "additional fields" declared in `auth.ts`.
+ * Better Auth owns writes to identity columns (sign-up, OAuth, verification);
+ * the application reads/updates the profile columns through TypeORM for the
+ * `/users` endpoints. `firstName`, `lastName`, `role` and `isActive` are Better
+ * Auth "additional fields" declared in `auth.ts`.
  */
 @Entity('user')
-export class User {
+export class UserOrmEntity {
   @PrimaryColumn({ type: 'uuid' })
   id!: string;
 

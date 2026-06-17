@@ -5,7 +5,7 @@ import { auth } from '../auth/auth';
 import { Account } from '../auth/entities/account.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
-import { User } from '../users/user.entity';
+import { UserOrmEntity } from '../users/database/user.orm-entity';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -14,7 +14,7 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME || 'flama',
   password: process.env.DB_PASSWORD || 'flama',
   database: process.env.DB_DATABASE || 'flama',
-  entities: [User, Session, Account, Verification],
+  entities: [UserOrmEntity, Session, Account, Verification],
 });
 
 interface SeedUser {
@@ -44,7 +44,7 @@ const seedUsers: SeedUser[] = [
 
 async function seed() {
   await dataSource.initialize();
-  const userRepo = dataSource.getRepository(User);
+  const userRepo = dataSource.getRepository(UserOrmEntity);
 
   for (const seedUser of seedUsers) {
     const existing = await userRepo.findOneBy({ email: seedUser.email });

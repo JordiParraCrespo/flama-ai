@@ -18,6 +18,7 @@ flama/
 │   ├── backend/
 │   │   ├── cache/        # Redis cache abstraction (@flama/backend-cache)
 │   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
+│   │   ├── ddd/          # DDD/hexagon building blocks (@flama/backend-ddd)
 │   │   ├── email/        # Pluggable email + React Email templates (@flama/backend-email)
 │   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
 │   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
@@ -93,6 +94,7 @@ Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api` and
 packages/config           → used by all apps and packages (tsconfig extends)
 packages/shared           → used by api, frontend, api-client
 packages/backend/core     → used by api, other backend packages
+packages/backend/ddd      → used by api (depends on backend/core)
 packages/backend/email    → used by api
 packages/backend/cache    → used by api
 packages/backend/storage  → used by api
