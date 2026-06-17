@@ -23,7 +23,10 @@ All `packages/backend/*` must have both `"import"` and `"require"` in their `pac
 
 ## Package structure
 
-Each backend package follows this layout:
+There are two kinds of backend package:
+
+**Pluggable services** (`email`, `storage`, `cache`, `queue`) — an abstract
+service selected at runtime by a factory:
 
 ```
 packages/backend/<name>/
@@ -35,6 +38,12 @@ packages/backend/<name>/
 ├── package.json
 └── tsconfig.json
 ```
+
+**Library packages** (`core`, `ddd`) — export building blocks (base classes,
+interfaces, filters, pipes) with no abstract service or `@Global` module. They
+still follow the CJS export and shared-config rules below. `@flama/backend-ddd`
+holds the DDD/hexagon primitives; `@flama/backend-core` holds cross-cutting
+NestJS infrastructure.
 
 ## Email package specifics
 

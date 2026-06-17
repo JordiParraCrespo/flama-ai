@@ -43,6 +43,9 @@ importers:
       '@flama/backend-core':
         specifier: workspace:*
         version: link:../../packages/backend/core
+      '@flama/backend-ddd':
+        specifier: workspace:*
+        version: link:../../packages/backend/ddd
       '@flama/backend-email':
         specifier: workspace:*
         version: link:../../packages/backend/email
@@ -67,6 +70,9 @@ importers:
       '@nestjs/core':
         specifier: ^11.0.0
         version: 11.1.18(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/cqrs':
+        specifier: ^11.0.0
+        version: 11.0.3(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/event-emitter':
         specifier: ^3.0.0
         version: 3.0.1(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)
@@ -112,6 +118,9 @@ importers:
       nestjs-zod:
         specifier: ^4.0.0
         version: 4.3.1(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(@nestjs/swagger@11.2.7(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(class-transformer@0.5.1)(reflect-metadata@0.2.2))(zod@3.25.76)
+      oxide.ts:
+        specifier: ^1.1.0
+        version: 1.1.0
       pg:
         specifier: ^8.13.0
         version: 8.20.0
@@ -675,6 +684,25 @@ importers:
       rxjs:
         specifier: ^7.8.0
         version: 7.8.2
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+
+  packages/backend/ddd:
+    dependencies:
+      '@flama/backend-core':
+        specifier: workspace:*
+        version: link:../core
+      oxide.ts:
+        specifier: ^1.1.0
+        version: 1.1.0
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../config
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.17
       typescript:
         specifier: ^6.0.2
         version: 6.0.2
@@ -3989,6 +4017,14 @@ packages:
         optional: true
       '@nestjs/websockets':
         optional: true
+
+  '@nestjs/cqrs@11.0.3':
+    resolution: {integrity: sha512-2ezBftiXqVfNTzjCrmhazohYhIQzgm8rvM0aKndv73IOOBcVlNuNiQ3HHiHdd4c2w/3MOQDtsGbQHgZUuW6DPw==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^10.0.0 || ^11.0.0
+      reflect-metadata: ^0.1.13 || ^0.2.0
+      rxjs: ^7.2.0
 
   '@nestjs/event-emitter@3.0.1':
     resolution: {integrity: sha512-0Ln/x+7xkU6AJFOcQI9tIhUMXVF7D5itiaQGOyJbXtlAfAIt8gzDdJm+Im7cFzKoWkiW5nCXCPh6GSvdQd/3Dw==}
@@ -10793,6 +10829,9 @@ packages:
 
   outdent@0.5.0:
     resolution: {integrity: sha512-/jHxFIzoMXdqPzTaCpFzAAWhpkSjZPF4Vsn6jAfNpmbH/ymsmd7Qc6VE9BGn0L6YMj6uwpQLxCECpus4ukKS9Q==}
+
+  oxide.ts@1.1.0:
+    resolution: {integrity: sha512-+MkqFRQVHEe/x4/cJ6KuYz2m2VpnoBi7aKLbttGYTxmpNZalQ2RbKH2HxyfsTqXJhjh9DYxulPWfQV/hWMmzCg==}
 
   p-cancelable@3.0.0:
     resolution: {integrity: sha512-mlVgR3PGuzlo0MmTdk4cXqXWlwQDLnONTAg6sm62XkMJEiRxN3GL3SffkYvqwonbkJBcrI7Uvv5Zh9yjvn2iUw==}
@@ -17965,6 +18004,13 @@ snapshots:
       uid: 2.0.2
     optionalDependencies:
       '@nestjs/platform-express': 11.1.18(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)
+
+  '@nestjs/cqrs@11.0.3(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
+    dependencies:
+      '@nestjs/common': 11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.18(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      reflect-metadata: 0.2.2
+      rxjs: 7.8.2
 
   '@nestjs/event-emitter@3.0.1(@nestjs/common@11.1.18(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)':
     dependencies:
@@ -26204,6 +26250,8 @@ snapshots:
       wcwidth: 1.0.1
 
   outdent@0.5.0: {}
+
+  oxide.ts@1.1.0: {}
 
   p-cancelable@3.0.0: {}
 

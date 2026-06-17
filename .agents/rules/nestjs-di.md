@@ -24,7 +24,29 @@ import { ConfigService } from "@nestjs/config";
 - **Types used only in annotations** — e.g. `Request`, `Response` from express
 - **Classes resolved via explicit decorators** — `@InjectRepository(User)` provides its own token, so `Repository` can be `import type`
 - **Classes resolved via `@InjectQueue()`** — same as above
+- **Repository ports resolved via `@Inject(TOKEN)`** — the token provides the
+  runtime binding, so the port type can be `import type` (it's an interface)
 - **Classes in test files** — used for typing mocks, not injected
+
+## Inject repository ports through a DI token
+
+Application/domain code depends on the port abstraction, not the concrete
+TypeORM adapter. Define a `Symbol` token in `<module>.di-tokens.ts`, bind it in
+the module, and inject with `@Inject`:
+
+```typescript
+// user.di-tokens.ts
+export const USER_REPOSITORY = Symbol("USER_REPOSITORY");
+
+// user.module.ts
+providers: [{ provide: USER_REPOSITORY, useClass: UserRepository }],
+
+// a handler
+constructor(
+  @Inject(USER_REPOSITORY)
+  private readonly userRepository: UserRepositoryPort,
+) {}
+```
 
 ### Biome `useImportType` rule
 

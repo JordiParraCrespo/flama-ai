@@ -1,6 +1,10 @@
 import type { ErrorDefinition } from '@flama/backend-core';
 import { HttpStatus } from '@nestjs/common';
 
+/**
+ * User domain error catalog. Surfaced as HTTP responses by the global
+ * `AllExceptionsFilter` via `AppError`.
+ */
 export const UserErrors = {
   NOT_FOUND: {
     code: 'USER_001',

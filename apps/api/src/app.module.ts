@@ -23,7 +23,7 @@ import {
 } from './config';
 import { HealthModule } from './health/health.module';
 import { QueueModule } from './queue/queue.module';
-import { UsersModule } from './users/users.module';
+import { UsersModule } from './users/user.module';
 
 @Module({
   imports: [

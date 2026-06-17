@@ -1,58 +1,58 @@
-import type { Mapper } from '@flama/backend-core';
-import type { Role } from '@flama/shared';
+import type { Mapper } from '@flama/backend-ddd';
 import { Injectable } from '@nestjs/common';
-import { UserResponseDto } from './dtos/user-response.dto';
-import { User } from './user.entity';
+import { UserOrmEntity } from './database/user.orm-entity';
+import { UserEntity } from './domain/user.entity';
+import { Email } from './domain/value-objects/email.value-object';
+import { UserResponseDto } from './dtos/user.response.dto';
 
-export interface UserServiceModel {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: Role;
-  isActive: boolean;
-  emailVerified: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
+/**
+ * Maps the user aggregate between its domain, persistence and response shapes.
+ *
+ * Note: `toPersistence` only writes the profile columns the application owns.
+ * `name` and `image` are managed by Better Auth and deliberately left untouched
+ * so a profile update never clobbers them.
+ */
 @Injectable()
-export class UserMapper implements Mapper<User, UserServiceModel, UserResponseDto> {
-  toRepository(data: Partial<User>): User {
-    const entity = new User();
-    if (data.email) entity.email = data.email;
-    if (data.firstName) entity.firstName = data.firstName;
-    if (data.lastName) entity.lastName = data.lastName;
-    if (data.role) entity.role = data.role;
-    if (data.isActive !== undefined) entity.isActive = data.isActive;
-    return entity;
+export class UserMapper implements Mapper<UserEntity, UserOrmEntity, UserResponseDto> {
+  toPersistence(entity: UserEntity): UserOrmEntity {
+    const record = new UserOrmEntity();
+    record.id = entity.id;
+    record.email = entity.email;
+    record.firstName = entity.firstName;
+    record.lastName = entity.lastName;
+    record.role = entity.role;
+    record.isActive = entity.isActive;
+    record.emailVerified = entity.emailVerified;
+    return record;
   }
 
-  toService(entity: User): UserServiceModel {
-    return {
-      id: entity.id,
-      email: entity.email,
-      firstName: entity.firstName,
-      lastName: entity.lastName,
-      role: entity.role,
-      isActive: entity.isActive,
-      emailVerified: entity.emailVerified,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-    };
+  toDomain(record: UserOrmEntity): UserEntity {
+    return UserEntity.create({
+      id: record.id,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      props: {
+        email: new Email({ value: record.email }),
+        firstName: record.firstName,
+        lastName: record.lastName,
+        role: record.role,
+        isActive: record.isActive,
+        emailVerified: record.emailVerified,
+      },
+    });
   }
 
-  toController(model: UserServiceModel): UserResponseDto {
+  toResponse(entity: UserEntity): UserResponseDto {
     const dto = new UserResponseDto();
-    dto.id = model.id;
-    dto.email = model.email;
-    dto.firstName = model.firstName;
-    dto.lastName = model.lastName;
-    dto.role = model.role;
-    dto.isActive = model.isActive;
-    dto.emailVerified = model.emailVerified;
-    dto.createdAt = model.createdAt;
-    dto.updatedAt = model.updatedAt;
+    dto.id = entity.id;
+    dto.email = entity.email;
+    dto.firstName = entity.firstName;
+    dto.lastName = entity.lastName;
+    dto.role = entity.role;
+    dto.isActive = entity.isActive;
+    dto.emailVerified = entity.emailVerified;
+    dto.createdAt = entity.createdAt;
+    dto.updatedAt = entity.updatedAt;
     return dto;
   }
 }

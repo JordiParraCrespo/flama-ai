@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 import { Account } from '../auth/entities/account.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
-import { User } from '../users/user.entity';
+import { UserOrmEntity } from '../users/database/user.orm-entity';
 
 /**
  * Data source used by the TypeORM CLI (`migration:generate` / `migration:run` /
@@ -18,6 +18,6 @@ export default new DataSource({
   username: process.env.DB_USERNAME || 'flama',
   password: process.env.DB_PASSWORD || 'flama',
   database: process.env.DB_DATABASE || 'flama',
-  entities: [User, Session, Account, Verification],
+  entities: [UserOrmEntity, Session, Account, Verification],
   migrations: [`${__dirname}/../migrations/*{.ts,.js}`],
 });
