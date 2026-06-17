@@ -12,6 +12,18 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".agents/hooks/arch-check.sh",
+            "timeout": 180,
+            "statusMessage": "Checking API architecture boundaries..."
+          }
+        ]
+      }
     ]
   }
 }

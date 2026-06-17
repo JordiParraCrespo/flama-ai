@@ -9,6 +9,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "arch": "turbo run arch",
     "format": "biome format --write .",
     "check": "biome check --write --unsafe .",
     "test": "turbo run test",

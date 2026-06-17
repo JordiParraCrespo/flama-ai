@@ -44,13 +44,20 @@ flama/
 
 ### Backend (`apps/api` + `packages/backend/*`)
 
+`apps/api` follows **Domain-Driven Hexagon** architecture — see
+[`apps/api/ARCHITECTURE.md`](apps/api/ARCHITECTURE.md) for the layer model, module
+anatomy, the `@flama/backend-ddd` building blocks, and the "add a module"
+cookbook. Use the `/scaffold-module` skill to generate a compliant module
+skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
+(`pnpm arch`, run in CI and by a Claude Code Stop hook).
+
 Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api` and `packages/backend`):
 
-- `nestjs-di.md` — DI import rules, `import type` restrictions, biome `useImportType` policy
-- `nestjs-architecture.md` — Pluggable service pattern, single-responsibility services, mappers, errors, events
-- `typeorm.md` — Union-typed column rules, entity conventions
-- `backend-packages.md` — CJS exports, package structure, email template setup
-- `api-config.md` — OAuth graceful handling, Swagger decorators, rate limiting, versioning
+- `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
+- `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
+- `typeorm.md` — Union-typed column rules, persistence-model (ORM) conventions
+- `backend-packages.md` — CJS exports, package structure (pluggable vs library), email template setup
+- `api-config.md` — OAuth graceful handling, controllers, Swagger decorators, rate limiting, versioning
 
 ### Shared (packages/shared)
 
