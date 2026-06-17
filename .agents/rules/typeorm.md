@@ -28,6 +28,17 @@ Non-union types (`string`, `number`, `boolean`, `Date`) reflect correctly and do
 
 ## Entity conventions
 
-- Use `@PrimaryGeneratedColumn('uuid')` for IDs
+TypeORM entities are **persistence models**, not domain entities. Name them
+`<module>.orm-entity.ts` and place them in the module's `database/` folder; the
+domain `Entity`/`AggregateRoot` lives in `domain/` and is mapped to/from the ORM
+record by the mapper (`toDomain` / `toPersistence`). See `nestjs-architecture.md`.
+
+- Use `@PrimaryGeneratedColumn('uuid')` for IDs the app owns. Tables owned by
+  Better Auth (e.g. `user`) use `@PrimaryColumn({ type: 'uuid' })` because Better
+  Auth generates the id.
 - Use `@CreateDateColumn()` and `@UpdateDateColumn()` for timestamps
-- Sensitive fields (password, refreshToken) must be stripped in the service layer via the mapper, never exposed in DTOs
+- Sensitive fields (password, refreshToken) must never appear on the response
+  DTO — the mapper's `toResponse()` only copies safe fields
+- When writing only the columns the app owns (e.g. profile fields on a Better
+  Auth table), leave the rest unset in `toPersistence()` so `save()` doesn't
+  clobber columns another system manages
