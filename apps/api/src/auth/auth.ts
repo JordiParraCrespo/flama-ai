@@ -102,6 +102,20 @@ export const auth = betterAuth({
       create: {
         after: async (user) => {
           await emailQueue.add('welcome', { to: user.email, name: user.name });
+          // Assign the default `user` role in the RBAC join so new sign-ups get
+          // their permissions from the same source as everyone else. Best-effort:
+          // the AbilityFactory falls back to the legacy `user.role` column if the
+          // join row is missing.
+          try {
+            await pool.query(
+              `INSERT INTO "user_role" ("userId", "roleId")
+                 SELECT $1, r."id" FROM "role" r WHERE r."name" = 'user'
+                 ON CONFLICT DO NOTHING`,
+              [user.id],
+            );
+          } catch {
+            // Roles table not migrated yet, or transient error — ignore.
+          }
         },
       },
     },

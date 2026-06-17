@@ -4,7 +4,8 @@ export const createUserSchema = z.object({
   email: z.string().email(),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  role: z.enum(['admin', 'user']).default('user'),
+  // Free-form role name; roles are managed dynamically via the roles module.
+  role: z.string().min(1).default('user'),
 });
 
 export const updateUserSchema = createUserSchema.partial().omit({ email: true });
@@ -14,7 +15,8 @@ export const userResponseSchema = z.object({
   email: z.string().email(),
   firstName: z.string(),
   lastName: z.string(),
-  role: z.enum(['admin', 'user']),
+  /** Legacy primary role name (kept for backwards compatibility). */
+  role: z.string(),
   isActive: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

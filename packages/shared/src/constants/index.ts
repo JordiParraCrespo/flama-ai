@@ -15,6 +15,12 @@ export const ROLES = {
   USER: 'user',
 } as const;
 
+/**
+ * Roles seeded by the platform. System roles cannot be renamed or deleted
+ * through the API so the application's own authorization keeps working.
+ */
+export const SYSTEM_ROLES = [ROLES.ADMIN, ROLES.USER] as const;
+
 export const QUEUE_NAMES = {
   EMAIL: 'email',
   FILE_PROCESSING: 'file-processing',

@@ -5,25 +5,25 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@ne
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
-import type { UserEntity } from '../../domain/user.entity';
-import { UserMapper } from '../../user.mapper';
-import { FindUsersQuery } from './find-users.query';
-import { FindUsersRequest } from './find-users.request.dto';
+import type { RoleEntity } from '../../domain/role.entity';
+import { RoleMapper } from '../../roles.mapper';
+import { FindRolesQuery } from './find-roles.query';
+import { FindRolesRequest } from './find-roles.request.dto';
 
-@ApiTags('Users')
+@ApiTags('Roles')
 @ApiBearerAuth()
 @UseGuards(AuthGuard, PoliciesGuard)
-@Controller('users')
-export class FindUsersHttpController {
+@Controller('roles')
+export class FindRolesHttpController {
   constructor(
     private readonly queryBus: QueryBus,
-    private readonly mapper: UserMapper,
+    private readonly mapper: RoleMapper,
   ) {}
 
   @Get()
   @Version('1')
-  @CheckPolicies({ action: 'read', subject: 'User' })
-  @ApiOperation({ summary: 'List all users' })
+  @CheckPolicies({ action: 'read', subject: 'Role' })
+  @ApiOperation({ summary: 'List all roles' })
   @ApiQuery({
     name: 'page',
     required: false,
@@ -37,25 +37,19 @@ export class FindUsersHttpController {
     description: 'Items per page (default: 20, max: 100)',
   })
   @ApiQuery({
-    name: 'role',
-    required: false,
-    type: String,
-    description: 'Filter by role name',
-  })
-  @ApiQuery({
     name: 'search',
     required: false,
     type: String,
-    description: 'Search by name or email',
+    description: 'Search by role name',
   })
   @ApiResponse({ status: 200 })
-  async findAll(@Query() query: FindUsersRequest) {
-    const result = await this.queryBus.execute<FindUsersQuery, Paginated<UserEntity>>(
-      new FindUsersQuery(query),
+  async findAll(@Query() query: FindRolesRequest) {
+    const result = await this.queryBus.execute<FindRolesQuery, Paginated<RoleEntity>>(
+      new FindRolesQuery(query),
     );
 
     return {
-      data: result.data.map((user) => this.mapper.toResponse(user)),
+      data: result.data.map((role) => this.mapper.toResponse(role)),
       meta: {
         total: result.count,
         page: result.page,

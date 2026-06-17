@@ -23,6 +23,7 @@ import {
 } from './config';
 import { HealthModule } from './health/health.module';
 import { QueueModule } from './queue/queue.module';
+import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/user.module';
 
 @Module({
@@ -81,6 +82,7 @@ import { UsersModule } from './users/user.module';
     BetterAuthModule.forRoot({ auth, disableGlobalAuthGuard: true }),
     AuthModule,
     UsersModule,
+    RolesModule,
     HealthModule,
     QueueModule,
   ],
