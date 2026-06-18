@@ -3,7 +3,8 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const findUsersSchema = paginationSchema.extend({
-  role: z.enum(['admin', 'user']).optional(),
+  // Roles are dynamic; filter by any role name.
+  role: z.string().optional(),
   search: z.string().optional(),
 });
 

@@ -5,6 +5,8 @@ import { auth } from '../auth/auth';
 import { Account } from '../auth/entities/account.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
+import { RoleOrmEntity } from '../roles/database/role.orm-entity';
+import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
 
 const dataSource = new DataSource({
@@ -14,7 +16,7 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME || 'flama',
   password: process.env.DB_PASSWORD || 'flama',
   database: process.env.DB_DATABASE || 'flama',
-  entities: [UserOrmEntity, Session, Account, Verification],
+  entities: [UserOrmEntity, Session, Account, Verification, RoleOrmEntity, UserRoleOrmEntity],
 });
 
 interface SeedUser {
@@ -45,6 +47,8 @@ const seedUsers: SeedUser[] = [
 async function seed() {
   await dataSource.initialize();
   const userRepo = dataSource.getRepository(UserOrmEntity);
+  const roleRepo = dataSource.getRepository(RoleOrmEntity);
+  const userRoleRepo = dataSource.getRepository(UserRoleOrmEntity);
 
   for (const seedUser of seedUsers) {
     const existing = await userRepo.findOneBy({ email: seedUser.email });
@@ -64,6 +68,15 @@ async function seed() {
 
     // Elevate the role and mark the email verified (not settable on sign-up).
     await userRepo.update({ email: seedUser.email }, { role: seedUser.role, emailVerified: true });
+
+    // Assign the matching role through the RBAC join (roles are seeded by the
+    // migration). If the role table isn't migrated yet, the AbilityFactory's
+    // legacy fallback still grants the right permissions.
+    const user = await userRepo.findOneBy({ email: seedUser.email });
+    const role = await roleRepo.findOneBy({ name: seedUser.role });
+    if (user && role) {
+      await userRoleRepo.upsert({ userId: user.id, roleId: role.id }, ['userId', 'roleId']);
+    }
 
     console.log(`Created ${seedUser.role} user: ${seedUser.email}`);
   }

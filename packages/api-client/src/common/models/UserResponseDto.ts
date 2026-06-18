@@ -3,13 +3,14 @@
 /* tslint:disable */
 /* eslint-disable */
 export type UserResponseDto = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  provider: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    isActive: boolean;
+    emailVerified: boolean;
+    createdAt: string;
+    updatedAt: string;
 };
+

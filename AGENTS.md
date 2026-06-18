@@ -51,20 +51,36 @@ cookbook. Use the `/scaffold-module` skill to generate a compliant module
 skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
 (`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
-Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api` and `packages/backend`):
+Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
 
 - `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
 - `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
 - `typeorm.md` — Union-typed column rules, persistence-model (ORM) conventions
 - `backend-packages.md` — CJS exports, package structure (pluggable vs library), email template setup
 - `api-config.md` — OAuth graceful handling, controllers, Swagger decorators, rate limiting, versioning
+- `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
+
+#### Authorization (roles & permissions)
+
+Authorization is **database-backed dynamic RBAC** — roles and their permissions
+live in the `role` table and are managed by admins through the API, not hardcoded.
+A user can hold **multiple roles** (`user_role` join); their effective CASL
+ability is the union of those roles' permissions. Protect routes with
+`@UseGuards(AuthGuard, PoliciesGuard)` + `@CheckPolicies({ action, subject })`;
+the guard resolves the ability via `AbilityFactory` and exposes it on
+`request.ability` for resource-scoped checks. The `roles` module
+(`apps/api/src/roles/`) exposes CRUD + `PUT /roles/:id/permissions` and
+`GET|PUT /users/:userId/roles`. See `rbac-roles.md` for the full guide.
 
 ### Shared (packages/shared)
 
 - Zod schemas are the single source of truth for DTOs
-- CASL permission definitions shared between backend and frontend
-- Types: `Role`, `AuthProvider`, `JwtPayload`, `TokenPair`, `PaginationParams`, `PaginatedResponse<T>`
-- Constants: `AUTH` (token expiry, salt rounds), `PAGINATION`, `ROLES`, `QUEUE_NAMES`
+- CASL helpers shared between backend and frontend: `defineAbilitiesFromPermissions`
+  (DB-driven, the source of truth) and the legacy `defineAbilitiesFor` fallback
+- Types: `Role` (a free-form role-name `string`), `PermissionDefinition`,
+  `AuthProvider`, `JwtPayload`, `TokenPair`, `PaginationParams`, `PaginatedResponse<T>`
+- Constants: `AUTH` (token expiry, salt rounds), `PAGINATION`, `ROLES`,
+  `SYSTEM_ROLES`, `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`
 
 ### Frontend (packages/frontend)
 

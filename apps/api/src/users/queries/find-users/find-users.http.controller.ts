@@ -39,8 +39,8 @@ export class FindUsersHttpController {
   @ApiQuery({
     name: 'role',
     required: false,
-    enum: ['admin', 'user'],
-    description: 'Filter by role',
+    type: String,
+    description: 'Filter by role name',
   })
   @ApiQuery({
     name: 'search',

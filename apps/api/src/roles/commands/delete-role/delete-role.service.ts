@@ -1,0 +1,30 @@
+import { AppError } from '@flama/backend-core';
+import { Inject } from '@nestjs/common';
+import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
+import type { RoleRepositoryPort } from '../../database/role.repository.port';
+import { RoleErrors } from '../../domain/role.errors';
+import { ROLE_REPOSITORY } from '../../roles.di-tokens';
+import { DeleteRoleCommand } from './delete-role.command';
+
+/**
+ * Deletes a custom role. System roles are protected. Existing assignments in
+ * the `user_role` join are removed by the database cascade.
+ */
+@CommandHandler(DeleteRoleCommand)
+export class DeleteRoleService implements ICommandHandler<DeleteRoleCommand, void> {
+  constructor(
+    @Inject(ROLE_REPOSITORY)
+    private readonly roleRepository: RoleRepositoryPort,
+  ) {}
+
+  async execute(command: DeleteRoleCommand): Promise<void> {
+    const found = await this.roleRepository.findOneById(command.roleId);
+    if (found.isNone()) throw new AppError(RoleErrors.NOT_FOUND);
+
+    const role = found.unwrap();
+    if (role.isSystem) throw new AppError(RoleErrors.SYSTEM_ROLE_IMMUTABLE);
+
+    role.delete();
+    await this.roleRepository.delete(role);
+  }
+}
