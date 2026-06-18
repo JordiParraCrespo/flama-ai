@@ -18,14 +18,26 @@ export interface UsersListParams {
   role?: 'admin' | 'user';
 }
 
+/**
+ * Query key factory for the `users` feature.
+ *
+ * Keys are structured from the most generic (`all`) to the most specific
+ * (`detail(id)`), and every level is derived from the one above it by
+ * spreading. This keeps the hierarchy consistent and lets you invalidate a
+ * whole subtree with a single key (e.g. `usersKeys.lists()` matches every
+ * list query regardless of its params). See the "React Query keys" guide in
+ * the docs for the rationale.
+ */
 export const usersKeys = {
   all: ['users'] as const,
-  list: (params?: UsersListParams) => ['users', 'list', params] as const,
-  detail: (id: string) => ['users', id] as const,
-  me: ['users', 'me'] as const,
+  lists: () => [...usersKeys.all, 'list'] as const,
+  list: (params?: UsersListParams) => [...usersKeys.lists(), params] as const,
+  details: () => [...usersKeys.all, 'detail'] as const,
+  detail: (id: string) => [...usersKeys.details(), id] as const,
+  me: () => [...usersKeys.all, 'me'] as const,
 };
 
-export const profileQueryKey = usersKeys.me;
+export const profileQueryKey = usersKeys.me();
 
 export function useProfile(
   options?: Omit<UseQueryOptions<UserEntity, Error>, 'queryKey' | 'queryFn'>,
@@ -33,7 +45,7 @@ export function useProfile(
   const app = useFlamaApp();
 
   return useQuery({
-    queryKey: usersKeys.me,
+    queryKey: usersKeys.me(),
     queryFn: () => app.users.me(),
     ...options,
   });

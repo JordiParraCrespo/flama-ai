@@ -44,3 +44,8 @@ container.bind(TOKENS.StorageService).to(WebStorageService);
 // Bind shared implementations
 container.bind(TOKENS.AuthRepository).to(AuthRepositoryImpl);
 ```
+
+## Server state
+
+Server state is handled with TanStack Query. Query keys follow a colocated
+**query key factory** pattern — see [React Query Keys](./query-keys.md).
