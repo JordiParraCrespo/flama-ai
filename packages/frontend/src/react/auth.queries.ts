@@ -12,9 +12,14 @@ import type { SocialProvider } from '../modules/auth/auth.client';
 import { useFlamaApp } from './context';
 import { profileQueryKey } from './users.queries';
 
+/**
+ * Query key factory for the `auth` feature. Every key is derived from `all`
+ * so the whole subtree can be invalidated/cleared with a single key. See the
+ * "React Query keys" guide in the docs for the rationale.
+ */
 export const authKeys = {
   all: ['auth'] as const,
-  session: ['auth', 'session'] as const,
+  session: () => [...authKeys.all, 'session'] as const,
 };
 
 export function useSessionRestore(
@@ -23,7 +28,7 @@ export function useSessionRestore(
   const app = useFlamaApp();
 
   return useQuery({
-    queryKey: authKeys.session,
+    queryKey: authKeys.session(),
     queryFn: () => app.auth.restoreSession(),
     retry: false,
     staleTime: Infinity,
