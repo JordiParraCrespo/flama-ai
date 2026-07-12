@@ -39,3 +39,6 @@ coverage/
 
 # pnpm
 .pnpm-debug.log
+
+# Claude Code scratchpad (temp workflow scripts, not part of the repo)
+scratchpad/
