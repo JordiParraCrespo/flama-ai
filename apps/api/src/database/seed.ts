@@ -46,6 +46,13 @@ interface SeedUser {
 
 const seedUsers: SeedUser[] = [
   {
+    email: 'superadmin@flama.dev',
+    password: 'superadmin123456',
+    firstName: 'Super',
+    lastName: 'Admin',
+    role: 'superadmin',
+  },
+  {
     email: 'admin@flama.dev',
     password: 'admin123456',
     firstName: 'Admin',

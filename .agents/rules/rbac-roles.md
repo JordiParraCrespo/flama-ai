@@ -135,3 +135,32 @@ from the legacy `user.role` column.
   (`RoleEntity.replacePermissions`), never by mutating ORM records directly.
 - After changing role/assignment endpoints, run `pnpm generate:api-client` and
   add a changeset.
+
+## Organizations, workspaces & super-admin (Better Auth plugins)
+
+Multi-tenancy and super-admin are provided by Better Auth's **`admin`** and
+**`organization`** plugins, configured in `apps/api/src/auth/auth.ts`. Their
+endpoints live under `/api/auth/*` (not NestJS controllers), so the frontend
+calls them through the `adminClient()` / `organizationClient()` client plugins,
+**not** the generated api-client.
+
+- **Super-admin** — the `admin` plugin (`adminRoles: ['superadmin','admin']`)
+  gates `/api/auth/admin/*` (list/ban/impersonate/set-role) by the user's `role`
+  column. A `superadmin` system role is seeded; `BETTER_AUTH_ADMIN_USER_IDS`
+  bootstraps break-glass super admins by id. This is **separate** from CASL: CASL
+  still governs the app's own REST routes.
+- **Organizations / members / invitations** — the `organization` plugin owns the
+  `organization`, `member`, `invitation` tables. New users get a personal org +
+  default workspace on sign-up (`databaseHooks.user.create.after`); the session
+  carries `activeOrganizationId` / `activeTeamId`. Invitation emails go through
+  the BullMQ email queue (`EmailService.sendInvitation`).
+- **Workspaces = teams** — modelled on the org plugin's teams feature
+  (`team` / `teamMember`).
+- **Org-scoped CASL** — `PoliciesGuard` reads `session.activeOrganizationId` and
+  passes it to `AbilityFactory.createForUser(user, scope)`. Scope tenant
+  resources with a condition placeholder:
+  `{ action: 'read', subject: 'Article', conditions: { organizationId: '${activeOrganizationId}' } }`,
+  then enforce per-row in the handler via `request.ability.can('read', subject('Article', row))`.
+- **Lockout protection** — a system role that grants `manage all` cannot have
+  that rule removed (`RoleErrors.ADMIN_LOCKOUT`, enforced in the update-role
+  command handlers via `RoleEntity.grantsFullAccess`).

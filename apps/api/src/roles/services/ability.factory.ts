@@ -17,6 +17,14 @@ export interface AuthenticatedUser {
   [key: string]: unknown;
 }
 
+/** Request-scoped context used to interpolate resource-scoping conditions. */
+export interface AbilityScope {
+  /** The caller's active organization (from `session.activeOrganizationId`). */
+  activeOrganizationId?: string | null;
+  /** The caller's active workspace/team (from `session.activeTeamId`). */
+  activeTeamId?: string | null;
+}
+
 /**
  * Builds a CASL ability for an authenticated user from the union of every role
  * assigned to them. This replaces the old hardcoded `defineAbilitiesFor(role)`
@@ -37,11 +45,16 @@ export class AbilityFactory {
     private readonly roleRepository: RoleRepositoryPort,
   ) {}
 
-  async createForUser(user: AuthenticatedUser): Promise<AppAbility> {
+  async createForUser(user: AuthenticatedUser, scope: AbilityScope = {}): Promise<AppAbility> {
     const permissions = await this.resolvePermissions(user);
-    // Pass the principal so resource-scoping conditions (e.g. `${user.id}`) can
-    // be interpolated when the ability is built.
-    return defineAbilitiesFromPermissions(permissions, { user });
+    // Pass the principal and active-org scope so resource-scoping conditions
+    // (e.g. `${user.id}`, `${activeOrganizationId}`) can be interpolated when
+    // the ability is built.
+    return defineAbilitiesFromPermissions(permissions, {
+      user,
+      activeOrganizationId: scope.activeOrganizationId ?? null,
+      activeTeamId: scope.activeTeamId ?? null,
+    });
   }
 
   private async resolvePermissions(user: AuthenticatedUser): Promise<PermissionDefinition[]> {
