@@ -1,14 +1,35 @@
 import type { Mapper } from '@flama/backend-ddd';
 import { Injectable } from '@nestjs/common';
 import { SubscriptionOrmEntity } from './database/subscription.orm-entity';
-import { SubscriptionEntity } from './domain/subscription.entity';
+import { SubscriptionEntity, type SyncSubscriptionProps } from './domain/subscription.entity';
 import { SubscriptionResponseDto } from './dtos/subscription.response.dto';
+import type { NormalizedSubscription } from './infrastructure/payment-gateway.port';
 
 /** Maps the subscription aggregate between its domain, persistence and response shapes. */
 @Injectable()
 export class SubscriptionMapper
   implements Mapper<SubscriptionEntity, SubscriptionOrmEntity, SubscriptionResponseDto>
 {
+  /**
+   * Map a payment-gateway subscription (already normalized off the Stripe SDK)
+   * into the domain's sync props — the shape `SubscriptionEntity.sync()` and
+   * `.createNew()` consume when reconciling a webhook.
+   */
+  toSyncProps(data: NormalizedSubscription): SyncSubscriptionProps {
+    return {
+      stripeCustomerId: data.stripeCustomerId,
+      stripePriceId: data.stripePriceId,
+      plan: data.plan,
+      unitAmount: data.unitAmount,
+      currency: data.currency,
+      interval: data.interval,
+      status: data.status,
+      currentPeriodEnd: data.currentPeriodEnd,
+      cancelAtPeriodEnd: data.cancelAtPeriodEnd,
+      canceledAt: data.canceledAt,
+    };
+  }
+
   toPersistence(entity: SubscriptionEntity): SubscriptionOrmEntity {
     const props = entity.getProps();
     const record = new SubscriptionOrmEntity();

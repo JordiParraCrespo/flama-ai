@@ -8,11 +8,12 @@ import {
 import type { BillingCustomerRepositoryPort } from '../../database/billing-customer.repository.port';
 import type { SubscriptionRepositoryPort } from '../../database/subscription.repository.port';
 import { BillingCustomerEntity } from '../../domain/billing-customer.entity';
-import { SubscriptionEntity, type SyncSubscriptionProps } from '../../domain/subscription.entity';
+import { SubscriptionEntity } from '../../domain/subscription.entity';
 import type {
   NormalizedSubscription,
   PaymentGatewayPort,
 } from '../../infrastructure/payment-gateway.port';
+import { SubscriptionMapper } from '../../subscription.mapper';
 import { HandleStripeWebhookCommand } from './handle-stripe-webhook.command';
 
 /**
@@ -33,6 +34,7 @@ export class HandleStripeWebhookService
     private readonly subscriptions: SubscriptionRepositoryPort,
     @Inject(BILLING_CUSTOMER_REPOSITORY)
     private readonly customers: BillingCustomerRepositoryPort,
+    private readonly mapper: SubscriptionMapper,
   ) {}
 
   async execute(command: HandleStripeWebhookCommand): Promise<void> {
@@ -51,7 +53,7 @@ export class HandleStripeWebhookService
     const existing = await this.subscriptions.findOneByStripeId(data.stripeSubscriptionId);
     if (existing.isSome()) {
       const subscription = existing.unwrap();
-      subscription.sync(this.toSyncProps(data));
+      subscription.sync(this.mapper.toSyncProps(data));
       await this.subscriptions.save(subscription);
       return;
     }
@@ -59,7 +61,7 @@ export class HandleStripeWebhookService
     const subscription = SubscriptionEntity.createNew({
       userId,
       stripeSubscriptionId: data.stripeSubscriptionId,
-      ...this.toSyncProps(data),
+      ...this.mapper.toSyncProps(data),
     });
     await this.subscriptions.insert(subscription);
   }
@@ -83,20 +85,5 @@ export class HandleStripeWebhookService
       return data.userId;
     }
     return null;
-  }
-
-  private toSyncProps(data: NormalizedSubscription): SyncSubscriptionProps {
-    return {
-      stripeCustomerId: data.stripeCustomerId,
-      stripePriceId: data.stripePriceId,
-      plan: data.plan,
-      unitAmount: data.unitAmount,
-      currency: data.currency,
-      interval: data.interval,
-      status: data.status,
-      currentPeriodEnd: data.currentPeriodEnd,
-      cancelAtPeriodEnd: data.cancelAtPeriodEnd,
-      canceledAt: data.canceledAt,
-    };
   }
 }
