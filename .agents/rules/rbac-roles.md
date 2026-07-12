@@ -161,6 +161,17 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   default workspace on sign-up (`databaseHooks.user.create.after`); the session
   carries `activeOrganizationId` / `activeTeamId`. Invitation emails go through
   the BullMQ email queue (`EmailService.sendInvitation`).
+- **First-class REST façade** — `apps/api/src/organizations/` and
+  `apps/api/src/admin/` expose the plugin operations as typed, Swagger-documented,
+  CASL-guarded endpoints (`/v1/organizations`, `/v1/organizations/:id/members`,
+  `/v1/organizations/:id/invitations` + `/v1/invitations`, `/v1/workspaces`,
+  `/v1/admin/users`) so they land in the generated `@flama/api-client`. These are
+  **delegating façades**: the controllers/services call `auth.api.*` (via
+  `auth/better-auth.util.ts` — `betterAuthHeaders` + `invokeBetterAuth`) rather
+  than writing the tables, so Better Auth stays the single source of truth. They
+  are infrastructure modules (controller → injectable service → `auth.api`), not
+  CQRS/domain slices, since there is no app-owned aggregate. Impersonation
+  forwards Better Auth's `Set-Cookie` to the client.
 - **Workspaces = teams** — modelled on the org plugin's teams feature
   (`team` / `teamMember`).
 - **Org-scoped CASL** — `PoliciesGuard` reads `session.activeOrganizationId` and

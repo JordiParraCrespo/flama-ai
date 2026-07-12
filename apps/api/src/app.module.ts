@@ -11,6 +11,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { LoggerModule } from 'nestjs-pino';
+import { AdminModule } from './admin/admin.module';
 import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
 import {
@@ -22,6 +23,7 @@ import {
   storageConfig,
 } from './config';
 import { HealthModule } from './health/health.module';
+import { OrganizationsModule } from './organizations/organizations.module';
 import { QueueModule } from './queue/queue.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/user.module';
@@ -83,6 +85,8 @@ import { UsersModule } from './users/user.module';
     AuthModule,
     UsersModule,
     RolesModule,
+    OrganizationsModule,
+    AdminModule,
     HealthModule,
     QueueModule,
   ],
