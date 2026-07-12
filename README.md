@@ -4,18 +4,18 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 
 ## What's included
 
-| App/Package              | Description                                             |
-| ------------------------ | ------------------------------------------------------- |
-| `apps/api`               | NestJS REST API — auth, queues, caching, storage, email |
-| `apps/web`               | Next.js — Tailwind v4, shadcn/ui, next-intl             |
-| `apps/mobile`            | Expo — Tamagui, i18next, SecureStore                    |
-| `apps/docs`              | Docusaurus — project documentation                      |
-| `packages/shared`        | Zod schemas, types, CASL permissions, constants         |
-| `packages/frontend`      | Clean architecture, InversifyJS DI, Zustand stores      |
-| `packages/design-system` | Shared tokens, web + mobile components                  |
-| `packages/api-client`    | Auto-generated typed client from Swagger                |
-| `packages/translations`  | Shared i18n (en/es)                                     |
-| `packages/config`        | Shared TypeScript configs                               |
+| App/Package              | Description                                                        |
+| ------------------------ | ------------------------------------------------------------------ |
+| `apps/api`               | NestJS REST API — auth, queues, caching, storage, email            |
+| `apps/web`               | Vite + TanStack Router SPA — Tailwind v4, shadcn/ui, react-i18next |
+| `apps/mobile`            | Expo — Tamagui, i18next, SecureStore                               |
+| `apps/docs`              | Docusaurus — project documentation                                 |
+| `packages/shared`        | Zod schemas, types, CASL permissions, constants                    |
+| `packages/frontend`      | Clean architecture, InversifyJS DI, Zustand stores                 |
+| `packages/design-system` | Shared tokens, web + mobile components                             |
+| `packages/api-client`    | Auto-generated typed client from Swagger                           |
+| `packages/translations`  | Shared i18n (en/es)                                                |
+| `packages/config`        | Shared TypeScript configs                                          |
 
 ## Quick start
 
@@ -47,7 +47,7 @@ pnpm dev
 
 - **Monorepo**: Turborepo + pnpm
 - **Backend**: NestJS, TypeORM, PostgreSQL, Redis, BullMQ
-- **Web**: Next.js, Tailwind v4, shadcn/ui
+- **Web**: Vite + TanStack Router, Tailwind v4, shadcn/ui
 - **Mobile**: Expo, Tamagui
 - **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
 - **Authorization**: CASL
