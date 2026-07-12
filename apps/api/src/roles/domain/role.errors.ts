@@ -20,4 +20,10 @@ export const RoleErrors = {
     message: 'System roles cannot be deleted or renamed',
     httpStatus: 403,
   },
+  ADMIN_LOCKOUT: {
+    code: 'ROLE_004',
+    message:
+      'A system role that grants full access ("manage all") cannot have that permission removed',
+    httpStatus: 403,
+  },
 } as const satisfies Record<string, ErrorDefinition>;

@@ -62,6 +62,25 @@ export class RoleEntity extends AggregateRoot<RoleProps> {
     return this.props.permissions;
   }
 
+  /**
+   * Whether a permission set grants CASL's wildcard `manage all` (full access).
+   * Used to protect system roles from being stripped of their break-glass
+   * access, which would otherwise lock every admin out of the management API.
+   */
+  static grantsFullAccess(permissions: Permission[]): boolean {
+    return permissions.some(
+      (permission) =>
+        permission.action === 'manage' &&
+        permission.subject === 'all' &&
+        permission.toDefinition().inverted !== true,
+    );
+  }
+
+  /** Whether this role currently grants full access (`manage all`). */
+  hasFullAccess(): boolean {
+    return RoleEntity.grantsFullAccess(this.props.permissions);
+  }
+
   updateDescription(description: string | null): void {
     this.props.description = description ?? null;
     this.setUpdatedAt(new Date());

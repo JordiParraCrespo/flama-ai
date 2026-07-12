@@ -39,6 +39,17 @@ export class UserOrmEntity {
   @Column({ type: 'boolean', default: true })
   isActive!: boolean;
 
+  // --- Better Auth admin plugin (super-admin / moderation) ---
+
+  @Column({ type: 'boolean', default: false })
+  banned!: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  banReason!: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  banExpires!: Date | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

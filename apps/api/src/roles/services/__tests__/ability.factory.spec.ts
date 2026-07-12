@@ -58,6 +58,28 @@ describe('AbilityFactory', () => {
     expect(roleRepo.findOneByName).toHaveBeenCalledWith('admin');
   });
 
+  it('unions the Better Auth `user.role` column with the assigned join roles', async () => {
+    // Simulates an admin-plugin `set-role` promotion: the user keeps their
+    // default `user` join row but `user.role` is now `admin`, so CASL must also
+    // grant the `admin` role's permissions.
+    vi.mocked(userRoleRepo.findRolesForUser).mockResolvedValue([
+      makeRole('user', [Permission.fromDefinition({ action: 'read', subject: 'User' })]),
+    ]);
+    vi.mocked(roleRepo.findOneByName).mockResolvedValue(
+      Some(
+        makeRole('admin', [Permission.fromDefinition({ action: 'manage', subject: 'all' })], true),
+      ),
+    );
+
+    const ability = await factory.createForUser({
+      id: 'user-1',
+      role: 'admin',
+    });
+
+    expect(ability.can('read', 'User')).toBe(true); // from the join role
+    expect(ability.can('delete', 'Role')).toBe(true); // from user.role = admin
+  });
+
   it('falls back to the seeded system-role permissions when the role is not in the DB', async () => {
     vi.mocked(userRoleRepo.findRolesForUser).mockResolvedValue([]);
     vi.mocked(roleRepo.findOneByName).mockResolvedValue(None);

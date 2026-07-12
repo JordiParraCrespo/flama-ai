@@ -18,7 +18,17 @@ export type Subjects = string;
 /** Built-in actions used by the seeded system roles. */
 export const KNOWN_ACTIONS = ['create', 'read', 'update', 'delete', 'manage'] as const;
 /** Built-in subjects used by the seeded system roles. `all` is CASL's wildcard. */
-export const KNOWN_SUBJECTS = ['User', 'Article', 'Role', 'all'] as const;
+export const KNOWN_SUBJECTS = [
+  'User',
+  'Article',
+  'Role',
+  'Organization',
+  'Workspace',
+  'Member',
+  'Invitation',
+  'AuditLog',
+  'all',
+] as const;
 
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
 
@@ -39,9 +49,20 @@ export interface PermissionDefinition {
   reason?: string;
 }
 
-/** Context made available to `${...}` placeholders in permission conditions. */
+/**
+ * Context made available to `${...}` placeholders in permission conditions.
+ *
+ * `user` powers own-resource scoping (`${user.id}`); `activeOrganizationId`
+ * powers tenant scoping (`${activeOrganizationId}`) — the natural hook for
+ * row-level "only within my active organization" rules once resources carry an
+ * `organizationId` column.
+ */
 export interface AbilityContext {
   user?: Record<string, unknown> | null;
+  /** The caller's active organization (from `session.activeOrganizationId`). */
+  activeOrganizationId?: string | null;
+  /** The caller's active workspace/team (from `session.activeTeamId`). */
+  activeTeamId?: string | null;
 }
 
 const PLACEHOLDER = /^\$\{([^}]+)\}$/;
@@ -124,6 +145,7 @@ export function defineAbilitiesFromPermissions(
  * single-role column before a user is migrated to the join table.
  */
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
+  superadmin: [{ action: 'manage', subject: 'all' }],
   admin: [{ action: 'manage', subject: 'all' }],
   user: [
     { action: 'read', subject: 'User' },

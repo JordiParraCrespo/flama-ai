@@ -3,6 +3,7 @@ import type { AggregateID } from '@flama/backend-ddd';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
+import { RoleEntity } from '../../domain/role.entity';
 import { RoleErrors } from '../../domain/role.errors';
 import { Permission } from '../../domain/value-objects/permission.value-object';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
@@ -23,9 +24,17 @@ export class UpdateRolePermissionsService
     if (found.isNone()) throw new AppError(RoleErrors.NOT_FOUND);
 
     const role = found.unwrap();
-    role.replacePermissions(
-      command.permissions.map((permission) => Permission.fromDefinition(permission)),
+    const permissions = command.permissions.map((permission) =>
+      Permission.fromDefinition(permission),
     );
+
+    // Never let a full-access system role (e.g. `admin`) be stripped of its
+    // `manage all` rule — that would lock every admin out of the platform.
+    if (role.isSystem && role.hasFullAccess() && !RoleEntity.grantsFullAccess(permissions)) {
+      throw new AppError(RoleErrors.ADMIN_LOCKOUT);
+    }
+
+    role.replacePermissions(permissions);
 
     await this.roleRepository.save(role);
     return role.id;

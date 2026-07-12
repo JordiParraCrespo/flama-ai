@@ -135,3 +135,50 @@ from the legacy `user.role` column.
   (`RoleEntity.replacePermissions`), never by mutating ORM records directly.
 - After changing role/assignment endpoints, run `pnpm generate:api-client` and
   add a changeset.
+
+## Organizations, workspaces & super-admin (Better Auth plugins)
+
+Multi-tenancy and super-admin are provided by Better Auth's **`admin`** and
+**`organization`** plugins, configured in `apps/api/src/auth/auth.ts`. Their
+endpoints live under `/api/auth/*` (not NestJS controllers), so the frontend
+calls them through the `adminClient()` / `organizationClient()` client plugins,
+**not** the generated api-client.
+
+- **Super-admin** — the `admin` plugin (`adminRoles: ['superadmin','admin']`)
+  gates `/api/auth/admin/*` (list/ban/impersonate/set-role) by the user's `role`
+  column. A `superadmin` system role is seeded; `BETTER_AUTH_ADMIN_USER_IDS`
+  bootstraps break-glass super admins by id. This is **separate** from CASL: CASL
+  still governs the app's own REST routes.
+- **Two role stores, kept in sync** — the admin plugin's `set-role` writes the
+  single `user.role` column; the app's dynamic RBAC lives in the `user_role`
+  join. `AbilityFactory` builds the CASL ability from the **union** of both (the
+  join roles _and_ the `user.role` column's role), so an admin-plugin promotion
+  flows into CASL and vice-versa. Fine-grained per-role permissions still come
+  from `user_role` (assign via `PUT /v1/users/:userId/roles`); `user.role` is a
+  single system-role name for admin-plugin gating.
+- **Organizations / members / invitations** — the `organization` plugin owns the
+  `organization`, `member`, `invitation` tables. New users get a personal org +
+  default workspace on sign-up (`databaseHooks.user.create.after`); the session
+  carries `activeOrganizationId` / `activeTeamId`. Invitation emails go through
+  the BullMQ email queue (`EmailService.sendInvitation`).
+- **First-class REST façade** — `apps/api/src/organizations/` and
+  `apps/api/src/admin/` expose the plugin operations as typed, Swagger-documented,
+  CASL-guarded endpoints (`/v1/organizations`, `/v1/organizations/:id/members`,
+  `/v1/organizations/:id/invitations` + `/v1/invitations`, `/v1/workspaces`,
+  `/v1/admin/users`) so they land in the generated `@flama/api-client`. These are
+  **delegating façades**: the controllers/services call `auth.api.*` (via
+  `auth/better-auth.util.ts` — `betterAuthHeaders` + `invokeBetterAuth`) rather
+  than writing the tables, so Better Auth stays the single source of truth. They
+  are infrastructure modules (controller → injectable service → `auth.api`), not
+  CQRS/domain slices, since there is no app-owned aggregate. Impersonation
+  forwards Better Auth's `Set-Cookie` to the client.
+- **Workspaces = teams** — modelled on the org plugin's teams feature
+  (`team` / `teamMember`).
+- **Org-scoped CASL** — `PoliciesGuard` reads `session.activeOrganizationId` and
+  passes it to `AbilityFactory.createForUser(user, scope)`. Scope tenant
+  resources with a condition placeholder:
+  `{ action: 'read', subject: 'Article', conditions: { organizationId: '${activeOrganizationId}' } }`,
+  then enforce per-row in the handler via `request.ability.can('read', subject('Article', row))`.
+- **Lockout protection** — a system role that grants `manage all` cannot have
+  that rule removed (`RoleErrors.ADMIN_LOCKOUT`, enforced in the update-role
+  command handlers via `RoleEntity.grantsFullAccess`).
