@@ -13,6 +13,7 @@ import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { LoggerModule } from 'nestjs-pino';
 import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
+import { BillingModule } from './billing/billing.module';
 import {
   appConfig,
   databaseConfig,
@@ -20,6 +21,7 @@ import {
   oauthConfig,
   redisConfig,
   storageConfig,
+  stripeConfig,
 } from './config';
 import { HealthModule } from './health/health.module';
 import { QueueModule } from './queue/queue.module';
@@ -30,7 +32,15 @@ import { UsersModule } from './users/user.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, redisConfig, emailConfig, storageConfig, oauthConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        emailConfig,
+        storageConfig,
+        oauthConfig,
+        stripeConfig,
+      ],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -79,12 +89,19 @@ import { UsersModule } from './users/user.module';
     EmailModule.register(),
     StorageModule.register(),
     CacheModule.register(),
-    BetterAuthModule.forRoot({ auth, disableGlobalAuthGuard: true }),
+    // `bodyParser.rawBody` attaches the raw request buffer to `req.rawBody`,
+    // which the Stripe webhook controller needs for signature verification.
+    BetterAuthModule.forRoot({
+      auth,
+      disableGlobalAuthGuard: true,
+      bodyParser: { rawBody: true },
+    }),
     AuthModule,
     UsersModule,
     RolesModule,
     HealthModule,
     QueueModule,
+    BillingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

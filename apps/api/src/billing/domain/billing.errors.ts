@@ -1,0 +1,33 @@
+import type { ErrorDefinition } from '@flama/backend-ddd';
+
+/**
+ * Billing domain error catalog. Surfaced as HTTP responses by the global
+ * `AllExceptionsFilter` via `AppError`.
+ */
+export const BillingErrors = {
+  NOT_CONFIGURED: {
+    code: 'BILLING_001',
+    message: 'Billing is not configured on this server',
+    httpStatus: 503,
+  },
+  CUSTOMER_NOT_FOUND: {
+    code: 'BILLING_002',
+    message: 'No billing customer exists for this user',
+    httpStatus: 404,
+  },
+  SUBSCRIPTION_NOT_FOUND: {
+    code: 'BILLING_003',
+    message: 'No subscription found',
+    httpStatus: 404,
+  },
+  WEBHOOK_SIGNATURE_INVALID: {
+    code: 'BILLING_004',
+    message: 'Invalid Stripe webhook signature',
+    httpStatus: 400,
+  },
+  CHECKOUT_FAILED: {
+    code: 'BILLING_005',
+    message: 'Failed to create a Stripe Checkout session',
+    httpStatus: 502,
+  },
+} as const satisfies Record<string, ErrorDefinition>;
