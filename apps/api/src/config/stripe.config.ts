@@ -16,12 +16,18 @@ const schema = z.object({
   portalReturnUrl: z.string().url().optional(),
 });
 
+/** Treat unset OR blank ("STRIPE_X=") env vars alike, so `.url().optional()` boots. */
+const orUndefined = (value: string | undefined): string | undefined => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+};
+
 export const stripeConfig = registerAs('stripe', () => {
   return schema.parse({
-    secretKey: process.env.STRIPE_SECRET_KEY,
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-    successUrl: process.env.STRIPE_SUCCESS_URL,
-    cancelUrl: process.env.STRIPE_CANCEL_URL,
-    portalReturnUrl: process.env.STRIPE_PORTAL_RETURN_URL,
+    secretKey: orUndefined(process.env.STRIPE_SECRET_KEY),
+    webhookSecret: orUndefined(process.env.STRIPE_WEBHOOK_SECRET),
+    successUrl: orUndefined(process.env.STRIPE_SUCCESS_URL),
+    cancelUrl: orUndefined(process.env.STRIPE_CANCEL_URL),
+    portalReturnUrl: orUndefined(process.env.STRIPE_PORTAL_RETURN_URL),
   });
 });

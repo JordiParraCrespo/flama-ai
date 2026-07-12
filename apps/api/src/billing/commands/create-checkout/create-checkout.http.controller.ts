@@ -21,6 +21,10 @@ export class CreateCheckoutHttpController {
   })
   @ApiResponse({ status: 201, type: BillingSessionResponseDto })
   @ApiResponse({
+    status: 409,
+    description: 'BILLING_006: This user already has an active subscription',
+  })
+  @ApiResponse({
     status: 503,
     description: 'BILLING_001: Billing is not configured',
   })

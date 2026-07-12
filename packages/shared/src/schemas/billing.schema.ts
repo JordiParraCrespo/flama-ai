@@ -66,17 +66,29 @@ export const subscriptionResponseSchema = z.object({
 });
 export type SubscriptionResponse = z.infer<typeof subscriptionResponseSchema>;
 
+/** Monthly Recurring Revenue for a single currency (minor units). */
+export const currencyMrrSchema = z.object({
+  currency: z.string(),
+  mrr: z.number().int(),
+});
+export type CurrencyMrr = z.infer<typeof currencyMrrSchema>;
+
 /**
  * Aggregate revenue metrics for the admin dashboard, computed locally from the
  * synced subscription table (no live Stripe calls).
  */
 export const revenueMetricsResponseSchema = z.object({
-  /** Currency the monetary figures are reported in (minor units). */
+  /**
+   * Currency of the headline `mrr`/`arr` — the currency with the highest MRR.
+   * Use `mrrByCurrency` for the full breakdown on multi-currency accounts.
+   */
   currency: z.string(),
-  /** Monthly Recurring Revenue in minor units (yearly plans normalized /12). */
+  /** Headline Monthly Recurring Revenue in `currency`'s minor units (yearly /12). */
   mrr: z.number().int(),
-  /** Annual Recurring Revenue in minor units (`mrr * 12`). */
+  /** Headline Annual Recurring Revenue in minor units (`mrr * 12`). */
   arr: z.number().int(),
+  /** Per-currency MRR breakdown (never mixes currencies into one total). */
+  mrrByCurrency: z.array(currencyMrrSchema),
   activeSubscriptions: z.number().int(),
   trialingSubscriptions: z.number().int(),
   pastDueSubscriptions: z.number().int(),

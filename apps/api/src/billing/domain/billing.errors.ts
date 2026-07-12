@@ -30,4 +30,9 @@ export const BillingErrors = {
     message: 'Failed to create a Stripe Checkout session',
     httpStatus: 502,
   },
+  ALREADY_SUBSCRIBED: {
+    code: 'BILLING_006',
+    message: 'This user already has an active subscription',
+    httpStatus: 409,
+  },
 } as const satisfies Record<string, ErrorDefinition>;

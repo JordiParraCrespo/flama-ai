@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { SubscriptionActivatedDomainEvent } from '../events/subscription-activated.domain-event';
-import { SubscriptionCanceledDomainEvent } from '../events/subscription-canceled.domain-event';
-import { SubscriptionEntity, type SyncSubscriptionProps } from '../subscription.entity';
+import { SubscriptionActivatedDomainEvent } from '../domain/events/subscription-activated.domain-event';
+import { SubscriptionCanceledDomainEvent } from '../domain/events/subscription-canceled.domain-event';
+import { SubscriptionEntity, type SyncSubscriptionProps } from '../domain/subscription.entity';
 
 const baseSync = (overrides: Partial<SyncSubscriptionProps> = {}): SyncSubscriptionProps => ({
   stripeCustomerId: 'cus_1',

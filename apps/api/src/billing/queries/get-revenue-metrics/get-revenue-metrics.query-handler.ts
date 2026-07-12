@@ -47,25 +47,30 @@ export class GetRevenueMetricsQueryHandler
       new Date(Date.now() - THIRTY_DAYS_MS),
     );
 
-    let mrr = 0;
-    let currency = 'usd';
+    // Sum MRR per currency so mixed-currency accounts are never conflated.
+    const mrrPerCurrency = new Map<string, number>();
     for (const subscription of revenueSubscriptions) {
       const props = subscription.getProps();
-      if (props.unitAmount != null) {
-        mrr += toMonthlyAmount(props.unitAmount, props.interval);
-      }
-      if (props.currency) currency = props.currency;
+      if (props.unitAmount == null || !props.currency) continue;
+      const monthly = toMonthlyAmount(props.unitAmount, props.interval);
+      mrrPerCurrency.set(props.currency, (mrrPerCurrency.get(props.currency) ?? 0) + monthly);
     }
-    mrr = Math.round(mrr);
+
+    const mrrByCurrency = [...mrrPerCurrency.entries()]
+      .map(([currency, sum]) => ({ currency, mrr: Math.round(sum) }))
+      .sort((a, b) => b.mrr - a.mrr);
+    // Headline figures use the dominant currency (highest MRR), never a mix.
+    const headline = mrrByCurrency[0] ?? { currency: 'usd', mrr: 0 };
 
     const activeLike = active + trialing + pastDue;
     const churnDenominator = activeLike + canceledLast30Days;
     const churnRate = churnDenominator > 0 ? canceledLast30Days / churnDenominator : 0;
 
     const dto = new RevenueMetricsResponseDto();
-    dto.currency = currency;
-    dto.mrr = mrr;
-    dto.arr = mrr * 12;
+    dto.currency = headline.currency;
+    dto.mrr = headline.mrr;
+    dto.arr = headline.mrr * 12;
+    dto.mrrByCurrency = mrrByCurrency;
     dto.activeSubscriptions = active;
     dto.trialingSubscriptions = trialing;
     dto.pastDueSubscriptions = pastDue;
