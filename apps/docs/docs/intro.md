@@ -10,7 +10,7 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 ## What's included
 
 - **apps/api** — NestJS REST API with auth, queues, caching, and more
-- **apps/web** — Next.js with Tailwind v4 and shadcn/ui
+- **apps/web** — Vite + TanStack Router SPA with Tailwind v4 and shadcn/ui
 - **apps/mobile** — Expo (React Native) with Tamagui
 - **apps/docs** — This documentation site (Docusaurus)
 - **packages/shared** — Zod schemas, types, CASL permissions

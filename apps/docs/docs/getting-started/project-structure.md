@@ -10,7 +10,7 @@ flama/
 │   ├── api/              # NestJS REST API
 │   ├── docs/             # Docusaurus documentation
 │   ├── mobile/           # Expo (React Native)
-│   └── web/              # Next.js
+│   └── web/              # Vite + TanStack Router SPA
 ├── packages/
 │   ├── api-client/       # Auto-generated typed API client
 │   ├── backend/

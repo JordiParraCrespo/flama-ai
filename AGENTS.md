@@ -12,7 +12,7 @@ flama/
 │   ├── api/              # NestJS REST API
 │   ├── docs/             # Docusaurus documentation
 │   ├── mobile/           # Expo (React Native)
-│   └── web/              # Next.js
+│   └── web/              # Vite + TanStack Router SPA
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
 │   ├── backend/
@@ -92,10 +92,10 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 
 ### Web (apps/web)
 
-- Next.js with `output: "standalone"` for Docker
+- Vite SPA built to static assets, served by nginx in Docker
 - Tailwind CSS v4, shadcn/ui components
-- next-intl for i18n (translations from `packages/translations`)
-- @t3-oss/env-nextjs for env validation
+- react-i18next for i18n (translations from `packages/translations`)
+- Vite env vars (`import.meta.env`, `VITE_`-prefixed) for configuration
 
 ### Mobile (apps/mobile)
 
