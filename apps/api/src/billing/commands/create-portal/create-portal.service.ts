@@ -26,15 +26,19 @@ export class CreatePortalService implements ICommandHandler<CreatePortalCommand,
     const customer = await this.customers.findOneByUserId(command.userId);
     if (customer.isNone()) throw new AppError(BillingErrors.CUSTOMER_NOT_FOUND);
 
-    const frontendUrl = this.configService.get<string>('app.frontendUrl') ?? '';
-    const returnUrl =
-      command.returnUrl ??
-      this.configService.get<string>('stripe.portalReturnUrl') ??
-      `${frontendUrl}/billing`;
-
     return this.gateway.createPortalSession({
       customerId: customer.unwrap().stripeCustomerId,
-      returnUrl,
+      returnUrl: command.returnUrl ?? this.defaultReturnUrl,
     });
+  }
+
+  private get frontendUrl(): string {
+    return this.configService.get<string>('app.frontendUrl') ?? '';
+  }
+
+  private get defaultReturnUrl(): string {
+    return (
+      this.configService.get<string>('stripe.portalReturnUrl') ?? `${this.frontendUrl}/billing`
+    );
   }
 }

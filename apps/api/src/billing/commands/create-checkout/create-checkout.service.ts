@@ -44,22 +44,13 @@ export class CreateCheckoutService implements ICommandHandler<CreateCheckoutComm
     }
 
     const customerId = await this.ensureCustomer(command.userId, command.email);
-    const frontendUrl = this.configService.get<string>('app.frontendUrl') ?? '';
-    const successUrl =
-      command.successUrl ??
-      this.configService.get<string>('stripe.successUrl') ??
-      `${frontendUrl}/billing?status=success`;
-    const cancelUrl =
-      command.cancelUrl ??
-      this.configService.get<string>('stripe.cancelUrl') ??
-      `${frontendUrl}/billing?status=cancelled`;
 
     return this.gateway.createCheckoutSession({
       customerId,
       priceId: command.priceId,
       userId: command.userId,
-      successUrl,
-      cancelUrl,
+      successUrl: command.successUrl ?? this.defaultSuccessUrl,
+      cancelUrl: command.cancelUrl ?? this.defaultCancelUrl,
     });
   }
 
@@ -74,5 +65,23 @@ export class CreateCheckoutService implements ICommandHandler<CreateCheckoutComm
     });
     await this.customers.insert(BillingCustomerEntity.createNew({ userId, stripeCustomerId }));
     return stripeCustomerId;
+  }
+
+  private get frontendUrl(): string {
+    return this.configService.get<string>('app.frontendUrl') ?? '';
+  }
+
+  private get defaultSuccessUrl(): string {
+    return (
+      this.configService.get<string>('stripe.successUrl') ??
+      `${this.frontendUrl}/billing?status=success`
+    );
+  }
+
+  private get defaultCancelUrl(): string {
+    return (
+      this.configService.get<string>('stripe.cancelUrl') ??
+      `${this.frontendUrl}/billing?status=cancelled`
+    );
   }
 }
