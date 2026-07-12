@@ -47,7 +47,7 @@ pnpm --filter @flama/api dev                # watch mode
 pnpm --filter @flama/api arch               # dependency-cruiser boundary check
 pnpm --filter @flama/api test               # unit tests
 pnpm --filter @flama/api test:integration   # needs Docker (Postgres + Redis)
-pnpm --filter @flama/api migration:generate # generate a migration
+pnpm --filter @flama/api migration:generate -- src/migrations/<Name>  # generate a migration (name/path is required)
 pnpm --filter @flama/api migration:run
 pnpm --filter @flama/api generate:openapi   # emit openapi.json
 ```
