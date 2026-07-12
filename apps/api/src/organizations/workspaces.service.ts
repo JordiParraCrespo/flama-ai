@@ -7,7 +7,12 @@ import type {
   WorkspaceMemberResponseDto,
   WorkspaceResponseDto,
 } from './dtos/workspace.response.dto';
-import { mapWorkspace, mapWorkspaceMember } from './organization.mappers';
+import {
+  mapWorkspace,
+  mapWorkspaceMember,
+  mapWorkspaceMembers,
+  mapWorkspaces,
+} from './organization.mappers';
 
 /**
  * Delegating façade over the Better Auth organization plugin's team endpoints.
@@ -29,7 +34,7 @@ export class WorkspacesService {
         headers: this.headers(headers),
       }),
     );
-    return mapWorkspace(result as Record<string, unknown>);
+    return mapWorkspace(result);
   }
 
   async update(
@@ -43,7 +48,7 @@ export class WorkspacesService {
         headers: this.headers(headers),
       }),
     );
-    return mapWorkspace(result as Record<string, unknown>);
+    return mapWorkspace(result);
   }
 
   async remove(headers: IncomingHttpHeaders, teamId: string): Promise<void> {
@@ -62,7 +67,7 @@ export class WorkspacesService {
         headers: this.headers(headers),
       }),
     );
-    return result ? mapWorkspace(result as Record<string, unknown>) : null;
+    return result ? mapWorkspace(result) : null;
   }
 
   async listForOrganization(
@@ -75,14 +80,14 @@ export class WorkspacesService {
         headers: this.headers(headers),
       }),
     );
-    return (result as Record<string, unknown>[]).map(mapWorkspace);
+    return mapWorkspaces(result);
   }
 
   async listForCaller(headers: IncomingHttpHeaders): Promise<WorkspaceResponseDto[]> {
     const result = await invokeBetterAuth(() =>
       auth.api.listUserTeams({ headers: this.headers(headers) }),
     );
-    return (result as Record<string, unknown>[]).map(mapWorkspace);
+    return mapWorkspaces(result);
   }
 
   async listMembers(
@@ -95,7 +100,7 @@ export class WorkspacesService {
         headers: this.headers(headers),
       }),
     );
-    return (result as Record<string, unknown>[]).map(mapWorkspaceMember);
+    return mapWorkspaceMembers(result);
   }
 
   async addMember(
@@ -109,7 +114,7 @@ export class WorkspacesService {
         headers: this.headers(headers),
       }),
     );
-    return mapWorkspaceMember(result as Record<string, unknown>);
+    return mapWorkspaceMember(result);
   }
 
   async removeMember(headers: IncomingHttpHeaders, teamId: string, userId: string): Promise<void> {

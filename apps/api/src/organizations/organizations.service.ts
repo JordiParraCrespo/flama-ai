@@ -4,20 +4,27 @@ import type { AddMemberDto, CreateOrganizationDto, UpdateOrganizationDto } from 
 import { Injectable } from '@nestjs/common';
 import { APIError } from 'better-auth/api';
 import { auth } from '../auth/auth';
-import { betterAuthHeaders, invokeBetterAuth } from '../auth/better-auth.util';
+import { betterAuthHeaders, invokeBetterAuth, unwrap, unwrapArray } from '../auth/better-auth.util';
 import type {
   FullOrganizationResponseDto,
   MemberResponseDto,
   OrganizationResponseDto,
   SlugAvailabilityResponseDto,
 } from './dtos/organization.response.dto';
-import { mapFullOrganization, mapMember, mapOrganization } from './organization.mappers';
+import {
+  mapFullOrganization,
+  mapMember,
+  mapMembers,
+  mapOrganization,
+  mapOrganizations,
+} from './organization.mappers';
 
 /**
  * Delegating façade over the Better Auth organization plugin's server API
  * (`auth.api.*`). Better Auth remains the single source of truth for the
  * organization / member tables and enforces its own owner/admin/member rules;
  * this service adds a typed, Swagger-documented, CASL-guarded REST surface.
+ * Response normalization lives in `organization.mappers.ts`.
  */
 @Injectable()
 export class OrganizationsService {
@@ -50,7 +57,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapOrganization(result as Record<string, unknown>);
+    return mapOrganization(result);
   }
 
   async update(
@@ -64,7 +71,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapOrganization(result as Record<string, unknown>);
+    return mapOrganization(result);
   }
 
   async delete(
@@ -77,7 +84,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapOrganization(result as Record<string, unknown>);
+    return mapOrganization(result);
   }
 
   async setActive(
@@ -90,14 +97,14 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return result ? mapOrganization(result as Record<string, unknown>) : null;
+    return result ? mapOrganization(result) : null;
   }
 
   async list(headers: IncomingHttpHeaders): Promise<OrganizationResponseDto[]> {
     const result = await invokeBetterAuth(() =>
       auth.api.listOrganizations({ headers: this.headers(headers) }),
     );
-    return (result as Record<string, unknown>[]).map(mapOrganization);
+    return mapOrganizations(result);
   }
 
   async getFull(
@@ -110,7 +117,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return result ? mapFullOrganization(result as Record<string, unknown>) : null;
+    return result ? mapFullOrganization(result) : null;
   }
 
   /** Slug availability — Better Auth throws when a slug is taken; translate that to a boolean. */
@@ -142,8 +149,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    const members = (result as { members?: Record<string, unknown>[] }).members ?? [];
-    return members.map(mapMember);
+    return mapMembers(unwrapArray(result, 'members'));
   }
 
   async addMember(
@@ -162,7 +168,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapMember(result as Record<string, unknown>);
+    return mapMember(result);
   }
 
   async removeMember(
@@ -176,8 +182,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    const member = (result as { member?: Record<string, unknown> }).member ?? {};
-    return mapMember(member);
+    return mapMember(unwrap(result, 'member'));
   }
 
   async updateMemberRole(
@@ -192,7 +197,7 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapMember(result as Record<string, unknown>);
+    return mapMember(result);
   }
 
   async leave(headers: IncomingHttpHeaders, organizationId: string): Promise<MemberResponseDto> {
@@ -202,13 +207,13 @@ export class OrganizationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapMember(result as Record<string, unknown>);
+    return mapMember(result);
   }
 
   async getActiveMember(headers: IncomingHttpHeaders): Promise<MemberResponseDto> {
     const result = await invokeBetterAuth(() =>
       auth.api.getActiveMember({ headers: this.headers(headers) }),
     );
-    return mapMember(result as Record<string, unknown>);
+    return mapMember(result);
   }
 }

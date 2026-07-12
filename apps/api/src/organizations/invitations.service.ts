@@ -2,9 +2,9 @@ import type { IncomingHttpHeaders } from 'node:http';
 import type { InviteMemberDto } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { auth } from '../auth/auth';
-import { betterAuthHeaders, invokeBetterAuth } from '../auth/better-auth.util';
+import { betterAuthHeaders, invokeBetterAuth, unwrap } from '../auth/better-auth.util';
 import type { InvitationResponseDto } from './dtos/organization.response.dto';
-import { mapInvitation } from './organization.mappers';
+import { mapInvitation, mapInvitations } from './organization.mappers';
 
 /** Delegating façade over the Better Auth organization plugin's invitation endpoints. */
 @Injectable()
@@ -29,7 +29,7 @@ export class InvitationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapInvitation(result as Record<string, unknown>);
+    return mapInvitation(result);
   }
 
   async accept(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
@@ -39,8 +39,7 @@ export class InvitationsService {
         headers: this.headers(headers),
       }),
     );
-    const invitation = (result as { invitation?: Record<string, unknown> }).invitation ?? {};
-    return mapInvitation(invitation);
+    return mapInvitation(unwrap(result, 'invitation'));
   }
 
   async reject(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
@@ -50,8 +49,7 @@ export class InvitationsService {
         headers: this.headers(headers),
       }),
     );
-    const invitation = (result as { invitation?: Record<string, unknown> }).invitation ?? {};
-    return mapInvitation(invitation);
+    return mapInvitation(unwrap(result, 'invitation'));
   }
 
   async cancel(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
@@ -61,7 +59,7 @@ export class InvitationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapInvitation(result as Record<string, unknown>);
+    return mapInvitation(result);
   }
 
   async get(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
@@ -71,7 +69,7 @@ export class InvitationsService {
         headers: this.headers(headers),
       }),
     );
-    return mapInvitation(result as Record<string, unknown>);
+    return mapInvitation(result);
   }
 
   async listForOrganization(
@@ -84,13 +82,13 @@ export class InvitationsService {
         headers: this.headers(headers),
       }),
     );
-    return (result as Record<string, unknown>[]).map(mapInvitation);
+    return mapInvitations(result);
   }
 
   async listForCaller(headers: IncomingHttpHeaders): Promise<InvitationResponseDto[]> {
     const result = await invokeBetterAuth(() =>
       auth.api.listUserInvitations({ headers: this.headers(headers) }),
     );
-    return (result as Record<string, unknown>[]).map(mapInvitation);
+    return mapInvitations(result);
   }
 }

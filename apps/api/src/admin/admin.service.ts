@@ -3,13 +3,12 @@ import type { AdminCreateUserDto, AdminUpdateUserDto, ListUsersQuery } from '@fl
 import { Injectable } from '@nestjs/common';
 import { auth } from '../auth/auth';
 import { betterAuthHeaders, invokeBetterAuth } from '../auth/better-auth.util';
+import { mapSessionsFromResult, mapSuccess, mapUserFromResult, mapUserList } from './admin.mappers';
 import type {
   AdminSessionResponseDto,
   AdminUserListResponseDto,
   AdminUserResponseDto,
 } from './dtos/admin-user.response.dto';
-
-type Raw = Record<string, unknown>;
 
 /**
  * Better Auth infers the admin `role` type from the configured `adminRoles`.
@@ -20,44 +19,11 @@ function asAdminRole(role: string | string[]): AdminRole | AdminRole[] {
   return role as AdminRole | AdminRole[];
 }
 
-function toDate(value: unknown): Date {
-  return value instanceof Date ? value : new Date(value as string);
-}
-function toDateOrNull(value: unknown): Date | null {
-  return value == null ? null : toDate(value);
-}
-
-function mapUser(u: Raw): AdminUserResponseDto {
-  return {
-    id: String(u.id),
-    email: String(u.email),
-    name: String(u.name ?? ''),
-    role: (u.role as string | null) ?? null,
-    emailVerified: Boolean(u.emailVerified),
-    banned: Boolean(u.banned),
-    banReason: (u.banReason as string | null) ?? null,
-    banExpires: toDateOrNull(u.banExpires),
-    createdAt: toDate(u.createdAt),
-  };
-}
-
-function mapSession(s: Raw): AdminSessionResponseDto {
-  return {
-    id: String(s.id),
-    userId: String(s.userId),
-    token: String(s.token ?? ''),
-    expiresAt: toDate(s.expiresAt),
-    ipAddress: (s.ipAddress as string | null) ?? null,
-    userAgent: (s.userAgent as string | null) ?? null,
-    createdAt: toDate(s.createdAt),
-  };
-}
-
 /**
  * Delegating façade over the Better Auth **admin** plugin (`auth.api.*`).
- * Provides super-admin user management. Impersonation issues a session cookie,
- * so those calls return Better Auth's response headers for the controller to
- * forward to the client.
+ * Provides super-admin user management. Response normalization lives in
+ * `admin.mappers.ts`; impersonation issues a session cookie, so those calls
+ * return Better Auth's response headers for the controller to forward.
  */
 @Injectable()
 export class AdminService {
@@ -69,7 +35,7 @@ export class AdminService {
     headers: IncomingHttpHeaders,
     query: Partial<ListUsersQuery>,
   ): Promise<AdminUserListResponseDto> {
-    const result = (await invokeBetterAuth(() =>
+    const result = await invokeBetterAuth(() =>
       auth.api.listUsers({
         query: {
           searchValue: query.searchValue,
@@ -81,25 +47,15 @@ export class AdminService {
         },
         headers: this.headers(headers),
       }),
-    )) as unknown as {
-      users?: Raw[];
-      total?: number;
-      limit?: number;
-      offset?: number;
-    };
-    return {
-      users: (result.users ?? []).map(mapUser),
-      total: result.total ?? 0,
-      limit: result.limit ?? null,
-      offset: result.offset ?? null,
-    };
+    );
+    return mapUserList(result);
   }
 
   async getUser(headers: IncomingHttpHeaders, id: string): Promise<AdminUserResponseDto> {
     const result = await invokeBetterAuth(() =>
       auth.api.getUser({ query: { id }, headers: this.headers(headers) }),
     );
-    return mapUser(result as unknown as Raw);
+    return mapUserFromResult(result);
   }
 
   async createUser(
@@ -117,8 +73,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    const user = (result as unknown as { user?: Raw }).user ?? (result as unknown as Raw);
-    return mapUser(user);
+    return mapUserFromResult(result);
   }
 
   async updateUser(
@@ -132,7 +87,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    return mapUser(result as unknown as Raw);
+    return mapUserFromResult(result);
   }
 
   async setRole(
@@ -146,8 +101,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    const user = (result as unknown as { user?: Raw }).user ?? (result as unknown as Raw);
-    return mapUser(user);
+    return mapUserFromResult(result);
   }
 
   async ban(
@@ -165,8 +119,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    const user = (result as unknown as { user?: Raw }).user ?? (result as unknown as Raw);
-    return mapUser(user);
+    return mapUserFromResult(result);
   }
 
   async unban(headers: IncomingHttpHeaders, id: string): Promise<AdminUserResponseDto> {
@@ -176,8 +129,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    const user = (result as unknown as { user?: Raw }).user ?? (result as unknown as Raw);
-    return mapUser(user);
+    return mapUserFromResult(result);
   }
 
   async remove(headers: IncomingHttpHeaders, id: string): Promise<{ success: boolean }> {
@@ -187,9 +139,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    return {
-      success: Boolean((result as unknown as { success?: boolean }).success),
-    };
+    return mapSuccess(result);
   }
 
   async listSessions(headers: IncomingHttpHeaders, id: string): Promise<AdminSessionResponseDto[]> {
@@ -199,8 +149,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    const sessions = (result as unknown as { sessions?: Raw[] }).sessions ?? [];
-    return sessions.map(mapSession);
+    return mapSessionsFromResult(result);
   }
 
   async revokeSession(
@@ -213,9 +162,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    return {
-      success: Boolean((result as unknown as { success?: boolean }).success),
-    };
+    return mapSuccess(result);
   }
 
   async revokeAllSessions(headers: IncomingHttpHeaders, id: string): Promise<{ success: boolean }> {
@@ -225,9 +172,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    return {
-      success: Boolean((result as unknown as { success?: boolean }).success),
-    };
+    return mapSuccess(result);
   }
 
   async setPassword(
@@ -241,9 +186,7 @@ export class AdminService {
         headers: this.headers(headers),
       }),
     );
-    return {
-      success: Boolean((result as unknown as { status?: boolean }).status),
-    };
+    return mapSuccess(result);
   }
 
   /**
@@ -261,8 +204,7 @@ export class AdminService {
         returnHeaders: true,
       }),
     );
-    const user = (response as unknown as { user?: Raw }).user ?? {};
-    return { user: mapUser(user), headers: outHeaders };
+    return { user: mapUserFromResult(response), headers: outHeaders };
   }
 
   /** Stop impersonating and restore the admin session (also cookie-setting). */
@@ -275,7 +217,6 @@ export class AdminService {
         returnHeaders: true,
       }),
     );
-    const user = (response as unknown as { user?: Raw }).user ?? {};
-    return { user: mapUser(user), headers: outHeaders };
+    return { user: mapUserFromResult(response), headers: outHeaders };
   }
 }

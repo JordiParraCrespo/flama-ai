@@ -1,3 +1,4 @@
+import { asArray, asRecord } from '../auth/better-auth.util';
 import type {
   FullOrganizationResponseDto,
   InvitationResponseDto,
@@ -12,11 +13,10 @@ import type {
 /**
  * Pure mappers from Better Auth organization-plugin API results to the module's
  * response DTOs. Kept framework-free so both the services and any tests can
- * reuse them. Inputs are typed loosely because Better Auth's inferred return
- * types are broad; only the fields the DTO needs are read.
+ * reuse them. Every mapper accepts `unknown` and narrows once via `asRecord`,
+ * so the services stay cast-free; this is where all response normalization
+ * (coercion, envelope unwrapping, date parsing) lives.
  */
-
-type Raw = Record<string, unknown>;
 
 function toDate(value: unknown): Date {
   return value instanceof Date ? value : new Date(value as string);
@@ -35,10 +35,11 @@ function parseMetadata(value: unknown): Record<string, unknown> | null {
       return null;
     }
   }
-  return value as Record<string, unknown>;
+  return asRecord(value);
 }
 
-export function mapOrganization(o: Raw): OrganizationResponseDto {
+export function mapOrganization(input: unknown): OrganizationResponseDto {
+  const o = asRecord(input);
   return {
     id: String(o.id),
     name: String(o.name),
@@ -49,7 +50,8 @@ export function mapOrganization(o: Raw): OrganizationResponseDto {
   };
 }
 
-export function mapMember(m: Raw): MemberResponseDto {
+export function mapMember(input: unknown): MemberResponseDto {
+  const m = asRecord(input);
   return {
     id: String(m.id),
     organizationId: String(m.organizationId),
@@ -59,7 +61,8 @@ export function mapMember(m: Raw): MemberResponseDto {
   };
 }
 
-export function mapInvitation(i: Raw): InvitationResponseDto {
+export function mapInvitation(input: unknown): InvitationResponseDto {
+  const i = asRecord(input);
   return {
     id: String(i.id),
     organizationId: String(i.organizationId),
@@ -73,7 +76,8 @@ export function mapInvitation(i: Raw): InvitationResponseDto {
   };
 }
 
-export function mapWorkspace(t: Raw): WorkspaceResponseDto {
+export function mapWorkspace(input: unknown): WorkspaceResponseDto {
+  const t = asRecord(input);
   return {
     id: String(t.id),
     name: String(t.name),
@@ -83,7 +87,8 @@ export function mapWorkspace(t: Raw): WorkspaceResponseDto {
   };
 }
 
-export function mapWorkspaceMember(tm: Raw): WorkspaceMemberResponseDto {
+export function mapWorkspaceMember(input: unknown): WorkspaceMemberResponseDto {
+  const tm = asRecord(input);
   return {
     id: String(tm.id),
     teamId: String(tm.teamId),
@@ -92,11 +97,22 @@ export function mapWorkspaceMember(tm: Raw): WorkspaceMemberResponseDto {
   };
 }
 
-export function mapFullOrganization(o: Raw): FullOrganizationResponseDto {
+export function mapFullOrganization(input: unknown): FullOrganizationResponseDto {
+  const o = asRecord(input);
   return {
     ...mapOrganization(o),
-    members: Array.isArray(o.members) ? (o.members as Raw[]).map(mapMember) : [],
-    invitations: Array.isArray(o.invitations) ? (o.invitations as Raw[]).map(mapInvitation) : [],
-    teams: Array.isArray(o.teams) ? (o.teams as Record<string, unknown>[]) : [],
+    members: asArray(o.members).map(mapMember),
+    invitations: asArray(o.invitations).map(mapInvitation),
+    teams: asArray(o.teams).map(asRecord),
   };
 }
+
+export const mapOrganizations = (input: unknown): OrganizationResponseDto[] =>
+  asArray(input).map(mapOrganization);
+export const mapMembers = (input: unknown): MemberResponseDto[] => asArray(input).map(mapMember);
+export const mapInvitations = (input: unknown): InvitationResponseDto[] =>
+  asArray(input).map(mapInvitation);
+export const mapWorkspaces = (input: unknown): WorkspaceResponseDto[] =>
+  asArray(input).map(mapWorkspace);
+export const mapWorkspaceMembers = (input: unknown): WorkspaceMemberResponseDto[] =>
+  asArray(input).map(mapWorkspaceMember);
