@@ -18,7 +18,7 @@ export type Subjects = string;
 /** Built-in actions used by the seeded system roles. */
 export const KNOWN_ACTIONS = ['create', 'read', 'update', 'delete', 'manage'] as const;
 /** Built-in subjects used by the seeded system roles. `all` is CASL's wildcard. */
-export const KNOWN_SUBJECTS = ['User', 'Article', 'Role', 'all'] as const;
+export const KNOWN_SUBJECTS = ['User', 'Article', 'Role', 'Billing', 'all'] as const;
 
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
 
