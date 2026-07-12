@@ -149,6 +149,13 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   column. A `superadmin` system role is seeded; `BETTER_AUTH_ADMIN_USER_IDS`
   bootstraps break-glass super admins by id. This is **separate** from CASL: CASL
   still governs the app's own REST routes.
+- **Two role stores, kept in sync** — the admin plugin's `set-role` writes the
+  single `user.role` column; the app's dynamic RBAC lives in the `user_role`
+  join. `AbilityFactory` builds the CASL ability from the **union** of both (the
+  join roles _and_ the `user.role` column's role), so an admin-plugin promotion
+  flows into CASL and vice-versa. Fine-grained per-role permissions still come
+  from `user_role` (assign via `PUT /v1/users/:userId/roles`); `user.role` is a
+  single system-role name for admin-plugin gating.
 - **Organizations / members / invitations** — the `organization` plugin owns the
   `organization`, `member`, `invitation` tables. New users get a personal org +
   default workspace on sign-up (`databaseHooks.user.create.after`); the session

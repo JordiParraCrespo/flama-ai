@@ -58,23 +58,30 @@ export class AbilityFactory {
   }
 
   private async resolvePermissions(user: AuthenticatedUser): Promise<PermissionDefinition[]> {
+    const permissions: PermissionDefinition[] = [];
+
+    // 1. Roles assigned through the `user_role` join (dynamic RBAC).
     if (user.id) {
       const roles = await this.userRoleRepository.findRolesForUser(user.id);
-      if (roles.length > 0) {
-        return roles.flatMap((role) =>
-          role.permissions.map((permission) => permission.toDefinition()),
-        );
+      for (const role of roles) {
+        permissions.push(...role.permissions.map((permission) => permission.toDefinition()));
       }
     }
 
+    // 2. Also honour the Better Auth `user.role` column. The admin plugin's
+    //    `set-role` writes this column, so unioning it here (not just as a
+    //    fallback) keeps admin-plugin promotions in sync with CASL: a user
+    //    promoted to `admin`/`superadmin` gains that role's permissions even
+    //    though their `user_role` join still holds the default `user` row.
     if (user.role) {
       const found = await this.roleRepository.findOneByName(user.role);
-      if (found.isSome()) {
-        return found.unwrap().permissions.map((permission) => permission.toDefinition());
-      }
-      return SYSTEM_ROLE_PERMISSIONS[user.role] ?? [];
+      permissions.push(
+        ...(found.isSome()
+          ? found.unwrap().permissions.map((permission) => permission.toDefinition())
+          : (SYSTEM_ROLE_PERMISSIONS[user.role] ?? [])),
+      );
     }
 
-    return [];
+    return permissions;
   }
 }
