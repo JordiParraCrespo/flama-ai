@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { EmailService } from './email.service';
+import { EmailService, type InvitationEmailParams } from './email.service';
 import {
   renderEmailVerificationEmail,
+  renderInvitationEmail,
   renderPasswordResetEmail,
   renderWelcomeEmail,
 } from './render';
@@ -50,6 +51,16 @@ export class NodemailerEmailService extends EmailService {
       from: this.configService.get('email.from'),
       to,
       subject: 'Welcome to Flama',
+      html,
+    });
+  }
+
+  async sendInvitation(to: string, params: InvitationEmailParams): Promise<void> {
+    const html = await renderInvitationEmail(params);
+    await this.transporter.sendMail({
+      from: this.configService.get('email.from'),
+      to,
+      subject: `You've been invited to join ${params.organizationName}`,
       html,
     });
   }

@@ -25,6 +25,14 @@ export class EmailProcessor extends WorkerHost {
       case 'welcome':
         await this.emailService.sendWelcome(job.data.to, job.data.name);
         break;
+      case 'invitation':
+        await this.emailService.sendInvitation(job.data.to, {
+          organizationName: job.data.organizationName,
+          inviterName: job.data.inviterName,
+          role: job.data.role,
+          url: job.data.url,
+        });
+        break;
       default:
         this.logger.warn(`Unknown email job: ${job.name}`);
     }

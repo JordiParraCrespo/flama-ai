@@ -1,9 +1,3 @@
-export const AUTH = {
-  ACCESS_TOKEN_EXPIRY: '15m',
-  REFRESH_TOKEN_EXPIRY: '7d',
-  SALT_ROUNDS: 12,
-} as const;
-
 export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_LIMIT: 20,

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EmailService } from './email.service';
+import { EmailService, type InvitationEmailParams } from './email.service';
 
 @Injectable()
 export class ConsoleEmailService extends EmailService {
@@ -15,5 +15,11 @@ export class ConsoleEmailService extends EmailService {
 
   async sendWelcome(to: string, name: string): Promise<void> {
     this.logger.log(`[WELCOME] To: ${to} | Name: ${name}`);
+  }
+
+  async sendInvitation(to: string, params: InvitationEmailParams): Promise<void> {
+    this.logger.log(
+      `[INVITATION] To: ${to} | Org: ${params.organizationName} | Role: ${params.role} | URL: ${params.url}`,
+    );
   }
 }
