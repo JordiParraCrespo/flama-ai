@@ -1,7 +1,7 @@
 import { expoClient } from '@better-auth/expo/client';
 import type { IAuthClient } from '@flama/frontend';
 import type { Role } from '@flama/shared';
-import { inferAdditionalFields } from 'better-auth/client/plugins';
+import { adminClient, inferAdditionalFields, organizationClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 import * as SecureStore from 'expo-secure-store';
 
@@ -27,6 +27,10 @@ export const authClient = createAuthClient({
         isActive: { type: 'boolean', required: false, input: false },
       },
     }),
+    // Super-admin operations under `authClient.admin.*` and organizations /
+    // members / invitations / workspaces (teams) under `authClient.organization.*`.
+    adminClient(),
+    organizationClient({ teams: { enabled: true } }),
   ],
 });
 

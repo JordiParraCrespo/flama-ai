@@ -1,31 +1,28 @@
-import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   docs: [
-    "intro",
+    'intro',
     {
-      type: "category",
-      label: "Getting Started",
+      type: 'category',
+      label: 'Getting Started',
+      items: ['getting-started/installation', 'getting-started/project-structure'],
+    },
+    {
+      type: 'category',
+      label: 'Architecture',
       items: [
-        "getting-started/installation",
-        "getting-started/project-structure",
+        'architecture/overview',
+        'architecture/backend-packages',
+        'architecture/api-architecture',
+        'architecture/frontend-architecture',
+        'architecture/query-keys',
       ],
     },
     {
-      type: "category",
-      label: "Architecture",
-      items: [
-        "architecture/overview",
-        "architecture/backend-packages",
-        "architecture/api-architecture",
-        "architecture/frontend-architecture",
-        "architecture/query-keys",
-      ],
-    },
-    {
-      type: "category",
-      label: "Deployment",
-      items: ["deployment/tier-1-cheap", "deployment/tier-2-production"],
+      type: 'category',
+      label: 'Deployment',
+      items: ['deployment/tier-1-cheap', 'deployment/tier-2-production'],
     },
   ],
 };

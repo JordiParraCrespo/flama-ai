@@ -38,6 +38,23 @@ describe('defineAbilitiesFromPermissions', () => {
     expect(ability.can('update', subject('Article', { authorId: 'user-2' }))).toBe(false);
   });
 
+  it('interpolates the active-organization placeholder for tenant scoping', () => {
+    const ability = defineAbilitiesFromPermissions(
+      [
+        {
+          action: 'read',
+          subject: 'Article',
+          // biome-ignore lint/suspicious/noTemplateCurlyInString: literal placeholder interpolated at runtime
+          conditions: { organizationId: '${activeOrganizationId}' },
+        },
+      ],
+      { user: { id: 'user-1' }, activeOrganizationId: 'org-1' },
+    );
+
+    expect(ability.can('read', subject('Article', { organizationId: 'org-1' }))).toBe(true);
+    expect(ability.can('read', subject('Article', { organizationId: 'org-2' }))).toBe(false);
+  });
+
   it('applies inverted rules as `cannot`', () => {
     const ability = defineAbilitiesFromPermissions([
       { action: 'manage', subject: 'all' },

@@ -95,13 +95,22 @@ frontend.
 | `PATCH /users/:id`  | update User | UpdateUserService |
 | `DELETE /users/:id` | delete User | DeleteUserService |
 
-## Token management
+## Authentication & sessions
 
-`UserTokenService` centralizes all JWT and refresh token logic:
+Authentication is handled by [Better Auth](https://better-auth.com) (mounted via
+`@thallesp/nestjs-better-auth`), not a custom JWT service. Sessions are
+**cookie-based** — the API sets an httpOnly session cookie; there is no
+app-managed access/refresh token pair. Better Auth also provides:
 
-- `generateAndStoreTokens(userId, email, role)` — creates JWT pair, hashes refresh token, stores in DB
-- `validateRefreshToken(userId, plainToken)` — bcrypt compare against stored hash
-- `revokeRefreshToken(userId)` — nullifies stored token
+- **Super-admin** (`admin` plugin): list/ban/impersonate users, set roles,
+  revoke sessions — gated by the `superadmin` / `admin` roles under
+  `/api/auth/admin/*`.
+- **Organizations, members & invitations** (`organization` plugin): every user
+  gets a personal organization on sign-up; invitations are emailed via the queue.
+- **Workspaces** (org plugin teams): `team` / `teamMember`, scoped to an org.
+
+CASL remains the authorization engine for the app's own REST routes (see the
+roles/RBAC docs); Better Auth's plugin roles only gate the `/api/auth/*` surface.
 
 ## Event-driven processing
 
@@ -148,11 +157,11 @@ All errors use `AppError` from `@flama/backend-core` for consistent structured r
 
 6 config factories, all Zod-validated:
 
-| Config     | Key env vars                                                           |
-| ---------- | ---------------------------------------------------------------------- |
-| `app`      | `PORT`, `NODE_ENV`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `FRONTEND_URL` |
-| `database` | `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE`      |
-| `redis`    | `REDIS_HOST`, `REDIS_PORT`                                             |
-| `email`    | `EMAIL_PROVIDER`, `EMAIL_FROM`, `SMTP_*`, `RESEND_API_KEY`             |
-| `oauth`    | `GOOGLE_CLIENT_ID/SECRET/CALLBACK`, `GITHUB_CLIENT_ID/SECRET/CALLBACK` |
-| `storage`  | `STORAGE_PROVIDER`, `UPLOAD_DIR`, `S3_*`                               |
+| Config     | Key env vars                                                                           |
+| ---------- | -------------------------------------------------------------------------------------- |
+| `app`      | `PORT`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_ADMIN_USER_IDS`, `FRONTEND_URL` |
+| `database` | `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE`                      |
+| `redis`    | `REDIS_HOST`, `REDIS_PORT`                                                             |
+| `email`    | `EMAIL_PROVIDER`, `EMAIL_FROM`, `SMTP_*`, `RESEND_API_KEY`                             |
+| `oauth`    | `GOOGLE_CLIENT_ID/SECRET/CALLBACK`, `GITHUB_CLIENT_ID/SECRET/CALLBACK`                 |
+| `storage`  | `STORAGE_PROVIDER`, `UPLOAD_DIR`, `S3_*`                                               |

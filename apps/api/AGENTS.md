@@ -1,44 +1,77 @@
-# @flama/api — Agent Instructions
+# apps/api — Agent Instructions
 
-NestJS REST API. This is the backend entrypoint of the monorepo.
+NestJS **Domain-Driven Hexagon** API. The authoritative references are
+[`ARCHITECTURE.md`](./ARCHITECTURE.md) (layer model, module anatomy, the
+"add a module" cookbook) and the scoped rules in `.claude/rules/`
+(`nestjs-architecture.md`, `nestjs-di.md`, `typeorm.md`, `api-config.md`,
+`rbac-roles.md`). Boundaries are enforced by `.dependency-cruiser.cjs`
+(`pnpm --filter @flama/api arch`). This file adds the conventions that are easy
+to get wrong.
 
-> Read the root [`CLAUDE.md`](../../CLAUDE.md) first for repo-wide conventions.
+## Mappers own all data-shape transformations
 
-## Architecture
+**Any operation that shapes, normalizes, or builds a data structure belongs in a
+mapper — not inline in a service, handler, or controller.** This includes:
 
-`apps/api` follows **Domain-Driven Hexagon** architecture. The authoritative
-guide lives in [`ARCHITECTURE.md`](./ARCHITECTURE.md): layer model, module
-anatomy, `@flama/backend-ddd` building blocks, and the "add a module" cookbook.
+- Domain ↔ ORM ↔ response-DTO conversion (`Mapper<Domain, Orm, Response>`:
+  `toPersistence` / `toDomain` / `toResponse`).
+- Building a props object for a domain method (e.g. a `toSyncProps(data)` that
+  assembles the fields for `entity.sync(props)`).
+- Normalizing an external API result into a DTO (coercion, date parsing,
+  unwrapping `{ member }` / `{ users }` envelopes).
 
-Use the `/scaffold-module` skill to generate a convention-compliant module
-skeleton. Boundaries are enforced by [`.dependency-cruiser.cjs`](./.dependency-cruiser.cjs)
-via `pnpm arch` (runs in CI and a Claude Code Stop hook).
+Services and controllers stay thin: they orchestrate and delegate to a mapper
+for the transform. Keep mappers **pure** (framework-free, no DI) so they are
+trivially unit-testable and reusable.
 
-## Detailed rules
+### No `as`-cast soup — narrow once, in the mapper
 
-Scoped rules in [`.claude/rules/`](../../.claude/rules/):
+Mapper functions **accept `unknown`** and narrow a single time with a small
+helper, so callers pass values cast-free. Never write `x as unknown as { ... }`
+double-casts or repeated `as Record<string, unknown>` at call sites.
 
-- `nestjs-di.md` — DI imports, `import type` restrictions, repository-port DI tokens
-- `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
-- `typeorm.md` — union-typed columns, persistence-model (ORM) conventions
-- `api-config.md` — OAuth graceful handling, controllers, Swagger decorators, rate limiting, versioning
-- `rbac-roles.md` — DB-backed dynamic RBAC, `@CheckPolicies`/`PoliciesGuard`, resource scoping
+```ts
+// GOOD — mapper narrows once; the service is cast-free
+export function mapMember(input: unknown): MemberResponseDto {
+  const m = asRecord(input);
+  return {
+    id: String(m.id),
+    userId: String(m.userId),
+    role: String(m.role) /* ... */,
+  };
+}
+// service:  return mapMember(unwrap(result, 'member'));
 
-## Layout
-
+// BAD — dirty casts leaking into the service
+const member =
+  (result as unknown as { member?: Raw }).member ?? (result as unknown as Raw);
 ```
-src/
-├── app.module.ts     # root module
-├── main.ts           # bootstrap
-├── auth/             # authentication (JWT + OAuth providers)
-├── config/           # typed config modules
-├── database/         # TypeORM datasource, entities wiring
-├── health/           # health checks
-├── migrations/       # TypeORM migrations
-├── queue/            # BullMQ processors
-├── roles/            # RBAC role/permission CRUD
-└── users/            # example DDD module
-```
+
+Shared shaping helpers (`asRecord`, `asArray`, `unwrap`, `unwrapArray`) live in
+`src/auth/better-auth.util.ts`; array/envelope mappers (`mapMembers`,
+`mapUserFromResult`, …) live alongside the scalar ones in `*.mappers.ts`.
+
+## Delegating façades (organizations, admin)
+
+`src/organizations/` and `src/admin/` expose the Better Auth organization/admin
+plugin operations as typed, Swagger-documented, CASL-guarded REST endpoints that
+**delegate to `auth.api.*`** — Better Auth owns the tables, so these are
+infrastructure modules (controller → injectable service → `auth.api`), not
+CQRS/domain slices. Use `invokeBetterAuth` (maps Better Auth `APIError` →
+`HttpException`) and `betterAuthHeaders` from `src/auth/better-auth.util.ts`, and
+normalize every `auth.api` result through a mapper (see above). See
+`.claude/rules/rbac-roles.md` for the full RBAC + org/admin guide.
+
+## Config
+
+Config is composed from `registerAs` factories in `src/config/` (`app`,
+`database`, `redis`, `email`, `storage`, `oauth`), loaded in `AppModule` and read
+via `ConfigService`. OAuth/optional-credential config must degrade gracefully
+(`configService.get(...) || 'disabled'`, never `getOrThrow`) so the app boots
+without those env vars — see `api-config.md`. The TypeORM CLI datasource
+(`src/config/data-source.ts`) and the seed (`src/database/seed.ts`) keep their
+own explicit `entities` arrays: **register every new ORM entity in both**, plus
+the module's `TypeOrmModule.forFeature`.
 
 ## Commands
 
@@ -51,10 +84,3 @@ pnpm --filter @flama/api migration:generate -- src/migrations/<Name>  # generate
 pnpm --filter @flama/api migration:run
 pnpm --filter @flama/api generate:openapi   # emit openapi.json
 ```
-
-## When modifying
-
-- New endpoints need Swagger decorators — they feed the generated `@flama/api-client`.
-- After changing controllers/DTOs, run `pnpm generate:api-client` from the repo root.
-- DTOs/schemas belong in `@flama/shared` (Zod), not duplicated here.
-- Protect routes with `@UseGuards(AuthGuard, PoliciesGuard)` + `@CheckPolicies(...)`.

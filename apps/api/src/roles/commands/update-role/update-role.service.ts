@@ -3,6 +3,7 @@ import type { AggregateID } from '@flama/backend-ddd';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
+import { RoleEntity } from '../../domain/role.entity';
 import { RoleErrors } from '../../domain/role.errors';
 import { Permission } from '../../domain/value-objects/permission.value-object';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
@@ -26,9 +27,13 @@ export class UpdateRoleService implements ICommandHandler<UpdateRoleCommand, Agg
       role.updateDescription(command.description);
     }
     if (command.permissions !== undefined) {
-      role.replacePermissions(
-        command.permissions.map((permission) => Permission.fromDefinition(permission)),
+      const permissions = command.permissions.map((permission) =>
+        Permission.fromDefinition(permission),
       );
+      if (role.isSystem && role.hasFullAccess() && !RoleEntity.grantsFullAccess(permissions)) {
+        throw new AppError(RoleErrors.ADMIN_LOCKOUT);
+      }
+      role.replacePermissions(permissions);
     }
 
     await this.roleRepository.save(role);
