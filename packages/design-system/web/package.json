@@ -38,6 +38,7 @@
     "./field": "./src/components/field.tsx",
     "./breadcrumb": "./src/components/breadcrumb.tsx",
     "./collapsible": "./src/components/collapsible.tsx",
+    "./icons": "./src/components/icon.tsx",
     "./hooks/use-mobile": "./src/hooks/use-mobile.ts",
     "./styles": "./src/styles/globals.css",
     "./tailwind-config": "./tailwind.config.ts",

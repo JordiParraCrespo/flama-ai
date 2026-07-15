@@ -20,6 +20,7 @@
     "./dropdown-menu": "./src/components/ui/dropdown-menu.tsx",
     "./hover-card": "./src/components/ui/hover-card.tsx",
     "./icon": "./src/components/ui/icon.tsx",
+    "./icons": "./src/components/ui/icons.tsx",
     "./input": "./src/components/ui/input.tsx",
     "./label": "./src/components/ui/label.tsx",
     "./menubar": "./src/components/ui/menubar.tsx",
