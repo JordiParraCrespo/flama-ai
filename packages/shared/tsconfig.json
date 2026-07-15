@@ -7,5 +7,6 @@
     "moduleResolution": "node",
     "ignoreDeprecations": "6.0"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts", "src/**/__tests__/**"]
 }
