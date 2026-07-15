@@ -74,6 +74,12 @@
       "successMessage": "Ya puedes iniciar sesión.",
       "failedTitle": "Error al restablecer",
       "error": "No se pudo restablecer la contraseña"
+    },
+    "session": {
+      "errorTitle": "Problema de conexión",
+      "errorMessage": "No pudimos restaurar tu sesión. Comprueba tu conexión e inténtalo de nuevo.",
+      "retry": "Reintentar",
+      "retrying": "Reintentando..."
     }
   },
   "dashboard": {
