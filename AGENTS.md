@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 4 apps and 11 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 6 apps and 13 shared packages.
 
 ## Monorepo structure
 
@@ -12,7 +12,9 @@ flama/
 │   ├── api/              # NestJS REST API
 │   ├── docs/             # Docusaurus documentation
 │   ├── mobile/           # Expo (React Native)
-│   └── web/              # Vite + TanStack Router SPA
+│   ├── mobile-showcase/  # Expo app showcasing the mobile design system
+│   ├── web/              # Vite + TanStack Router SPA
+│   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
 │   ├── backend/
@@ -23,7 +25,9 @@ flama/
 │   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
 │   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
 │   ├── config/           # Shared TypeScript configs
-│   ├── design-system/    # Tokens + web (shadcn) + mobile (Tamagui)
+│   ├── design-system/
+│   │   ├── web/          # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
+│   │   └── mobile/       # NativeWind + rn-primitives (@flama/design-system-mobile)
 │   ├── frontend/         # Clean architecture, InversifyJS DI, Zustand stores
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files
@@ -31,6 +35,9 @@ flama/
 ├── helm/                 # Kubernetes Helm charts
 └── .github/              # GitHub Actions CI/CD
 ```
+
+Each app and package has its own `README.md` covering its purpose, exports, and
+usage.
 
 ## Key conventions
 
@@ -100,16 +107,22 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 ### Mobile (apps/mobile)
 
 - Expo with expo-router
-- Tamagui for UI (theme from `packages/design-system`)
+- NativeWind + `@flama/design-system-mobile` components for UI
 - i18next for i18n (translations from `packages/translations`)
 - expo-secure-store for secure token storage
 
 ### Design system (packages/design-system)
 
-- Shared tokens (colors, spacing, typography) in `src/tokens/`
-- Web components: shadcn + Tailwind in `src/web/`
-- Mobile components: Tamagui in `src/mobile/`
-- shadcn component API mirrored in Tamagui for consistency
+Split into two independently versioned packages that share a mirrored component API:
+
+- `@flama/design-system-web` (`packages/design-system/web`) — shadcn/ui-style
+  components on Base UI primitives + Tailwind CSS v4. Tokens/base layer live in
+  `src/styles/globals.css`; built with tsup. Used by `apps/web` and
+  `apps/web-showcase`.
+- `@flama/design-system-mobile` (`packages/design-system/mobile`) — shadcn-style
+  React Native components on NativeWind + `@rn-primitives`. Used by `apps/mobile`
+  and `apps/mobile-showcase`.
+- The shadcn component API is mirrored across web and mobile for consistency.
 
 ## Dependency flow
 
@@ -122,10 +135,11 @@ packages/backend/email    → used by api
 packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
-packages/translations     → used by web, mobile
-packages/design-system    → used by web, mobile
-packages/api-client       → used by frontend
-packages/frontend         → used by web, mobile
+packages/translations        → used by web, mobile
+packages/design-system/web    → used by web, web-showcase
+packages/design-system/mobile → used by mobile, mobile-showcase
+packages/api-client           → used by frontend
+packages/frontend             → used by web, mobile
 ```
 
 ## Commands
@@ -154,6 +168,6 @@ pnpm changeset          # Create a changeset for versioning
 - New API endpoints need Swagger decorators for auto-generated client
 - After API changes, regenerate client: `pnpm generate:api-client`
 - New translations go in `packages/translations/{locale}/index.json`
-- New design tokens go in `packages/design-system/src/tokens/`
+- New web design tokens go in `packages/design-system/web/src/styles/globals.css`
 - Frontend business logic goes in `packages/frontend`, not in app components
 - Keep pluggable service pattern: abstract class → concrete implementations → factory in module
