@@ -1,8 +1,12 @@
 import 'dotenv/config';
 import type { Role } from '@flama/shared';
 import { DataSource } from 'typeorm';
+import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
 import { auth } from '../auth/auth';
 import { Account } from '../auth/entities/account.entity';
+import { OAuthAccessTokenOrmEntity } from '../auth/entities/oauth-access-token.entity';
+import { OAuthApplicationOrmEntity } from '../auth/entities/oauth-application.entity';
+import { OAuthConsentOrmEntity } from '../auth/entities/oauth-consent.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
@@ -26,6 +30,10 @@ const dataSource = new DataSource({
     Session,
     Account,
     Verification,
+    ApiTokenOrmEntity,
+    OAuthApplicationOrmEntity,
+    OAuthAccessTokenOrmEntity,
+    OAuthConsentOrmEntity,
     RoleOrmEntity,
     UserRoleOrmEntity,
     OrganizationOrmEntity,

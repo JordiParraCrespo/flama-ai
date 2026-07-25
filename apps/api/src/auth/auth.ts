@@ -1,8 +1,9 @@
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import { expo } from '@better-auth/expo';
+import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
 import { betterAuth } from 'better-auth';
-import { admin, organization } from 'better-auth/plugins';
+import { admin, bearer, mcp, organization } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { emailQueue } from './email-queue';
@@ -291,6 +292,30 @@ export const auth = betterAuth({
           role: data.role,
           url: acceptUrl,
         });
+      },
+    }),
+    // Accepts `Authorization: Bearer <session token>`. Used by the API's own
+    // auth guard, which mints a short-lived delegated session for a scoped
+    // credential so the organization/admin façades — which resolve the caller
+    // through Better Auth — keep working for API tokens and MCP clients.
+    bearer(),
+    // Turns the app into an OAuth 2.1 provider for MCP clients: discovery
+    // metadata, dynamic client registration, authorization and token endpoints.
+    // Clients ask for scopes from the shared catalog and the user approves (or
+    // narrows) them on the consent screen.
+    mcp({
+      loginPage: `${frontendUrl}/login`,
+      oidcConfig: {
+        loginPage: `${frontendUrl}/login`,
+        scopes: [...SCOPES],
+        defaultScope: DEFAULT_OAUTH_SCOPES.join(' '),
+        consentPage: `${frontendUrl}/oauth/consent`,
+        // MCP clients are public clients that register themselves on first use.
+        allowDynamicClientRegistration: true,
+        requirePKCE: true,
+        storeClientSecret: 'hashed',
+        accessTokenExpiresIn: 60 * 60,
+        refreshTokenExpiresIn: 60 * 60 * 24 * 30,
       },
     }),
   ],

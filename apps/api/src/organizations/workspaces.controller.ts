@@ -14,9 +14,10 @@ import {
   Version,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import type { Request } from 'express';
 import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
 import {
   AddWorkspaceMemberRequest,
@@ -32,13 +33,14 @@ import { WorkspacesService } from './workspaces.service';
  */
 @ApiTags('Workspaces')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('workspaces')
 export class WorkspacesController {
   constructor(private readonly workspaces: WorkspacesService) {}
 
   @Get('mine')
   @Version('1')
+  @RequireScopes('workspaces:read')
   @CheckPolicies({ action: 'read', subject: 'Workspace' })
   @ApiOperation({ summary: "List the caller's workspaces" })
   @ApiResponse({ status: 200, type: [WorkspaceResponseDto] })
@@ -48,6 +50,7 @@ export class WorkspacesController {
 
   @Get()
   @Version('1')
+  @RequireScopes('workspaces:read')
   @CheckPolicies({ action: 'read', subject: 'Workspace' })
   @ApiOperation({
     summary: "List an organization's workspaces (defaults to the active org)",
@@ -63,6 +66,7 @@ export class WorkspacesController {
 
   @Post()
   @Version('1')
+  @RequireScopes('workspaces:write')
   @CheckPolicies({ action: 'create', subject: 'Workspace' })
   @ApiOperation({ summary: 'Create a workspace' })
   @ApiResponse({ status: 201, type: WorkspaceResponseDto })
@@ -72,6 +76,7 @@ export class WorkspacesController {
 
   @Patch(':id')
   @Version('1')
+  @RequireScopes('workspaces:write')
   @CheckPolicies({ action: 'update', subject: 'Workspace' })
   @ApiOperation({ summary: 'Rename a workspace' })
   @ApiResponse({ status: 200, type: WorkspaceResponseDto })
@@ -85,6 +90,7 @@ export class WorkspacesController {
 
   @Delete(':id')
   @Version('1')
+  @RequireScopes('workspaces:write')
   @HttpCode(204)
   @CheckPolicies({ action: 'delete', subject: 'Workspace' })
   @ApiOperation({ summary: 'Delete a workspace' })
@@ -95,6 +101,7 @@ export class WorkspacesController {
 
   @Post(':id/set-active')
   @Version('1')
+  @RequireScopes('workspaces:read')
   @CheckPolicies({ action: 'read', subject: 'Workspace' })
   @ApiOperation({ summary: 'Set the active workspace for the current session' })
   @ApiResponse({ status: 200, type: WorkspaceResponseDto })
@@ -107,6 +114,7 @@ export class WorkspacesController {
 
   @Get(':id/members')
   @Version('1')
+  @RequireScopes('workspaces:read')
   @CheckPolicies({ action: 'read', subject: 'Workspace' })
   @ApiOperation({ summary: 'List members of a workspace' })
   @ApiResponse({ status: 200, type: [WorkspaceMemberResponseDto] })
@@ -119,6 +127,7 @@ export class WorkspacesController {
 
   @Post(':id/members')
   @Version('1')
+  @RequireScopes('workspaces:write')
   @CheckPolicies({ action: 'update', subject: 'Workspace' })
   @ApiOperation({ summary: 'Add a user to a workspace' })
   @ApiResponse({ status: 201, type: WorkspaceMemberResponseDto })
@@ -132,6 +141,7 @@ export class WorkspacesController {
 
   @Delete(':id/members/:userId')
   @Version('1')
+  @RequireScopes('workspaces:write')
   @HttpCode(204)
   @CheckPolicies({ action: 'update', subject: 'Workspace' })
   @ApiOperation({ summary: 'Remove a user from a workspace' })

@@ -12,9 +12,11 @@ import {
   Version,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import type { Request } from 'express';
 import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { OrganizationScoped } from '../auth/decorators/organization-scoped.decorator';
+import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
 import {
   CheckSlugRequest,
@@ -35,13 +37,14 @@ import { OrganizationsService } from './organizations.service';
  */
 @ApiTags('Organizations')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private readonly organizations: OrganizationsService) {}
 
   @Post()
   @Version('1')
+  @RequireScopes('organizations:write')
   @CheckPolicies({ action: 'create', subject: 'Organization' })
   @ApiOperation({ summary: 'Create an organization' })
   @ApiResponse({ status: 201, type: OrganizationResponseDto })
@@ -54,6 +57,7 @@ export class OrganizationsController {
 
   @Get()
   @Version('1')
+  @RequireScopes('organizations:read')
   @CheckPolicies({ action: 'read', subject: 'Organization' })
   @ApiOperation({ summary: "List the caller's organizations" })
   @ApiResponse({ status: 200, type: [OrganizationResponseDto] })
@@ -63,6 +67,7 @@ export class OrganizationsController {
 
   @Post('check-slug')
   @Version('1')
+  @RequireScopes('organizations:read')
   @CheckPolicies({ action: 'read', subject: 'Organization' })
   @ApiOperation({ summary: 'Check whether an organization slug is available' })
   @ApiResponse({ status: 200, type: SlugAvailabilityResponseDto })
@@ -75,6 +80,8 @@ export class OrganizationsController {
 
   @Get(':id')
   @Version('1')
+  @RequireScopes('organizations:read')
+  @OrganizationScoped('id')
   @CheckPolicies({ action: 'read', subject: 'Organization' })
   @ApiOperation({
     summary: 'Get an organization with its members, invitations and workspaces',
@@ -89,6 +96,8 @@ export class OrganizationsController {
 
   @Patch(':id')
   @Version('1')
+  @RequireScopes('organizations:write')
+  @OrganizationScoped('id')
   @CheckPolicies({ action: 'update', subject: 'Organization' })
   @ApiOperation({ summary: 'Update an organization' })
   @ApiResponse({ status: 200, type: OrganizationResponseDto })
@@ -102,6 +111,8 @@ export class OrganizationsController {
 
   @Delete(':id')
   @Version('1')
+  @RequireScopes('organizations:write')
+  @OrganizationScoped('id')
   @CheckPolicies({ action: 'delete', subject: 'Organization' })
   @ApiOperation({ summary: 'Delete an organization' })
   @ApiResponse({ status: 200, type: OrganizationResponseDto })
@@ -114,6 +125,8 @@ export class OrganizationsController {
 
   @Post(':id/set-active')
   @Version('1')
+  @RequireScopes('organizations:read')
+  @OrganizationScoped('id')
   @CheckPolicies({ action: 'read', subject: 'Organization' })
   @ApiOperation({
     summary: 'Set the active organization for the current session',

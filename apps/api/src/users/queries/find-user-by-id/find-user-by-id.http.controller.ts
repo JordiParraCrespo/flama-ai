@@ -1,8 +1,9 @@
 import { Controller, Get, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { UserEntity } from '../../domain/user.entity';
 import { UserResponseDto } from '../../dtos/user.response.dto';
@@ -11,7 +12,7 @@ import { FindUserByIdQuery } from './find-user-by-id.query';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('users')
 export class FindUserByIdHttpController {
   constructor(
@@ -22,6 +23,7 @@ export class FindUserByIdHttpController {
   @Get(':id')
   @Version('1')
   @CheckPolicies({ action: 'read', subject: 'User' })
+  @RequireScopes('users:read')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'USER_001: User not found' })

@@ -12,8 +12,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { LoggerModule } from 'nestjs-pino';
 import { AdminModule } from './admin/admin.module';
+import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
+import { ScopesGuard } from './auth/guards/scopes.guard';
 import {
   appConfig,
   databaseConfig,
@@ -41,8 +43,12 @@ import { UsersModule } from './users/user.module';
         // the .ts migration files through vitest's module system and crash.
         // Migrations are exercised separately against a real database.
         const isTest = configService.get('app.nodeEnv') === 'test';
+        // Building the OpenAPI document only needs the module graph, not a
+        // live database, so `pnpm generate:openapi` runs anywhere.
+        const isSchemaOnly = process.env.OPENAPI_GENERATION === 'true';
         return {
           type: 'postgres',
+          manualInitialization: isSchemaOnly,
           host: configService.get('database.host'),
           port: configService.get('database.port'),
           username: configService.get('database.username'),
@@ -83,6 +89,7 @@ import { UsersModule } from './users/user.module';
     CacheModule.register(),
     BetterAuthModule.forRoot({ auth, disableGlobalAuthGuard: true }),
     AuthModule,
+    ApiTokensModule,
     UsersModule,
     RolesModule,
     OrganizationsModule,
@@ -92,6 +99,10 @@ import { UsersModule } from './users/user.module';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Registered globally so a route that forgets to declare its scope
+    // requirements is closed to scoped credentials rather than open by
+    // omission. Browser sessions pass straight through.
+    { provide: APP_GUARD, useClass: ScopesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: RequestContextInterceptor },
   ],
