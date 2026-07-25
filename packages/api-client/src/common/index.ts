@@ -16,6 +16,7 @@ export type { CreateOrganizationRequest } from "./models/CreateOrganizationReque
 export type { CreateRoleRequest } from "./models/CreateRoleRequest";
 export type { CreateWorkspaceRequest } from "./models/CreateWorkspaceRequest";
 export type { CreatedApiTokenResponseDto } from "./models/CreatedApiTokenResponseDto";
+export type { CurrentCredentialResponseDto } from "./models/CurrentCredentialResponseDto";
 export type { FullOrganizationResponseDto } from "./models/FullOrganizationResponseDto";
 export type { InvitationResponseDto } from "./models/InvitationResponseDto";
 export type { InviteMemberRequest } from "./models/InviteMemberRequest";

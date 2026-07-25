@@ -14,11 +14,14 @@ import { OrganizationMembershipRepository } from './database/organization-member
 import { FindApiTokenByIdQueryHandler } from './queries/find-api-token-by-id/find-api-token-by-id.query-handler';
 import { FindApiTokensHttpController } from './queries/find-api-tokens/find-api-tokens.http.controller';
 import { FindApiTokensQueryHandler } from './queries/find-api-tokens/find-api-tokens.query-handler';
+import { FindCurrentCredentialHttpController } from './queries/find-current-credential/find-current-credential.http.controller';
+import { FindCurrentCredentialQueryHandler } from './queries/find-current-credential/find-current-credential.query-handler';
 import { FindGrantablePermissionsHttpController } from './queries/find-grantable-permissions/find-grantable-permissions.http.controller';
 import { FindGrantablePermissionsQueryHandler } from './queries/find-grantable-permissions/find-grantable-permissions.query-handler';
 
 // Registration order matters: `permissions` must be matched before `:id`.
 const httpControllers = [
+  FindCurrentCredentialHttpController,
   FindApiTokensHttpController,
   FindGrantablePermissionsHttpController,
   CreateApiTokenHttpController,
@@ -31,6 +34,7 @@ const queryHandlers: Provider[] = [
   FindApiTokensQueryHandler,
   FindApiTokenByIdQueryHandler,
   FindGrantablePermissionsQueryHandler,
+  FindCurrentCredentialQueryHandler,
 ];
 
 const repositories: Provider[] = [

@@ -25,6 +25,7 @@ export { $CreatedApiTokenResponseDto } from './schemas/$CreatedApiTokenResponseD
 export { $CreateOrganizationRequest } from './schemas/$CreateOrganizationRequest';
 export { $CreateRoleRequest } from './schemas/$CreateRoleRequest';
 export { $CreateWorkspaceRequest } from './schemas/$CreateWorkspaceRequest';
+export { $CurrentCredentialResponseDto } from './schemas/$CurrentCredentialResponseDto';
 export { $FullOrganizationResponseDto } from './schemas/$FullOrganizationResponseDto';
 export { $InvitationResponseDto } from './schemas/$InvitationResponseDto';
 export { $InviteMemberRequest } from './schemas/$InviteMemberRequest';

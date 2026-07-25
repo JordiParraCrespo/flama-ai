@@ -5,11 +5,24 @@
 import type { ApiTokenResponseDto } from '../../../../common/models/ApiTokenResponseDto';
 import type { CreateApiTokenRequest } from '../../../../common/models/CreateApiTokenRequest';
 import type { CreatedApiTokenResponseDto } from '../../../../common/models/CreatedApiTokenResponseDto';
+import type { CurrentCredentialResponseDto } from '../../../../common/models/CurrentCredentialResponseDto';
 import type { PermissionCatalogResponseDto } from '../../../../common/models/PermissionCatalogResponseDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ApiTokensApi {
+    /**
+     * Describe the calling credential and its effective permissions
+     * Returns the credential kind, its granted scopes and what those scopes actually amount to once the owner’s roles are applied. The MCP server filters its tool list by `effectiveScopes`.
+     * @returns CurrentCredentialResponseDto
+     * @throws ApiError
+     */
+    public static current(): CancelablePromise<CurrentCredentialResponseDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/me/credential',
+        });
+    }
     /**
      * List the caller’s API tokens
      * Secrets are never returned — only the display prefix and metadata.
