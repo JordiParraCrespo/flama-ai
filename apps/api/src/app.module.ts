@@ -62,7 +62,12 @@ import { UsersModule } from './users/user.module';
         };
       },
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60000, limit: 100 }],
+      // Integration tests drive many requests through the same pipeline in
+      // seconds; rate limiting there measures nothing but the limit itself.
+      skipIf: () => process.env.NODE_ENV === 'test',
+    }),
     LoggerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

@@ -113,7 +113,7 @@ export class CredentialScopeResolver {
     };
   }
 
-  private async resolveOAuthToken(request: ScopedRequest): Promise<ScopeContext> {
+  private async resolveOAuthToken(request: ScopedRequest): Promise<ScopeContext | null> {
     const session = await auth.api
       .getMcpSession({ headers: betterAuthHeaders(request.headers) })
       .catch((error) => {
@@ -121,7 +121,11 @@ export class CredentialScopeResolver {
         return null;
       });
 
-    if (!session?.userId) throw new AppError(ApiTokenErrors.INVALID_CREDENTIAL);
+    // Not an OAuth access token. It may still be a Better Auth *session* token
+    // presented as a bearer credential — that is how the mobile app and the
+    // CLI's sign-in flow authenticate. Those carry no scopes, so hand them back
+    // to the session path rather than rejecting them.
+    if (!session?.userId) return this.rejectUnlessSession(request);
 
     const { scopes } = parseScopeString(session.scopes);
 
@@ -139,6 +143,21 @@ export class CredentialScopeResolver {
       resourceScope: toResourceScope(null),
       expiresAt: session.accessTokenExpiresAt ? new Date(session.accessTokenExpiresAt) : null,
     };
+  }
+
+  /**
+   * A bearer credential that is neither an API token nor an OAuth grant is only
+   * acceptable if Better Auth recognises it as a session token; anything else
+   * is rejected rather than ignored, so a stale token can never fall through to
+   * a cookie session's full rights.
+   */
+  private async rejectUnlessSession(request: ScopedRequest): Promise<null> {
+    const session = await auth.api
+      .getSession({ headers: betterAuthHeaders(request.headers) })
+      .catch(() => null);
+
+    if (!session) throw new AppError(ApiTokenErrors.INVALID_CREDENTIAL);
+    return null;
   }
 
   /**

@@ -119,17 +119,21 @@ export class AddApiTokensAndOAuth1781100000000 implements MigrationInterface {
     );
 
     // --- own-token permissions for the seeded `user` role ---
-    // Appended rather than replaced so any permissions an admin has already
-    // added to the role survive; `-` first makes the statement idempotent.
+    // Any permissions an admin has already added to the role survive: only the
+    // three ApiToken rules are filtered out before being appended, which also
+    // makes the statement idempotent. (`jsonb - jsonb` is not an operator —
+    // removing an array element by value needs the unnest/re-aggregate form.)
     await queryRunner.query(
       `UPDATE "role"
-          SET "permissions" =
-            ("permissions" - '{"action":"read","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}'::jsonb
-                           - '{"action":"create","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}'::jsonb
-                           - '{"action":"delete","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}'::jsonb)
-            || '[{"action":"read","subject":"ApiToken","conditions":{"userId":"\${user.id}"}},
-                  {"action":"create","subject":"ApiToken","conditions":{"userId":"\${user.id}"}},
-                  {"action":"delete","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}]'::jsonb
+          SET "permissions" = (
+                SELECT COALESCE(jsonb_agg(rule), '[]'::jsonb)
+                  FROM jsonb_array_elements("permissions") AS rule
+                 WHERE NOT (rule->>'subject' = 'ApiToken'
+                            AND rule->>'action' IN ('read', 'create', 'delete'))
+              )
+              || '[{"action":"read","subject":"ApiToken","conditions":{"userId":"\${user.id}"}},
+                    {"action":"create","subject":"ApiToken","conditions":{"userId":"\${user.id}"}},
+                    {"action":"delete","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}]'::jsonb
         WHERE "name" = 'user'`,
     );
   }
@@ -137,10 +141,12 @@ export class AddApiTokensAndOAuth1781100000000 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `UPDATE "role"
-          SET "permissions" =
-            "permissions" - '{"action":"read","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}'::jsonb
-                          - '{"action":"create","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}'::jsonb
-                          - '{"action":"delete","subject":"ApiToken","conditions":{"userId":"\${user.id}"}}'::jsonb
+          SET "permissions" = (
+                SELECT COALESCE(jsonb_agg(rule), '[]'::jsonb)
+                  FROM jsonb_array_elements("permissions") AS rule
+                 WHERE NOT (rule->>'subject' = 'ApiToken'
+                            AND rule->>'action' IN ('read', 'create', 'delete'))
+              )
         WHERE "name" = 'user'`,
     );
 
