@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OauthConsentRouteImport } from './routes/oauth/consent'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AuthenticatedSettingsApiTokensRouteImport } from './routes/_authenticated/settings/api-tokens'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -29,6 +31,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthConsentRoute = OauthConsentRouteImport.update({
+  id: '/oauth/consent',
+  path: '/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -56,6 +63,12 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthenticatedSettingsApiTokensRoute =
+  AuthenticatedSettingsApiTokensRouteImport.update({
+    id: '/settings/api-tokens',
+    path: '/settings/api-tokens',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -64,6 +77,8 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -72,6 +87,8 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -83,6 +100,8 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/_authenticated/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -93,6 +112,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/dashboard'
+    | '/oauth/consent'
+    | '/settings/api-tokens'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -101,6 +122,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/dashboard'
+    | '/oauth/consent'
+    | '/settings/api-tokens'
   id:
     | '__root__'
     | '/'
@@ -111,12 +134,15 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/_auth/reset-password'
     | '/_authenticated/dashboard'
+    | '/oauth/consent'
+    | '/_authenticated/settings/api-tokens'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  OauthConsentRoute: typeof OauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +166,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/consent': {
+      id: '/oauth/consent'
+      path: '/oauth/consent'
+      fullPath: '/oauth/consent'
+      preLoaderRoute: typeof OauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/dashboard': {
@@ -177,6 +210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_authenticated/settings/api-tokens': {
+      id: '/_authenticated/settings/api-tokens'
+      path: '/settings/api-tokens'
+      fullPath: '/settings/api-tokens'
+      preLoaderRoute: typeof AuthenticatedSettingsApiTokensRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -198,10 +238,12 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSettingsApiTokensRoute: typeof AuthenticatedSettingsApiTokensRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSettingsApiTokensRoute: AuthenticatedSettingsApiTokensRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -212,6 +254,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  OauthConsentRoute: OauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
