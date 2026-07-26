@@ -28,6 +28,11 @@ export interface SubscriptionProps {
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
   canceledAt: Date | null;
+  /**
+   * `created` timestamp of the last Stripe event applied to this mirror. Used to
+   * discard out-of-order webhook deliveries (Stripe does not guarantee order).
+   */
+  lastEventAt: Date | null;
 }
 
 /** Mutable fields synced from Stripe on each subscription webhook. */
@@ -42,6 +47,8 @@ export interface SyncSubscriptionProps {
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
   canceledAt: Date | null;
+  /** `created` timestamp of the Stripe event carrying this state (sequencing). */
+  eventCreatedAt: Date;
 }
 
 export interface CreateSubscriptionProps extends SyncSubscriptionProps {
@@ -80,6 +87,7 @@ export class SubscriptionEntity extends AggregateRoot<SubscriptionProps> {
         currentPeriodEnd: props.currentPeriodEnd,
         cancelAtPeriodEnd: props.cancelAtPeriodEnd,
         canceledAt: props.canceledAt,
+        lastEventAt: props.eventCreatedAt,
       },
     });
     if (isActiveStatus(props.status)) {
@@ -116,8 +124,15 @@ export class SubscriptionEntity extends AggregateRoot<SubscriptionProps> {
    * when transitioning into an active status and `SubscriptionCanceledDomainEvent`
    * when transitioning into `canceled`, so the sync is idempotent (no event is
    * raised when the status is unchanged).
+   *
+   * Stripe does not guarantee webhook delivery order, so an event whose `created`
+   * timestamp predates the last one we applied (e.g. a late `subscription.updated`
+   * arriving after `subscription.deleted`) is discarded to avoid resurrecting
+   * stale state. Returns `true` when the state was applied, `false` when skipped.
    */
-  sync(props: SyncSubscriptionProps): void {
+  sync(props: SyncSubscriptionProps): boolean {
+    if (this.isStaleEvent(props.eventCreatedAt)) return false;
+
     const previousStatus = this.props.status;
 
     this.props.stripeCustomerId = props.stripeCustomerId;
@@ -130,6 +145,7 @@ export class SubscriptionEntity extends AggregateRoot<SubscriptionProps> {
     this.props.currentPeriodEnd = props.currentPeriodEnd;
     this.props.cancelAtPeriodEnd = props.cancelAtPeriodEnd;
     this.props.canceledAt = props.canceledAt;
+    this.props.lastEventAt = props.eventCreatedAt;
     this.setUpdatedAt(new Date());
     this.validate();
 
@@ -155,6 +171,16 @@ export class SubscriptionEntity extends AggregateRoot<SubscriptionProps> {
         }),
       );
     }
+    return true;
+  }
+
+  /**
+   * Whether an incoming event is older than the last one applied. Same-timestamp
+   * events are not stale — Stripe's `created` has second resolution, so a genuine
+   * newer event can share a second; re-applying identical data is idempotent.
+   */
+  private isStaleEvent(eventCreatedAt: Date): boolean {
+    return this.props.lastEventAt !== null && eventCreatedAt < this.props.lastEventAt;
   }
 
   public validate(): void {

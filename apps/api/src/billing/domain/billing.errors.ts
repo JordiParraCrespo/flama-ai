@@ -35,4 +35,14 @@ export const BillingErrors = {
     message: 'This user already has an active subscription',
     httpStatus: 409,
   },
+  PORTAL_FAILED: {
+    code: 'BILLING_007',
+    message: 'Failed to open the Stripe Customer Portal',
+    httpStatus: 502,
+  },
+  CUSTOMER_CREATION_FAILED: {
+    code: 'BILLING_008',
+    message: 'Failed to create a Stripe customer',
+    httpStatus: 502,
+  },
 } as const satisfies Record<string, ErrorDefinition>;

@@ -13,6 +13,7 @@ import type {
   NormalizedSubscription,
   PaymentGatewayPort,
 } from '../../infrastructure/payment-gateway.port';
+import { isUniqueViolation } from '../../infrastructure/postgres-error.util';
 import { SubscriptionMapper } from '../../subscription.mapper';
 import { HandleStripeWebhookCommand } from './handle-stripe-webhook.command';
 
@@ -52,9 +53,7 @@ export class HandleStripeWebhookService
 
     const existing = await this.subscriptions.findOneByStripeId(data.stripeSubscriptionId);
     if (existing.isSome()) {
-      const subscription = existing.unwrap();
-      subscription.sync(this.mapper.toSyncProps(data));
-      await this.subscriptions.save(subscription);
+      await this.applySync(existing.unwrap(), data);
       return;
     }
 
@@ -63,7 +62,29 @@ export class HandleStripeWebhookService
       stripeSubscriptionId: data.stripeSubscriptionId,
       ...this.mapper.toSyncProps(data),
     });
-    await this.subscriptions.insert(subscription);
+    try {
+      await this.subscriptions.insert(subscription);
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error;
+      // A concurrent duplicate delivery inserted this subscription between our
+      // lookup and insert. Reconcile against the now-existing row instead of
+      // surfacing an unmapped 500 (the check-then-insert is not transactional).
+      const raced = await this.subscriptions.findOneByStripeId(data.stripeSubscriptionId);
+      if (raced.isSome()) await this.applySync(raced.unwrap(), data);
+    }
+  }
+
+  /**
+   * Apply the webhook state to an existing subscription, persisting only when
+   * `sync()` actually changed something (it discards out-of-order/stale events).
+   */
+  private async applySync(
+    subscription: SubscriptionEntity,
+    data: NormalizedSubscription,
+  ): Promise<void> {
+    if (subscription.sync(this.mapper.toSyncProps(data))) {
+      await this.subscriptions.save(subscription);
+    }
   }
 
   /**

@@ -49,6 +49,13 @@ export class SubscriptionOrmEntity {
   @Column({ type: 'timestamp', nullable: true })
   canceledAt!: Date | null;
 
+  /**
+   * `created` timestamp of the last Stripe event applied to this row. Guards
+   * against out-of-order webhook delivery (Stripe does not guarantee order).
+   */
+  @Column({ type: 'timestamp', nullable: true })
+  lastEventAt!: Date | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 
