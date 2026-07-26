@@ -2,8 +2,9 @@ import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Post, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
@@ -14,7 +15,7 @@ import { CreateRoleRequest } from './create-role.request.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('roles')
 export class CreateRoleHttpController {
   constructor(
@@ -26,6 +27,7 @@ export class CreateRoleHttpController {
   @Post()
   @Version('1')
   @CheckPolicies({ action: 'create', subject: 'Role' })
+  @RequireScopes('roles:write')
   @ApiOperation({ summary: 'Create role' })
   @ApiResponse({ status: 201, type: RoleResponseDto })
   @ApiResponse({

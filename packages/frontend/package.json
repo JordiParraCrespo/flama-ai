@@ -45,16 +45,16 @@
   "dependencies": {
     "@flama/api-client": "workspace:*",
     "@flama/shared": "workspace:*",
-    "@tanstack/query-core": "^5.62.0",
-    "better-auth": "^1.6.14",
-    "inversify": "^7.0.0",
+    "@tanstack/query-core": "^5.101.4",
+    "better-auth": "^1.6.25",
+    "inversify": "^8.2.3",
     "reflect-metadata": "^0.2.2",
-    "zustand": "^5.0.0"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@flama/config": "workspace:^",
-    "@types/react": "^19.0.0",
-    "typescript": "^6.0.2",
-    "vitest": "^3.0.0"
+    "@types/react": "19.2.14",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
   }
 }
