@@ -34,20 +34,29 @@
       "import": "./dist/constants/index.js",
       "require": "./dist/constants/index.js",
       "default": "./dist/constants/index.js"
+    },
+    "./scopes": {
+      "types": "./dist/scopes/index.d.ts",
+      "import": "./dist/scopes/index.js",
+      "require": "./dist/scopes/index.js",
+      "default": "./dist/scopes/index.js"
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
-    "lint": "biome check src/"
+    "lint": "biome check src/",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@casl/ability": "^6.7.2",
-    "zod": "^3.24.0"
+    "@casl/ability": "^6.8.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@flama/config": "workspace:^",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
   }
 }
