@@ -17,15 +17,15 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/config": "^4.0.0",
-    "@nestjs/core": "^11.0.0",
-    "ioredis": "^5.4.0"
+    "@nestjs/common": "^11.1.28",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.1.28",
+    "ioredis": "^5.11.1"
   },
   "devDependencies": {
     "@flama/config": "workspace:^",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.0",
-    "typescript": "^6.0.2"
+    "rxjs": "^7.8.2",
+    "typescript": "^6.0.3"
   }
 }

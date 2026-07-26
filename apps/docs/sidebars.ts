@@ -21,6 +21,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'CLI & MCP',
+      items: ['tooling/permissions', 'tooling/cli', 'tooling/mcp'],
+    },
+    {
+      type: 'category',
       label: 'Deployment',
       items: ['deployment/tier-1-cheap', 'deployment/tier-2-production'],
     },

@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 6 apps and 13 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 8 apps and 13 shared packages.
 
 ## Monorepo structure
 
@@ -10,7 +10,9 @@ Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It conta
 flama/
 ├── apps/
 │   ├── api/              # NestJS REST API
+│   ├── cli/              # `flama` command-line interface
 │   ├── docs/             # Docusaurus documentation
+│   ├── mcp/              # MCP server (stdio + Streamable HTTP)
 │   ├── mobile/           # Expo (React Native)
 │   ├── mobile-showcase/  # Expo app showcasing the mobile design system
 │   ├── web/              # Vite + TanStack Router SPA
@@ -66,6 +68,7 @@ Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api`, `p
 - `backend-packages.md` — CJS exports, package structure (pluggable vs library), email template setup
 - `api-config.md` — OAuth graceful handling, controllers, Swagger decorators, rate limiting, versioning
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
+- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens, OAuth for MCP clients
 
 #### Authorization (roles & permissions)
 
@@ -78,6 +81,21 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 `request.ability` for resource-scoped checks. The `roles` module
 (`apps/api/src/roles/`) exposes CRUD + `PUT /roles/:id/permissions` and
 `GET|PUT /users/:userId/roles`. See `rbac-roles.md` for the full guide.
+
+### CLI (`apps/cli`) and MCP server (`apps/mcp`)
+
+Both are governed by the **scope catalog** in `packages/shared/src/scopes/`.
+Roles say what a person may do; scopes say what a credential may do on their
+behalf, and effective access is the intersection — see
+`.claude/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
+
+- `apps/cli` — commander-based; commands in `src/commands/`, shared plumbing in
+  `src/lib/` (config profiles, HTTP client, output, prompts). Exit codes are a
+  public contract: 0 ok, 1 failure, 2 usage, 3 auth, 4 forbidden, 5 not found,
+  6 unreachable.
+- `apps/mcp` — one tool registry in `src/tools/`, two entrypoints in `src/bin/`.
+  Every tool declares `requiredScopes`; the tool list is filtered by the
+  credential's effective scopes.
 
 ### Shared (packages/shared)
 
@@ -151,7 +169,7 @@ pnpm test               # Unit tests
 pnpm test:integration   # Integration tests (needs Docker)
 pnpm check              # Biome lint + format
 pnpm docker:dev         # Start Postgres + Redis
-pnpm generate:api-client # Regenerate typed API client
+pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
 ```
 
@@ -171,3 +189,6 @@ pnpm changeset          # Create a changeset for versioning
 - New web design tokens go in `packages/design-system/web/src/styles/globals.css`
 - Frontend business logic goes in `packages/frontend`, not in app components
 - Keep pluggable service pattern: abstract class → concrete implementations → factory in module
+- New API endpoints need `@RequireScopes` or they are unreachable by API tokens and MCP clients
+- New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
+- `apps/web` imports only _types_ from `@flama/shared`; its CJS build is not tree-shakeable by Rollup, so fetch runtime data (like the permission catalog) from the API

@@ -56,6 +56,11 @@ export function AppSidebar() {
                   {t('nav.dashboard')}
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton render={<Link to="/settings/api-tokens" />}>
+                  {t('nav.apiTokens')}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

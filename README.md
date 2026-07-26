@@ -10,6 +10,8 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 | `apps/web`                      | Vite + TanStack Router SPA — Tailwind v4, shadcn/ui, react-i18next |
 | `apps/mobile`                   | Expo — NativeWind, i18next, SecureStore                            |
 | `apps/docs`                     | Docusaurus — project documentation                                 |
+| `apps/cli`                      | `flama` command-line interface — commander, scoped API tokens      |
+| `apps/mcp`                      | MCP server — stdio + Streamable HTTP, scope-filtered tools         |
 | `apps/web-showcase`             | Next.js showcase for the web design system                         |
 | `apps/mobile-showcase`          | Expo showcase for the mobile design system                         |
 | `packages/shared`               | Zod schemas, types, CASL permissions, constants                    |

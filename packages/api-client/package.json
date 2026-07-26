@@ -20,6 +20,6 @@
   "devDependencies": {
     "@flama/config": "workspace:^",
     "openapi-typescript-codegen": "^0.30.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   }
 }

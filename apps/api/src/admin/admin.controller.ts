@@ -14,9 +14,10 @@ import {
   Version,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import type { Request, Response } from 'express';
 import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
 import { AdminService } from './admin.service';
 import {
@@ -46,13 +47,14 @@ function forwardCookies(headers: Headers, res: Response): void {
  */
 @ApiTags('Admin')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('admin')
 export class AdminController {
   constructor(private readonly admin: AdminService) {}
 
   @Get('users')
   @Version('1')
+  @RequireScopes('admin:read')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: 'List users' })
   @ApiQuery({ name: 'searchValue', required: false })
@@ -83,6 +85,7 @@ export class AdminController {
 
   @Post('users')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: 'Create a user' })
   @ApiResponse({ status: 201, type: AdminUserResponseDto })
@@ -95,6 +98,7 @@ export class AdminController {
 
   @Post('stop-impersonating')
   @Version('1')
+  @RequireScopes('admin:write')
   @ApiOperation({ summary: 'Stop impersonating and restore the admin session' })
   @ApiResponse({ status: 200, type: AdminUserResponseDto })
   async stopImpersonating(
@@ -108,6 +112,7 @@ export class AdminController {
 
   @Post('sessions/revoke')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: 'Revoke a session by token' })
   @ApiResponse({ status: 200, type: AdminSuccessResponseDto })
@@ -120,6 +125,7 @@ export class AdminController {
 
   @Get('users/:id')
   @Version('1')
+  @RequireScopes('admin:read')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: 'Get a user' })
   @ApiResponse({ status: 200, type: AdminUserResponseDto })
@@ -132,6 +138,7 @@ export class AdminController {
 
   @Patch('users/:id')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: "Update a user's profile fields" })
   @ApiResponse({ status: 200, type: AdminUserResponseDto })
@@ -145,6 +152,7 @@ export class AdminController {
 
   @Delete('users/:id')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, type: AdminSuccessResponseDto })
@@ -157,6 +165,7 @@ export class AdminController {
 
   @Post('users/:id/role')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: "Set a user's global role" })
   @ApiResponse({ status: 200, type: AdminUserResponseDto })
@@ -170,6 +179,7 @@ export class AdminController {
 
   @Post('users/:id/ban')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: 'Ban a user' })
   @ApiResponse({ status: 200, type: AdminUserResponseDto })
@@ -183,6 +193,7 @@ export class AdminController {
 
   @Post('users/:id/unban')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: 'Unban a user' })
   @ApiResponse({ status: 200, type: AdminUserResponseDto })
@@ -195,6 +206,7 @@ export class AdminController {
 
   @Post('users/:id/impersonate')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({
     summary: 'Impersonate a user (issues an impersonation session)',
@@ -212,6 +224,7 @@ export class AdminController {
 
   @Get('users/:id/sessions')
   @Version('1')
+  @RequireScopes('admin:read')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: "List a user's sessions" })
   @ApiResponse({ status: 200, type: [AdminSessionResponseDto] })
@@ -224,6 +237,7 @@ export class AdminController {
 
   @Post('users/:id/revoke-sessions')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: "Revoke all of a user's sessions" })
   @ApiResponse({ status: 200, type: AdminSuccessResponseDto })
@@ -236,6 +250,7 @@ export class AdminController {
 
   @Post('users/:id/set-password')
   @Version('1')
+  @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
   @ApiOperation({ summary: "Set a user's password" })
   @ApiResponse({ status: 200, type: AdminSuccessResponseDto })
