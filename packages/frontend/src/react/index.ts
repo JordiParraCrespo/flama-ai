@@ -1,4 +1,12 @@
 export {
+  apiTokensKeys,
+  useApiTokens,
+  useCreateApiToken,
+  useCurrentCredential,
+  usePermissionCatalog,
+  useRevokeApiToken,
+} from './api-tokens.queries';
+export {
   authKeys,
   useChangePassword,
   useForgotPassword,
@@ -11,6 +19,7 @@ export {
 } from './auth.queries';
 export { FlamaProvider, useFlamaApp } from './context';
 export { useAuthState } from './hooks';
+export { organizationsKeys, useOrganizations } from './organizations.queries';
 export {
   profileQueryKey,
   useDeleteUser,

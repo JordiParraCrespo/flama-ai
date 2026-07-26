@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import { expo } from '@better-auth/expo';
+import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
+import { Logger } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
-import { admin, organization } from 'better-auth/plugins';
+import { admin, bearer, mcp, organization } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { emailQueue } from './email-queue';
@@ -29,6 +31,9 @@ const superadminAc = defaultAc.newRole({
   session: ['list', 'revoke', 'delete'],
 });
 
+/** OIDC's standard scopes plus this deployment's own permission catalog. */
+const OAUTH_SCOPES_SUPPORTED = ['openid', 'profile', 'email', 'offline_access', ...SCOPES];
+
 const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
 
@@ -38,6 +43,14 @@ const pool = new Pool({
   user: process.env.DB_USERNAME ?? 'flama',
   password: process.env.DB_PASSWORD ?? 'flama',
   database: process.env.DB_DATABASE ?? 'flama',
+});
+
+// `pg` emits `error` on the pool when an *idle* client's connection drops — a
+// database restart, a failover, an `idle_session_timeout`. Without a listener
+// Node treats that as an uncaught exception and takes the process down, even
+// though the pool recovers on its own by discarding the client.
+pool.on('error', (error: Error) => {
+  new Logger('BetterAuth').warn(`Idle database client dropped: ${error.message}`);
 });
 
 const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
@@ -291,6 +304,38 @@ export const auth = betterAuth({
           role: data.role,
           url: acceptUrl,
         });
+      },
+    }),
+    // Accepts `Authorization: Bearer <session token>`. Used by the API's own
+    // auth guard, which mints a short-lived delegated session for a scoped
+    // credential so the organization/admin façades — which resolve the caller
+    // through Better Auth — keep working for API tokens and MCP clients.
+    bearer(),
+    // Turns the app into an OAuth 2.1 provider for MCP clients: discovery
+    // metadata, dynamic client registration, authorization and token endpoints.
+    // Clients ask for scopes from the shared catalog and the user approves (or
+    // narrows) them on the consent screen.
+    mcp({
+      loginPage: `${frontendUrl}/login`,
+      // The plugin hands *these* options — not `oidcConfig` — to the discovery
+      // metadata builder, which otherwise advertises only the OIDC standard
+      // scopes. Publishing the catalog here is what lets an MCP client see
+      // which permissions this deployment actually offers.
+      ...({ metadata: { scopes_supported: OAUTH_SCOPES_SUPPORTED } } as object),
+      oidcConfig: {
+        loginPage: `${frontendUrl}/login`,
+        scopes: [...SCOPES],
+        defaultScope: DEFAULT_OAUTH_SCOPES.join(' '),
+        consentPage: `${frontendUrl}/oauth/consent`,
+        // MCP clients are public clients that register themselves on first use.
+        allowDynamicClientRegistration: true,
+        requirePKCE: true,
+        storeClientSecret: 'hashed',
+        accessTokenExpiresIn: 60 * 60,
+        refreshTokenExpiresIn: 60 * 60 * 24 * 30,
+        // Mirrored here for the OIDC discovery document, which is built from
+        // `oidcConfig` rather than the plugin options above.
+        metadata: { scopes_supported: OAUTH_SCOPES_SUPPORTED },
       },
     }),
   ],
