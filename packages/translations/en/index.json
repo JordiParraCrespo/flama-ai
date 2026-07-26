@@ -74,6 +74,12 @@
       "successMessage": "You can now sign in.",
       "failedTitle": "Reset failed",
       "error": "Could not reset password"
+    },
+    "session": {
+      "errorTitle": "Connection problem",
+      "errorMessage": "We couldn't restore your session. Check your connection and try again.",
+      "retry": "Try again",
+      "retrying": "Retrying..."
     }
   },
   "dashboard": {

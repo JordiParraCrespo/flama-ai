@@ -30,7 +30,13 @@ export function useSessionRestore(
   return useQuery({
     queryKey: authKeys.session(),
     queryFn: () => app.auth.restoreSession(),
-    retry: false,
+    // Retry transient failures on startup. `restoreSession()` only rejects when
+    // the session lookup itself fails (network/server error) — a genuinely
+    // unauthenticated user resolves successfully, so retries never fire for
+    // them. Without this a single network blip masquerades as "logged out" and
+    // silently bounces the user to /login.
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     staleTime: Infinity,
     ...options,
   });
