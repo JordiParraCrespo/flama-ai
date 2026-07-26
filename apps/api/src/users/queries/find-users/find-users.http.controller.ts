@@ -2,8 +2,9 @@ import type { Paginated } from '@flama/backend-ddd';
 import { Controller, Get, Query, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { UserEntity } from '../../domain/user.entity';
 import { UserMapper } from '../../user.mapper';
@@ -12,7 +13,7 @@ import { FindUsersRequest } from './find-users.request.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('users')
 export class FindUsersHttpController {
   constructor(
@@ -23,6 +24,7 @@ export class FindUsersHttpController {
   @Get()
   @Version('1')
   @CheckPolicies({ action: 'read', subject: 'User' })
+  @RequireScopes('users:read')
   @ApiOperation({ summary: 'List all users' })
   @ApiQuery({
     name: 'page',

@@ -107,11 +107,63 @@
   "nav": {
     "menu": "Menú",
     "dashboard": "Panel",
-    "logOut": "Cerrar sesión"
+    "logOut": "Cerrar sesión",
+    "apiTokens": "Tokens de API"
   },
   "language": {
     "label": "Idioma",
     "en": "English",
     "es": "Español"
+  },
+  "apiTokens": {
+    "title": "Tokens de API",
+    "description": "Los tokens permiten que scripts, CI y agentes de IA actúen en tu nombre solo con los permisos que elijas.",
+    "create": "Crear un token",
+    "createDescription": "Un token nunca puede hacer más que tú. Lo que no tienes permitido aparece desactivado.",
+    "createButton": "Crear token",
+    "name": "Nombre",
+    "namePlaceholder": "Despliegue de CI, Claude, portátil…",
+    "permissions": "Permisos",
+    "permissionsHint": "Editar incluye Leer. Concede lo mínimo necesario.",
+    "organizations": "Organizaciones",
+    "organizationsHint": "Déjalas sin marcar para que el token siga tus membresías.",
+    "expiry": "Caduca",
+    "never": "Nunca",
+    "days": "{{count}} días",
+    "sensitive": "Sensible",
+    "levels": {
+      "none": "Sin acceso"
+    },
+    "yourTokens": "Tus tokens",
+    "yourTokensDescription": "Revocar un token tiene efecto inmediato.",
+    "empty": "Todavía no tienes tokens de API.",
+    "prefix": "Prefijo",
+    "status": "Estado",
+    "lastUsed": "Último uso",
+    "neverUsed": "Nunca",
+    "active": "Activo",
+    "expired": "Caducado",
+    "revoked": "Revocado",
+    "revoke": "Revocar",
+    "created": "Token creado",
+    "shownOnce": "Cópialo ahora: es la única vez que se muestra.",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "dismiss": "Descartar"
+  },
+  "consent": {
+    "title": "{{client}} quiere acceder a tu cuenta",
+    "description": "Has iniciado sesión como {{email}}. Al aprobar podrá actuar en tu nombre con los permisos siguientes.",
+    "noPermissions": "Esta aplicación no ha pedido ningún permiso.",
+    "unknownScopes": "También ha pedido permisos que este despliegue no reconoce: {{scopes}}",
+    "effectiveNote": "Nunca podrá hacer más de lo que permiten tus roles, y puedes desconectarla cuando quieras.",
+    "narrowerAlternative": "¿Necesitas conceder algo más limitado?",
+    "apiTokensLink": "Crea un token de API",
+    "approve": "Aprobar",
+    "deny": "Denegar",
+    "invalidTitle": "Este enlace ha caducado",
+    "invalidDescription": "Vuelve a iniciar la conexión desde la aplicación que te ha traído aquí.",
+    "backToDashboard": "Volver al panel",
+    "noRedirect": "El servidor no ha indicado a dónde continuar."
   }
 }

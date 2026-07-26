@@ -26,6 +26,7 @@ export const KNOWN_SUBJECTS = [
   'Workspace',
   'Member',
   'Invitation',
+  'ApiToken',
   'AuditLog',
   'all',
 ] as const;
@@ -140,6 +141,14 @@ export function defineAbilitiesFromPermissions(
 }
 
 /**
+ * Placeholder interpolated against the authenticated principal when the ability
+ * is built (see {@link AbilityContext}) — it scopes a rule to the caller's own
+ * resources.
+ */
+// biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
+const OWN_USER_ID = '${user.id}';
+
+/**
  * Permissions granted to the seeded **system roles**. Used by the migration /
  * seed to provision `admin` and `user`, and as the fallback for the legacy
  * single-role column before a user is migrated to the join table.
@@ -152,6 +161,23 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
     { action: 'update', subject: 'User' },
     { action: 'read', subject: 'Article' },
     { action: 'create', subject: 'Article' },
+    // Every user manages their own API tokens; the condition keeps them off
+    // everyone else's.
+    {
+      action: 'read',
+      subject: 'ApiToken',
+      conditions: { userId: OWN_USER_ID },
+    },
+    {
+      action: 'create',
+      subject: 'ApiToken',
+      conditions: { userId: OWN_USER_ID },
+    },
+    {
+      action: 'delete',
+      subject: 'ApiToken',
+      conditions: { userId: OWN_USER_ID },
+    },
   ],
 };
 
