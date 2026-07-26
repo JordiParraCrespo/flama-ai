@@ -1,6 +1,6 @@
 import type { IAuthClient } from '@flama/frontend';
 import type { Role } from '@flama/shared';
-import { inferAdditionalFields } from 'better-auth/client/plugins';
+import { adminClient, inferAdditionalFields, organizationClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
 /**
@@ -24,6 +24,11 @@ export const authClient = createAuthClient({
         isActive: { type: 'boolean', required: false, input: false },
       },
     }),
+    // Super-admin operations (list/ban/impersonate/set-role) under
+    // `authClient.admin.*`, and organizations/members/invitations/workspaces
+    // (teams) under `authClient.organization.*`.
+    adminClient(),
+    organizationClient({ teams: { enabled: true } }),
   ],
 });
 
@@ -81,7 +86,13 @@ export const webAuthClient: IAuthClient = {
   },
 
   async getSession() {
-    const { data } = await authClient.getSession();
+    const { data, error } = await authClient.getSession();
+    // Surface transport/server failures instead of collapsing them into `null`,
+    // which would be indistinguishable from a genuinely unauthenticated user and
+    // would silently sign someone out on a transient network blip.
+    if (error) {
+      throw new Error(error.message ?? 'Failed to restore session');
+    }
     if (!data) return null;
     const user = data.user as typeof data.user & {
       firstName?: string;

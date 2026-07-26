@@ -5,24 +5,6 @@
  */
 export type Role = string;
 
-export type AuthProvider = 'local' | 'google' | 'github';
-
-export interface JwtPayload {
-  sub: string;
-  email: string;
-  /** Legacy single-role claim (the user's primary role name). */
-  role: Role;
-  /** Names of every role assigned to the user (dynamic RBAC). */
-  roles?: Role[];
-  iat?: number;
-  exp?: number;
-}
-
-export interface TokenPair {
-  accessToken: string;
-  refreshToken: string;
-}
-
 export interface PaginationParams {
   page: number;
   limit: number;

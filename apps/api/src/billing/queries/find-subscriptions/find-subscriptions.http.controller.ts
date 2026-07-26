@@ -4,6 +4,7 @@ import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { SubscriptionEntity } from '../../domain/subscription.entity';
 import { SubscriptionMapper } from '../../subscription.mapper';
@@ -22,6 +23,7 @@ export class FindSubscriptionsHttpController {
 
   @Get('subscriptions')
   @Version('1')
+  @RequireScopes('billing:read')
   @CheckPolicies({ action: 'read', subject: 'Billing' })
   @ApiOperation({ summary: 'List all subscriptions (admin)' })
   @ApiQuery({

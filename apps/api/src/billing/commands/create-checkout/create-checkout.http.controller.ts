@@ -3,6 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { BillingSessionResponseDto } from '../../dtos/billing-session.response.dto';
 import { CreateCheckoutCommand } from './create-checkout.command';
 import { CreateCheckoutRequest } from './create-checkout.request.dto';
@@ -16,6 +17,7 @@ export class CreateCheckoutHttpController {
 
   @Post('checkout')
   @Version('1')
+  @RequireScopes('billing:write')
   @ApiOperation({
     summary: 'Create a Stripe Checkout session for a subscription',
   })

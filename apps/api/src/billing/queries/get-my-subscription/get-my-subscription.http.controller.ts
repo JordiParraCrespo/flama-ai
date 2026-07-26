@@ -3,6 +3,7 @@ import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import type { SubscriptionEntity } from '../../domain/subscription.entity';
 import { SubscriptionResponseDto } from '../../dtos/subscription.response.dto';
 import { SubscriptionMapper } from '../../subscription.mapper';
@@ -20,6 +21,7 @@ export class GetMySubscriptionHttpController {
 
   @Get('subscription')
   @Version('1')
+  @RequireScopes('billing:read')
   @ApiOperation({
     summary: "Get the current user's subscription (null if none)",
   })

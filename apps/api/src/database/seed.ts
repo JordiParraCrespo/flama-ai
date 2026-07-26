@@ -1,10 +1,19 @@
 import 'dotenv/config';
 import type { Role } from '@flama/shared';
 import { DataSource } from 'typeorm';
+import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
 import { auth } from '../auth/auth';
 import { Account } from '../auth/entities/account.entity';
+import { OAuthAccessTokenOrmEntity } from '../auth/entities/oauth-access-token.entity';
+import { OAuthApplicationOrmEntity } from '../auth/entities/oauth-application.entity';
+import { OAuthConsentOrmEntity } from '../auth/entities/oauth-consent.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
+import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
+import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
+import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
+import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
+import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
@@ -16,7 +25,23 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME || 'flama',
   password: process.env.DB_PASSWORD || 'flama',
   database: process.env.DB_DATABASE || 'flama',
-  entities: [UserOrmEntity, Session, Account, Verification, RoleOrmEntity, UserRoleOrmEntity],
+  entities: [
+    UserOrmEntity,
+    Session,
+    Account,
+    Verification,
+    ApiTokenOrmEntity,
+    OAuthApplicationOrmEntity,
+    OAuthAccessTokenOrmEntity,
+    OAuthConsentOrmEntity,
+    RoleOrmEntity,
+    UserRoleOrmEntity,
+    OrganizationOrmEntity,
+    MemberOrmEntity,
+    InvitationOrmEntity,
+    TeamOrmEntity,
+    TeamMemberOrmEntity,
+  ],
 });
 
 interface SeedUser {
@@ -28,6 +53,13 @@ interface SeedUser {
 }
 
 const seedUsers: SeedUser[] = [
+  {
+    email: 'superadmin@flama.dev',
+    password: 'superadmin123456',
+    firstName: 'Super',
+    lastName: 'Admin',
+    role: 'superadmin',
+  },
   {
     email: 'admin@flama.dev',
     password: 'admin123456',

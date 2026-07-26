@@ -1,0 +1,40 @@
+# @flama/backend-ddd — Agent Instructions
+
+Domain-Driven Hexagon building blocks used by `apps/api`. Depends on
+`@flama/backend-core`.
+
+> Read the root [`CLAUDE.md`](../../../CLAUDE.md), [`apps/api/ARCHITECTURE.md`](../../../apps/api/ARCHITECTURE.md),
+> and [`.claude/rules/nestjs-architecture.md`](../../../.claude/rules/nestjs-architecture.md).
+
+## Building blocks
+
+```
+src/
+├── aggregate-root.base.ts      # AggregateRoot base (emits domain events)
+├── entity.base.ts              # Entity base
+├── value-object.base.ts        # ValueObject base
+├── domain-event.base.ts        # DomainEvent base
+├── command.base.ts             # CQRS command base
+├── query.base.ts               # CQRS query base
+├── repository.port.ts          # repository port interface
+├── mapper.interface.ts         # domain <-> persistence mapper contract
+├── request-context.service.ts  # request-scoped context
+├── exceptions.ts               # domain exceptions
+├── guard.ts                    # invariant guards
+└── utils.ts
+```
+
+## Conventions
+
+- Ships **CommonJS**. Library package (no runtime services to plug in).
+- These base classes define the contracts every `apps/api` module extends:
+  aggregates, entities, value objects, commands/queries, ports, and mappers.
+- Prefer changing a base here over duplicating patterns in modules — but treat
+  the public surface as stable; many modules depend on it.
+
+## Commands
+
+```bash
+pnpm --filter @flama/backend-ddd build
+pnpm --filter @flama/backend-ddd dev
+```

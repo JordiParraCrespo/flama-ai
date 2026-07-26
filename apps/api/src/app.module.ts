@@ -11,8 +11,11 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { LoggerModule } from 'nestjs-pino';
+import { AdminModule } from './admin/admin.module';
+import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
+import { ScopesGuard } from './auth/guards/scopes.guard';
 import { BillingModule } from './billing/billing.module';
 import {
   appConfig,
@@ -24,6 +27,7 @@ import {
   stripeConfig,
 } from './config';
 import { HealthModule } from './health/health.module';
+import { OrganizationsModule } from './organizations/organizations.module';
 import { QueueModule } from './queue/queue.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/user.module';
@@ -49,8 +53,12 @@ import { UsersModule } from './users/user.module';
         // the .ts migration files through vitest's module system and crash.
         // Migrations are exercised separately against a real database.
         const isTest = configService.get('app.nodeEnv') === 'test';
+        // Building the OpenAPI document only needs the module graph, not a
+        // live database, so `pnpm generate:openapi` runs anywhere.
+        const isSchemaOnly = process.env.OPENAPI_GENERATION === 'true';
         return {
           type: 'postgres',
+          manualInitialization: isSchemaOnly,
           host: configService.get('database.host'),
           port: configService.get('database.port'),
           username: configService.get('database.username'),
@@ -64,7 +72,12 @@ import { UsersModule } from './users/user.module';
         };
       },
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60000, limit: 100 }],
+      // Integration tests drive many requests through the same pipeline in
+      // seconds; rate limiting there measures nothing but the limit itself.
+      skipIf: () => process.env.NODE_ENV === 'test',
+    }),
     LoggerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -97,14 +110,21 @@ import { UsersModule } from './users/user.module';
       bodyParser: { rawBody: true },
     }),
     AuthModule,
+    ApiTokensModule,
     UsersModule,
     RolesModule,
+    OrganizationsModule,
+    AdminModule,
     HealthModule,
     QueueModule,
     BillingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Registered globally so a route that forgets to declare its scope
+    // requirements is closed to scoped credentials rather than open by
+    // omission. Browser sessions pass straight through.
+    { provide: APP_GUARD, useClass: ScopesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: RequestContextInterceptor },
   ],

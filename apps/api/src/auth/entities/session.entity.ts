@@ -24,6 +24,17 @@ export class Session {
   @Column({ type: 'varchar', nullable: true })
   userAgent!: string | null;
 
+  // --- Better Auth admin plugin: set while an admin impersonates a user. ---
+  @Column({ type: 'uuid', nullable: true })
+  impersonatedBy!: string | null;
+
+  // --- Better Auth organization plugin: the session's active org/workspace. ---
+  @Column({ type: 'uuid', nullable: true })
+  activeOrganizationId!: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  activeTeamId!: string | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

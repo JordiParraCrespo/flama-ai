@@ -18,7 +18,19 @@ export type Subjects = string;
 /** Built-in actions used by the seeded system roles. */
 export const KNOWN_ACTIONS = ['create', 'read', 'update', 'delete', 'manage'] as const;
 /** Built-in subjects used by the seeded system roles. `all` is CASL's wildcard. */
-export const KNOWN_SUBJECTS = ['User', 'Article', 'Role', 'Billing', 'all'] as const;
+export const KNOWN_SUBJECTS = [
+  'User',
+  'Article',
+  'Role',
+  'Organization',
+  'Workspace',
+  'Member',
+  'Invitation',
+  'ApiToken',
+  'AuditLog',
+  'Billing',
+  'all',
+] as const;
 
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
 
@@ -39,9 +51,20 @@ export interface PermissionDefinition {
   reason?: string;
 }
 
-/** Context made available to `${...}` placeholders in permission conditions. */
+/**
+ * Context made available to `${...}` placeholders in permission conditions.
+ *
+ * `user` powers own-resource scoping (`${user.id}`); `activeOrganizationId`
+ * powers tenant scoping (`${activeOrganizationId}`) — the natural hook for
+ * row-level "only within my active organization" rules once resources carry an
+ * `organizationId` column.
+ */
 export interface AbilityContext {
   user?: Record<string, unknown> | null;
+  /** The caller's active organization (from `session.activeOrganizationId`). */
+  activeOrganizationId?: string | null;
+  /** The caller's active workspace/team (from `session.activeTeamId`). */
+  activeTeamId?: string | null;
 }
 
 const PLACEHOLDER = /^\$\{([^}]+)\}$/;
@@ -119,17 +142,43 @@ export function defineAbilitiesFromPermissions(
 }
 
 /**
+ * Placeholder interpolated against the authenticated principal when the ability
+ * is built (see {@link AbilityContext}) — it scopes a rule to the caller's own
+ * resources.
+ */
+// biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
+const OWN_USER_ID = '${user.id}';
+
+/**
  * Permissions granted to the seeded **system roles**. Used by the migration /
  * seed to provision `admin` and `user`, and as the fallback for the legacy
  * single-role column before a user is migrated to the join table.
  */
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
+  superadmin: [{ action: 'manage', subject: 'all' }],
   admin: [{ action: 'manage', subject: 'all' }],
   user: [
     { action: 'read', subject: 'User' },
     { action: 'update', subject: 'User' },
     { action: 'read', subject: 'Article' },
     { action: 'create', subject: 'Article' },
+    // Every user manages their own API tokens; the condition keeps them off
+    // everyone else's.
+    {
+      action: 'read',
+      subject: 'ApiToken',
+      conditions: { userId: OWN_USER_ID },
+    },
+    {
+      action: 'create',
+      subject: 'ApiToken',
+      conditions: { userId: OWN_USER_ID },
+    },
+    {
+      action: 'delete',
+      subject: 'ApiToken',
+      conditions: { userId: OWN_USER_ID },
+    },
   ],
 };
 

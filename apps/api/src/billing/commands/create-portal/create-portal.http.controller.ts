@@ -3,6 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { BillingSessionResponseDto } from '../../dtos/billing-session.response.dto';
 import { CreatePortalCommand } from './create-portal.command';
 import { CreatePortalRequest } from './create-portal.request.dto';
@@ -16,6 +17,7 @@ export class CreatePortalHttpController {
 
   @Post('portal')
   @Version('1')
+  @RequireScopes('billing:write')
   @ApiOperation({ summary: 'Open a Stripe Customer Portal session' })
   @ApiResponse({ status: 201, type: BillingSessionResponseDto })
   @ApiResponse({

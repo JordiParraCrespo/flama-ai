@@ -39,7 +39,13 @@ export class PoliciesGuard implements CanActivate {
       throw new ForbiddenException('No user found in request');
     }
 
-    const ability = await this.abilityFactory.createForUser(user);
+    // The active organization/workspace lives on the Better Auth session; pass
+    // it so org-scoped permission conditions (`${activeOrganizationId}`) resolve.
+    const session = request.session;
+    const ability = await this.abilityFactory.createForUser(user, {
+      activeOrganizationId: session?.activeOrganizationId ?? null,
+      activeTeamId: session?.activeTeamId ?? null,
+    });
     request.ability = ability;
 
     return rules.every((rule) => ability.can(rule.action, rule.subject));
