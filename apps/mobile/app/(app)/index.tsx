@@ -9,13 +9,13 @@ import {
   CardTitle,
 } from '@flama/design-system-mobile/card';
 import { Icon } from '@flama/design-system-mobile/icon';
+import type { LucideIcon } from '@flama/design-system-mobile/icons';
+import { Activity, Server, Users, Zap } from '@flama/design-system-mobile/icons';
 import { Separator } from '@flama/design-system-mobile/separator';
 import { Skeleton } from '@flama/design-system-mobile/skeleton';
 import { Text } from '@flama/design-system-mobile/text';
 import { useLogout, useProfile } from '@flama/frontend/react';
 import { useRouter } from 'expo-router';
-import type { LucideIcon } from 'lucide-react-native';
-import { Activity, Server, Users, Zap } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { LanguageSwitcher } from '../../components/language-switcher';

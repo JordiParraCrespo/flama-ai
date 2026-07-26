@@ -349,9 +349,6 @@ importers:
       i18next:
         specifier: ^26.3.6
         version: 26.3.6(typescript@5.9.3)
-      lucide-react-native:
-        specifier: ^0.577.0
-        version: 0.577.0(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)
       nativewind:
         specifier: ^4.2.6
         version: 4.2.6(react-native-reanimated@4.1.7(react-native-worklets@0.5.2(@babel/core@7.29.7)(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0))
@@ -585,9 +582,6 @@ importers:
       i18next-browser-languagedetector:
         specifier: ^8.2.1
         version: 8.2.1
-      lucide-react:
-        specifier: ^1.27.0
-        version: 1.27.0(react@19.1.0)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -19812,9 +19806,7 @@ snapshots:
       metro-runtime: 0.84.4
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.81.5': {}
 
