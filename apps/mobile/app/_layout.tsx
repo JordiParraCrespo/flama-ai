@@ -6,11 +6,11 @@ import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-rean
 
 configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 
-import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend/react';
+import { FlamaProvider, useAuthState, usePageView, useSessionRestore } from '@flama/frontend/react';
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Slot, usePathname, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, vars } from 'nativewind';
 import * as React from 'react';
@@ -33,6 +33,7 @@ export default function RootLayout() {
             className={isDark ? 'dark flex-1 bg-background' : 'flex-1 bg-background'}
           >
             <StatusBar style={isDark ? 'light' : 'dark'} />
+            <ScreenViewTracker />
             <AuthGate />
             <PortalHost />
           </View>
@@ -40,6 +41,19 @@ export default function RootLayout() {
       </FlamaProvider>
     </QueryClientProvider>
   );
+}
+
+/**
+ * Reports screen views to analytics on every navigation.
+ *
+ * Expo Router doesn't emit anything the provider can observe on its own, so
+ * without this the mobile app would only ever record authentication events and
+ * every navigation funnel would come back empty. Renders nothing; it exists
+ * purely so the hook sits inside `FlamaProvider`.
+ */
+function ScreenViewTracker() {
+  usePageView(usePathname());
+  return null;
 }
 
 function AuthGate() {

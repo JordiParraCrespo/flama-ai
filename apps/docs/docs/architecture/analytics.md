@@ -61,11 +61,28 @@ sign-out and both password-reset steps. It also calls `identify()` on login and
 `reset()` on logout, so events are attributed correctly and a shared device
 doesn't leak one user's activity into another's profile.
 
-Page views are driven from the router in `apps/web/src/routes/__root.tsx` via
-`usePageView`. A single-page app doesn't emit navigations a provider can see on
-its own, so without this only the first load would ever be counted. Only the
-pathname is sent — several routes carry secrets in the query string
-(`/reset-password?token=…`) that must not reach a third party.
+Page views are driven from the router — `apps/web/src/routes/__root.tsx` on web
+and `ScreenViewTracker` in `apps/mobile/app/_layout.tsx` on mobile, both via
+`usePageView`. Neither router emits navigations a provider can observe on its
+own, so without this only the first load would ever be counted.
+
+## Query strings never leave the app
+
+Several routes carry secrets in the query string — `/reset-password?token=…`
+most obviously. Providers attach the current location to _every_ event
+automatically (PostHog sends `$current_url`, `$referrer` and their `$initial_`
+variants, including on autocapture events the app never raises itself), so
+sending only the pathname from `pageView()` is not sufficient on its own.
+
+`sanitizeUrlProperties` strips the query string and fragment from every
+URL-valued property, and the web adapter wires it into PostHog's `before_send`
+so it applies to all outgoing events. It is provider-independent — any new
+adapter should hook it into the equivalent facility.
+
+Campaign attribution is unaffected: `before_send` runs after PostHog has
+extracted UTM parameters into their own properties. If you need a specific
+query parameter in your analytics, add it as an explicit event property rather
+than relaxing the sanitizer.
 
 ## Feature flags
 

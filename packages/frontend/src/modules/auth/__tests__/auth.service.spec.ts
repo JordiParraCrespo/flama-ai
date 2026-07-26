@@ -144,6 +144,31 @@ describe('AuthService analytics', () => {
     expect(analytics.capture).not.toHaveBeenCalled();
   });
 
+  // A logout that lands while the post-login session lookup is still in flight
+  // must win: otherwise the late continuation re-identifies the browser as the
+  // user who just left, and on a shared device the next person's activity is
+  // attributed to them.
+  it('discards a pending identify when logout wins the race', async () => {
+    const { service, analytics, repository } = setup();
+    let resolveSession: (value: AuthSession) => void = () => {};
+    vi.mocked(repository.getSession).mockReturnValueOnce(
+      new Promise<AuthSession>((resolve) => {
+        resolveSession = resolve;
+      }),
+    );
+
+    await service.login({ email: 'ada@example.com', password: 'pw' });
+    await service.logout();
+    vi.mocked(analytics.capture).mockClear();
+
+    // The login's session lookup only now comes back.
+    resolveSession(SESSION);
+    await flush();
+
+    expect(analytics.identify).not.toHaveBeenCalled();
+    expect(analytics.capture).not.toHaveBeenCalled();
+  });
+
   it('captures the sign-out before clearing identity', async () => {
     const { service, analytics } = setup();
     const order: string[] = [];

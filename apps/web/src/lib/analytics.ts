@@ -4,7 +4,25 @@ import type {
   FeatureFlagValue,
   IAnalyticsClient,
 } from '@flama/frontend';
-import type { PostHog } from 'posthog-js';
+import { sanitizeUrlProperties } from '@flama/frontend';
+import type { CaptureResult, PostHog } from 'posthog-js';
+
+/**
+ * Scrubs query strings out of the URL properties PostHog attaches to every
+ * event — `$current_url`, `$referrer` and their `$initial_` variants, on
+ * autocapture events the app never raises itself as well as its own. Sending
+ * only the pathname from `pageView()` does not cover those, so without this a
+ * route like `/reset-password?token=…` leaks the token.
+ *
+ * Wired to `before_send`, which runs last, after PostHog has extracted UTM
+ * parameters into their own properties — campaign attribution survives.
+ */
+function stripUrlSecrets(result: CaptureResult | null): CaptureResult | null {
+  if (!result) return result;
+
+  result.properties = sanitizeUrlProperties(result.properties);
+  return result;
+}
 
 /**
  * PostHog adapter for the web app.
@@ -43,6 +61,9 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
         // every client-side navigation would go uncounted.
         capture_pageview: false,
         persistence: 'localStorage+cookie',
+        // Runs on every outgoing event, including the autocapture ones we
+        // never raise ourselves. See `stripUrlSecrets`.
+        before_send: stripUrlSecrets,
       });
 
       posthog.onFeatureFlags(() => {
@@ -81,7 +102,10 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
   }
 
   pageView(path: string, properties?: AnalyticsProperties): void {
-    this.enqueue((posthog) => posthog.capture('$pageview', { $current_url: path, ...properties }));
+    // `$current_url` is left to PostHog, which reads it from `window.location`
+    // and has it sanitized by `before_send` like every other event — overriding
+    // it here would make page views the only events carrying a relative path.
+    this.enqueue((posthog) => posthog.capture('$pageview', { $pathname: path, ...properties }));
   }
 
   isFeatureEnabled(key: string): boolean {

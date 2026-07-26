@@ -3,9 +3,10 @@ import { createRootRouteWithContext, Outlet, useRouterState } from '@tanstack/re
 import type { RouterContext } from '@/app';
 
 function RootLayout() {
-  // Deliberately the pathname only, never the full location: several routes
-  // carry secrets in the query string (`/reset-password?token=…`), and those
-  // must not be shipped to a third-party analytics provider.
+  // The pathname only — several routes carry secrets in the query string
+  // (`/reset-password?token=…`). Query strings are also stripped from the URL
+  // properties PostHog attaches to every event; see `stripUrlSecrets` in
+  // `lib/analytics.ts`, which is what actually closes that leak.
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });

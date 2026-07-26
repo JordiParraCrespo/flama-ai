@@ -13,3 +13,4 @@ export {
 export { AnalyticsModule } from './analytics.module';
 export { AnalyticsService } from './analytics.service';
 export { NoopAnalyticsClient } from './noop-analytics.client';
+export { sanitizeUrlProperties } from './sanitize-url-properties';

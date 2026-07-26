@@ -21,6 +21,18 @@ const PENDING_SOCIAL_LOGIN_KEY = 'flama.pending-social-login';
 
 @injectable()
 export class AuthService {
+  /**
+   * Bumped whenever the current identity stops being valid, i.e. on logout.
+   *
+   * `trackAuthenticated` resolves the user asynchronously and is deliberately
+   * not awaited, so a fast logout can land while that lookup is still in
+   * flight. Without this guard the late continuation would re-identify the
+   * browser as the user who just signed out and emit their sign-in event after
+   * the sign-out — on a shared device, attributing the next person's activity
+   * to the previous account.
+   */
+  private identityEpoch = 0;
+
   constructor(
     @inject(TOKENS.AuthRepository)
     private readonly authRepository: AuthRepository,
@@ -88,6 +100,10 @@ export class AuthService {
   async logout(): Promise<void> {
     await this.authRepository.logout();
     this.store.setState({ isAuthenticated: false });
+
+    // Invalidate any identify/capture still in flight from a recent sign-in
+    // before touching analytics, so it can't land after the reset below.
+    this.identityEpoch += 1;
     void this.clearPendingSocialLogin();
 
     // Capture before resetting, so the event is still attributed to the user
@@ -132,15 +148,22 @@ export class AuthService {
    * call lands a moment later.
    */
   private trackAuthenticated(event: AnalyticsEvent, method: AuthMethod): void {
+    const epoch = this.identityEpoch;
+
     void this.authRepository
       .getSession()
       .then((session) => {
+        // Superseded by a logout that happened while this was in flight.
+        if (epoch !== this.identityEpoch) return;
+
         if (session) {
           this.identify(session.user);
         }
         this.analytics.capture(event, { method });
       })
       .catch(() => {
+        if (epoch !== this.identityEpoch) return;
+
         // The session lookup is best-effort. Still record the event so the
         // funnel isn't silently missing a conversion, just without identity.
         this.analytics.capture(event, { method });
