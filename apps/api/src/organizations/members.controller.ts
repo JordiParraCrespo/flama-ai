@@ -12,9 +12,11 @@ import {
   Version,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import type { Request } from 'express';
 import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { OrganizationScoped } from '../auth/decorators/organization-scoped.decorator';
+import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
 import { AddMemberRequest, UpdateMemberRoleRequest } from './dtos/organization.request.dto';
 import { MemberResponseDto } from './dtos/organization.response.dto';
@@ -23,13 +25,15 @@ import { OrganizationsService } from './organizations.service';
 /** Organization membership endpoints, delegating to the Better Auth organization plugin. */
 @ApiTags('Organization members')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('organizations')
 export class MembersController {
   constructor(private readonly organizations: OrganizationsService) {}
 
   @Get(':orgId/members/me')
   @Version('1')
+  @RequireScopes('members:read')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'read', subject: 'Member' })
   @ApiOperation({
     summary: "Get the caller's membership in the active organization",
@@ -41,6 +45,8 @@ export class MembersController {
 
   @Get(':orgId/members')
   @Version('1')
+  @RequireScopes('members:read')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'read', subject: 'Member' })
   @ApiOperation({ summary: 'List members of an organization' })
   @ApiResponse({ status: 200, type: [MemberResponseDto] })
@@ -53,6 +59,8 @@ export class MembersController {
 
   @Post(':orgId/members')
   @Version('1')
+  @RequireScopes('members:write')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'create', subject: 'Member' })
   @ApiOperation({ summary: 'Add an existing user as a member' })
   @ApiResponse({ status: 201, type: MemberResponseDto })
@@ -66,6 +74,8 @@ export class MembersController {
 
   @Patch(':orgId/members/:memberId')
   @Version('1')
+  @RequireScopes('members:write')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'update', subject: 'Member' })
   @ApiOperation({ summary: "Change a member's organization role" })
   @ApiResponse({ status: 200, type: MemberResponseDto })
@@ -80,6 +90,8 @@ export class MembersController {
 
   @Delete(':orgId/members/:memberIdOrEmail')
   @Version('1')
+  @RequireScopes('members:write')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'delete', subject: 'Member' })
   @ApiOperation({ summary: 'Remove a member from an organization' })
   @ApiResponse({ status: 200, type: MemberResponseDto })
@@ -93,6 +105,8 @@ export class MembersController {
 
   @Post(':orgId/leave')
   @Version('1')
+  @RequireScopes('members:write')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'read', subject: 'Member' })
   @ApiOperation({ summary: 'Leave an organization' })
   @ApiResponse({ status: 200, type: MemberResponseDto })
