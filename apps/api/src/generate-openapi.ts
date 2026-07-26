@@ -32,6 +32,9 @@ async function generate() {
   console.log(`OpenAPI spec written to ${outputPath}`);
 
   await app.close();
+  // Redis/BullMQ keep handles open even after the app closes, which would
+  // leave this one-shot generator hanging; the document is already on disk.
+  process.exit(0);
 }
 
 generate();
