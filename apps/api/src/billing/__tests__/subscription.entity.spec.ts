@@ -14,6 +14,7 @@ const baseSync = (overrides: Partial<SyncSubscriptionProps> = {}): SyncSubscript
   currentPeriodEnd: null,
   cancelAtPeriodEnd: false,
   canceledAt: null,
+  eventCreatedAt: new Date('2026-01-01T00:00:00Z'),
   ...overrides,
 });
 
@@ -57,5 +58,81 @@ describe('SubscriptionEntity', () => {
     subscription.sync(baseSync({ status: 'active', plan: 'Pro (annual)' }));
     expect(subscription.domainEvents).toHaveLength(0);
     expect(subscription.plan).toBe('Pro (annual)');
+  });
+
+  it('discards an out-of-order event older than the last one applied', () => {
+    const subscription = SubscriptionEntity.createNew({
+      userId: 'user_1',
+      stripeSubscriptionId: 'sub_1',
+      ...baseSync({
+        status: 'active',
+        eventCreatedAt: new Date('2026-01-02T00:00:00Z'),
+      }),
+    });
+    subscription.clearEvents();
+
+    const applied = subscription.sync(
+      baseSync({
+        status: 'canceled',
+        eventCreatedAt: new Date('2026-01-01T00:00:00Z'),
+      }),
+    );
+
+    expect(applied).toBe(false);
+    expect(subscription.status).toBe('active');
+    expect(subscription.domainEvents).toHaveLength(0);
+  });
+
+  it('does not let a late update resurrect a canceled subscription', () => {
+    // created (active) → deleted (canceled, later) → late update (active, earlier)
+    const subscription = SubscriptionEntity.createNew({
+      userId: 'user_1',
+      stripeSubscriptionId: 'sub_1',
+      ...baseSync({
+        status: 'active',
+        eventCreatedAt: new Date('2026-01-01T00:00:00Z'),
+      }),
+    });
+    subscription.sync(
+      baseSync({
+        status: 'canceled',
+        eventCreatedAt: new Date('2026-01-03T00:00:00Z'),
+      }),
+    );
+    subscription.clearEvents();
+
+    const applied = subscription.sync(
+      baseSync({
+        status: 'active',
+        eventCreatedAt: new Date('2026-01-02T00:00:00Z'),
+      }),
+    );
+
+    expect(applied).toBe(false);
+    expect(subscription.status).toBe('canceled');
+    expect(subscription.domainEvents).toHaveLength(0);
+  });
+
+  it('applies an in-order event and reports it was applied', () => {
+    const subscription = SubscriptionEntity.createNew({
+      userId: 'user_1',
+      stripeSubscriptionId: 'sub_1',
+      ...baseSync({
+        status: 'incomplete',
+        eventCreatedAt: new Date('2026-01-01T00:00:00Z'),
+      }),
+    });
+
+    const applied = subscription.sync(
+      baseSync({
+        status: 'active',
+        eventCreatedAt: new Date('2026-01-02T00:00:00Z'),
+      }),
+    );
+
+    expect(applied).toBe(true);
+    expect(subscription.status).toBe('active');
+    expect(subscription.domainEvents).toHaveLength(1);
+    expect(subscription.domainEvents[0]).toBeInstanceOf(SubscriptionActivatedDomainEvent);
   });
 });

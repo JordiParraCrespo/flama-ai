@@ -1,4 +1,4 @@
-import { AppError } from '@flama/backend-core';
+import { AppError, type ErrorDefinition } from '@flama/backend-core';
 import type { BillingInterval, SubscriptionStatus } from '@flama/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -35,33 +35,42 @@ export class StripePaymentGateway implements PaymentGatewayPort {
   }
 
   async createCustomer(params: { userId: string; email?: string }): Promise<string> {
-    const customer = await this.client().customers.create({
-      email: params.email,
-      metadata: { userId: params.userId },
-    });
-    return customer.id;
+    const stripe = this.client();
+    return this.guardStripeCall(async () => {
+      const customer = await stripe.customers.create({
+        email: params.email,
+        metadata: { userId: params.userId },
+      });
+      return customer.id;
+    }, BillingErrors.CUSTOMER_CREATION_FAILED);
   }
 
   async createCheckoutSession(params: CreateCheckoutParams): Promise<string> {
-    const session = await this.client().checkout.sessions.create({
-      mode: 'subscription',
-      customer: params.customerId,
-      line_items: [{ price: params.priceId, quantity: 1 }],
-      success_url: params.successUrl,
-      cancel_url: params.cancelUrl,
-      client_reference_id: params.userId,
-      subscription_data: { metadata: { userId: params.userId } },
-    });
-    if (!session.url) throw new AppError(BillingErrors.CHECKOUT_FAILED);
-    return session.url;
+    const stripe = this.client();
+    return this.guardStripeCall(async () => {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer: params.customerId,
+        line_items: [{ price: params.priceId, quantity: 1 }],
+        success_url: params.successUrl,
+        cancel_url: params.cancelUrl,
+        client_reference_id: params.userId,
+        subscription_data: { metadata: { userId: params.userId } },
+      });
+      if (!session.url) throw new AppError(BillingErrors.CHECKOUT_FAILED);
+      return session.url;
+    }, BillingErrors.CHECKOUT_FAILED);
   }
 
   async createPortalSession(params: CreatePortalParams): Promise<string> {
-    const session = await this.client().billingPortal.sessions.create({
-      customer: params.customerId,
-      return_url: params.returnUrl,
-    });
-    return session.url;
+    const stripe = this.client();
+    return this.guardStripeCall(async () => {
+      const session = await stripe.billingPortal.sessions.create({
+        customer: params.customerId,
+        return_url: params.returnUrl,
+      });
+      return session.url;
+    }, BillingErrors.PORTAL_FAILED);
   }
 
   constructEvent(payload: Buffer | string, signature: string): BillingWebhookEvent {
@@ -82,7 +91,7 @@ export class StripePaymentGateway implements PaymentGatewayPort {
       case 'customer.subscription.deleted':
         return {
           type: 'subscription.upsert',
-          data: this.normalizeSubscription(event.data.object),
+          data: this.normalizeSubscription(event.data.object, new Date(event.created * 1000)),
         };
       default:
         return { type: 'ignored' };
@@ -94,7 +103,28 @@ export class StripePaymentGateway implements PaymentGatewayPort {
     return this.stripe;
   }
 
-  private normalizeSubscription(subscription: Stripe.Subscription): NormalizedSubscription {
+  /**
+   * Run a Stripe SDK call, translating raw SDK failures (network, rate limit,
+   * invalid key, …) into the module's `AppError` convention. `AppError`s the
+   * operation raises itself (e.g. a missing session URL) pass through unchanged.
+   */
+  private async guardStripeCall<T>(
+    operation: () => Promise<T>,
+    onError: ErrorDefinition,
+  ): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      this.logger.error(`Stripe API call failed: ${(error as Error).message}`);
+      throw new AppError(onError);
+    }
+  }
+
+  private normalizeSubscription(
+    subscription: Stripe.Subscription,
+    eventCreatedAt: Date,
+  ): NormalizedSubscription {
     const item = subscription.items.data[0];
     const price = item?.price;
     const customerId =
@@ -120,6 +150,7 @@ export class StripePaymentGateway implements PaymentGatewayPort {
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
       userId: subscription.metadata?.userId ?? null,
+      eventCreatedAt,
     };
   }
 }

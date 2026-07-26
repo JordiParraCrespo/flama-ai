@@ -18,6 +18,11 @@ export interface NormalizedSubscription {
   canceledAt: Date | null;
   /** `userId` from the subscription metadata; bootstraps the customer mapping. */
   userId: string | null;
+  /**
+   * `created` timestamp of the Stripe event this state came from. Stripe does not
+   * guarantee delivery order, so the domain uses it to discard stale events.
+   */
+  eventCreatedAt: Date;
 }
 
 /** A verified, normalized Stripe webhook the app knows how to act on. */

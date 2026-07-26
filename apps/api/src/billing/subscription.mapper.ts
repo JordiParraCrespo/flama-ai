@@ -27,6 +27,7 @@ export class SubscriptionMapper
       currentPeriodEnd: data.currentPeriodEnd,
       cancelAtPeriodEnd: data.cancelAtPeriodEnd,
       canceledAt: data.canceledAt,
+      eventCreatedAt: data.eventCreatedAt,
     };
   }
 
@@ -46,6 +47,7 @@ export class SubscriptionMapper
     record.currentPeriodEnd = props.currentPeriodEnd;
     record.cancelAtPeriodEnd = props.cancelAtPeriodEnd;
     record.canceledAt = props.canceledAt;
+    record.lastEventAt = props.lastEventAt;
     return record;
   }
 
@@ -67,6 +69,7 @@ export class SubscriptionMapper
         currentPeriodEnd: record.currentPeriodEnd,
         cancelAtPeriodEnd: record.cancelAtPeriodEnd,
         canceledAt: record.canceledAt,
+        lastEventAt: record.lastEventAt,
       },
     });
   }
