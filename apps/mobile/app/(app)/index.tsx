@@ -23,7 +23,7 @@ import { LanguageSwitcher } from '../../components/language-switcher';
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { data: user, isLoading } = useProfile();
+  const { data: user, isLoading, isFetching, refetch } = useProfile();
 
   const logout = useLogout({
     onSuccess: () => {
@@ -100,11 +100,18 @@ export default function HomeScreen() {
           <CardDescription>{t('home.accountDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="gap-4">
-          {isLoading || !user ? (
+          {isLoading ? (
             <View className="gap-3">
               <Skeleton className="h-5 w-full" />
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-5 w-1/2" />
+            </View>
+          ) : !user ? (
+            <View className="gap-3">
+              <Text className="text-sm text-muted-foreground">{t('home.accountUnavailable')}</Text>
+              <Button variant="outline" onPress={() => refetch()} disabled={isFetching}>
+                <Text>{isFetching ? t('home.retrying') : t('home.retry')}</Text>
+              </Button>
             </View>
           ) : (
             <>
