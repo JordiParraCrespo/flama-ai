@@ -1,8 +1,9 @@
 import { Body, Controller, Param, ParseUUIDPipe, Put, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
@@ -13,7 +14,7 @@ import { AssignUserRolesRequest } from './assign-user-roles.request.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('users')
 export class AssignUserRolesHttpController {
   constructor(
@@ -25,6 +26,7 @@ export class AssignUserRolesHttpController {
   @Put(':userId/roles')
   @Version('1')
   @CheckPolicies({ action: 'manage', subject: 'User' })
+  @RequireScopes('roles:write')
   @ApiOperation({ summary: "Replace a user's assigned roles" })
   @ApiResponse({ status: 200, type: [RoleResponseDto] })
   @ApiResponse({

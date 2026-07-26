@@ -2,8 +2,9 @@ import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Param, ParseUUIDPipe, Patch, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
@@ -14,7 +15,7 @@ import { UpdateRoleRequest } from './update-role.request.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('roles')
 export class UpdateRoleHttpController {
   constructor(
@@ -26,6 +27,7 @@ export class UpdateRoleHttpController {
   @Patch(':id')
   @Version('1')
   @CheckPolicies({ action: 'update', subject: 'Role' })
+  @RequireScopes('roles:write')
   @ApiOperation({ summary: 'Update a role (description and/or permissions)' })
   @ApiResponse({ status: 200, type: RoleResponseDto })
   @ApiResponse({ status: 404, description: 'ROLE_001: Role not found' })

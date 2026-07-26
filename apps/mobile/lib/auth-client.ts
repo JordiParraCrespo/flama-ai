@@ -89,7 +89,13 @@ export const mobileAuthClient: IAuthClient = {
   },
 
   async getSession() {
-    const { data } = await authClient.getSession();
+    const { data, error } = await authClient.getSession();
+    // Surface transport/server failures instead of collapsing them into `null`,
+    // which would be indistinguishable from a genuinely unauthenticated user and
+    // would silently sign someone out on a transient network blip.
+    if (error) {
+      throw new Error(error.message ?? 'Failed to restore session');
+    }
     if (!data) return null;
     const user = data.user as typeof data.user & {
       firstName?: string;
