@@ -17,6 +17,48 @@ clientID: configService.getOrThrow<string>('oauth.google.clientId'),
 clientID: configService.get<string>('oauth.google.clientId') || 'disabled',
 ```
 
+## Reading config in services — private getters, not inline lookups
+
+Don't scatter `configService.get(...)` calls and their `?? default` ternaries
+through a handler's `execute()`. Wrap each config-derived value in a named
+`private get` accessor and let `execute()` read the intent, not the plumbing.
+This keeps the method readable and the fallbacks in one place.
+
+```typescript
+// WRONG — inline lookups + nested ternaries in the use case
+async execute(command: CreateCheckoutCommand): Promise<string> {
+  const frontendUrl = this.configService.get<string>('app.frontendUrl') ?? '';
+  const successUrl =
+    command.successUrl ??
+    this.configService.get<string>('stripe.successUrl') ??
+    `${frontendUrl}/billing?status=success`;
+  // ...
+}
+
+// CORRECT — the use case reads `command.x ?? this.defaultX`
+async execute(command: CreateCheckoutCommand): Promise<string> {
+  return this.gateway.createCheckoutSession({
+    successUrl: command.successUrl ?? this.defaultSuccessUrl,
+    // ...
+  });
+}
+
+private get frontendUrl(): string {
+  return this.configService.get<string>('app.frontendUrl') ?? '';
+}
+
+private get defaultSuccessUrl(): string {
+  return (
+    this.configService.get<string>('stripe.successUrl') ??
+    `${this.frontendUrl}/billing?status=success`
+  );
+}
+```
+
+Config files (`config/*.config.ts`) still own env parsing/validation via Zod;
+normalize blank env vars (`FOO=`) to `undefined` before validation so
+`.url().optional()` and friends still boot (e.g. an `orUndefined` helper).
+
 ## Controllers
 
 Endpoints live in per-use-case `*.http.controller.ts` files inside their

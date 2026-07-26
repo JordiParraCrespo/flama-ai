@@ -6,6 +6,8 @@ import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-rean
 
 configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 
+import { Button } from '@flama/design-system-mobile/button';
+import { Text } from '@flama/design-system-mobile/text';
 import { FlamaProvider, useAuthState, usePageView, useSessionRestore } from '@flama/frontend/react';
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
@@ -14,6 +16,7 @@ import { Slot, usePathname, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, vars } from 'nativewind';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
 import { app } from '../lib/flama';
 import { queryClient } from '../lib/query';
@@ -57,13 +60,16 @@ function ScreenViewTracker() {
 }
 
 function AuthGate() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuthState();
-  const { isLoading } = useSessionRestore();
+  const { isLoading, isError, isFetching, refetch } = useSessionRestore();
   const segments = useSegments();
   const router = useRouter();
 
   React.useEffect(() => {
-    if (isLoading) return;
+    // Don't route while restoring, and don't route on error: a failed restore
+    // must not be treated as "unauthenticated" and bounce the user to /login.
+    if (isLoading || isError) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
@@ -72,7 +78,26 @@ function AuthGate() {
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/(app)');
     }
-  }, [isAuthenticated, isLoading, segments, router]);
+  }, [isAuthenticated, isLoading, isError, segments, router]);
+
+  if (isError) {
+    // Restoring the session failed (network/server error). Surface it with a
+    // retry instead of falling through to the router, which would treat the
+    // user as unauthenticated and sign them out.
+    return (
+      <View className="flex-1 items-center justify-center gap-4 p-6" role="alert">
+        <Text className="text-lg font-semibold text-foreground">
+          {t('auth.session.errorTitle')}
+        </Text>
+        <Text className="text-center text-sm text-muted-foreground">
+          {t('auth.session.errorMessage')}
+        </Text>
+        <Button onPress={() => refetch()} disabled={isFetching} className="mt-2">
+          <Text>{isFetching ? t('auth.session.retrying') : t('auth.session.retry')}</Text>
+        </Button>
+      </View>
+    );
+  }
 
   if (isLoading) {
     return (

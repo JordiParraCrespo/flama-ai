@@ -16,6 +16,7 @@ import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
+import { BillingModule } from './billing/billing.module';
 import {
   appConfig,
   databaseConfig,
@@ -23,6 +24,7 @@ import {
   oauthConfig,
   redisConfig,
   storageConfig,
+  stripeConfig,
 } from './config';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
@@ -34,7 +36,15 @@ import { UsersModule } from './users/user.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, redisConfig, emailConfig, storageConfig, oauthConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        emailConfig,
+        storageConfig,
+        oauthConfig,
+        stripeConfig,
+      ],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -92,7 +102,13 @@ import { UsersModule } from './users/user.module';
     EmailModule.register(),
     StorageModule.register(),
     CacheModule.register(),
-    BetterAuthModule.forRoot({ auth, disableGlobalAuthGuard: true }),
+    // `bodyParser.rawBody` attaches the raw request buffer to `req.rawBody`,
+    // which the Stripe webhook controller needs for signature verification.
+    BetterAuthModule.forRoot({
+      auth,
+      disableGlobalAuthGuard: true,
+      bodyParser: { rawBody: true },
+    }),
     AuthModule,
     ApiTokensModule,
     UsersModule,
@@ -101,6 +117,7 @@ import { UsersModule } from './users/user.module';
     AdminModule,
     HealthModule,
     QueueModule,
+    BillingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

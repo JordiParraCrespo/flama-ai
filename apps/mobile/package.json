@@ -1,6 +1,6 @@
 {
   "name": "@flama/mobile",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -37,7 +37,6 @@
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~15.0.11",
     "i18next": "^26.3.6",
-    "lucide-react-native": "^0.577.0",
     "nativewind": "^4.2.6",
     "posthog-react-native": "^4.11.2",
     "react": "19.1.0",

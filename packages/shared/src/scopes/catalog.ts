@@ -22,6 +22,7 @@ export const SCOPE_RESOURCES = [
   'invitations',
   'workspaces',
   'tokens',
+  'billing',
 ] as const;
 export type ScopeResource = (typeof SCOPE_RESOURCES)[number];
 
@@ -269,6 +270,25 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
           { action: 'create', subject: 'ApiToken' },
           { action: 'delete', subject: 'ApiToken' },
         ],
+      },
+    },
+  },
+  {
+    resource: 'billing',
+    label: 'Billing',
+    description: 'Subscriptions, checkout and the customer portal.',
+    levels: {
+      read: {
+        scope: 'billing:read',
+        label: 'Read',
+        description: 'Read subscriptions and revenue metrics.',
+        policies: [{ action: 'read', subject: 'Billing' }],
+      },
+      write: {
+        scope: 'billing:write',
+        label: 'Edit',
+        description: 'Start a checkout session and open the customer portal.',
+        policies: [{ action: 'manage', subject: 'Billing' }],
       },
     },
   },

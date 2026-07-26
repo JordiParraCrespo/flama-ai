@@ -178,7 +178,11 @@ to return the full DTO. Needs `@ApiTags`/`@ApiOperation`/`@ApiResponse`,
 
 Implements `Mapper<DomainEntity, OrmEntity, ResponseDto>`:
 `toPersistence` (write only app-owned columns), `toDomain`, `toResponse` (never
-leak sensitive fields).
+leak sensitive fields). Field-by-field translation between representations lives
+here, not in handlers — including mapping an adapter's normalized shape into
+domain input props (e.g. a gateway's `NormalizedSubscription` →
+`SyncSubscriptionProps` via `toSyncProps`). A mapper may add methods beyond the
+three interface ones for these cross-boundary shapes.
 
 ## Request flow
 

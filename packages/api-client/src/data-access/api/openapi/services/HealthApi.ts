@@ -8,7 +8,9 @@ import { request as __request } from '../core/request';
 export class HealthApi {
     /**
      * Liveness check
-     * @returns any The Health Check is successful
+     * @returns any App is alive
+     *
+     * The Health Check is successful
      * @throws ApiError
      */
     public static check(): CancelablePromise<{
@@ -27,7 +29,9 @@ export class HealthApi {
     }
     /**
      * Readiness check
-     * @returns any The Health Check is successful
+     * @returns any App is ready to receive traffic
+     *
+     * The Health Check is successful
      * @throws ApiError
      */
     public static readiness(): CancelablePromise<{

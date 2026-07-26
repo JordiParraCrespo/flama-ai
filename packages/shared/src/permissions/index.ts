@@ -28,6 +28,7 @@ export const KNOWN_SUBJECTS = [
   'Invitation',
   'ApiToken',
   'AuditLog',
+  'Billing',
   'all',
 ] as const;
 
