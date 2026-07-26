@@ -84,6 +84,14 @@ Use the `Mapper<DomainEntity, OrmEntity, ResponseDto>` interface from
 - `toDomain()` — ORM record → domain entity
 - `toResponse()` — domain entity → response DTO (never expose sensitive fields)
 
+**Shape-to-shape translation belongs in the mapper, not in handlers.** Any
+"copy these fields from representation A into representation B" logic — including
+mapping an external adapter's normalized shape into domain input props (e.g. a
+payment gateway's `NormalizedSubscription` → the aggregate's `SyncSubscriptionProps`)
+— is a mapper method (`toSyncProps(...)`), injected into the handler. Handlers
+orchestrate; they don't hand-assemble object literals field by field. A mapper
+may add methods beyond the three interface ones for these cross-boundary shapes.
+
 ## Pluggable service pattern (backend packages)
 
 Pluggable backend packages (`@flama/backend-email`, `-storage`, `-cache`,
