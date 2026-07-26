@@ -1,4 +1,10 @@
 export {
+  useAnalytics,
+  useFeatureFlag,
+  useFeatureFlagValue,
+  usePageView,
+} from './analytics.hooks';
+export {
   apiTokensKeys,
   useApiTokens,
   useCreateApiToken,
