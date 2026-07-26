@@ -6,4 +6,8 @@ export const TOKENS = {
   AuthService: Symbol.for('AuthService'),
   UserRepository: Symbol.for('UserRepository'),
   UsersService: Symbol.for('UsersService'),
+  ApiTokensRepository: Symbol.for('ApiTokensRepository'),
+  ApiTokensService: Symbol.for('ApiTokensService'),
+  OrganizationsRepository: Symbol.for('OrganizationsRepository'),
+  OrganizationsService: Symbol.for('OrganizationsService'),
 } as const;

@@ -1,6 +1,8 @@
+import { Button } from '@flama/design-system-web';
 import { useAuthState, useSessionRestore } from '@flama/frontend/react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { routeTree } from './routeTree.gen';
 
 export interface RouterContext {
@@ -27,7 +29,7 @@ export function App() {
   // Rehydrate a persisted session (tokens in localStorage) before the router's
   // route guards run, so a returning/refreshing authenticated user isn't bounced
   // to /login. Mirrors the mobile root AuthGate, which gates on the same query.
-  const { isLoading } = useSessionRestore();
+  const { isLoading, isError, isFetching, refetch } = useSessionRestore();
 
   const context = useMemo(() => ({ auth: { isAuthenticated } }), [isAuthenticated]);
 
@@ -48,5 +50,34 @@ export function App() {
     );
   }
 
+  // Restoring the session failed (network/server error). Surface it with a retry
+  // instead of rendering the router, which would treat the user as
+  // unauthenticated and bounce them to /login as if they'd been logged out.
+  if (isError) {
+    return <SessionRestoreError onRetry={() => refetch()} isRetrying={isFetching} />;
+  }
+
   return <RouterProvider router={router} context={context} />;
+}
+
+function SessionRestoreError({
+  onRetry,
+  isRetrying,
+}: {
+  onRetry: () => void;
+  isRetrying: boolean;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex min-h-svh items-center justify-center bg-background p-6">
+      <div role="alert" className="flex max-w-sm flex-col items-center gap-4 text-center">
+        <h1 className="text-lg font-semibold text-foreground">{t('auth.session.errorTitle')}</h1>
+        <p className="text-sm text-muted-foreground">{t('auth.session.errorMessage')}</p>
+        <Button onClick={onRetry} disabled={isRetrying}>
+          {isRetrying ? t('auth.session.retrying') : t('auth.session.retry')}
+        </Button>
+      </div>
+    </div>
+  );
 }

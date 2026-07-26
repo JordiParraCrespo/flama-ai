@@ -1,5 +1,5 @@
+import { Flame } from '@flama/design-system-web/icons';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { Flame } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/language-switcher';
 

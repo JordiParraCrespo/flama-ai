@@ -1,0 +1,56 @@
+# @flama/mcp — Agent Instructions
+
+MCP (Model Context Protocol) server exposing Flama's API to MCP clients over
+**stdio** and **Streamable HTTP**.
+
+> Read the root [`CLAUDE.md`](../../CLAUDE.md) first for repo-wide conventions.
+
+## Stack
+
+- **@modelcontextprotocol/sdk** server, built in `src/server.ts`
+- Two entrypoints, one server: `src/bin/stdio.ts` (local clients) and
+  `src/bin/http.ts` (Streamable HTTP)
+- Talks to the API over HTTP via `src/client.ts`
+- Access is governed by the **scope catalog** in `@flama/shared`
+  (`packages/shared/src/scopes/`)
+
+## Layout
+
+```
+src/
+├── bin/
+│   ├── stdio.ts          # stdio entrypoint (default `flama-mcp` binary)
+│   └── http.ts           # Streamable HTTP entrypoint
+├── server.ts             # server construction + tool registration
+├── tools/                # the single tool registry
+│   ├── tool.ts           # tool definition helper
+│   ├── index.ts          # registry — register new tools here
+│   └── *.tools.ts        # one file per domain (admin, orgs, roles, users, workspaces)
+├── client.ts
+├── config.ts
+└── __tests__/
+```
+
+## Conventions
+
+- **One tool registry, two entrypoints.** Both binaries build the same server —
+  never register a tool on only one transport.
+- **Every tool declares `requiredScopes`.** The advertised tool list is filtered
+  by the credential's effective scopes, so a tool without scopes is either
+  invisible or over-exposed. Declare the _same_ scope the underlying endpoint
+  requires via `@RequireScopes`.
+- New tools go in the matching `src/tools/*.tools.ts` and are added to the
+  registry in `src/tools/index.ts`.
+- Adding an API endpoint you want reachable here means declaring its scope on
+  the controller first — see `.claude/rules/scopes-and-credentials.md`.
+
+## Commands
+
+```bash
+pnpm --filter @flama/mcp build
+pnpm --filter @flama/mcp dev         # tsc --watch
+pnpm --filter @flama/mcp start       # stdio transport
+pnpm --filter @flama/mcp start:http  # Streamable HTTP transport
+pnpm --filter @flama/mcp test
+pnpm --filter @flama/mcp lint
+```

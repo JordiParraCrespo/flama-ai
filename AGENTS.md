@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 4 apps and 11 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 8 apps and 13 shared packages.
 
 ## Monorepo structure
 
@@ -10,9 +10,13 @@ Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It conta
 flama/
 ├── apps/
 │   ├── api/              # NestJS REST API
+│   ├── cli/              # `flama` command-line interface
 │   ├── docs/             # Docusaurus documentation
+│   ├── mcp/              # MCP server (stdio + Streamable HTTP)
 │   ├── mobile/           # Expo (React Native)
-│   └── web/              # Vite + TanStack Router SPA
+│   ├── mobile-showcase/  # Expo app showcasing the mobile design system
+│   ├── web/              # Vite + TanStack Router SPA
+│   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
 │   ├── backend/
@@ -23,7 +27,9 @@ flama/
 │   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
 │   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
 │   ├── config/           # Shared TypeScript configs
-│   ├── design-system/    # Tokens + web (shadcn) + mobile (Tamagui)
+│   ├── design-system/
+│   │   ├── web/          # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
+│   │   └── mobile/       # NativeWind + rn-primitives (@flama/design-system-mobile)
 │   ├── frontend/         # Clean architecture, InversifyJS DI, Zustand stores
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files
@@ -31,6 +37,9 @@ flama/
 ├── helm/                 # Kubernetes Helm charts
 └── .github/              # GitHub Actions CI/CD
 ```
+
+Each app and package has its own `README.md` covering its purpose, exports, and
+usage.
 
 ## Key conventions
 
@@ -59,6 +68,7 @@ Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api`, `p
 - `backend-packages.md` — CJS exports, package structure (pluggable vs library), email template setup
 - `api-config.md` — OAuth graceful handling, controllers, Swagger decorators, rate limiting, versioning
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
+- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens, OAuth for MCP clients
 
 #### Authorization (roles & permissions)
 
@@ -71,6 +81,21 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 `request.ability` for resource-scoped checks. The `roles` module
 (`apps/api/src/roles/`) exposes CRUD + `PUT /roles/:id/permissions` and
 `GET|PUT /users/:userId/roles`. See `rbac-roles.md` for the full guide.
+
+### CLI (`apps/cli`) and MCP server (`apps/mcp`)
+
+Both are governed by the **scope catalog** in `packages/shared/src/scopes/`.
+Roles say what a person may do; scopes say what a credential may do on their
+behalf, and effective access is the intersection — see
+`.claude/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
+
+- `apps/cli` — commander-based; commands in `src/commands/`, shared plumbing in
+  `src/lib/` (config profiles, HTTP client, output, prompts). Exit codes are a
+  public contract: 0 ok, 1 failure, 2 usage, 3 auth, 4 forbidden, 5 not found,
+  6 unreachable.
+- `apps/mcp` — one tool registry in `src/tools/`, two entrypoints in `src/bin/`.
+  Every tool declares `requiredScopes`; the tool list is filtered by the
+  credential's effective scopes.
 
 ### Shared (packages/shared)
 
@@ -100,16 +125,22 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 ### Mobile (apps/mobile)
 
 - Expo with expo-router
-- Tamagui for UI (theme from `packages/design-system`)
+- NativeWind + `@flama/design-system-mobile` components for UI
 - i18next for i18n (translations from `packages/translations`)
 - expo-secure-store for secure token storage
 
 ### Design system (packages/design-system)
 
-- Shared tokens (colors, spacing, typography) in `src/tokens/`
-- Web components: shadcn + Tailwind in `src/web/`
-- Mobile components: Tamagui in `src/mobile/`
-- shadcn component API mirrored in Tamagui for consistency
+Split into two independently versioned packages that share a mirrored component API:
+
+- `@flama/design-system-web` (`packages/design-system/web`) — shadcn/ui-style
+  components on Base UI primitives + Tailwind CSS v4. Tokens/base layer live in
+  `src/styles/globals.css`; built with tsup. Used by `apps/web` and
+  `apps/web-showcase`.
+- `@flama/design-system-mobile` (`packages/design-system/mobile`) — shadcn-style
+  React Native components on NativeWind + `@rn-primitives`. Used by `apps/mobile`
+  and `apps/mobile-showcase`.
+- The shadcn component API is mirrored across web and mobile for consistency.
 
 ## Dependency flow
 
@@ -122,10 +153,11 @@ packages/backend/email    → used by api
 packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
-packages/translations     → used by web, mobile
-packages/design-system    → used by web, mobile
-packages/api-client       → used by frontend
-packages/frontend         → used by web, mobile
+packages/translations        → used by web, mobile
+packages/design-system/web    → used by web, web-showcase
+packages/design-system/mobile → used by mobile, mobile-showcase
+packages/api-client           → used by frontend
+packages/frontend             → used by web, mobile
 ```
 
 ## Commands
@@ -137,7 +169,7 @@ pnpm test               # Unit tests
 pnpm test:integration   # Integration tests (needs Docker)
 pnpm check              # Biome lint + format
 pnpm docker:dev         # Start Postgres + Redis
-pnpm generate:api-client # Regenerate typed API client
+pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
 ```
 
@@ -154,6 +186,9 @@ pnpm changeset          # Create a changeset for versioning
 - New API endpoints need Swagger decorators for auto-generated client
 - After API changes, regenerate client: `pnpm generate:api-client`
 - New translations go in `packages/translations/{locale}/index.json`
-- New design tokens go in `packages/design-system/src/tokens/`
+- New web design tokens go in `packages/design-system/web/src/styles/globals.css`
 - Frontend business logic goes in `packages/frontend`, not in app components
 - Keep pluggable service pattern: abstract class → concrete implementations → factory in module
+- New API endpoints need `@RequireScopes` or they are unreachable by API tokens and MCP clients
+- New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
+- `apps/web` imports only _types_ from `@flama/shared`; its CJS build is not tree-shakeable by Rollup, so fetch runtime data (like the permission catalog) from the API

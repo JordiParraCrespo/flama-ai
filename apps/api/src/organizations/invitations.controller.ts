@@ -10,9 +10,11 @@ import {
   Version,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import type { Request } from 'express';
 import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { OrganizationScoped } from '../auth/decorators/organization-scoped.decorator';
+import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
 import { InviteMemberRequest } from './dtos/organization.request.dto';
 import { InvitationResponseDto } from './dtos/organization.response.dto';
@@ -21,13 +23,15 @@ import { InvitationsService } from './invitations.service';
 /** Organization-scoped invitation management (requires `Invitation` policies). */
 @ApiTags('Organization invitations')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('organizations')
 export class OrganizationInvitationsController {
   constructor(private readonly invitations: InvitationsService) {}
 
   @Post(':orgId/invitations')
   @Version('1')
+  @RequireScopes('invitations:write')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'create', subject: 'Invitation' })
   @ApiOperation({ summary: 'Invite a member to an organization' })
   @ApiResponse({ status: 201, type: InvitationResponseDto })
@@ -41,6 +45,8 @@ export class OrganizationInvitationsController {
 
   @Get(':orgId/invitations')
   @Version('1')
+  @RequireScopes('invitations:read')
+  @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'read', subject: 'Invitation' })
   @ApiOperation({ summary: 'List pending invitations for an organization' })
   @ApiResponse({ status: 200, type: [InvitationResponseDto] })
@@ -59,13 +65,14 @@ export class OrganizationInvitationsController {
  */
 @ApiTags('Invitations')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('invitations')
 export class InvitationsController {
   constructor(private readonly invitations: InvitationsService) {}
 
   @Get()
   @Version('1')
+  @RequireScopes('invitations:read')
   @ApiOperation({ summary: "List the caller's pending invitations" })
   @ApiResponse({ status: 200, type: [InvitationResponseDto] })
   listMine(@Req() req: Request): Promise<InvitationResponseDto[]> {
@@ -74,6 +81,7 @@ export class InvitationsController {
 
   @Get(':id')
   @Version('1')
+  @RequireScopes('invitations:read')
   @ApiOperation({ summary: 'Get an invitation by id' })
   @ApiResponse({ status: 200, type: InvitationResponseDto })
   get(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<InvitationResponseDto> {
@@ -82,6 +90,7 @@ export class InvitationsController {
 
   @Post(':id/accept')
   @Version('1')
+  @RequireScopes('invitations:write')
   @ApiOperation({ summary: 'Accept an invitation' })
   @ApiResponse({ status: 200, type: InvitationResponseDto })
   accept(
@@ -93,6 +102,7 @@ export class InvitationsController {
 
   @Post(':id/reject')
   @Version('1')
+  @RequireScopes('invitations:write')
   @ApiOperation({ summary: 'Reject an invitation' })
   @ApiResponse({ status: 200, type: InvitationResponseDto })
   reject(
@@ -104,6 +114,7 @@ export class InvitationsController {
 
   @Post(':id/cancel')
   @Version('1')
+  @RequireScopes('invitations:write')
   @CheckPolicies({ action: 'update', subject: 'Invitation' })
   @ApiOperation({ summary: 'Cancel an invitation (organization manager)' })
   @ApiResponse({ status: 200, type: InvitationResponseDto })
