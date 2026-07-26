@@ -25,18 +25,20 @@
     "release": "changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.11",
-    "@changesets/cli": "^2.27.0",
-    "@commitlint/cli": "^19.0.0",
-    "@commitlint/config-conventional": "^19.0.0",
-    "turbo": "^2.9.6",
-    "typescript": "^6.0.2"
+    "@biomejs/biome": "^2.5.5",
+    "@changesets/cli": "^2.31.1",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "turbo": "^2.10.7",
+    "typescript": "^6.0.3"
   },
   "pnpm": {
     "overrides": {
       "react": "19.1.0",
       "react-dom": "19.1.0",
-      "@types/react": "19.2.14"
+      "@types/react": "19.2.14",
+      "react-native": "0.81.5",
+      "@nestjs/swagger": "11.4.2"
     }
   }
 }

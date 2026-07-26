@@ -51,12 +51,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@casl/ability": "^6.7.2",
-    "zod": "^3.24.0"
+    "@casl/ability": "^6.8.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@flama/config": "workspace:^",
-    "typescript": "^6.0.2",
-    "vitest": "^3.0.0"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
   }
 }

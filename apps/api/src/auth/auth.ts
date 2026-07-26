@@ -7,7 +7,7 @@ import { betterAuth } from 'better-auth';
 import { admin, bearer, mcp, organization } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
-import { emailQueue } from './email-queue';
+import { emailQueue, enqueueEmailBestEffort } from './email-queue';
 
 /**
  * Access-control roles for the admin plugin. Every name listed in `adminRoles`
@@ -211,7 +211,10 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          await emailQueue.add('welcome', { to: user.email, name: user.name });
+          await enqueueEmailBestEffort('welcome', {
+            to: user.email,
+            name: user.name,
+          });
           // Assign the default `user` role in the RBAC join so new sign-ups get
           // their permissions from the same source as everyone else. Best-effort:
           // the AbilityFactory falls back to the legacy `user.role` column if the
