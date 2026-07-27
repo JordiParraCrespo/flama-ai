@@ -61,10 +61,12 @@ sign-out and both password-reset steps. It also calls `identify()` on login and
 `reset()` on logout, so events are attributed correctly and a shared device
 doesn't leak one user's activity into another's profile.
 
-Page views are driven from the router — `apps/web/src/routes/__root.tsx` on web
-and `ScreenViewTracker` in `apps/mobile/app/_layout.tsx` on mobile, both via
-`usePageView`. Neither router emits navigations a provider can observe on its
-own, so without this only the first load would ever be counted.
+Page views are driven from the router by a tracker component in each app's
+analytics module — `PageViewTracker` in `apps/web/src/lib/analytics/` and
+`ScreenViewTracker` in `apps/mobile/lib/analytics/`, both wrapping
+`usePageView` and mounted at the app root. Neither router emits navigations a
+provider can observe on its own, so without this only the first load would ever
+be counted.
 
 ## Query strings never leave the app
 
@@ -100,7 +102,35 @@ hook re-renders when they load. Treat `false` as the control branch — never ga
 a destructive or paid action on a flag flipping to `true` late.
 
 `useFeatureFlagValue` returns the raw value for multivariate flags, which is what
-A/B tests with more than two arms need.
+A/B tests with more than two arms need. Any variant counts as enabled for
+`useFeatureFlag`, matching how providers treat a variant string as an "on"
+state.
+
+### Flags are a TanStack Query
+
+Both hooks read from a single query keyed by `analyticsKeys.flags()`, so a page
+with twenty flag reads still makes one request. `useFeatureFlags()` exposes that
+query directly when you need the loading state — to hold rendering back until
+flags arrive rather than flashing the control branch:
+
+```ts
+import { useFeatureFlags } from "@flama/frontend/react";
+
+const { data: flags, isPending } = useFeatureFlags();
+```
+
+Routing flags through the query cache is what keeps the provider contract small.
+An adapter implements one async `getFeatureFlags()`; caching, deduplication and
+refetch-on-reconnect come from the query client rather than from each adapter.
+Providers that can push flag updates (PostHog can) also implement the optional
+`onFeatureFlags`, and the query is invalidated when it fires; providers that
+can't simply omit it and flags refresh on the query's normal schedule.
+
+Invalidate them yourself after anything that changes who the user is:
+
+```ts
+queryClient.invalidateQueries({ queryKey: analyticsKeys.flags() });
+```
 
 ## Failure behavior
 
@@ -112,6 +142,9 @@ the control branch on error.
 ## Adding a provider
 
 Implement `IAnalyticsClient` (`analytics.client.ts`) and pass it to
-`FlamaApp.create({ analytics })`. The web adapter in `apps/web/src/lib/analytics.ts`
+`FlamaApp.create({ analytics })`. The port is four fire-and-forget methods
+(`capture`, `identify`, `reset`, `pageView`), one async `getFeatureFlags()`, and
+an optional `onFeatureFlags` — nothing that assumes a particular vendor's
+capabilities. The web adapter in `apps/web/src/lib/analytics/posthog-client.ts`
 is the reference: it queues calls made before the SDK finishes loading and
 replays them on arrival, since the DI container is built synchronously.

@@ -8,16 +8,17 @@ configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 
 import { Button } from '@flama/design-system-mobile/button';
 import { Text } from '@flama/design-system-mobile/text';
-import { FlamaProvider, useAuthState, usePageView, useSessionRestore } from '@flama/frontend/react';
+import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend/react';
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Slot, usePathname, useRouter, useSegments } from 'expo-router';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, vars } from 'nativewind';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
+import { ScreenViewTracker } from '../lib/analytics';
 import { app } from '../lib/flama';
 import { queryClient } from '../lib/query';
 import { NAV_THEME } from '../lib/theme';
@@ -44,19 +45,6 @@ export default function RootLayout() {
       </FlamaProvider>
     </QueryClientProvider>
   );
-}
-
-/**
- * Reports screen views to analytics on every navigation.
- *
- * Expo Router doesn't emit anything the provider can observe on its own, so
- * without this the mobile app would only ever record authentication events and
- * every navigation funnel would come back empty. Renders nothing; it exists
- * purely so the hook sits inside `FlamaProvider`.
- */
-function ScreenViewTracker() {
-  usePageView(usePathname());
-  return null;
 }
 
 function AuthGate() {

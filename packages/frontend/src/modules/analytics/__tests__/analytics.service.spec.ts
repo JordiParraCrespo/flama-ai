@@ -10,8 +10,7 @@ function createClient(overrides: Partial<IAnalyticsClient> = {}): IAnalyticsClie
     identify: vi.fn(),
     reset: vi.fn(),
     pageView: vi.fn(),
-    isFeatureEnabled: vi.fn().mockReturnValue(false),
-    getFeatureFlag: vi.fn().mockReturnValue(undefined),
+    getFeatureFlags: vi.fn().mockResolvedValue({}),
     onFeatureFlags: vi.fn().mockReturnValue(() => {}),
     ...overrides,
   };
@@ -54,8 +53,7 @@ describe('AnalyticsService', () => {
         identify: boom,
         reset: boom,
         pageView: boom,
-        isFeatureEnabled: boom,
-        getFeatureFlag: boom,
+        getFeatureFlags: boom,
         onFeatureFlags: boom,
       }),
     );
@@ -67,17 +65,56 @@ describe('AnalyticsService', () => {
     expect(() => service.onFeatureFlags(() => {})).not.toThrow();
   });
 
-  it('falls back to the control branch when a flag read throws', () => {
+  it('falls back to the control branch when a flag read throws', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const service = new AnalyticsService(
       createClient({
-        isFeatureEnabled: () => {
+        getFeatureFlags: () => {
           throw new Error('flags unavailable');
         },
       }),
     );
 
-    expect(service.isFeatureEnabled('new-checkout')).toBe(false);
+    await expect(service.getFeatureFlags()).resolves.toEqual({});
+  });
+
+  // A provider that rejects rather than throwing synchronously has to be caught
+  // too, or the rejection escapes as an unhandled promise error.
+  it('falls back to the control branch when a flag read rejects', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const service = new AnalyticsService(
+      createClient({
+        getFeatureFlags: vi.fn().mockRejectedValue(new Error('flags unavailable')),
+      }),
+    );
+
+    await expect(service.getFeatureFlags()).resolves.toEqual({});
+  });
+
+  it('passes the provider flag set through untouched', async () => {
+    const service = new AnalyticsService(
+      createClient({
+        getFeatureFlags: vi.fn().mockResolvedValue({
+          'new-checkout': true,
+          'pricing-copy': 'variant-b',
+        }),
+      }),
+    );
+
+    await expect(service.getFeatureFlags()).resolves.toEqual({
+      'new-checkout': true,
+      'pricing-copy': 'variant-b',
+    });
+  });
+
+  // Push updates are optional — a provider with no way to signal a flag change
+  // must still work, so the service has to absorb the missing method.
+  it('returns a no-op unsubscribe when the provider cannot push flag updates', () => {
+    const client = createClient();
+    client.onFeatureFlags = undefined;
+    const service = new AnalyticsService(client);
+
+    expect(() => service.onFeatureFlags(() => {})()).not.toThrow();
   });
 
   it('returns a usable unsubscribe even when the provider fails', () => {
@@ -96,16 +133,9 @@ describe('AnalyticsService', () => {
 });
 
 describe('NoopAnalyticsClient', () => {
-  it('reports every flag as off so code takes its default branch', () => {
+  it('reports every flag as off so code takes its default branch', async () => {
     const client = new NoopAnalyticsClient();
 
-    expect(client.isFeatureEnabled('anything')).toBe(false);
-    expect(client.getFeatureFlag('anything')).toBeUndefined();
-  });
-
-  it('returns an unsubscribe function from onFeatureFlags', () => {
-    const client = new NoopAnalyticsClient();
-
-    expect(() => client.onFeatureFlags(() => {})()).not.toThrow();
+    await expect(client.getFeatureFlags()).resolves.toEqual({});
   });
 });

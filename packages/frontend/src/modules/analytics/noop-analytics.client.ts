@@ -1,7 +1,7 @@
 import type {
   AnalyticsProperties,
   AnalyticsTraits,
-  FeatureFlagValue,
+  FeatureFlags,
   IAnalyticsClient,
 } from './analytics.client';
 
@@ -22,15 +22,8 @@ export class NoopAnalyticsClient implements IAnalyticsClient {
 
   pageView(_path: string, _properties?: AnalyticsProperties): void {}
 
-  isFeatureEnabled(_key: string): boolean {
-    return false;
-  }
-
-  getFeatureFlag(_key: string): FeatureFlagValue {
-    return undefined;
-  }
-
-  onFeatureFlags(_listener: () => void): () => void {
-    return () => {};
+  /** No flags, so every lookup falls through to its default branch. */
+  async getFeatureFlags(): Promise<FeatureFlags> {
+    return {};
   }
 }

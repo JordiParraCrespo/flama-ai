@@ -1,9 +1,10 @@
+export { useAnalytics, usePageView } from './analytics.hooks';
 export {
-  useAnalytics,
+  analyticsKeys,
   useFeatureFlag,
+  useFeatureFlags,
   useFeatureFlagValue,
-  usePageView,
-} from './analytics.hooks';
+} from './analytics.queries';
 export {
   apiTokensKeys,
   useApiTokens,

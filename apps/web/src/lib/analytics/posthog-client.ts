@@ -1,7 +1,7 @@
 import type {
   AnalyticsProperties,
   AnalyticsTraits,
-  FeatureFlagValue,
+  FeatureFlags,
   IAnalyticsClient,
 } from '@flama/frontend';
 import { sanitizeUrlProperties } from '@flama/frontend';
@@ -34,9 +34,8 @@ function stripUrlSecrets(result: CaptureResult | null): CaptureResult | null {
  * who never reach the app.
  *
  * Because loading is async but the DI container is built synchronously, calls
- * made before the SDK arrives are queued and replayed on load. Flag reads are
- * the exception: they must answer synchronously, so they report "off" until
- * flags resolve. See `useFeatureFlag` for why that's the correct default.
+ * made before the SDK arrives are queued and replayed on load — flag reads
+ * included, since `getFeatureFlags` is a promise the query layer awaits.
  */
 class PostHogAnalyticsClient implements IAnalyticsClient {
   private posthog: PostHog | null = null;
@@ -108,12 +107,39 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
     this.enqueue((posthog) => posthog.capture('$pageview', { $pathname: path, ...properties }));
   }
 
-  isFeatureEnabled(key: string): boolean {
-    return this.posthog?.isFeatureEnabled(key) ?? false;
-  }
+  /**
+   * Resolves once PostHog has flags in hand.
+   *
+   * `onFeatureFlags` fires immediately when flags are already loaded, and also
+   * fires when a load *fails*, so this settles in both cases rather than
+   * hanging on a blocked request. If the SDK itself never arrives the promise
+   * stays pending, which the query layer renders as "still loading" — every
+   * flag reads as off, the same as the no-op client.
+   */
+  getFeatureFlags(): Promise<FeatureFlags> {
+    return new Promise((resolve) => {
+      this.enqueue((posthog) => {
+        if (posthog.featureFlags.hasLoadedFlags) {
+          resolve(posthog.featureFlags.getFlagVariants());
+          return;
+        }
 
-  getFeatureFlag(key: string): FeatureFlagValue {
-    return this.posthog?.getFeatureFlag(key);
+        // `onFeatureFlags` may invoke its callback synchronously, before it has
+        // returned the unsubscribe handle. Tracking that separately means the
+        // listener is still cleaned up in that case — otherwise every refetch
+        // would leave one behind.
+        let unsubscribe: (() => void) | undefined;
+        let fired = false;
+
+        unsubscribe = posthog.onFeatureFlags(() => {
+          fired = true;
+          unsubscribe?.();
+          resolve(posthog.featureFlags.getFlagVariants());
+        });
+
+        if (fired) unsubscribe();
+      });
+    });
   }
 
   onFeatureFlags(listener: () => void): () => void {
