@@ -1,14 +1,15 @@
 export {
+  analyticsKeys,
+  type CaptureEventVariables,
+  type CapturePageViewVariables,
   useAnalytics,
   useCaptureEvent,
   useCaptureOnMount,
-  usePageView,
-} from './analytics.hooks';
-export {
-  analyticsKeys,
+  useCapturePageView,
   useFeatureFlag,
   useFeatureFlags,
   useFeatureFlagValue,
+  usePageView,
 } from './analytics.queries';
 export {
   apiTokensKeys,
