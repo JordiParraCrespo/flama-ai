@@ -43,14 +43,37 @@ silently split funnel:
 
 ```ts
 import { ANALYTICS_EVENTS } from '@flama/frontend';
-import { useAnalytics } from '@flama/frontend/react';
+import { useCaptureEvent } from '@flama/frontend/react';
 
 function UpgradeButton() {
-  const analytics = useAnalytics();
+  const capture = useCaptureEvent();
 
-  return <button onClick={() => analytics.capture(ANALYTICS_EVENTS.USER_SIGNED_UP)}>Upgrade</button>;
+  return <button onClick={() => capture(ANALYTICS_EVENTS.USER_SIGNED_UP)}>Upgrade</button>;
 }
 ```
+
+`useCaptureEvent` returns a callback with a stable identity, so it's safe to
+pass to a memoized child or list in a dependency array. Reading `capture` off
+`useAnalytics()` is not — it loses its `this` binding, and an inline arrow gives
+every render a new function. Reach for `useAnalytics()` when you need more than
+capturing, such as `identify()` after a profile edit.
+
+For events whose trigger is a render rather than an interaction — an upsell
+appeared, an empty state was reached — use `useCaptureOnMount`:
+
+```ts
+import { useCaptureOnMount } from '@flama/frontend/react';
+
+function UpsellBanner() {
+  useCaptureOnMount(ANALYTICS_EVENTS.USER_SIGNED_UP, { source: 'dashboard' });
+  ...
+}
+```
+
+It fires once per event name, not once per render: a fresh `properties` object
+each render is the normal case and must not re-fire it, so the properties are
+read at capture time without themselves triggering one. If the event name
+changes, the new event is captured.
 
 Add new events to `packages/frontend/src/modules/analytics/analytics.events.ts`.
 Property values are constrained to JSON-serializable types, so passing a `Date`

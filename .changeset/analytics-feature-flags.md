@@ -11,10 +11,11 @@ never break the app, a typed event catalog, and a `NoopAnalyticsClient` used
 whenever no provider is configured.
 
 `FlamaApp.create()` takes an optional `analytics` adapter, and the React entry
-point exports `useAnalytics`, `usePageView`, `useFeatureFlags`, `useFeatureFlag`,
-`useFeatureFlagValue` and `analyticsKeys`. Sign-in, sign-up, sign-out and
-password-reset events are captured from `AuthService`, which also identifies the
-user on login and resets identity on logout.
+point exports `useAnalytics`, `useCaptureEvent`, `useCaptureOnMount`,
+`usePageView`, `useFeatureFlags`, `useFeatureFlag`, `useFeatureFlagValue` and
+`analyticsKeys`. Sign-in, sign-up, sign-out and password-reset events are
+captured from `AuthService`, which also identifies the user on login and resets
+identity on logout.
 
 Feature flags are served through TanStack Query rather than a provider-specific
 subscription: an adapter implements a single async `getFeatureFlags()`, and

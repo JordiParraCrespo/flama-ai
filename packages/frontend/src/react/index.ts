@@ -1,4 +1,9 @@
-export { useAnalytics, usePageView } from './analytics.hooks';
+export {
+  useAnalytics,
+  useCaptureEvent,
+  useCaptureOnMount,
+  usePageView,
+} from './analytics.hooks';
 export {
   analyticsKeys,
   useFeatureFlag,
