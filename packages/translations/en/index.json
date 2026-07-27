@@ -113,6 +113,9 @@
     "inactive": "Inactive",
     "memberSince": "Member since",
     "admin": "Admin",
+    "accountUnavailable": "We couldn't load your account. Check your connection and try again.",
+    "retry": "Try again",
+    "retrying": "Retrying...",
     "signOut": "Sign out",
     "signingOut": "Signing out..."
   },

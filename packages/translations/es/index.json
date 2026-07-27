@@ -113,6 +113,9 @@
     "inactive": "Inactiva",
     "memberSince": "Miembro desde",
     "admin": "Administrador",
+    "accountUnavailable": "No pudimos cargar tu cuenta. Comprueba tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "retrying": "Reintentando...",
     "signOut": "Cerrar sesión",
     "signingOut": "Cerrando sesión..."
   },
