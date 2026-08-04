@@ -1,6 +1,8 @@
 import { OpenAPI } from '@flama/api-client';
 import { ContainerModule } from 'inversify';
 import { TOKENS } from '../../di/tokens';
+import type { IAnalyticsClient } from '../analytics/analytics.client';
+import { NoopAnalyticsClient } from '../analytics/noop-analytics.client';
 import type { IAuthClient } from '../auth/auth.client';
 import type { IStorageService } from './storage.service';
 
@@ -8,6 +10,12 @@ export interface CoreModuleConfig {
   apiBaseUrl: string;
   storage: IStorageService;
   authClient: IAuthClient;
+  /**
+   * Platform-specific analytics adapter. Optional: with no provider configured
+   * the app falls back to a no-op client so the boilerplate runs without an
+   * analytics account.
+   */
+  analytics?: IAnalyticsClient;
 }
 
 export function createCoreModule(config: CoreModuleConfig): ContainerModule {
@@ -23,5 +31,8 @@ export function createCoreModule(config: CoreModuleConfig): ContainerModule {
 
     bind<IStorageService>(TOKENS.StorageService).toConstantValue(config.storage);
     bind<IAuthClient>(TOKENS.AuthClient).toConstantValue(config.authClient);
+    bind<IAnalyticsClient>(TOKENS.AnalyticsClient).toConstantValue(
+      config.analytics ?? new NoopAnalyticsClient(),
+    );
   });
 }

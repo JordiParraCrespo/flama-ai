@@ -18,6 +18,7 @@ import { useColorScheme, vars } from 'nativewind';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
+import { ScreenViewTracker } from '../lib/analytics';
 import { app } from '../lib/flama';
 import { queryClient } from '../lib/query';
 import { NAV_THEME } from '../lib/theme';
@@ -36,6 +37,7 @@ export default function RootLayout() {
             className={isDark ? 'dark flex-1 bg-background' : 'flex-1 bg-background'}
           >
             <StatusBar style={isDark ? 'light' : 'dark'} />
+            <ScreenViewTracker />
             <AuthGate />
             <PortalHost />
           </View>

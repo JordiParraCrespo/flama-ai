@@ -1,5 +1,8 @@
 import 'reflect-metadata';
 import { Container, type ContainerModule } from 'inversify';
+import type { AnalyticsService } from '../modules/analytics';
+import { AnalyticsModule } from '../modules/analytics';
+import type { IAnalyticsClient } from '../modules/analytics/analytics.client';
 import type { ApiTokensService } from '../modules/api-tokens';
 import { ApiTokensModule } from '../modules/api-tokens';
 import type { AuthService } from '../modules/auth';
@@ -18,6 +21,11 @@ export interface FlamaAppConfig {
   storage: IStorageService;
   /** Platform-specific Better Auth client adapter. */
   authClient: IAuthClient;
+  /**
+   * Platform-specific analytics adapter. Omit it and the app runs against a
+   * no-op client — events are dropped and every feature flag reads as off.
+   */
+  analytics?: IAnalyticsClient;
   modules?: ContainerModule[];
 }
 
@@ -27,10 +35,11 @@ export class FlamaApp {
   static create(config: FlamaAppConfig): FlamaApp {
     const container = new Container();
 
-    // Core: storage + API client
+    // Core: storage + analytics client + API client
     container.load(createCoreModule(config));
 
     // Feature modules
+    container.load(AnalyticsModule);
     container.load(AuthModule);
     container.load(UsersModule);
     container.load(ApiTokensModule);
@@ -60,5 +69,9 @@ export class FlamaApp {
 
   get organizations(): OrganizationsService {
     return this.container.get(TOKENS.OrganizationsService);
+  }
+
+  get analytics(): AnalyticsService {
+    return this.container.get(TOKENS.AnalyticsService);
   }
 }
