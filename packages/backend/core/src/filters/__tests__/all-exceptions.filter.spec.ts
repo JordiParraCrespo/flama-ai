@@ -79,6 +79,29 @@ describe('AllExceptionsFilter', () => {
     expect(problem.retryAfter).toBe(30);
   });
 
+  it('does not let an extension overwrite a member the API owns', () => {
+    const { status, problem } = handle(
+      new AppError(USER_NOT_FOUND, {
+        extensions: {
+          status: 200,
+          title: 'Nothing to see here',
+          code: 'NOT_MY_CODE',
+          correlationId: 'spoofed',
+          retryAfter: 30,
+        },
+      }),
+    );
+
+    expect(status).toHaveBeenCalledWith(404);
+    expect(problem()).toMatchObject({
+      status: 404,
+      title: 'User not found',
+      code: 'USER_001',
+      retryAfter: 30,
+    });
+    expect(problem().correlationId).not.toBe('spoofed');
+  });
+
   it('lists every rejected field in invalidParams for a validation failure', () => {
     const schema = z.object({
       email: z.string().email(),

@@ -51,25 +51,61 @@ export interface ProblemContext {
   timestamp?: string;
 }
 
+/** The members this API defines. Extensions may not claim any of them. */
+const RESERVED_MEMBERS: ReadonlySet<string> = new Set([
+  'type',
+  'title',
+  'status',
+  'detail',
+  'instance',
+  'code',
+  'correlationId',
+  'timestamp',
+  'invalidParams',
+]);
+
+export interface ProblemInput {
+  status: number;
+  type?: string;
+  title?: string;
+  detail?: string;
+  code?: string;
+  invalidParams?: InvalidParam[];
+  /**
+   * Extra members merged into the document. Anything named after a member the
+   * API defines is dropped — a thrower must not be able to rewrite the status
+   * a response is sent with, or the correlation id the logs are keyed by.
+   */
+  extensions?: Record<string, unknown>;
+}
+
 /**
  * Assembles a problem document, dropping empty members so the response stays
  * the minimum RFC 7807 requires plus whatever we actually know.
  */
 export function buildProblemDetails(
-  problem: Partial<ProblemDetails> & { status: number },
+  problem: ProblemInput,
   context: ProblemContext = {},
 ): ProblemDetails {
-  const { status, type, title, detail, invalidParams, ...extensions } = problem;
+  const { status, type, title, detail, code, invalidParams, extensions } = problem;
 
   return {
+    ...safeExtensions(extensions),
     type: type ?? DEFAULT_PROBLEM_TYPE,
     title: title ?? titleForStatus(status),
     status,
     ...(detail ? { detail } : {}),
     ...(context.instance ? { instance: context.instance } : {}),
+    ...(code ? { code } : {}),
     ...(invalidParams?.length ? { invalidParams } : {}),
     ...(context.correlationId ? { correlationId: context.correlationId } : {}),
     timestamp: context.timestamp ?? new Date().toISOString(),
-    ...extensions,
   };
+}
+
+function safeExtensions(extensions?: Record<string, unknown>): Record<string, unknown> {
+  if (!extensions) return {};
+  return Object.fromEntries(
+    Object.entries(extensions).filter(([name]) => !RESERVED_MEMBERS.has(name)),
+  );
 }

@@ -104,7 +104,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           title: exception.title,
           detail: exception.detail,
           code: exception.code,
-          ...exception.extensions,
+          extensions: exception.extensions,
         },
         context,
       );
