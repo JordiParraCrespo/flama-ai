@@ -17,6 +17,7 @@ const sidebars: SidebarsConfig = {
         'architecture/api-architecture',
         'architecture/frontend-architecture',
         'architecture/query-keys',
+        'architecture/analytics',
       ],
     },
     {

@@ -1,3 +1,4 @@
+export * from './analytics';
 export * from './api-tokens';
 export * from './auth';
 export * from './core';

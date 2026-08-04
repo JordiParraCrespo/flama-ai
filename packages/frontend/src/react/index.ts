@@ -1,4 +1,17 @@
 export {
+  analyticsKeys,
+  type CaptureEventVariables,
+  type CapturePageViewVariables,
+  useAnalytics,
+  useCaptureEvent,
+  useCaptureOnMount,
+  useCapturePageView,
+  useFeatureFlag,
+  useFeatureFlags,
+  useFeatureFlagValue,
+  usePageView,
+} from './analytics.queries';
+export {
   apiTokensKeys,
   useApiTokens,
   useCreateApiToken,

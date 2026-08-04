@@ -1,4 +1,5 @@
 import { FlamaApp } from '@flama/frontend';
+import { createWebAnalyticsClient } from './analytics';
 import { webAuthClient } from './auth-client';
 import { LocalStorageService } from './storage';
 
@@ -11,4 +12,5 @@ export const app = FlamaApp.create({
   apiBaseUrl,
   storage: new LocalStorageService(),
   authClient: webAuthClient,
+  analytics: createWebAnalyticsClient(),
 });
