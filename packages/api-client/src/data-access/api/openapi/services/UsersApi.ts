@@ -61,7 +61,7 @@ export class UsersApi {
                 'id': id,
             },
             errors: {
-                404: `USER_001: User not found`,
+                404: `USER_001 — User not found`,
             },
         });
     }
@@ -85,7 +85,7 @@ export class UsersApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `USER_001: User not found`,
+                404: `USER_001 — User not found`,
             },
         });
     }
@@ -105,7 +105,7 @@ export class UsersApi {
                 'id': id,
             },
             errors: {
-                404: `USER_001: User not found`,
+                404: `USER_001 — User not found`,
             },
         });
     }

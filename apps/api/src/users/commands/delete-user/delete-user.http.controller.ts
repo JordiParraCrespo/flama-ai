@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Controller, Delete, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -20,7 +21,7 @@ export class DeleteUserHttpController {
   @RequireScopes('users:write')
   @ApiOperation({ summary: 'Delete user' })
   @ApiResponse({ status: 200 })
-  @ApiResponse({ status: 404, description: 'USER_001: User not found' })
+  @ApiProblemResponse({ status: 404, description: 'User not found', code: 'USER_001' })
   async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand({ userId: id }));
   }

@@ -49,7 +49,7 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                409: `ROLE_002: A role with this name already exists`,
+                409: `ROLE_002 — A role with this name already exists`,
             },
         });
     }
@@ -69,7 +69,7 @@ export class RolesApi {
                 'id': id,
             },
             errors: {
-                404: `ROLE_001: Role not found`,
+                404: `ROLE_001 — Role not found`,
             },
         });
     }
@@ -93,7 +93,7 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `ROLE_001: Role not found`,
+                404: `ROLE_001 — Role not found`,
             },
         });
     }
@@ -113,8 +113,8 @@ export class RolesApi {
                 'id': id,
             },
             errors: {
-                403: `ROLE_003: System roles cannot be deleted`,
-                404: `ROLE_001: Role not found`,
+                403: `ROLE_003 — System roles cannot be deleted`,
+                404: `ROLE_001 — Role not found`,
             },
         });
     }
@@ -138,7 +138,7 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `ROLE_001: Role not found`,
+                404: `ROLE_001 — Role not found`,
             },
         });
     }
@@ -179,7 +179,7 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `USER_001 / ROLE_001: User or role not found`,
+                404: `USER_001 / ROLE_001 — User or role not found`,
             },
         });
     }

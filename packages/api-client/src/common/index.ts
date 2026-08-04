@@ -22,11 +22,13 @@ export type { CreatedApiTokenResponseDto } from "./models/CreatedApiTokenRespons
 export type { CurrencyMrrDto } from "./models/CurrencyMrrDto";
 export type { CurrentCredentialResponseDto } from "./models/CurrentCredentialResponseDto";
 export type { FullOrganizationResponseDto } from "./models/FullOrganizationResponseDto";
+export type { InvalidParamDto } from "./models/InvalidParamDto";
 export type { InvitationResponseDto } from "./models/InvitationResponseDto";
 export type { InviteMemberRequest } from "./models/InviteMemberRequest";
 export type { MemberResponseDto } from "./models/MemberResponseDto";
 export type { OrganizationResponseDto } from "./models/OrganizationResponseDto";
 export type { PermissionCatalogResponseDto } from "./models/PermissionCatalogResponseDto";
+export type { ProblemDetailsDto } from "./models/ProblemDetailsDto";
 export type { RevenueMetricsResponseDto } from "./models/RevenueMetricsResponseDto";
 export type { RoleResponseDto } from "./models/RoleResponseDto";
 export type { SetUserPasswordRequest } from "./models/SetUserPasswordRequest";

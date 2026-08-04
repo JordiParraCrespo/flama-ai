@@ -10,16 +10,17 @@ The backend is split into reusable packages under `packages/backend/`. Each foll
 
 Cross-cutting concerns shared across all NestJS apps.
 
-| Export                                      | Purpose                                                                           |
-| ------------------------------------------- | --------------------------------------------------------------------------------- |
-| `AppError`                                  | Structured `HttpException` with an error `code` field                             |
-| `AllExceptionsFilter`                       | Global filter returning `{ statusCode, code, message, correlationId, timestamp }` |
-| `RequestContextInterceptor`                 | Sets a correlation ID per request via `AsyncLocalStorage`                         |
-| `RequestContextService`                     | Static wrapper — `run()`, `getCorrelationId()`, `setCorrelationId()`              |
-| `Mapper<Entity, ServiceModel, ResponseDto>` | 3-layer mapper interface with `toRepository`, `toService`, `toController`         |
-| `SanitizePipe`                              | Recursively strips HTML tags from all string inputs                               |
-| `ZodValidationPipe`                         | Validates input against Zod schemas (reads `zodSchema` static property)           |
-| `PaginatedRequest`                          | Zod schema for `page` (int >= 1) and `limit` (int 1-100)                          |
+| Export                                      | Purpose                                                                                                              |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `AppError`                                  | Catalog error — an `HttpException` carrying a `code`, a stable title and a per-occurrence `detail`                   |
+| `AllExceptionsFilter`                       | Global filter rendering every exception as an [RFC 7807 problem document](../errors.md) (`application/problem+json`) |
+| `ProblemDetailsDto` / `ApiProblemResponse`  | Swagger model + decorator for documenting error responses                                                            |
+| `RequestContextInterceptor`                 | Sets a correlation ID per request via `AsyncLocalStorage`                                                            |
+| `RequestContextService`                     | Static wrapper — `run()`, `getCorrelationId()`, `setCorrelationId()`                                                 |
+| `Mapper<Entity, ServiceModel, ResponseDto>` | 3-layer mapper interface with `toRepository`, `toService`, `toController`                                            |
+| `SanitizePipe`                              | Recursively strips HTML tags from all string inputs                                                                  |
+| `ZodValidationPipe`                         | Validates input against Zod schemas (reads `zodSchema` static property)                                              |
+| `PaginatedRequest`                          | Zod schema for `page` (int >= 1) and `limit` (int 1-100)                                                             |
 
 ### Usage in `app.module.ts`
 

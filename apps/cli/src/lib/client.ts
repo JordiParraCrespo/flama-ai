@@ -1,3 +1,4 @@
+import { isProblemDetails, type ProblemDetails } from '@flama/shared';
 import { CliError, ExitCode } from './errors';
 
 export interface ApiClientOptions {
@@ -77,7 +78,7 @@ export class ApiClient {
       response = await this.fetchImpl(url.toString(), {
         method,
         headers: {
-          accept: 'application/json',
+          accept: 'application/json, application/problem+json',
           ...(this.token ? { authorization: `Bearer ${this.token}` } : {}),
           ...(options.body === undefined ? {} : { 'content-type': 'application/json' }),
           ...options.headers,
@@ -109,31 +110,57 @@ export class ApiClient {
   }
 }
 
-interface ApiErrorBody {
+/** Body shape of deployments predating RFC 7807 problem documents. */
+interface LegacyErrorBody {
   code?: string;
   message?: string | string[];
   correlationId?: string;
 }
 
+/**
+ * Maps a failed response onto the exit code that matches what went wrong.
+ *
+ * The API answers with an RFC 7807 problem document (`application/problem+json`):
+ * `detail` explains this occurrence, `title` names the problem type, and
+ * `invalidParams` lists the fields that were rejected — all three end up in the
+ * message so a script's stderr says exactly what to fix.
+ */
 function toCliError(status: number, payload: unknown, method: string, path: string): CliError {
-  const body = (payload ?? {}) as ApiErrorBody;
-  const message = Array.isArray(body.message) ? body.message.join('; ') : body.message;
-  const detail = message ?? `${method} ${path} failed with ${status}`;
-  const code = body.code ? `${body.code}: ` : '';
+  const fallback = `${method} ${path} failed with ${status}`;
+  const { code, detail } = isProblemDetails(payload)
+    ? readProblem(payload as ProblemDetails, fallback)
+    : readLegacyBody(payload, fallback);
+
+  const message = code ? `${code}: ${detail}` : detail;
 
   if (status === 401) {
-    return new CliError(`${code}${detail}`, ExitCode.AUTH, 'Run `flama login` to re-authenticate.');
+    return new CliError(message, ExitCode.AUTH, 'Run `flama login` to re-authenticate.');
   }
   if (status === 403) {
     return new CliError(
-      `${code}${detail}`,
+      message,
       ExitCode.FORBIDDEN,
       'Your credential may be missing a permission — check `flama whoami`.',
     );
   }
-  if (status === 404) return new CliError(`${code}${detail}`, ExitCode.NOT_FOUND);
+  if (status === 404) return new CliError(message, ExitCode.NOT_FOUND);
 
-  return new CliError(`${code}${detail}`, ExitCode.FAILURE);
+  return new CliError(message, ExitCode.FAILURE);
+}
+
+function readProblem(problem: ProblemDetails, fallback: string): { code?: string; detail: string } {
+  const fields = (problem.invalidParams ?? []).map((param) => `${param.name}: ${param.reason}`);
+  const detail = [
+    problem.detail ?? problem.title ?? fallback,
+    ...(fields.length ? [`(${fields.join('; ')})`] : []),
+  ].join(' ');
+  return { code: problem.code, detail };
+}
+
+function readLegacyBody(payload: unknown, fallback: string): { code?: string; detail: string } {
+  const body = (payload ?? {}) as LegacyErrorBody;
+  const message = Array.isArray(body.message) ? body.message.join('; ') : body.message;
+  return { code: body.code, detail: message ?? fallback };
 }
 
 function safeParse(text: string): unknown {

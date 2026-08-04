@@ -97,7 +97,12 @@ describe('ScopesGuard', () => {
       useCredential(tokenContext({ scopes: ['users:read'] }));
       metadata[REQUIRE_SCOPES_KEY] = ['roles:write'];
 
-      await expect(guard.canActivate(context())).rejects.toThrow(/roles:write/);
+      // The catalog message titles the problem type; what is missing on *this*
+      // request is the problem's detail (RFC 7807).
+      await expect(guard.canActivate(context())).rejects.toMatchObject({
+        detail: expect.stringContaining('roles:write'),
+        extensions: { missingScopes: ['roles:write'] },
+      });
     });
 
     it('refuses a route that declares no scopes — closed by default', async () => {

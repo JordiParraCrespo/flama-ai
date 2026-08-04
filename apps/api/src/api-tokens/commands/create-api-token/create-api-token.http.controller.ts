@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Body, Controller, Post, Req, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -40,14 +41,16 @@ export class CreateApiTokenHttpController {
       'Creates a scoped API token for the caller. The secret is returned once and cannot be retrieved again. Scopes may not exceed what the caller is themselves permitted to do.',
   })
   @ApiResponse({ status: 201, type: CreatedApiTokenResponseDto })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 403,
     description:
-      'TOKEN_002: requested scopes exceed the caller’s own permissions; TOKEN_008: not a member of a requested organization',
+      'Requested scopes exceed the caller’s own permissions, or the caller is not a member of a requested organization',
+    code: ['TOKEN_002', 'TOKEN_008'],
   })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 409,
-    description: 'TOKEN_009: active token limit reached',
+    description: 'Active token limit reached',
+    code: 'TOKEN_009',
   })
   async create(
     @Req() request: ScopedRequest,

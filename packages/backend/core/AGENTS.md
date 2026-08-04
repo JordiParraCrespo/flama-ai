@@ -11,8 +11,10 @@ other backend packages.
 
 ```
 src/
-├── errors/         # domain/application error types
+├── errors/         # error types + the RFC 7807 problem-document contract
 ├── filters/        # NestJS exception filters
+├── decorators/     # Swagger decorators (ApiProblemResponse)
+├── dtos/           # Swagger models (ProblemDetailsDto)
 ├── interceptors/   # response/logging interceptors
 ├── pipes/          # validation & transform pipes
 ├── requests/       # request-scoped helpers
@@ -26,6 +28,13 @@ src/
 - Ships **CommonJS** (see `backend-packages.md`). Keep exports CJS-compatible.
 - This is a **library** package (imported directly), not a pluggable service.
 - Only export from `index.ts`; keep internal modules out of the public surface.
+- **Errors are RFC 7807 problem documents.** `AllExceptionsFilter` renders every
+  exception as `application/problem+json`; the wire type lives in
+  `@flama/shared` (`ProblemDetails`) so clients share it. An error's catalog
+  message is the stable problem `title` — per-request specifics belong in
+  `AppError`'s `detail`/`extensions`, never interpolated into the message. When
+  adding an error code, add a row to `apps/docs/docs/errors.md`: problem `type`
+  URIs are anchors on that page.
 
 ## Commands
 

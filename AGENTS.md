@@ -67,6 +67,11 @@ Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api`, `p
 - `typeorm.md` — Union-typed column rules, persistence-model (ORM) conventions
 - `backend-packages.md` — CJS exports, package structure (pluggable vs library), email template setup
 - `api-config.md` — OAuth graceful handling, controllers, Swagger decorators, rate limiting, versioning
+
+Errors are **RFC 7807 problem documents** (`application/problem+json`) produced by
+the global `AllExceptionsFilter`; the catalog message is the stable problem
+`title` and per-request specifics go in `AppError`'s `detail`. New error codes
+need a row in `apps/docs/docs/errors.md` — see `nestjs-architecture.md`.
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens, OAuth for MCP clients
 
@@ -146,7 +151,7 @@ Split into two independently versioned packages that share a mirrored component 
 
 ```
 packages/config           → used by all apps and packages (tsconfig extends)
-packages/shared           → used by api, frontend, api-client
+packages/shared           → used by api, frontend, api-client, backend/core (wire types)
 packages/backend/core     → used by api, other backend packages
 packages/backend/ddd      → used by api (depends on backend/core)
 packages/backend/email    → used by api

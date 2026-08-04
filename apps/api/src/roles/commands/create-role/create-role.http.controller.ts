@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Post, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -30,9 +31,10 @@ export class CreateRoleHttpController {
   @RequireScopes('roles:write')
   @ApiOperation({ summary: 'Create role' })
   @ApiResponse({ status: 201, type: RoleResponseDto })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 409,
-    description: 'ROLE_002: A role with this name already exists',
+    description: 'A role with this name already exists',
+    code: 'ROLE_002',
   })
   async create(@Body() body: CreateRoleRequest): Promise<RoleResponseDto> {
     const roleId = await this.commandBus.execute<CreateRoleCommand, AggregateID>(

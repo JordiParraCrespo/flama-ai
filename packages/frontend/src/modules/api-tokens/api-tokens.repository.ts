@@ -1,7 +1,7 @@
 import { ApiTokensApi } from '@flama/api-client';
 import type { CreateApiTokenDto, PermissionGroup, Scope } from '@flama/shared';
 import { injectable } from 'inversify';
-import { AppError } from '../core/errors';
+import { AppError, withAppError } from '../core/errors';
 import { ApiTokenEntity, type CreatedApiToken, type CurrentCredential } from './api-token.entity';
 import { ApiTokensErrors } from './api-tokens.errors';
 
@@ -40,13 +40,17 @@ function toDate(value: string | null | undefined): Date | null {
 @injectable()
 export class ApiTokensRepository {
   async findAll(): Promise<ApiTokenEntity[]> {
-    const result = await ApiTokensApi.findAll();
+    const result = await withAppError(ApiTokensErrors.FETCH_LIST_FAILED, () =>
+      ApiTokensApi.findAll(),
+    );
     if (!result) throw new AppError(ApiTokensErrors.FETCH_LIST_FAILED);
     return result.map((token) => toEntity(token as unknown as ApiTokenResponse));
   }
 
   async create(dto: CreateApiTokenDto): Promise<CreatedApiToken> {
-    const result = await ApiTokensApi.create(dto as never);
+    const result = await withAppError(ApiTokensErrors.CREATE_FAILED, () =>
+      ApiTokensApi.create(dto as never),
+    );
     if (!result) throw new AppError(ApiTokensErrors.CREATE_FAILED);
 
     const created = result as unknown as ApiTokenResponse & { token: string };
@@ -54,7 +58,7 @@ export class ApiTokensRepository {
   }
 
   async revoke(id: string): Promise<void> {
-    await ApiTokensApi.revoke(id);
+    await withAppError(ApiTokensErrors.REVOKE_FAILED, () => ApiTokensApi.revoke(id));
   }
 
   /**
@@ -65,7 +69,9 @@ export class ApiTokensRepository {
     groups: PermissionGroup[];
     grantable: Scope[];
   }> {
-    const result = await ApiTokensApi.permissions();
+    const result = await withAppError(ApiTokensErrors.FETCH_PERMISSIONS_FAILED, () =>
+      ApiTokensApi.permissions(),
+    );
     if (!result) throw new AppError(ApiTokensErrors.FETCH_PERMISSIONS_FAILED);
 
     return {
@@ -75,7 +81,9 @@ export class ApiTokensRepository {
   }
 
   async currentCredential(): Promise<CurrentCredential> {
-    const result = await ApiTokensApi.current();
+    const result = await withAppError(ApiTokensErrors.FETCH_CREDENTIAL_FAILED, () =>
+      ApiTokensApi.current(),
+    );
     if (!result) throw new AppError(ApiTokensErrors.FETCH_CREDENTIAL_FAILED);
 
     return {

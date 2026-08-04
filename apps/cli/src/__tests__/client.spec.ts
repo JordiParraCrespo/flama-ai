@@ -97,12 +97,51 @@ describe('error translation', () => {
     expect(error.exitCode).toBe(ExitCode.FAILURE);
   });
 
-  it('joins the array of messages a validation error returns', async () => {
+  it('joins the array of messages a legacy validation error returns', async () => {
     const error = (await failing(400, {
       message: ['name is required', 'scopes is required'],
     }).catch((e) => e)) as CliError;
 
     expect(error.message).toContain('name is required; scopes is required');
+  });
+
+  it('reports a problem document by its detail and code', async () => {
+    const error = (await failing(404, {
+      type: 'https://flama.dev/errors#token_001',
+      title: 'Token not found',
+      status: 404,
+      detail: 'No token with id abc',
+      code: 'TOKEN_001',
+    }).catch((e) => e)) as CliError;
+
+    expect(error.exitCode).toBe(ExitCode.NOT_FOUND);
+    expect(error.message).toBe('TOKEN_001: No token with id abc');
+  });
+
+  it('falls back to the problem title when there is no detail', async () => {
+    const error = (await failing(403, {
+      type: 'about:blank',
+      title: 'Forbidden',
+      status: 403,
+    }).catch((e) => e)) as CliError;
+
+    expect(error.message).toBe('Forbidden');
+  });
+
+  it('spells out which fields a validation problem rejected', async () => {
+    const error = (await failing(400, {
+      type: 'https://flama.dev/errors#validation_failed',
+      title: 'Validation failed',
+      status: 400,
+      detail: 'The request body did not match the expected schema.',
+      code: 'VALIDATION_FAILED',
+      invalidParams: [
+        { name: 'name', reason: 'Required' },
+        { name: 'scopes.0', reason: 'Invalid scope' },
+      ],
+    }).catch((e) => e)) as CliError;
+
+    expect(error.message).toContain('name: Required; scopes.0: Invalid scope');
   });
 
   it('reports an unreachable API distinctly from an API that said no', async () => {

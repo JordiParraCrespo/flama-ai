@@ -123,15 +123,28 @@ Events use `@nestjs/event-emitter`. The email processor (`WorkerHost`) routes jo
 
 ## Error catalog
 
-| Code       | Message                        | HTTP |
-| ---------- | ------------------------------ | ---- |
-| `AUTH_001` | Email already in use           | 409  |
-| `AUTH_002` | Invalid credentials            | 401  |
-| `AUTH_003` | Invalid or expired reset token | 400  |
-| `AUTH_004` | Access denied                  | 401  |
-| `USER_001` | User not found                 | 404  |
+Each module declares its errors in `domain/<module>.errors.ts` and throws them
+as `AppError` from `@flama/backend-core`. The global `AllExceptionsFilter`
+renders every one as an **RFC 7807 problem document** served as
+`application/problem+json` — see the [error reference](../errors.md) for the
+full catalog and the response shape.
 
-All errors use `AppError` from `@flama/backend-core` for consistent structured responses.
+```typescript
+// domain/user.errors.ts — the catalog message is the problem *title*
+export const UserErrors = {
+  NOT_FOUND: { code: "USER_001", message: "User not found", httpStatus: 404 },
+} as const satisfies Record<string, ErrorDefinition>;
+
+// a handler — what varies per request is the problem *detail*
+throw new AppError(UserErrors.NOT_FOUND, { detail: `No user with id ${id}` });
+```
+
+Document the failure on the endpoint so it reaches the OpenAPI document and the
+generated client:
+
+```typescript
+@ApiProblemResponse({ status: 404, description: 'User not found', code: 'USER_001' })
+```
 
 ## Health checks
 

@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
         'architecture/analytics',
       ],
     },
+    'errors',
     {
       type: 'category',
       label: 'CLI & MCP',
