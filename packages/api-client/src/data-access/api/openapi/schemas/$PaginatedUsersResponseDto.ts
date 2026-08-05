@@ -2,20 +2,17 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export const $PermissionCatalogResponseDto = {
+export const $PaginatedUsersResponseDto = {
     properties: {
-        groups: {
+        data: {
             type: 'array',
             contains: {
-                type: 'PermissionGroupDto',
+                type: 'UserResponseDto',
             },
             isRequired: true,
         },
-        grantable: {
-            type: 'array',
-            contains: {
-                type: 'Enum',
-            },
+        meta: {
+            type: 'PaginationMetaDto',
             isRequired: true,
         },
     },

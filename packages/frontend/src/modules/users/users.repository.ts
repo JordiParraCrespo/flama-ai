@@ -1,4 +1,4 @@
-import { UsersApi } from '@flama/api-client';
+import { type UserResponseDto, UsersApi } from '@flama/api-client';
 import type { Role, UpdateUserDto } from '@flama/shared';
 import { injectable } from 'inversify';
 import { AppError } from '../core/errors';
@@ -6,22 +6,13 @@ import { MapApiError } from '../core/map-api-error.decorator';
 import { UserEntity } from './user.entity';
 import { UsersErrors } from './users.errors';
 
-function toEntity(data: {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}): UserEntity {
+function toEntity(data: UserResponseDto): UserEntity {
   return new UserEntity(
     data.id,
     data.email,
     data.firstName,
     data.lastName,
-    data.role as Role,
+    data.role,
     data.isActive,
     new Date(data.createdAt),
     new Date(data.updatedAt),
@@ -35,7 +26,7 @@ export class UsersRepository {
     page?: number,
     limit?: number,
     search?: string,
-    role?: 'admin' | 'user',
+    role?: Role,
   ): Promise<{
     data: UserEntity[];
     meta: { total: number; page: number; limit: number; totalPages: number };

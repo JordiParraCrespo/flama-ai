@@ -18,7 +18,7 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:prod": "docker compose -f docker/docker-compose.prod.yml up -d",
-    "generate:openapi": "pnpm exec nest build && OPENAPI_GENERATION=true node dist/generate-openapi.js",
+    "generate:openapi": "pnpm --filter @flama/api generate:openapi",
     "generate:api-client": "pnpm generate:openapi && pnpm --filter @flama/api-client generate",
     "changeset": "changeset",
     "version-packages": "changeset version",

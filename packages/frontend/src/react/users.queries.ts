@@ -1,6 +1,6 @@
 'use client';
 
-import type { UpdateUserDto } from '@flama/shared';
+import type { Role, UpdateUserDto } from '@flama/shared';
 import {
   type UseMutationOptions,
   type UseQueryOptions,
@@ -15,7 +15,7 @@ export interface UsersListParams {
   page?: number;
   limit?: number;
   search?: string;
-  role?: 'admin' | 'user';
+  role?: Role;
 }
 
 /**

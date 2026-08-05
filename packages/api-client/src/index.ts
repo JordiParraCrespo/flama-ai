@@ -29,10 +29,16 @@ export type { InvitationResponseDto } from './common/models/InvitationResponseDt
 export type { InviteMemberRequest } from './common/models/InviteMemberRequest';
 export type { MemberResponseDto } from './common/models/MemberResponseDto';
 export type { OrganizationResponseDto } from './common/models/OrganizationResponseDto';
+export type { PaginatedUsersResponseDto } from './common/models/PaginatedUsersResponseDto';
+export type { PaginationMetaDto } from './common/models/PaginationMetaDto';
 export type { PermissionCatalogResponseDto } from './common/models/PermissionCatalogResponseDto';
+export type { PermissionGroupDto } from './common/models/PermissionGroupDto';
 export type { ProblemDetailsDto } from './common/models/ProblemDetailsDto';
 export type { RevenueMetricsResponseDto } from './common/models/RevenueMetricsResponseDto';
 export type { RoleResponseDto } from './common/models/RoleResponseDto';
+export type { ScopeLevelDto } from './common/models/ScopeLevelDto';
+export type { ScopeLevelsDto } from './common/models/ScopeLevelsDto';
+export type { ScopePolicyDto } from './common/models/ScopePolicyDto';
 export type { SetUserPasswordRequest } from './common/models/SetUserPasswordRequest';
 export type { SetUserRoleRequest } from './common/models/SetUserRoleRequest';
 export type { SlugAvailabilityResponseDto } from './common/models/SlugAvailabilityResponseDto';
