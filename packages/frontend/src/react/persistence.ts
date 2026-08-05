@@ -1,6 +1,6 @@
 'use client';
 
-import type { Query } from '@tanstack/query-core';
+import type { Query, QueryClient } from '@tanstack/query-core';
 import { apiTokensKeys } from './api-tokens.queries';
 import { authKeys } from './auth.queries';
 
@@ -19,6 +19,8 @@ export const QUERY_PERSIST_MAX_AGE = 24 * 60 * 60 * 1000;
  */
 export const QUERY_PERSIST_GC_TIME = QUERY_PERSIST_MAX_AGE;
 
+let nonPersistedFeatures: ReadonlySet<string> | undefined;
+
 /**
  * Features whose queries never leave memory.
  *
@@ -29,11 +31,16 @@ export const QUERY_PERSIST_GC_TIME = QUERY_PERSIST_MAX_AGE;
  * - `apiTokens` — credential metadata (token prefixes, scopes, the permission
  *   catalog). Cheap to refetch, and not something to leave sitting in
  *   localStorage or AsyncStorage, neither of which is encrypted at rest.
+ *
+ * Built on first use rather than at module scope: `auth.queries` imports this
+ * module for {@link reconcileCacheOwner}, so reading `authKeys` while this
+ * module is still evaluating would hit the temporal dead zone whenever the
+ * cycle is entered from that side.
  */
-const NON_PERSISTED_FEATURES: ReadonlySet<string> = new Set([
-  authKeys.all[0],
-  apiTokensKeys.all[0],
-]);
+function getNonPersistedFeatures(): ReadonlySet<string> {
+  nonPersistedFeatures ??= new Set([authKeys.all[0], apiTokensKeys.all[0]]);
+  return nonPersistedFeatures;
+}
 
 /**
  * Whether a query may be written to storage.
@@ -47,7 +54,42 @@ export function shouldDehydrateQuery(query: Query): boolean {
   if (query.state.status !== 'success') return false;
 
   const [feature] = query.queryKey;
-  return typeof feature === 'string' && !NON_PERSISTED_FEATURES.has(feature);
+  return typeof feature === 'string' && !getNonPersistedFeatures().has(feature);
+}
+
+/**
+ * Records which user a persisted cache belongs to. Persisted like any other
+ * successful query, so it travels with the cache it describes.
+ */
+export const cacheOwnerKey = ['cacheOwner'] as const;
+
+/**
+ * Drops a restored cache that doesn't belong to the user who is signed in now.
+ *
+ * A persisted cache outlives its session: it survives an expired or
+ * server-revoked session, and a tab closed right after logout can beat the
+ * persister's throttled write to storage. Without this, the next boot hydrates
+ * the previous user's `users`/`organizations` entries, and the next person on
+ * that browser or device sees them flash before the refetch lands.
+ *
+ * So on every session restore the restored cache is reconciled against the
+ * signed-in user: same user, keep it; anyone else — including nobody, and
+ * including a cache with no owner recorded — throw the non-`auth` entries away.
+ * `auth` is spared because the session query driving this call is one of them.
+ *
+ * Called from `useSessionRestore`'s `queryFn`, i.e. before the query resolves
+ * and before either app's gate renders anything, so no component ever observes
+ * another user's data.
+ */
+export function reconcileCacheOwner(queryClient: QueryClient, ownerId: string | null): void {
+  const previousOwnerId = queryClient.getQueryData<string>(cacheOwnerKey) ?? null;
+  if (ownerId !== null && previousOwnerId === ownerId) return;
+
+  queryClient.removeQueries({
+    predicate: (query) => query.queryKey[0] !== authKeys.all[0],
+  });
+
+  if (ownerId !== null) queryClient.setQueryData(cacheOwnerKey, ownerId);
 }
 
 /**

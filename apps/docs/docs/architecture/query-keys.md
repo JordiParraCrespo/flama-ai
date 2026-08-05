@@ -189,7 +189,32 @@ What that policy encodes:
     fetch would replay a failure the user has already moved past.
 
 Adding a feature whose data shouldn't outlive the session? Add its namespace to
-`NON_PERSISTED_FEATURES` in `packages/frontend/src/react/persistence.ts`.
+the non-persisted set in `packages/frontend/src/react/persistence.ts`.
 
-Logging out clears everything: `useLogout` calls `queryClient.clear()`, and the
-persister writes the emptied cache straight back to storage.
+## Whose cache is it?
+
+Logging out clears everything — `useLogout` calls `queryClient.clear()` and the
+persister writes the emptied cache back to storage — but a persisted cache can
+still outlive the session it was written under: the session expires, an admin
+revokes it, or the tab closes in the second before the persister's throttled
+write lands. On a shared browser or device the next person would then see the
+previous user's data hydrate before the refetch replaces it.
+
+So the cache records who it belongs to. `useSessionRestore` calls
+`reconcileCacheOwner()` inside its `queryFn` — before the query resolves, and
+therefore before either app's gate renders anything:
+
+```typescript
+const userId = await app.auth.restoreSession(); // the signed-in user's id, or null
+reconcileCacheOwner(queryClient, userId);
+```
+
+- Same user as the recorded owner → the cache is kept.
+- Anyone else, **nobody** (no session), or **no owner recorded** (a cache
+  written before the marker existed) → every non-`auth` query is removed and the
+  new owner is recorded. `auth` is spared because the session query driving the
+  call is one of them.
+
+The owner marker is an ordinary query (`cacheOwnerKey`), so it is dehydrated and
+restored alongside the cache it describes, and `queryClient.clear()` on logout
+takes it with everything else.

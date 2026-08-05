@@ -34,10 +34,12 @@ export { FlamaProvider, useFlamaApp } from './context';
 export { useAuthState } from './hooks';
 export { organizationsKeys, useOrganizations } from './organizations.queries';
 export {
+  cacheOwnerKey,
   createQueryPersistOptions,
   defaultQueryClientOptions,
   QUERY_PERSIST_GC_TIME,
   QUERY_PERSIST_MAX_AGE,
+  reconcileCacheOwner,
   shouldDehydrateQuery,
 } from './persistence';
 export {

@@ -4,9 +4,11 @@ import { apiTokensKeys } from '../api-tokens.queries';
 import { authKeys } from '../auth.queries';
 import { organizationsKeys } from '../organizations.queries';
 import {
+  cacheOwnerKey,
   createQueryPersistOptions,
   QUERY_PERSIST_GC_TIME,
   QUERY_PERSIST_MAX_AGE,
+  reconcileCacheOwner,
   shouldDehydrateQuery,
 } from '../persistence';
 import { usersKeys } from '../users.queries';
@@ -58,5 +60,74 @@ describe('createQueryPersistOptions', () => {
   it('keeps queries alive at least as long as they are persisted', () => {
     // A query collected before it is written would persist nothing.
     expect(QUERY_PERSIST_GC_TIME).toBeGreaterThanOrEqual(QUERY_PERSIST_MAX_AGE);
+  });
+});
+
+describe('reconcileCacheOwner', () => {
+  /** A restored cache: one user-scoped entry, one auth entry, plus an owner. */
+  function restoredCache(ownerId: string | null) {
+    const client = new QueryClient();
+    client.setQueryData(usersKeys.me(), { id: ownerId, name: 'Previous' });
+    client.setQueryData(organizationsKeys.list(), [{ id: 'org-1' }]);
+    client.setQueryData(authKeys.session(), ownerId);
+    if (ownerId) client.setQueryData(cacheOwnerKey, ownerId);
+    return client;
+  }
+
+  it('keeps a cache that belongs to the signed-in user', () => {
+    const client = restoredCache('user-1');
+
+    reconcileCacheOwner(client, 'user-1');
+
+    expect(client.getQueryData(usersKeys.me())).toEqual({
+      id: 'user-1',
+      name: 'Previous',
+    });
+    expect(client.getQueryData(organizationsKeys.list())).toEqual([{ id: 'org-1' }]);
+  });
+
+  it('drops a cache belonging to a different user', () => {
+    const client = restoredCache('user-1');
+
+    reconcileCacheOwner(client, 'user-2');
+
+    expect(client.getQueryData(usersKeys.me())).toBeUndefined();
+    expect(client.getQueryData(organizationsKeys.list())).toBeUndefined();
+    expect(client.getQueryData(cacheOwnerKey)).toBe('user-2');
+  });
+
+  it('drops a cache when the session is gone', () => {
+    const client = restoredCache('user-1');
+
+    reconcileCacheOwner(client, null);
+
+    expect(client.getQueryData(usersKeys.me())).toBeUndefined();
+    expect(client.getQueryData(organizationsKeys.list())).toBeUndefined();
+    expect(client.getQueryData(cacheOwnerKey)).toBeUndefined();
+  });
+
+  it('drops a cache with no recorded owner — it may predate the marker', () => {
+    const client = restoredCache(null);
+    client.setQueryData(usersKeys.me(), { id: 'user-1' });
+
+    reconcileCacheOwner(client, 'user-2');
+
+    expect(client.getQueryData(usersKeys.me())).toBeUndefined();
+    expect(client.getQueryData(cacheOwnerKey)).toBe('user-2');
+  });
+
+  it('spares auth queries, which carry the in-flight session restore', () => {
+    const client = restoredCache('user-1');
+
+    reconcileCacheOwner(client, 'user-2');
+
+    expect(client.getQueryData(authKeys.session())).toBe('user-1');
+  });
+
+  it('persists the owner marker alongside the cache it describes', () => {
+    const client = restoredCache('user-1');
+    const owner = client.getQueryCache().find({ queryKey: cacheOwnerKey });
+
+    expect(owner && shouldDehydrateQuery(owner)).toBe(true);
   });
 });

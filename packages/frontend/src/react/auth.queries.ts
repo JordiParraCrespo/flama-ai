@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-query';
 import type { SocialProvider } from '../modules/auth/auth.client';
 import { useFlamaApp } from './context';
+import { reconcileCacheOwner } from './persistence';
 import { profileQueryKey } from './users.queries';
 
 /**
@@ -23,13 +24,23 @@ export const authKeys = {
 };
 
 export function useSessionRestore(
-  options?: Omit<UseQueryOptions<void, Error>, 'queryKey' | 'queryFn'>,
+  options?: Omit<UseQueryOptions<string | null, Error>, 'queryKey' | 'queryFn'>,
 ) {
   const app = useFlamaApp();
+  const queryClient = useQueryClient();
 
   return useQuery({
     queryKey: authKeys.session(),
-    queryFn: () => app.auth.restoreSession(),
+    queryFn: async () => {
+      const userId = await app.auth.restoreSession();
+
+      // A persisted cache can outlive the session it was written under, so
+      // check it still belongs to whoever is signed in now — before this
+      // resolves and either app's gate renders anything from it.
+      reconcileCacheOwner(queryClient, userId);
+
+      return userId;
+    },
     // Retry transient failures on startup. `restoreSession()` only rejects when
     // the session lookup itself fails (network/server error) — a genuinely
     // unauthenticated user resolves successfully, so retries never fire for
