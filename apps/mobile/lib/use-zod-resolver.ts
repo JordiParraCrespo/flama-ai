@@ -6,9 +6,9 @@ import { useTranslation } from 'react-i18next';
 import type { input, output, ParseParams, ZodType } from 'zod';
 
 /**
- * `zodResolver` wired to the active locale, so a schema from `@flama/shared`
- * reports its failures in the user's language instead of the English strings
- * the API shares with it.
+ * `zodResolver` wired to the active locale. The schemas in `@flama/shared` state
+ * no messages of their own, so every failure is resolved from its issue code
+ * into the user's language.
  */
 export function useZodResolver<TSchema extends ZodType>(
   schema: TSchema,
