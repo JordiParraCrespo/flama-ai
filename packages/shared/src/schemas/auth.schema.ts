@@ -1,29 +1,36 @@
 import { z } from 'zod';
 
+/**
+ * Auth DTOs. These carry no failure messages on purpose: an explicit message
+ * wins over any error map Zod is handed, which would pin every consumer to
+ * English. The apps translate from the issue code instead — see
+ * `createZodErrorMap` in `@flama/frontend/validation`.
+ */
+
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email(),
+  password: z.string().min(8),
 });
 
 export const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email(),
 });
 
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Token is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  token: z.string().min(1),
+  password: z.string().min(8),
 });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
 });
 
 export type LoginDto = z.infer<typeof loginSchema>;

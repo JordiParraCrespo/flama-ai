@@ -11,6 +11,8 @@ Expo (React Native) app using expo-router.
   `global.css`, `nativewind-env.d.ts`
 - UI primitives from `@flama/design-system-mobile`
 - **i18next** for i18n (translations from `@flama/translations`)
+- **React Hook Form** + `zodResolver` for forms (`Controller` per field — the
+  DOM-ref `register()` path does not work in React Native)
 - **expo-secure-store** for secure token storage
 
 ## Layout

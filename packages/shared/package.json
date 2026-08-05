@@ -17,6 +17,12 @@
       "require": "./dist/schemas/index.js",
       "default": "./dist/schemas/index.js"
     },
+    "./schemas/auth": {
+      "types": "./dist/schemas/auth.schema.d.ts",
+      "import": "./dist/schemas/auth.schema.js",
+      "require": "./dist/schemas/auth.schema.js",
+      "default": "./dist/schemas/auth.schema.js"
+    },
     "./types": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/types/index.js",

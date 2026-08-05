@@ -11,6 +11,7 @@ Vite SPA (React) built to static assets, served by nginx in Docker.
 - **TanStack Query** for server state
 - **Tailwind CSS v4** + **shadcn/ui** (from `@flama/design-system-web`)
 - **react-i18next** for i18n (translations from `@flama/translations`)
+- **React Hook Form** + `zodResolver` for forms
 - Config via Vite env vars (`import.meta.env`, `VITE_`-prefixed)
 
 ## Layout

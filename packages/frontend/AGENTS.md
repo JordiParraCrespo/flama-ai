@@ -19,6 +19,7 @@ src/
 │   └── core/         # cross-module primitives
 ├── di/               # InversifyJS container, tokens, bindings
 ├── react/            # React bindings/hooks (useInjection, providers)
+├── validation/       # Zod error map bridging schemas to translated messages
 └── index.ts
 ```
 

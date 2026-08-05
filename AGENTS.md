@@ -191,4 +191,5 @@ pnpm changeset          # Create a changeset for versioning
 - Keep pluggable service pattern: abstract class → concrete implementations → factory in module
 - New API endpoints need `@RequireScopes` or they are unreachable by API tokens and MCP clients
 - New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
-- `apps/web` imports only _types_ from `@flama/shared`; its CJS build is not tree-shakeable by Rollup, so fetch runtime data (like the permission catalog) from the API
+- `apps/web` must not import runtime values from the `@flama/shared` **root**: its CJS build is not tree-shakeable by Rollup, so the whole graph (CASL, the scope catalog) lands in the bundle. Import a narrow subpath instead — `@flama/shared/schemas/auth` pulls in nothing but Zod — or fetch the data from the API, as the permission catalog does. Workspace `dist` folders sit outside `node_modules`, so anything newly imported this way needs adding to `optimizeDeps.include` in `apps/web/vite.config.ts` for dev
+- Forms in `apps/web` and `apps/mobile` use **React Hook Form** with `zodResolver` over the `@flama/shared` schemas; wire the resolver through each app's `useZodResolver` so validation messages stay translated
