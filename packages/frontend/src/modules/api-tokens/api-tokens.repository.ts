@@ -1,7 +1,8 @@
 import { ApiTokensApi } from '@flama/api-client';
 import type { CreateApiTokenDto, PermissionGroup, Scope } from '@flama/shared';
 import { injectable } from 'inversify';
-import { AppError, withAppError } from '../core/errors';
+import { AppError } from '../core/errors';
+import { MapApiError } from '../core/map-api-error.decorator';
 import { ApiTokenEntity, type CreatedApiToken, type CurrentCredential } from './api-token.entity';
 import { ApiTokensErrors } from './api-tokens.errors';
 
@@ -39,39 +40,37 @@ function toDate(value: string | null | undefined): Date | null {
 
 @injectable()
 export class ApiTokensRepository {
+  @MapApiError(ApiTokensErrors.FETCH_LIST_FAILED)
   async findAll(): Promise<ApiTokenEntity[]> {
-    const result = await withAppError(ApiTokensErrors.FETCH_LIST_FAILED, () =>
-      ApiTokensApi.findAll(),
-    );
+    const result = await ApiTokensApi.findAll();
     if (!result) throw new AppError(ApiTokensErrors.FETCH_LIST_FAILED);
     return result.map((token) => toEntity(token as unknown as ApiTokenResponse));
   }
 
+  @MapApiError(ApiTokensErrors.CREATE_FAILED)
   async create(dto: CreateApiTokenDto): Promise<CreatedApiToken> {
-    const result = await withAppError(ApiTokensErrors.CREATE_FAILED, () =>
-      ApiTokensApi.create(dto as never),
-    );
+    const result = await ApiTokensApi.create(dto as never);
     if (!result) throw new AppError(ApiTokensErrors.CREATE_FAILED);
 
     const created = result as unknown as ApiTokenResponse & { token: string };
     return { token: toEntity(created), secret: created.token };
   }
 
+  @MapApiError(ApiTokensErrors.REVOKE_FAILED)
   async revoke(id: string): Promise<void> {
-    await withAppError(ApiTokensErrors.REVOKE_FAILED, () => ApiTokensApi.revoke(id));
+    await ApiTokensApi.revoke(id);
   }
 
   /**
    * The permission catalog plus the subset the caller may grant. Only the
    * server can answer the second part — it depends on the caller's roles.
    */
+  @MapApiError(ApiTokensErrors.FETCH_PERMISSIONS_FAILED)
   async permissions(): Promise<{
     groups: PermissionGroup[];
     grantable: Scope[];
   }> {
-    const result = await withAppError(ApiTokensErrors.FETCH_PERMISSIONS_FAILED, () =>
-      ApiTokensApi.permissions(),
-    );
+    const result = await ApiTokensApi.permissions();
     if (!result) throw new AppError(ApiTokensErrors.FETCH_PERMISSIONS_FAILED);
 
     return {
@@ -80,10 +79,9 @@ export class ApiTokensRepository {
     };
   }
 
+  @MapApiError(ApiTokensErrors.FETCH_CREDENTIAL_FAILED)
   async currentCredential(): Promise<CurrentCredential> {
-    const result = await withAppError(ApiTokensErrors.FETCH_CREDENTIAL_FAILED, () =>
-      ApiTokensApi.current(),
-    );
+    const result = await ApiTokensApi.current();
     if (!result) throw new AppError(ApiTokensErrors.FETCH_CREDENTIAL_FAILED);
 
     return {

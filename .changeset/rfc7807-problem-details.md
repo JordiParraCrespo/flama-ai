@@ -32,6 +32,6 @@ the ad-hoc `{ statusCode, code, message }` body.
 The `ProblemDetails` wire type lives in `@flama/shared`, replacing the unused
 `ApiErrorResponse`. The CLI and MCP clients
 read problem documents (still understanding the old body shape), `@flama/frontend`
-exposes `toAppError`/`withAppError` so screens can show the server's `detail`
-and per-field errors, and `ApiProblemResponse` puts the schema in the OpenAPI
-document and the generated client.
+exposes `toAppError` and the `@MapApiError` method decorator so screens can show
+the server's `detail` and per-field errors, and `ApiProblemResponse` puts the
+schema in the OpenAPI document and the generated client.
