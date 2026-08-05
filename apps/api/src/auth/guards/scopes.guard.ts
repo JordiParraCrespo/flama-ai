@@ -62,9 +62,12 @@ export class ScopesGuard implements CanActivate {
 
     const missing = missingScopes(scopeContext.scopes, required);
     if (missing.length > 0) {
-      throw new AppError({
-        ...ApiTokenErrors.INSUFFICIENT_SCOPE,
-        message: `${ApiTokenErrors.INSUFFICIENT_SCOPE.message}: ${missing.join(', ')}`,
+      // Which scopes are missing varies per request, so it belongs in the
+      // problem's `detail` (and as an extension a client can act on), never in
+      // the catalog message that titles the problem type.
+      throw new AppError(ApiTokenErrors.INSUFFICIENT_SCOPE, {
+        detail: `This credential is missing: ${missing.join(', ')}`,
+        extensions: { missingScopes: missing },
       });
     }
   }

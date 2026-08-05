@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Body, Controller, Post, UseGuards, Version } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -22,13 +23,15 @@ export class CreateCheckoutHttpController {
     summary: 'Create a Stripe Checkout session for a subscription',
   })
   @ApiResponse({ status: 201, type: BillingSessionResponseDto })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 409,
-    description: 'BILLING_006: This user already has an active subscription',
+    description: 'This user already has an active subscription',
+    code: 'BILLING_006',
   })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 503,
-    description: 'BILLING_001: Billing is not configured',
+    description: 'Billing is not configured',
+    code: 'BILLING_001',
   })
   async checkout(
     @CurrentUser('id') userId: string,

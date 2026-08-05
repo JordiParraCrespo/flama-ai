@@ -1,4 +1,24 @@
-export { AppError, type ErrorDefinition } from './errors/app.error';
+export {
+  ApiProblemResponse,
+  type ApiProblemResponseOptions,
+} from './decorators/api-problem-response.decorator';
+export { InvalidParamDto, ProblemDetailsDto } from './dtos/problem-details.dto';
+export {
+  AppError,
+  type AppErrorOptions,
+  type ErrorDefinition,
+} from './errors/app.error';
+export {
+  buildProblemDetails,
+  DEFAULT_ERROR_TYPE_BASE_URL,
+  DEFAULT_PROBLEM_TYPE,
+  type InvalidParam,
+  isProblemDetails,
+  PROBLEM_JSON_CONTENT_TYPE,
+  type ProblemDetails,
+  problemTypeFor,
+  titleForStatus,
+} from './errors/problem-details';
 export { AllExceptionsFilter } from './filters/all-exceptions.filter';
 export { RequestContextInterceptor } from './interceptors/request-context.interceptor';
 export type { Mapper } from './interfaces/mapper.interface';

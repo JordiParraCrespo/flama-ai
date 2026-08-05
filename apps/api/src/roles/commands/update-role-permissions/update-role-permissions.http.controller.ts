@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Param, ParseUUIDPipe, Put, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -30,7 +31,7 @@ export class UpdateRolePermissionsHttpController {
   @RequireScopes('roles:write')
   @ApiOperation({ summary: "Replace a role's permission set" })
   @ApiResponse({ status: 200, type: RoleResponseDto })
-  @ApiResponse({ status: 404, description: 'ROLE_001: Role not found' })
+  @ApiProblemResponse({ status: 404, description: 'Role not found', code: 'ROLE_001' })
   async updatePermissions(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateRolePermissionsRequest,

@@ -26,8 +26,8 @@ export class BillingApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                409: `BILLING_006: This user already has an active subscription`,
-                503: `BILLING_001: Billing is not configured`,
+                409: `BILLING_006 — This user already has an active subscription`,
+                503: `BILLING_001 — Billing is not configured`,
             },
         });
     }
@@ -46,7 +46,7 @@ export class BillingApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `BILLING_002: No billing customer exists for this user`,
+                404: `BILLING_002 — No billing customer exists for this user`,
             },
         });
     }

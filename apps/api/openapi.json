@@ -106,7 +106,14 @@
             }
           },
           "404": {
-            "description": "USER_001: User not found"
+            "description": "USER_001 — User not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -151,7 +158,14 @@
             }
           },
           "404": {
-            "description": "USER_001: User not found"
+            "description": "USER_001 — User not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -179,7 +193,14 @@
             "description": ""
           },
           "404": {
-            "description": "USER_001: User not found"
+            "description": "USER_001 — User not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -271,10 +292,24 @@
             }
           },
           "403": {
-            "description": "TOKEN_002: requested scopes exceed the caller’s own permissions; TOKEN_008: not a member of a requested organization"
+            "description": "TOKEN_002 / TOKEN_008 — Requested scopes exceed the caller’s own permissions, or the caller is not a member of a requested organization",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "409": {
-            "description": "TOKEN_009: active token limit reached"
+            "description": "TOKEN_009 — Active token limit reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -331,7 +366,14 @@
             "description": "Token revoked"
           },
           "404": {
-            "description": "TOKEN_001: token not found"
+            "description": "TOKEN_001 — Token not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -413,7 +455,14 @@
             }
           },
           "409": {
-            "description": "ROLE_002: A role with this name already exists"
+            "description": "ROLE_002 — A role with this name already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -450,7 +499,14 @@
             }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -495,7 +551,14 @@
             }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -523,10 +586,24 @@
             "description": ""
           },
           "403": {
-            "description": "ROLE_003: System roles cannot be deleted"
+            "description": "ROLE_003 — System roles cannot be deleted",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -573,7 +650,14 @@
             }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -658,7 +742,14 @@
             }
           },
           "404": {
-            "description": "USER_001 / ROLE_001: User or role not found"
+            "description": "USER_001 / ROLE_001 — User or role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2572,10 +2663,24 @@
             }
           },
           "409": {
-            "description": "BILLING_006: This user already has an active subscription"
+            "description": "BILLING_006 — This user already has an active subscription",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "503": {
-            "description": "BILLING_001: Billing is not configured"
+            "description": "BILLING_001 — Billing is not configured",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2613,7 +2718,14 @@
             }
           },
           "404": {
-            "description": "BILLING_002: No billing customer exists for this user"
+            "description": "BILLING_002 — No billing customer exists for this user",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2783,6 +2895,74 @@
           "createdAt",
           "updatedAt"
         ]
+      },
+      "InvalidParamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "email",
+            "description": "Dotted path to the offending field"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Invalid email",
+            "description": "Why the value was rejected"
+          }
+        },
+        "required": ["name", "reason"]
+      },
+      "ProblemDetailsDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "https://flama.dev/errors#user_001",
+            "description": "URI reference identifying the problem type. `about:blank` when the status code says everything."
+          },
+          "title": {
+            "type": "string",
+            "example": "User not found",
+            "description": "Short summary, stable per problem type"
+          },
+          "status": {
+            "type": "number",
+            "example": 404,
+            "description": "HTTP status code"
+          },
+          "detail": {
+            "type": "string",
+            "example": "No user with id 3f1c…",
+            "description": "Explanation specific to this occurrence"
+          },
+          "instance": {
+            "type": "string",
+            "example": "/api/v1/users/3f1c",
+            "description": "URI reference of the specific occurrence — the request path"
+          },
+          "code": {
+            "type": "string",
+            "example": "USER_001",
+            "description": "Machine-readable catalog code"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Correlation id of the request, for log lookups"
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z",
+            "description": "When it happened"
+          },
+          "invalidParams": {
+            "description": "Per-field validation failures",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvalidParamDto"
+            }
+          }
+        },
+        "required": ["type", "title", "status"]
       },
       "UpdateUserRequest": {
         "type": "object",

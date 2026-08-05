@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Body, Controller, Param, ParseUUIDPipe, Put, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -29,9 +30,10 @@ export class AssignUserRolesHttpController {
   @RequireScopes('roles:write')
   @ApiOperation({ summary: "Replace a user's assigned roles" })
   @ApiResponse({ status: 200, type: [RoleResponseDto] })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 404,
-    description: 'USER_001 / ROLE_001: User or role not found',
+    description: 'User or role not found',
+    code: ['USER_001', 'ROLE_001'],
   })
   async assign(
     @Param('userId', ParseUUIDPipe) userId: string,

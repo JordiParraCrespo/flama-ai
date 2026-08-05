@@ -8,6 +8,9 @@ const schema = z.object({
   betterAuthUrl: z.string().url().default('http://localhost:3001'),
   frontendUrl: z.string().url().default('http://localhost:3000'),
   mobileScheme: z.string().default('flama'),
+  // Base of the RFC 7807 `type` URIs in error responses. Point it at wherever
+  // this deployment documents its error catalog.
+  errorTypeBaseUrl: z.string().url().default('https://flama.dev/errors'),
 });
 
 export const appConfig = registerAs('app', () => {
@@ -18,5 +21,6 @@ export const appConfig = registerAs('app', () => {
     betterAuthUrl: process.env.BETTER_AUTH_URL,
     frontendUrl: process.env.FRONTEND_URL,
     mobileScheme: process.env.MOBILE_SCHEME,
+    errorTypeBaseUrl: process.env.ERROR_TYPE_BASE_URL,
   });
 });

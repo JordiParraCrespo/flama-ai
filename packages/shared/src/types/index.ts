@@ -20,8 +20,10 @@ export interface PaginatedResponse<T> {
   };
 }
 
-export interface ApiErrorResponse {
-  statusCode: number;
-  message: string;
-  error?: string;
-}
+export {
+  DEFAULT_PROBLEM_TYPE,
+  type InvalidParam,
+  isProblemDetails,
+  PROBLEM_JSON_CONTENT_TYPE,
+  type ProblemDetails,
+} from './problem-details';

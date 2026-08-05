@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Body, Controller, Post, UseGuards, Version } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -20,9 +21,10 @@ export class CreatePortalHttpController {
   @RequireScopes('billing:write')
   @ApiOperation({ summary: 'Open a Stripe Customer Portal session' })
   @ApiResponse({ status: 201, type: BillingSessionResponseDto })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 404,
-    description: 'BILLING_002: No billing customer exists for this user',
+    description: 'No billing customer exists for this user',
+    code: 'BILLING_002',
   })
   async portal(
     @CurrentUser('id') userId: string,

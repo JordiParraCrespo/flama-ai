@@ -106,21 +106,43 @@ specific implementation in consumer code. (Library packages like
 `@flama/backend-core` and `@flama/backend-ddd` export building blocks instead —
 see `backend-packages.md`.)
 
-## Structured errors
+## Structured errors (RFC 7807)
 
-Use `AppError` from `@flama/backend-core` with an error catalog per module in
-`domain/<module>.errors.ts`:
+Every error response is a **problem document** (`application/problem+json`,
+[RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807)) produced by the
+global `AllExceptionsFilter`. Use `AppError` from `@flama/backend-core` with an
+error catalog per module in `domain/<module>.errors.ts`:
 
 ```typescript
 import { AppError } from "@flama/backend-core";
 import { UserErrors } from "../../domain/user.errors";
 
-throw new AppError(UserErrors.NOT_FOUND);
+throw new AppError(UserErrors.NOT_FOUND, {
+  detail: `No user with id ${id}`, // specific to THIS request
+  extensions: { userId: id }, // extra members on the problem document
+});
 ```
 
-Each error has a code (e.g. `AUTH_001`, `USER_001`), message, and HTTP status.
-Domain exceptions thrown by `@flama/backend-ddd` (e.g. `ArgumentInvalidException`)
-are also surfaced through the global `AllExceptionsFilter`.
+**Title vs detail.** The catalog `message` becomes the problem `title` and must
+stay stable per error type — never interpolate request data into it
+(`{...UserErrors.NOT_FOUND, message: \`…: ${id}\`}`is the anti-pattern this
+replaced). Anything that varies per occurrence goes in`detail`, and anything a
+client should act on programmatically goes in `extensions`.
+
+Each catalog entry has a code (e.g. `USER_001`), message and HTTP status; the
+code becomes both the `code` member and the problem `type` URI
+(`https://flama.dev/errors#user_001`, base configurable via
+`ERROR_TYPE_BASE_URL`). Domain exceptions from `@flama/backend-ddd` (e.g.
+`ArgumentInvalidException`, `NotFoundException`) carry their own `httpStatus`
+and surface through the same filter. Validation failures list every rejected
+field in `invalidParams`. 5xx responses never echo the underlying message —
+only a correlation id.
+
+Document each failure on the controller so it reaches the OpenAPI document:
+
+```typescript
+@ApiProblemResponse({ status: 404, description: 'User not found', code: 'USER_001' })
+```
 
 ## Event-driven async processing
 

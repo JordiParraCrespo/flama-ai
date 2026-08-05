@@ -24,11 +24,13 @@ export type { CreateWorkspaceRequest } from './common/models/CreateWorkspaceRequ
 export type { CurrencyMrrDto } from './common/models/CurrencyMrrDto';
 export type { CurrentCredentialResponseDto } from './common/models/CurrentCredentialResponseDto';
 export type { FullOrganizationResponseDto } from './common/models/FullOrganizationResponseDto';
+export type { InvalidParamDto } from './common/models/InvalidParamDto';
 export type { InvitationResponseDto } from './common/models/InvitationResponseDto';
 export type { InviteMemberRequest } from './common/models/InviteMemberRequest';
 export type { MemberResponseDto } from './common/models/MemberResponseDto';
 export type { OrganizationResponseDto } from './common/models/OrganizationResponseDto';
 export type { PermissionCatalogResponseDto } from './common/models/PermissionCatalogResponseDto';
+export type { ProblemDetailsDto } from './common/models/ProblemDetailsDto';
 export type { RevenueMetricsResponseDto } from './common/models/RevenueMetricsResponseDto';
 export type { RoleResponseDto } from './common/models/RoleResponseDto';
 export type { SetUserPasswordRequest } from './common/models/SetUserPasswordRequest';

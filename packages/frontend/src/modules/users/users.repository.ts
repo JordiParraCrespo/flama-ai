@@ -1,7 +1,7 @@
 import { UsersApi } from '@flama/api-client';
 import type { Role, UpdateUserDto } from '@flama/shared';
 import { injectable } from 'inversify';
-import { AppError } from '../core/errors';
+import { AppError, withAppError } from '../core/errors';
 import { UserEntity } from './user.entity';
 import { UsersErrors } from './users.errors';
 
@@ -38,7 +38,9 @@ export class UsersRepository {
     data: UserEntity[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
-    const result = await UsersApi.findAll(search, role, limit, page);
+    const result = await withAppError(UsersErrors.FETCH_LIST_FAILED, () =>
+      UsersApi.findAll(search, role, limit, page),
+    );
     if (!result) throw new AppError(UsersErrors.FETCH_LIST_FAILED);
     return {
       data: result.data.map(toEntity),
@@ -47,24 +49,24 @@ export class UsersRepository {
   }
 
   async me(): Promise<UserEntity> {
-    const data = await UsersApi.me();
+    const data = await withAppError(UsersErrors.FETCH_FAILED, () => UsersApi.me());
     if (!data) throw new AppError(UsersErrors.FETCH_FAILED);
     return toEntity(data);
   }
 
   async findById(id: string): Promise<UserEntity> {
-    const data = await UsersApi.findOne(id);
+    const data = await withAppError(UsersErrors.FETCH_FAILED, () => UsersApi.findOne(id));
     if (!data) throw new AppError(UsersErrors.FETCH_FAILED);
     return toEntity(data);
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
-    const data = await UsersApi.update(id, dto);
+    const data = await withAppError(UsersErrors.UPDATE_FAILED, () => UsersApi.update(id, dto));
     if (!data) throw new AppError(UsersErrors.UPDATE_FAILED);
     return toEntity(data);
   }
 
   async delete(id: string): Promise<void> {
-    await UsersApi.remove(id);
+    await withAppError(UsersErrors.DELETE_FAILED, () => UsersApi.remove(id));
   }
 }

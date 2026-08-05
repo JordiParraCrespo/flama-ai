@@ -1,16 +1,10 @@
-import type { Scope } from '@flama/shared';
-
-/** Shape of the API's structured error body (`AllExceptionsFilter`). */
-interface ApiErrorBody {
-  code?: string;
-  message?: string;
-  correlationId?: string;
-}
+import { isProblemDetails, type ProblemDetails, type Scope } from '@flama/shared';
 
 /**
  * An API call that failed. Carries the HTTP status and the API's error code so
  * tools can turn it into a message an agent can act on rather than a stack
- * trace.
+ * trace. The full RFC 7807 problem document is kept on `problem` for tools
+ * that want the field-level detail.
  */
 export class FlamaApiError extends Error {
   constructor(
@@ -18,9 +12,15 @@ export class FlamaApiError extends Error {
     readonly code: string | undefined,
     message: string,
     readonly correlationId?: string,
+    readonly problem?: ProblemDetails,
   ) {
     super(message);
     this.name = 'FlamaApiError';
+  }
+
+  /** Field-level validation failures, when the API reported any. */
+  get invalidParams(): ProblemDetails['invalidParams'] {
+    return this.problem?.invalidParams;
   }
 
   /** Whether the call failed because the credential is missing a permission. */
@@ -113,7 +113,7 @@ export class FlamaClient {
         method,
         headers: {
           authorization: `Bearer ${this.token}`,
-          accept: 'application/json',
+          accept: 'application/json, application/problem+json',
           ...(body === undefined ? {} : { 'content-type': 'application/json' }),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
@@ -126,13 +126,7 @@ export class FlamaClient {
       const payload = text ? safeParse(text) : undefined;
 
       if (!response.ok) {
-        const error = (payload ?? {}) as ApiErrorBody;
-        throw new FlamaApiError(
-          response.status,
-          error.code,
-          error.message ?? `${method} ${path} failed with ${response.status}`,
-          error.correlationId,
-        );
+        throw toApiError(response.status, payload, method, path);
       }
 
       return payload as T;
@@ -152,6 +146,40 @@ export class FlamaClient {
       clearTimeout(timeout);
     }
   }
+}
+
+/**
+ * Turns a failed response body into a {@link FlamaApiError}.
+ *
+ * The API answers with an RFC 7807 problem document, whose `detail` explains
+ * this occurrence and whose `title` names the problem type. Anything else —
+ * a proxy's plain-text 502, an older deployment's `{ message }` body — falls
+ * back to whatever text is there.
+ */
+function toApiError(status: number, payload: unknown, method: string, path: string): FlamaApiError {
+  const fallback = `${method} ${path} failed with ${status}`;
+
+  if (isProblemDetails(payload)) {
+    const problem = payload as ProblemDetails;
+    const message = [problem.detail ?? problem.title ?? fallback, describeInvalidParams(problem)]
+      .filter(Boolean)
+      .join(' ');
+    return new FlamaApiError(status, problem.code, message, problem.correlationId, problem);
+  }
+
+  const legacy = (payload ?? {}) as {
+    code?: string;
+    message?: string;
+    correlationId?: string;
+  };
+  return new FlamaApiError(status, legacy.code, legacy.message ?? fallback, legacy.correlationId);
+}
+
+/** Renders `invalidParams` inline so an agent can fix the call without a second round-trip. */
+function describeInvalidParams(problem: ProblemDetails): string {
+  if (!problem.invalidParams?.length) return '';
+  const fields = problem.invalidParams.map((param) => `${param.name}: ${param.reason}`);
+  return `(${fields.join('; ')})`;
 }
 
 function safeParse(text: string): unknown {

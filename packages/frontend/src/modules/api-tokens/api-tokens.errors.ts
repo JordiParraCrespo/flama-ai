@@ -17,4 +17,8 @@ export const ApiTokensErrors = {
     code: 'TOKENS_CLIENT_004',
     message: 'Failed to load the current credential',
   },
+  REVOKE_FAILED: {
+    code: 'TOKENS_CLIENT_005',
+    message: 'Failed to revoke the API token',
+  },
 } as const satisfies Record<string, ErrorDefinition>;
