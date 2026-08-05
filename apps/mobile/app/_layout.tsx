@@ -11,7 +11,7 @@ import { Text } from '@flama/design-system-mobile/text';
 import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend/react';
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, vars } from 'nativewind';
@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
 import { ScreenViewTracker } from '../lib/analytics';
 import { app } from '../lib/flama';
-import { queryClient } from '../lib/query';
+import { persistOptions, queryClient } from '../lib/query';
 import { NAV_THEME } from '../lib/theme';
 
 export default function RootLayout() {
@@ -29,7 +29,7 @@ export default function RootLayout() {
   const isDark = colorScheme === 'dark';
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <FlamaProvider app={app}>
         <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
           <View
@@ -43,7 +43,7 @@ export default function RootLayout() {
           </View>
         </ThemeProvider>
       </FlamaProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 

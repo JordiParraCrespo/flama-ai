@@ -12,6 +12,8 @@ Expo (React Native) app using expo-router.
 - UI primitives from `@flama/design-system-mobile`
 - **i18next** for i18n (translations from `@flama/translations`)
 - **expo-secure-store** for secure token storage
+- **TanStack Query** for server state, persisted to `AsyncStorage` (policy from
+  `@flama/frontend/react`, wired in `lib/query.ts`)
 
 ## Layout
 

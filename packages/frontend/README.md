@@ -20,7 +20,9 @@ presentation  → framework-agnostic view models / query hooks
   bound by each app.
 - **State**: Zustand _vanilla_ stores, shared across web and mobile.
 - **Server state**: TanStack Query (`@tanstack/query-core`), exposed as React
-  hooks under `./react`.
+  hooks under `./react`. `./react` also exports the shared cache-persistence
+  policy (`defaultQueryClientOptions`, `createQueryPersistOptions`,
+  `shouldDehydrateQuery`) that both apps feed to `PersistQueryClientProvider`.
 - **Auth**: `better-auth`.
 
 ## Exports

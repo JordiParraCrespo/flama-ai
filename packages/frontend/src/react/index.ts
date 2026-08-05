@@ -34,6 +34,13 @@ export { FlamaProvider, useFlamaApp } from './context';
 export { useAuthState } from './hooks';
 export { organizationsKeys, useOrganizations } from './organizations.queries';
 export {
+  createQueryPersistOptions,
+  defaultQueryClientOptions,
+  QUERY_PERSIST_GC_TIME,
+  QUERY_PERSIST_MAX_AGE,
+  shouldDehydrateQuery,
+} from './persistence';
+export {
   profileQueryKey,
   useDeleteUser,
   useProfile,
