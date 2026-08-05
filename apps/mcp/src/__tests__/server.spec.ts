@@ -1,6 +1,6 @@
 import type { Scope } from '@flama/shared';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
+import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { FlamaApiError, type FlamaClient } from '../client';
@@ -9,13 +9,16 @@ import { ALL_TOOLS, allowedTools, defineTool, type ToolDefinition, unmetScopes }
 
 const client = {} as FlamaClient;
 
+/** The revision this server is built for; pinned so a test never silently drops to the legacy era. */
+const MODERN = '2026-07-28';
+
 const tool = (name: string, requiredScopes: Scope[], handler = vi.fn()) =>
   defineTool({
     name,
     title: name,
     description: `${name} — exercised by the server tests`,
     requiredScopes,
-    inputSchema: {},
+    inputSchema: z.object({}),
     handler,
   }) as ToolDefinition;
 
@@ -23,17 +26,37 @@ const tool = (name: string, requiredScopes: Scope[], handler = vi.fn()) =>
  * Connect a real MCP client to the server over an in-memory transport pair, so
  * these tests exercise the protocol surface an agent actually sees rather than
  * the server's internals.
+ *
+ * The era is pinned rather than negotiated: the SDK client still defaults to
+ * the 2025 handshake, and a test that quietly fell back to it would stop
+ * covering the revision this server exists to speak.
  */
-async function connect(scopes: Scope[], tools?: ToolDefinition[]) {
-  const { server, withheld } = createServer({ client, scopes, tools });
+async function connect(scopes: Scope[], tools?: ToolDefinition[], era: string | 'legacy' = MODERN) {
+  const { withheld } = createServer({ client, scopes, tools });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
-  const mcpClient = new Client({ name: 'test', version: '0.0.0' });
-  await Promise.all([mcpClient.connect(clientTransport), server.connect(serverTransport)]);
+  // Served through `serveStdio` rather than `server.connect(...)` because the
+  // entry is what decides the protocol era: connecting a transport by hand only
+  // ever yields the 2025 wire codec. Handing it the in-memory transport gives
+  // the production stdio path with no process to spawn.
+  const handle = serveStdio(() => createServer({ client, scopes, tools }).server, {
+    transport: serverTransport,
+  });
+
+  const mcpClient = new Client(
+    { name: 'test', version: '0.0.0' },
+    {
+      versionNegotiation: { mode: era === 'legacy' ? 'legacy' : { pin: era } },
+    },
+  );
+  await mcpClient.connect(clientTransport);
 
   return {
     mcpClient,
     withheld,
+    async listTools() {
+      return mcpClient.listTools();
+    },
     async listToolNames() {
       const { tools: listed } = await mcpClient.listTools();
       return listed.map((t) => t.name);
@@ -47,7 +70,7 @@ async function connect(scopes: Scope[], tools?: ToolDefinition[]) {
     },
     async close() {
       await mcpClient.close();
-      await server.close();
+      await handle.close();
     },
   };
 }
@@ -62,13 +85,13 @@ describe('tool filtering', () => {
 
   it('lists only the tools a credential covers', async () => {
     const session = await connect(['users:read'], catalog);
-    expect(await session.listToolNames()).toEqual(['read_thing', 'open_thing']);
+    expect(await session.listToolNames()).toEqual(['open_thing', 'read_thing']);
     await session.close();
   });
 
   it('lists write tools for a write credential, and the read ones with them', async () => {
     const session = await connect(['users:write'], catalog);
-    expect(await session.listToolNames()).toEqual(['read_thing', 'write_thing', 'open_thing']);
+    expect(await session.listToolNames()).toEqual(['open_thing', 'read_thing', 'write_thing']);
     await session.close();
   });
 
@@ -90,8 +113,10 @@ describe('tool filtering', () => {
   it('refuses to call a tool that was never offered', async () => {
     const session = await connect(['users:read'], catalog);
 
-    const result = await session.call('write_thing');
-    expect(result.isError).toBe(true);
+    // A withheld tool was never registered, so it is not "a tool that failed" —
+    // it does not exist on this connection, and the SDK answers with a
+    // JSON-RPC error rather than an `isError` result.
+    await expect(session.call('write_thing')).rejects.toThrow(/not found/i);
 
     await session.close();
   });
@@ -105,6 +130,67 @@ describe('tool filtering', () => {
   it('reports only the scopes actually missing', () => {
     const both = tool('both', ['users:read', 'roles:read']);
     expect(unmetScopes(both, ['users:read'])).toEqual(['roles:read']);
+  });
+});
+
+/**
+ * The parts of `2026-07-28` this server has to get right. They are asserted
+ * through a real client because they live on the wire, not in our own types.
+ */
+describe('protocol revision 2026-07-28', () => {
+  it('serves the pinned revision, with no handshake to negotiate it', async () => {
+    const session = await connect(['users:read']);
+    expect(session.mcpClient.getNegotiatedProtocolVersion()).toBe(MODERN);
+    await session.close();
+  });
+
+  it('advertises tools in a deterministic order so clients can cache the list', async () => {
+    const session = await connect(['users:write', 'roles:write', 'admin:write']);
+
+    const first = await session.listToolNames();
+    const second = await session.listToolNames();
+
+    expect(first).toEqual([...first].sort());
+    expect(second).toEqual(first);
+    await session.close();
+  });
+
+  it('marks the tool list cacheable, and private to the credential that asked', async () => {
+    const session = await connect(['users:read']);
+    const listed = (await session.listTools()) as unknown as {
+      ttlMs?: number;
+      cacheScope?: string;
+    };
+
+    expect(listed.ttlMs).toBeGreaterThan(0);
+    // The list is derived from the caller's permissions, so a shared cache must
+    // never hand one user's list to another.
+    expect(listed.cacheScope).toBe('private');
+    await session.close();
+  });
+
+  it('identifies itself in every result, now that there is no handshake to do it once', async () => {
+    const session = await connect(['users:read']);
+    const listed = (await session.listTools()) as unknown as {
+      _meta?: Record<string, { name?: string }>;
+    };
+
+    expect(listed._meta?.['io.modelcontextprotocol/serverInfo']?.name).toBe('flama');
+    await session.close();
+  });
+
+  it('does not claim a tools/list_changed it never sends', async () => {
+    const { server } = createServer({ client, scopes: [] });
+    expect(server.server.getCapabilities?.().tools?.listChanged).toBe(false);
+    await server.close();
+  });
+
+  it('still serves a client that opens with the 2025 handshake', async () => {
+    const session = await connect(['users:read'], undefined, 'legacy');
+
+    expect(session.mcpClient.getNegotiatedProtocolVersion()).not.toBe(MODERN);
+    expect(await session.listToolNames()).toContain('list_users');
+    await session.close();
   });
 });
 
@@ -186,9 +272,17 @@ describe('tool execution', () => {
     await session.close();
   });
 
-  it('wraps a non-object result so structured content stays an object', async () => {
+  it('passes a non-object result through, which 2026-07-28 now allows', async () => {
     const definition = tool('read_thing', ['users:read'], vi.fn().mockResolvedValue([1, 2]));
     const session = await connect(['users:read'], [definition]);
+
+    expect((await session.call('read_thing')).structuredContent).toEqual([1, 2]);
+    await session.close();
+  });
+
+  it('still wraps a non-object result for a 2025-era client, which cannot take one', async () => {
+    const definition = tool('read_thing', ['users:read'], vi.fn().mockResolvedValue([1, 2]));
+    const session = await connect(['users:read'], [definition], 'legacy');
 
     expect((await session.call('read_thing')).structuredContent).toEqual({
       result: [1, 2],
@@ -250,13 +344,13 @@ describe('tool execution', () => {
 });
 
 describe('tool schemas', () => {
-  it('validates arguments through the declared zod shape', () => {
+  it('validates arguments through the declared zod schema', () => {
     const definition = ALL_TOOLS.find((t) => t.name === 'get_user');
     expect(definition).toBeDefined();
 
-    const schema = z.object(definition?.inputSchema ?? {});
-    expect(schema.safeParse({ id: 'not-a-uuid' }).success).toBe(false);
-    expect(schema.safeParse({ id: '3f2504e0-4f89-11d3-9a0c-0305e82c3301' }).success).toBe(true);
+    const schema = definition?.inputSchema;
+    expect(schema?.safeParse({ id: 'not-a-uuid' }).success).toBe(false);
+    expect(schema?.safeParse({ id: '3f2504e0-4f89-11d3-9a0c-0305e82c3301' }).success).toBe(true);
   });
 
   it('rejects a bad argument at the protocol boundary', async () => {
@@ -266,7 +360,7 @@ describe('tool schemas', () => {
       title: 'Needs a uuid',
       description: 'Requires a uuid argument, for schema validation tests.',
       requiredScopes: [],
-      inputSchema: { id: z.string().uuid() },
+      inputSchema: z.object({ id: z.string().uuid() }),
       handler,
     }) as ToolDefinition;
 

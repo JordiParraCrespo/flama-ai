@@ -1,15 +1,19 @@
 # @flama/mcp — Agent Instructions
 
 MCP (Model Context Protocol) server exposing Flama's API to MCP clients over
-**stdio** and **Streamable HTTP**.
+**stdio** and **Streamable HTTP**, speaking protocol revision **`2026-07-28`**.
 
 > Read the root [`CLAUDE.md`](../../CLAUDE.md) first for repo-wide conventions.
 
 ## Stack
 
-- **@modelcontextprotocol/sdk** server, built in `src/server.ts`
+- **@modelcontextprotocol/server** (SDK v2) server, built in `src/server.ts`;
+  the HTTP entry bridges it onto Express with `@modelcontextprotocol/node`
 - Two entrypoints, one server: `src/bin/stdio.ts` (local clients) and
   `src/bin/http.ts` (Streamable HTTP)
+- **Zod 4** here only. The rest of the monorepo is still on Zod 3; the SDK v2
+  requires 4, and `apps/mcp` imports no Zod schemas from `@flama/shared`, so
+  the bump stops at this package
 - Talks to the API over HTTP via `src/client.ts`
 - Access is governed by the **scope catalog** in `@flama/shared`
   (`packages/shared/src/scopes/`)

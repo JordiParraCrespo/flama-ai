@@ -1,7 +1,32 @@
+import { createRequire } from 'node:module';
 import type { Scope } from '@flama/shared';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from '@modelcontextprotocol/server';
 import { FlamaApiError, type FlamaClient } from './client';
 import { ALL_TOOLS, allowedTools, type ToolDefinition, unmetScopes } from './tools';
+
+/**
+ * Version reported to clients in each result's
+ * `io.modelcontextprotocol/serverInfo`.
+ *
+ * Read from `package.json` rather than written out here, so a release bump
+ * cannot leave the number an agent is told out of step with the one shipped.
+ * The relative path resolves the same from `src/` and from the `dist/` build.
+ */
+export const SERVER_VERSION: string = (
+  createRequire(__filename)('../package.json') as { version: string }
+).version;
+
+/**
+ * How long a client may reuse a `tools/list` result before asking again.
+ *
+ * `2026-07-28` made list results cacheable so clients stop re-listing on every
+ * turn. The scope is always `private`: this server's tool list is derived from
+ * the calling credential's permissions, so it is not a response a shared
+ * intermediary may hand to anyone else. The TTL is short because revoking a
+ * role narrows the list immediately — a stale list only ever over-advertises,
+ * and both the handler and the API refuse the call anyway.
+ */
+const DEFAULT_TOOLS_CACHE_TTL_MS = 60_000;
 
 export interface CreateServerOptions {
   client: FlamaClient;
@@ -15,11 +40,13 @@ export interface CreateServerOptions {
   /** Overridable for tests. */
   tools?: readonly ToolDefinition[];
   version?: string;
+  /** `ttlMs` for `tools/list` results. Zero disables client-side caching. */
+  toolsCacheTtlMs?: number;
 }
 
 export interface CreatedServer {
   server: McpServer;
-  /** Tools registered for this credential. */
+  /** Tools registered for this credential, in the order they are advertised. */
   tools: ToolDefinition[];
   /** Tools withheld, with the scopes that would unlock them. */
   withheld: { name: string; missingScopes: readonly Scope[] }[];
@@ -32,16 +59,37 @@ export interface CreatedServer {
  * cannot exercise. The handler still re-checks before calling the API, and the
  * API enforces the same scopes independently — a bug here cannot turn into
  * unauthorized access, only into a missing tool.
+ *
+ * Under `2026-07-28` there is no session to hold this decision, so the server
+ * is built per request from the credential that request carried. That is why
+ * both entrypoints pass a factory rather than a long-lived instance.
  */
 export function createServer(options: CreateServerOptions): CreatedServer {
   const catalog = options.tools ?? ALL_TOOLS;
   const scopes = options.scopes;
-  const tools = allowedTools(catalog, scopes);
+  // Sorted by name because `2026-07-28` asks servers to return `tools/list` in
+  // a deterministic order: clients cache the result, and a list that reshuffles
+  // between calls busts both that cache and the model's prompt cache. Compared
+  // by code unit rather than `localeCompare`, which varies with the locale of
+  // whatever machine the server happens to run on.
+  const tools = allowedTools(catalog, scopes).sort((a, b) => (a.name < b.name ? -1 : 1));
 
   const server = new McpServer(
-    { name: 'flama', version: options.version ?? '0.1.0' },
+    { name: 'flama', version: options.version ?? SERVER_VERSION },
     {
-      capabilities: { tools: {} },
+      // `listChanged: false` is the honest answer: this server's tool list is
+      // fixed for the credential it was built for, and under `2026-07-28` a
+      // client would have to hold a `subscriptions/listen` stream open to hear
+      // about a change we never publish. What does change the list — the owner
+      // gaining or losing a role — is picked up when the client re-lists after
+      // the `ttlMs` below.
+      capabilities: { tools: { listChanged: false } },
+      cacheHints: {
+        'tools/list': {
+          ttlMs: options.toolsCacheTtlMs ?? DEFAULT_TOOLS_CACHE_TTL_MS,
+          cacheScope: 'private',
+        },
+      },
       instructions: [
         'Tools for administering a Flama deployment: users, roles and permissions,',
         'organizations, members, invitations and workspaces.',
@@ -77,8 +125,9 @@ export function createServer(options: CreateServerOptions): CreatedServer {
     );
   }
 
+  const registered = new Set(tools.map((tool) => tool.name));
   const withheld = catalog
-    .filter((tool) => !tools.includes(tool))
+    .filter((tool) => !registered.has(tool.name))
     .map((tool) => ({
       name: tool.name,
       missingScopes: unmetScopes(tool, scopes),
@@ -122,9 +171,12 @@ function toolSuccess(result: unknown) {
   const text = result === undefined ? 'Done.' : JSON.stringify(result, null, 2);
   return {
     content: [{ type: 'text' as const, text }],
-    // Structured output alongside the text, so clients that can consume JSON
-    // do not have to parse the rendering.
-    structuredContent: isRecord(result) ? result : { result: result ?? null },
+    // Structured output alongside the text, so clients that can consume JSON do
+    // not have to parse the rendering. `2026-07-28` widened `structuredContent`
+    // to any JSON value, so a list endpoint's array is passed through as-is;
+    // the SDK's wire codec still wraps it as `{ result: … }` when answering a
+    // 2025-era client, which cannot accept a non-object.
+    structuredContent: (result === undefined ? null : result) as never,
   };
 }
 
@@ -133,8 +185,4 @@ function toolError(message: string) {
     isError: true,
     content: [{ type: 'text' as const, text: message }],
   };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

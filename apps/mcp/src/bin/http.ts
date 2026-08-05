@@ -1,22 +1,59 @@
 #!/usr/bin/env node
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { toNodeHandler } from '@modelcontextprotocol/node';
+import { type AuthInfo, createMcpHandler } from '@modelcontextprotocol/server';
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { FlamaApiError, FlamaClient } from '../client';
+import { type CurrentCredential, FlamaApiError, FlamaClient } from '../client';
 import { loadConfig, type McpConfig } from '../config';
 import { createServer } from '../server';
 
 /**
  * Remote entrypoint: a Streamable HTTP MCP server.
  *
- * Each request carries its own credential — an OAuth 2.1 access token obtained
- * through the consent screen, or a scoped API token — so the server is
- * stateless and one deployment serves every user at their own permission
- * level. A fresh transport and MCP server are built per request from that
- * credential's effective scopes.
+ * `2026-07-28` made the protocol itself stateless — no `initialize` handshake,
+ * no `Mcp-Session-Id`, nothing retained between requests — which is the model
+ * this server already wanted. Each request carries its own credential (an OAuth
+ * 2.1 access token obtained through the consent screen, or a scoped API token),
+ * and `createMcpHandler` builds a server from that credential's effective
+ * scopes for that request alone. One deployment therefore serves every user at
+ * their own permission level, behind a plain round-robin load balancer, with no
+ * shared state to keep in sync.
+ *
+ * Clients still speaking the 2025 revision are served by the handler's legacy
+ * fallback from the same factory, so upgrading the server does not strand them.
  */
 async function main(): Promise<void> {
   const config = loadConfig();
   const app = express();
+
+  const onerror = (error: Error) => console.error(`[flama-mcp] ${error.message}`);
+
+  // One handler for the process; it builds a fresh server per request from the
+  // credential that request authenticated with.
+  const handler = createMcpHandler(
+    (ctx) => {
+      const credential = credentialOf(ctx.authInfo);
+      const token = ctx.authInfo?.token;
+      if (!credential || !token) {
+        // Unreachable: `authenticate` refuses the request before it gets here.
+        throw new Error('Request reached the MCP handler without a verified credential.');
+      }
+
+      const client = new FlamaClient({
+        apiUrl: config.apiUrl,
+        token,
+        timeoutMs: config.timeoutMs,
+      });
+
+      return createServer({
+        client,
+        scopes: credential.effectiveScopes,
+        toolsCacheTtlMs: config.toolsCacheTtlMs,
+      }).server;
+    },
+    { onerror },
+  );
+
+  const serveMcp = toNodeHandler(handler, { onerror });
 
   app.use(express.json({ limit: '1mb' }));
   app.use(originGuard(config));
@@ -25,7 +62,32 @@ async function main(): Promise<void> {
     res.json({ status: 'ok', api: config.apiUrl });
   });
 
-  app.all('/mcp', async (req: Request, res: Response) => {
+  app.all('/mcp', authenticate(config), (req, res) => {
+    // `req.body` is passed explicitly: `express.json()` already drained the
+    // stream, so the adapter must not try to read it again.
+    void serveMcp(req, res, req.body);
+  });
+
+  app.listen(config.port, () => {
+    console.error(`[flama-mcp] listening on :${config.port}, proxying ${config.apiUrl}`);
+  });
+}
+
+/** The credential the API resolved for this token, stashed by `authenticate`. */
+function credentialOf(authInfo: AuthInfo | undefined): CurrentCredential | undefined {
+  return authInfo?.extra?.credential as CurrentCredential | undefined;
+}
+
+/**
+ * Verifies the request's bearer token against the API and attaches the result
+ * as `req.auth`, which the MCP adapter forwards to the handler factory.
+ *
+ * Verification is a call to `/me/credential` rather than local token parsing:
+ * it is the API that decides what a credential currently reaches, so asking it
+ * is what makes a revoked role take effect on the very next request.
+ */
+function authenticate(config: McpConfig) {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const token = bearerToken(req);
 
     if (!token) {
@@ -39,9 +101,9 @@ async function main(): Promise<void> {
       timeoutMs: config.timeoutMs,
     });
 
-    let scopes: Awaited<ReturnType<FlamaClient['currentCredential']>>;
+    let credential: CurrentCredential;
     try {
-      scopes = await client.currentCredential();
+      credential = await client.currentCredential();
     } catch (error) {
       if (error instanceof FlamaApiError && error.isPermissionError) {
         unauthorized(res, config, error.message);
@@ -54,23 +116,24 @@ async function main(): Promise<void> {
       return;
     }
 
-    const { server } = createServer({ client, scopes: scopes.effectiveScopes });
-    // Stateless: no session id, so nothing is retained between requests and the
-    // credential is re-checked every time.
-    const transport = new StreamableHTTPServerTransport({});
+    const auth: AuthInfo = {
+      token,
+      clientId: credential.userId,
+      scopes: credential.effectiveScopes,
+      // Only set when the credential actually expires: an API token minted
+      // without an expiry has none, and inventing one would make it look
+      // revocable at a time nothing enforces.
+      ...(credential.expiresAt
+        ? {
+            expiresAt: Math.floor(new Date(credential.expiresAt).getTime() / 1000),
+          }
+        : {}),
+      extra: { credential },
+    };
 
-    res.on('close', () => {
-      void transport.close();
-      void server.close();
-    });
-
-    await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
-  });
-
-  app.listen(config.port, () => {
-    console.error(`[flama-mcp] listening on :${config.port}, proxying ${config.apiUrl}`);
-  });
+    (req as Request & { auth?: AuthInfo }).auth = auth;
+    next();
+  };
 }
 
 /** `Authorization: Bearer <token>`, or null. */
@@ -113,8 +176,14 @@ function originGuard(config: McpConfig) {
 
     if (config.allowedOrigins.includes(origin)) {
       res.set('Access-Control-Allow-Origin', origin);
-      res.set('Access-Control-Allow-Headers', 'authorization, content-type, mcp-session-id');
-      res.set('Access-Control-Expose-Headers', 'mcp-session-id');
+      // `Mcp-Method` / `Mcp-Name` are required on every `2026-07-28` POST so
+      // gateways can route and meter without parsing the body; a browser client
+      // cannot send them unless they are allowed here. `Mcp-Session-Id` is gone
+      // along with the sessions it identified.
+      res.set(
+        'Access-Control-Allow-Headers',
+        'authorization, content-type, mcp-method, mcp-name, mcp-protocol-version',
+      );
       if (req.method === 'OPTIONS') {
         res.sendStatus(204);
         return;

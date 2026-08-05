@@ -5,7 +5,8 @@ sidebar_position: 3
 # MCP server
 
 `apps/mcp` exposes the API to AI agents over the Model Context Protocol, with
-per-tool permissions.
+per-tool permissions. It speaks protocol revision **`2026-07-28`**, and still
+serves clients that open with the older 2025 handshake.
 
 An agent connected to it only sees the tools its credential may actually use.
 The tool list is filtered from the credential's **effective scopes** — what it
@@ -59,15 +60,25 @@ screen, and comes back with an access token carrying the approved scopes.
 
 The server is stateless — every request re-resolves its credential — so it
 scales horizontally and one deployment serves every user at their own
-permission level.
+permission level. `2026-07-28` made that the protocol's own model: there is no
+`initialize` handshake and no `Mcp-Session-Id`, each request carries its
+protocol version and client identity in `_meta`, and a plain round-robin load
+balancer is enough because there is no session to keep two replicas agreeing
+on.
 
-| Variable                | Default                 | Meaning                                 |
-| ----------------------- | ----------------------- | --------------------------------------- |
-| `FLAMA_API_URL`         | `http://localhost:3001` | Base URL of the Flama API               |
-| `FLAMA_API_TOKEN`       | —                       | Token for the stdio entrypoint          |
-| `PORT`                  | `3005`                  | Port for the HTTP entrypoint            |
-| `FLAMA_TIMEOUT_MS`      | `30000`                 | Per-request timeout against the API     |
-| `FLAMA_ALLOWED_ORIGINS` | _(none)_                | Browser origins allowed to reach `/mcp` |
+| Variable                   | Default                 | Meaning                                  |
+| -------------------------- | ----------------------- | ---------------------------------------- |
+| `FLAMA_API_URL`            | `http://localhost:3001` | Base URL of the Flama API                |
+| `FLAMA_API_TOKEN`          | —                       | Token for the stdio entrypoint           |
+| `PORT`                     | `3005`                  | Port for the HTTP entrypoint             |
+| `FLAMA_TIMEOUT_MS`         | `30000`                 | Per-request timeout against the API      |
+| `FLAMA_TOOLS_CACHE_TTL_MS` | `60000`                 | How long a client may cache `tools/list` |
+| `FLAMA_ALLOWED_ORIGINS`    | _(none)_                | Browser origins allowed to reach `/mcp`  |
+
+`tools/list` results are returned with `ttlMs` and `cacheScope: "private"`, the
+cache fields `2026-07-28` added. The scope is always private: the list is
+derived from the caller's own permissions, so a shared cache must never hand
+one user's list to another. Set the TTL to `0` to switch client caching off.
 
 Requests carrying an `Origin` header from anywhere else are refused, which is
 the DNS-rebinding protection the MCP specification asks for.
@@ -90,7 +101,7 @@ defineTool({
   title: "Archive a project",
   description: "Archive a project. Archived projects stay readable.",
   requiredScopes: ["projects:write"],
-  inputSchema: { id: z.string().uuid() },
+  inputSchema: z.object({ id: z.string().uuid() }),
   annotations: { idempotentHint: true },
   handler: ({ id }, { client }) => client.post(`/projects/${id}/archive`),
 });

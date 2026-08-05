@@ -1,5 +1,5 @@
 import { hasAllScopes, missingScopes, type Scope } from '@flama/shared';
-import type { ZodRawShape, z } from 'zod';
+import type { z } from 'zod';
 import type { FlamaClient } from '../client';
 
 /** What a tool handler is given: the API client, and nothing else. */
@@ -18,7 +18,7 @@ export interface ToolAnnotations {
   idempotentHint?: boolean;
 }
 
-export interface ToolDefinition<Shape extends ZodRawShape = ZodRawShape> {
+export interface ToolDefinition<Schema extends z.ZodObject = z.ZodObject> {
   name: string;
   title: string;
   description: string;
@@ -29,18 +29,21 @@ export interface ToolDefinition<Shape extends ZodRawShape = ZodRawShape> {
    * refused for lack of scope later.
    */
   requiredScopes: Scope[];
-  inputSchema: Shape;
+  /**
+   * A Zod object schema, not a raw shape. `2026-07-28` loosened `inputSchema`
+   * to any JSON Schema 2020-12 document, and the SDK derives it from the
+   * schema's own JSON Schema conversion — so the schema object itself, rather
+   * than a shape the SDK would have to wrap, is what it wants.
+   */
+  inputSchema: Schema;
   annotations?: ToolAnnotations;
-  handler: (
-    args: z.objectOutputType<Shape, z.ZodTypeAny>,
-    context: ToolContext,
-  ) => Promise<unknown>;
+  handler: (args: z.output<Schema>, context: ToolContext) => Promise<unknown>;
 }
 
 /** Helper that keeps each tool's argument types inferred from its schema. */
-export function defineTool<Shape extends ZodRawShape>(
-  definition: ToolDefinition<Shape>,
-): ToolDefinition<Shape> {
+export function defineTool<Schema extends z.ZodObject>(
+  definition: ToolDefinition<Schema>,
+): ToolDefinition<Schema> {
   return definition;
 }
 
