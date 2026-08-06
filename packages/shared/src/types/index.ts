@@ -21,6 +21,11 @@ export interface PaginatedResponse<T> {
 }
 
 export {
+  DEPLOYMENT_CAPABILITIES,
+  type DeploymentCapabilities,
+  type DeploymentCapability,
+} from './deployment-capabilities';
+export {
   DEFAULT_PROBLEM_TYPE,
   type InvalidParam,
   isProblemDetails,

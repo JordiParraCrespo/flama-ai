@@ -8,6 +8,8 @@ import { ApiTokensModule } from '../modules/api-tokens';
 import type { AuthService } from '../modules/auth';
 import { AuthModule } from '../modules/auth';
 import type { IAuthClient } from '../modules/auth/auth.client';
+import type { CapabilitiesService } from '../modules/capabilities';
+import { CapabilitiesModule } from '../modules/capabilities';
 import { createCoreModule } from '../modules/core/core.module';
 import type { IStorageService } from '../modules/core/storage.service';
 import type { OrganizationsService } from '../modules/organizations';
@@ -41,6 +43,7 @@ export class FlamaApp {
     // Feature modules
     container.load(AnalyticsModule);
     container.load(AuthModule);
+    container.load(CapabilitiesModule);
     container.load(UsersModule);
     container.load(ApiTokensModule);
     container.load(OrganizationsModule);
@@ -73,5 +76,9 @@ export class FlamaApp {
 
   get analytics(): AnalyticsService {
     return this.container.get(TOKENS.AnalyticsService);
+  }
+
+  get capabilities(): CapabilitiesService {
+    return this.container.get(TOKENS.CapabilitiesService);
   }
 }

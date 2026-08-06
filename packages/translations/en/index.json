@@ -35,6 +35,7 @@
       "noAccount": "Don't have an account?",
       "signUp": "Sign up",
       "invalidCredentials": "Invalid email or password",
+      "noSocialProviders": "Social sign-in is not configured on this deployment. Set GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET or GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET on the API to enable it.",
       "failedTitle": "Login failed",
       "failedMessage": "Could not sign in."
     },

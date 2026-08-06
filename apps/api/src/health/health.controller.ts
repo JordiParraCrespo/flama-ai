@@ -1,3 +1,5 @@
+import { CapabilitiesService } from '@flama/backend-core';
+import type { DeploymentCapability } from '@flama/shared';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -7,6 +9,7 @@ import {
   MemoryHealthIndicator,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { CapabilitiesResponseDto } from './dtos/capabilities.response.dto';
 import { RedisHealthIndicator } from './redis-health.indicator';
 
 @ApiTags('Health')
@@ -18,6 +21,7 @@ export class HealthController {
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
     private redis: RedisHealthIndicator,
+    private capabilities: CapabilitiesService<DeploymentCapability>,
   ) {}
 
   @Get('health')
@@ -26,6 +30,20 @@ export class HealthController {
   @ApiResponse({ status: 200, description: 'App is alive' })
   check() {
     return this.health.check([() => this.memory.checkHeap('memory_heap', 200 * 1024 * 1024)]);
+  }
+
+  @Get('health/capabilities')
+  @ApiOperation({
+    summary: 'Resolved optional capabilities of this deployment',
+  })
+  @ApiResponse({
+    status: 200,
+    type: CapabilitiesResponseDto,
+    description:
+      'Which optional features (OAuth providers, Stripe, S3, email delivery) this deployment has configured. `false` means not configured, not unhealthy.',
+  })
+  deploymentCapabilities(): CapabilitiesResponseDto {
+    return this.capabilities.snapshot();
   }
 
   @Get('ready')

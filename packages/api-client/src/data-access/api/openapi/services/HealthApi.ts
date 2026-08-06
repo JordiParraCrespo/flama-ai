@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { CapabilitiesResponseDto } from '../../../../common/models/CapabilitiesResponseDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -25,6 +26,17 @@ export class HealthApi {
             errors: {
                 503: `The Health Check is not successful`,
             },
+        });
+    }
+    /**
+     * Resolved optional capabilities of this deployment
+     * @returns CapabilitiesResponseDto Which optional features (OAuth providers, Stripe, S3, email delivery) this deployment has configured. `false` means not configured, not unhealthy.
+     * @throws ApiError
+     */
+    public static deploymentCapabilities(): CancelablePromise<CapabilitiesResponseDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/health/capabilities',
         });
     }
     /**

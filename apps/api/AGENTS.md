@@ -65,10 +65,12 @@ normalize every `auth.api` result through a mapper (see above). See
 ## Config
 
 Config is composed from `registerAs` factories in `src/config/` (`app`,
-`database`, `redis`, `email`, `storage`, `oauth`), loaded in `AppModule` and read
-via `ConfigService`. OAuth/optional-credential config must degrade gracefully
-(`configService.get(...) || 'disabled'`, never `getOrThrow`) so the app boots
-without those env vars — see `api-config.md`. The TypeORM CLI datasource
+`database`, `redis`, `email`, `storage`, `oauth`, `stripe`), loaded in
+`AppModule` and read via `ConfigService`. Optional-credential config (OAuth,
+Stripe, S3, SMTP) uses genuinely optional schema keys (`z.string().optional()`,
+never a sentinel default or `getOrThrow`) so the app boots without those env
+vars; each such feature is declared in `src/capabilities/capabilities.module.ts`
+and surfaced via `GET /health/capabilities` — see `api-config.md`. The TypeORM CLI datasource
 (`src/config/data-source.ts`) and the seed (`src/database/seed.ts`) keep their
 own explicit `entities` arrays: **register every new ORM entity in both**, plus
 the module's `TypeOrmModule.forFeature`.

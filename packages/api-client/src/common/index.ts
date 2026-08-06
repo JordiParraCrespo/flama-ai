@@ -11,6 +11,7 @@ export type { ApiTokenResponseDto } from "./models/ApiTokenResponseDto";
 export type { AssignUserRolesRequest } from "./models/AssignUserRolesRequest";
 export type { BanUserRequest } from "./models/BanUserRequest";
 export type { BillingSessionResponseDto } from "./models/BillingSessionResponseDto";
+export type { CapabilitiesResponseDto } from "./models/CapabilitiesResponseDto";
 export type { CheckSlugRequest } from "./models/CheckSlugRequest";
 export type { CreateApiTokenRequest } from "./models/CreateApiTokenRequest";
 export type { CreateCheckoutRequest } from "./models/CreateCheckoutRequest";
