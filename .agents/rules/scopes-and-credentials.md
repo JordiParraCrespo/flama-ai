@@ -70,7 +70,8 @@ list() {}
 ```
 
 Use `@AllowAnyScope()` only for routes that expose nothing but the caller's own
-identity (currently just `GET /v1/me/credential`).
+identity or data already served to anonymous callers (currently
+`GET /v1/me/credential` and the `GET /health/capabilities` probe).
 
 ## Credential handling
 

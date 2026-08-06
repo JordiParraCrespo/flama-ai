@@ -21,6 +21,7 @@ import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
 import { BillingModule } from './billing/billing.module';
+import { CapabilitiesModule } from './capabilities/capabilities.module';
 import {
   appConfig,
   databaseConfig,
@@ -114,6 +115,7 @@ import { UsersModule } from './users/user.module';
       }),
     }),
     EventEmitterModule.forRoot(),
+    CapabilitiesModule,
     EmailModule.register(),
     StorageModule.register(),
     CacheModule.register(),

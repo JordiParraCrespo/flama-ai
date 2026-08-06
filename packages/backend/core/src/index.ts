@@ -41,4 +41,8 @@ export {
   PaginatedRequest,
   paginationSchema,
 } from './requests/paginated.request';
+export {
+  CapabilitiesService,
+  type CapabilityMap,
+} from './services/capabilities.service';
 export { RequestContextService } from './services/request-context.service';
