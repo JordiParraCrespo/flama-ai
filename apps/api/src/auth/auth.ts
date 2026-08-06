@@ -1,6 +1,7 @@
 import '@flama/env/load';
 import { randomUUID } from 'node:crypto';
 import { expo } from '@better-auth/expo';
+import { organizationSharedOptions, userAdditionalFields } from '@flama/auth';
 import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
 import { Logger } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
@@ -190,22 +191,9 @@ export const auth = betterAuth({
     }),
   },
   user: {
-    additionalFields: {
-      firstName: { type: 'string', required: true, input: true },
-      lastName: { type: 'string', required: true, input: true },
-      role: {
-        type: 'string',
-        required: false,
-        defaultValue: 'user',
-        input: false,
-      },
-      isActive: {
-        type: 'boolean',
-        required: false,
-        defaultValue: true,
-        input: false,
-      },
-    },
+    // Declared in @flama/auth so the web/mobile clients' `inferAdditionalFields`
+    // consume the same schema and cannot drift from the server.
+    additionalFields: userAdditionalFields,
   },
   databaseHooks: {
     user: {
@@ -291,9 +279,10 @@ export const auth = betterAuth({
       creatorRole: 'owner',
       membershipLimit: 100,
       invitationExpiresIn: 60 * 60 * 48,
-      // "Workspaces" are modelled on Better Auth teams.
+      // "Workspaces" are modelled on Better Auth teams. The `enabled` flag is
+      // shared with the clients via @flama/auth so both sides must agree.
       teams: {
-        enabled: true,
+        ...organizationSharedOptions.teams,
         // We provision the default workspace ourselves in the sign-up hook, so
         // let organizations be created without forcing a default team.
         allowRemovingAllTeams: false,

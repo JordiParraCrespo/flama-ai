@@ -39,6 +39,9 @@ importers:
       '@better-auth/expo':
         specifier: ^1.6.25
         version: 1.6.25(@better-auth/core@1.6.25(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.4)(kysely@0.29.4)(nanostores@1.4.1))(better-auth@1.6.25(@opentelemetry/api@1.9.1)(next@15.5.22(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(pg@8.22.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(vitest@3.2.7(@types/debug@4.1.13)(@types/node@26.1.1)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0)))(expo-constants@18.0.13)(expo-linking@8.0.12)(expo-network@8.0.8(expo@54.0.36)(react@19.1.0))(expo-web-browser@15.0.11(expo@54.0.36)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.1.0)))
+      '@flama/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@flama/backend-cache':
         specifier: workspace:*
         version: link:../../packages/backend/cache
@@ -304,6 +307,9 @@ importers:
       '@flama/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@flama/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@flama/design-system-mobile':
         specifier: workspace:*
         version: link:../../packages/design-system/mobile
@@ -582,6 +588,9 @@ importers:
       '@flama/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@flama/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@flama/design-system-web':
         specifier: workspace:*
         version: link:../../packages/design-system/web
@@ -713,6 +722,25 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+
+  packages/auth:
+    dependencies:
+      '@flama/shared':
+        specifier: workspace:*
+        version: link:../shared
+      better-auth:
+        specifier: ^1.6.25
+        version: 1.6.25(@opentelemetry/api@1.9.1)(next@15.5.22(@opentelemetry/api@1.9.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(pg@8.22.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(vitest@3.2.7(@types/debug@4.1.13)(@types/node@26.1.1)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0))
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../config
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/debug@4.1.13)(@types/node@26.1.1)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0)
 
   packages/backend/cache:
     dependencies:
@@ -20254,7 +20282,9 @@ snapshots:
       metro-runtime: 0.84.4
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-colors@0.81.5': {}
 

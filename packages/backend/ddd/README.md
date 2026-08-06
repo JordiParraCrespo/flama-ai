@@ -5,7 +5,7 @@ Domain-Driven Hexagon building blocks for the API. Framework-agnostic — it has
 handling comes from [`oxide.ts`](https://github.com/traverse1984/oxide.ts).
 
 See [`apps/api/ARCHITECTURE.md`](../../../apps/api/ARCHITECTURE.md) for how these
-pieces fit the layer model, and `.claude/rules/nestjs-architecture.md` for usage
+pieces fit the layer model, and `.agents/rules/nestjs-architecture.md` for usage
 rules.
 
 ## What's inside

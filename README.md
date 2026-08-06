@@ -15,6 +15,7 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 | `apps/web-showcase`             | Next.js showcase for the web design system                         |
 | `apps/mobile-showcase`          | Expo showcase for the mobile design system                         |
 | `packages/shared`               | Zod schemas, types, CASL permissions, constants                    |
+| `packages/auth`                 | Shared Better Auth config — user fields, plugins, client helpers   |
 | `packages/frontend`             | Clean architecture, InversifyJS DI, Zustand stores                 |
 | `packages/design-system/web`    | shadcn/ui + Base UI + Tailwind v4 components                       |
 | `packages/design-system/mobile` | NativeWind + rn-primitives React Native components                 |

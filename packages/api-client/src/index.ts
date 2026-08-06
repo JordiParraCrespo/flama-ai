@@ -13,6 +13,7 @@ export type { ApiTokenResponseDto } from './common/models/ApiTokenResponseDto';
 export type { AssignUserRolesRequest } from './common/models/AssignUserRolesRequest';
 export type { BanUserRequest } from './common/models/BanUserRequest';
 export type { BillingSessionResponseDto } from './common/models/BillingSessionResponseDto';
+export type { CapabilitiesResponseDto } from './common/models/CapabilitiesResponseDto';
 export type { CheckSlugRequest } from './common/models/CheckSlugRequest';
 export type { CreateApiTokenRequest } from './common/models/CreateApiTokenRequest';
 export type { CreateCheckoutRequest } from './common/models/CreateCheckoutRequest';

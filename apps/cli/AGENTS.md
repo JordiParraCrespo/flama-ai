@@ -41,7 +41,7 @@ src/
   first-class, script-friendly path.
 - Roles say what a person may do, scopes say what a credential may do on their
   behalf — effective access is the intersection. See
-  `.claude/rules/scopes-and-credentials.md`.
+  `.agents/rules/scopes-and-credentials.md`.
 
 ## Commands
 
