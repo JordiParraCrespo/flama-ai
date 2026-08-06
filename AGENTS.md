@@ -19,6 +19,7 @@ flama/
 │   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
+│   ├── auth/             # Shared Better Auth config + client helpers (@flama/auth)
 │   ├── backend/
 │   │   ├── cache/        # Redis cache abstraction (@flama/backend-cache)
 │   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
@@ -60,7 +61,7 @@ cookbook. Use the `/scaffold-module` skill to generate a compliant module
 skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
 (`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
-Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
+Detailed rules for the backend are in `.agents/rules/` (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
 
 - `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
 - `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
@@ -72,6 +73,7 @@ Errors are **RFC 7807 problem documents** (`application/problem+json`) produced 
 the global `AllExceptionsFilter`; the catalog message is the stable problem
 `title` and per-request specifics go in `AppError`'s `detail`. New error codes
 need a row in `apps/docs/docs/errors.md` — see `nestjs-architecture.md`.
+
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens, OAuth for MCP clients
 
@@ -92,7 +94,7 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 Both are governed by the **scope catalog** in `packages/shared/src/scopes/`.
 Roles say what a person may do; scopes say what a credential may do on their
 behalf, and effective access is the intersection — see
-`.claude/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
+`.agents/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
 
 - `apps/cli` — commander-based; commands in `src/commands/`, shared plumbing in
   `src/lib/` (config profiles, HTTP client, output, prompts). Exit codes are a
@@ -152,6 +154,7 @@ Split into two independently versioned packages that share a mirrored component 
 ```
 packages/config           → used by all apps and packages (tsconfig extends)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
+packages/auth             → used by api, web, mobile (shared Better Auth config)
 packages/backend/core     → used by api, other backend packages
 packages/backend/ddd      → used by api (depends on backend/core)
 packages/backend/email    → used by api

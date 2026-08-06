@@ -4,7 +4,7 @@ Cross-cutting NestJS primitives for the API: error model, exception filter,
 validation/sanitization pipes, request-context plumbing, and pagination request
 helpers. Depends on `@flama/backend-ddd`.
 
-See `.claude/rules/nestjs-architecture.md` and `api-config.md` for how these are
+See `.agents/rules/nestjs-architecture.md` and `api-config.md` for how these are
 wired into the API.
 
 ## What's inside

@@ -3,7 +3,7 @@
 BullMQ job queues plus a Bull Board dashboard for the NestJS API.
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) and
-> [`.claude/rules/backend-packages.md`](../../../.claude/rules/backend-packages.md).
+> [`.agents/rules/backend-packages.md`](../../../.agents/rules/backend-packages.md).
 
 ## Layout
 

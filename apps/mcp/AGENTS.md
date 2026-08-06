@@ -46,7 +46,7 @@ src/
 - New tools go in the matching `src/tools/*.tools.ts` and are added to the
   registry in `src/tools/index.ts`.
 - Adding an API endpoint you want reachable here means declaring its scope on
-  the controller first — see `.claude/rules/scopes-and-credentials.md`.
+  the controller first — see `.agents/rules/scopes-and-credentials.md`.
 
 ## Commands
 
