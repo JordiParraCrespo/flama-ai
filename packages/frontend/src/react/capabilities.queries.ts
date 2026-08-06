@@ -1,6 +1,6 @@
 'use client';
 
-import type { DeploymentCapabilities } from '@flama/shared';
+import type { ClientCapabilities } from '@flama/shared';
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
 import { useFlamaApp } from './context';
 
@@ -13,8 +13,8 @@ export const capabilitiesKeys = {
 };
 
 /**
- * Which optional features the deployment has configured (OAuth providers,
- * Stripe billing, S3 storage, email delivery), from `GET /health/capabilities`.
+ * Which client-facing optional features the deployment has configured (OAuth
+ * providers, Stripe billing), from `GET /health/capabilities`.
  *
  * Use this to hide UI for features this install cannot serve — a social
  * sign-in button for a provider with no credentials is a dead button. The set
@@ -26,8 +26,8 @@ export const capabilitiesKeys = {
  * which says nothing about what is configured — callers must not treat a
  * failed read as "capability missing".
  */
-export function useDeploymentCapabilities<TData = DeploymentCapabilities>(
-  options?: Omit<UseQueryOptions<DeploymentCapabilities, Error, TData>, 'queryKey' | 'queryFn'>,
+export function useDeploymentCapabilities<TData = ClientCapabilities>(
+  options?: Omit<UseQueryOptions<ClientCapabilities, Error, TData>, 'queryKey' | 'queryFn'>,
 ) {
   const app = useFlamaApp();
 

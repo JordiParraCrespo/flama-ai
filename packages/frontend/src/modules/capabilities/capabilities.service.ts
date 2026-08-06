@@ -1,4 +1,4 @@
-import type { DeploymentCapabilities } from '@flama/shared';
+import type { ClientCapabilities } from '@flama/shared';
 import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
 import type { CapabilitiesRepository } from './capabilities.repository';
@@ -10,7 +10,7 @@ export class CapabilitiesService {
     private readonly capabilitiesRepository: CapabilitiesRepository,
   ) {}
 
-  async get(): Promise<DeploymentCapabilities> {
+  async get(): Promise<ClientCapabilities> {
     return this.capabilitiesRepository.get();
   }
 }

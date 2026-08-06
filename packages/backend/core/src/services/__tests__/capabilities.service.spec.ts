@@ -22,6 +22,13 @@ describe('CapabilitiesService', () => {
     expect(service.describe()).toBe('google_oauth=on, github_oauth=off, stripe_billing=off');
   });
 
+  it('pick() narrows the snapshot to the given capabilities only', () => {
+    expect(service.pick(['google_oauth', 'stripe_billing'])).toEqual({
+      google_oauth: true,
+      stripe_billing: false,
+    });
+  });
+
   it('snapshot() returns a copy, not the internal map', () => {
     const snapshot = service.snapshot();
     snapshot.google_oauth = false;

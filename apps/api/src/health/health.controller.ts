@@ -1,5 +1,5 @@
 import { CapabilitiesService } from '@flama/backend-core';
-import type { DeploymentCapability } from '@flama/shared';
+import { CLIENT_CAPABILITIES, type DeploymentCapability } from '@flama/shared';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -9,6 +9,7 @@ import {
   MemoryHealthIndicator,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { AllowAnyScope } from '../auth/decorators/require-scopes.decorator';
 import { CapabilitiesResponseDto } from './dtos/capabilities.response.dto';
 import { RedisHealthIndicator } from './redis-health.indicator';
 
@@ -33,17 +34,23 @@ export class HealthController {
   }
 
   @Get('health/capabilities')
+  // Anonymous callers already get this response (the login page reads it
+  // before any session exists), so a scoped credential may too — without this
+  // the global ScopesGuard fails closed and 403s API-token/OAuth callers.
+  @AllowAnyScope()
   @ApiOperation({
-    summary: 'Resolved optional capabilities of this deployment',
+    summary: 'Client-facing capabilities of this deployment',
   })
   @ApiResponse({
     status: 200,
     type: CapabilitiesResponseDto,
     description:
-      'Which optional features (OAuth providers, Stripe, S3, email delivery) this deployment has configured. `false` means not configured, not unhealthy.',
+      'Which client-relevant optional features (OAuth providers, Stripe billing) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.',
   })
   deploymentCapabilities(): CapabilitiesResponseDto {
-    return this.capabilities.snapshot();
+    // Only the client-facing subset goes over the wire; the full registry
+    // (S3, email transport, …) stays in the startup log and in-process.
+    return this.capabilities.pick(CLIENT_CAPABILITIES);
   }
 
   @Get('ready')

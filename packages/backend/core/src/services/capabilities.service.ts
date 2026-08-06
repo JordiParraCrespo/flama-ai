@@ -30,6 +30,16 @@ export class CapabilitiesService<TCapability extends string = string> {
     return { ...this.capabilities };
   }
 
+  /**
+   * A snapshot narrowed to the given capabilities — for surfaces that must not
+   * expose the whole registry, like the public wire response.
+   */
+  pick<TSubset extends TCapability>(names: readonly TSubset[]): CapabilityMap<TSubset> {
+    return Object.fromEntries(
+      names.map((name) => [name, this.has(name)]),
+    ) as CapabilityMap<TSubset>;
+  }
+
   enabled(): TCapability[] {
     return this.names().filter((name) => this.capabilities[name]);
   }

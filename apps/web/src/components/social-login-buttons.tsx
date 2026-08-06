@@ -16,7 +16,13 @@ import { useTranslation } from 'react-i18next';
 export function SocialLoginButtons({ disabled }: { disabled?: boolean }) {
   const { t } = useTranslation();
   const social = useSocialLogin();
-  const { data: capabilities } = useDeploymentCapabilities();
+  const { data, error } = useDeploymentCapabilities();
+
+  // TanStack Query retains the last successful data after a failed refetch,
+  // so `data` alone can be stale (e.g. read before an operator enabled OAuth
+  // and restarted the API). Trust it only while the latest read succeeded;
+  // any error means "unknown", which falls back to showing every provider.
+  const capabilities = error == null ? data : undefined;
 
   const google = capabilities?.google_oauth ?? true;
   const github = capabilities?.github_oauth ?? true;

@@ -15,13 +15,5 @@ export type CapabilitiesResponseDto = {
      * Stripe billing is configured.
      */
     stripe_billing: boolean;
-    /**
-     * Files are stored in S3 (local disk otherwise).
-     */
-    s3_storage: boolean;
-    /**
-     * A real email transport (SMTP or Resend) is configured, not the console fallback.
-     */
-    email_delivery: boolean;
 };
 

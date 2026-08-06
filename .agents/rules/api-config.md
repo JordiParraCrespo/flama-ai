@@ -25,10 +25,16 @@ without it. Model absence honestly:
 - Declare the feature in `resolveCapabilities()`
   (`src/capabilities/capabilities.module.ts`). The resolved set — currently
   `google_oauth`, `github_oauth`, `stripe_billing`, `s3_storage`,
-  `email_delivery` — is computed once at boot, logged at startup, and served
-  publicly by `GET /health/capabilities`, so a self-hoster curls one URL and
-  sees what the deployment can do, and clients hide UI for capabilities that
-  are off (the web login page only renders configured providers).
+  `email_delivery` — is computed once at boot and logged at startup, so a
+  self-hoster learns what the deployment can do from the log. Only the
+  **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`:
+  the OAuth providers and `stripe_billing`) is served by
+  `GET /health/capabilities`, so clients can hide UI for capabilities that are
+  off (the web login page only renders configured providers). Server-internal
+  capabilities (`s3_storage`, `email_delivery`) never go over the wire — a
+  public endpoint must not describe a deployment's infrastructure beyond what
+  its UI already reveals. Add a capability to `CLIENT_CAPABILITIES` only when
+  a client has a UI decision hanging on it.
 - Feature code that would need a missing key fails fast with a clear domain
   error ("Billing is not configured on this server"), the way
   `StripePaymentGateway` does — never by passing a placeholder downstream.

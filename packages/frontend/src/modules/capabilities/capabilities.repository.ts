@@ -1,19 +1,20 @@
 import { HealthApi } from '@flama/api-client';
-import type { DeploymentCapabilities } from '@flama/shared';
+import type { ClientCapabilities } from '@flama/shared';
 import { injectable } from 'inversify';
 import { AppError } from '../core/errors';
 import { MapApiError } from '../core/map-api-error.decorator';
 import { CapabilitiesErrors } from './capabilities.errors';
 
 /**
- * Reads which optional features the deployment has configured
- * (`GET /health/capabilities`). Public — capabilities gate what the login
- * screen offers, so the read must work before any session exists.
+ * Reads the deployment's client-facing capabilities
+ * (`GET /health/capabilities`) — the subset a client shows or hides UI for.
+ * Public — capabilities gate what the login screen offers, so the read must
+ * work before any session exists.
  */
 @injectable()
 export class CapabilitiesRepository {
   @MapApiError(CapabilitiesErrors.FETCH_FAILED)
-  async get(): Promise<DeploymentCapabilities> {
+  async get(): Promise<ClientCapabilities> {
     const data = await HealthApi.deploymentCapabilities();
     if (!data) throw new AppError(CapabilitiesErrors.FETCH_FAILED);
     return data;

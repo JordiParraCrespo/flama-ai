@@ -18,7 +18,25 @@ export type DeploymentCapability = (typeof DEPLOYMENT_CAPABILITIES)[number];
 
 /**
  * Which optional features a deployment can actually serve. `false` means "not
- * configured on this install", not an outage. Served by
- * `GET /health/capabilities` so clients can hide UI for missing capabilities.
+ * configured on this install", not an outage. The full set stays inside the
+ * API (startup log, feature guards); only the client-facing subset below goes
+ * over the wire.
  */
 export type DeploymentCapabilities = Record<DeploymentCapability, boolean>;
+
+/**
+ * The subset of capabilities clients have a UI decision hanging on — served by
+ * `GET /health/capabilities`. Server-internal capabilities (`s3_storage`,
+ * `email_delivery`) are deliberately not on the wire: no client renders
+ * anything differently for them, and a public endpoint should not describe a
+ * deployment's infrastructure beyond what its UI already reveals.
+ */
+export const CLIENT_CAPABILITIES = [
+  'google_oauth',
+  'github_oauth',
+  'stripe_billing',
+] as const satisfies readonly DeploymentCapability[];
+
+export type ClientCapability = (typeof CLIENT_CAPABILITIES)[number];
+
+export type ClientCapabilities = Record<ClientCapability, boolean>;

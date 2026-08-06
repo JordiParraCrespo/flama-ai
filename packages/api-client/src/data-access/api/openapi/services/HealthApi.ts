@@ -29,8 +29,8 @@ export class HealthApi {
         });
     }
     /**
-     * Resolved optional capabilities of this deployment
-     * @returns CapabilitiesResponseDto Which optional features (OAuth providers, Stripe, S3, email delivery) this deployment has configured. `false` means not configured, not unhealthy.
+     * Client-facing capabilities of this deployment
+     * @returns CapabilitiesResponseDto Which client-relevant optional features (OAuth providers, Stripe billing) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
      * @throws ApiError
      */
     public static deploymentCapabilities(): CancelablePromise<CapabilitiesResponseDto> {
