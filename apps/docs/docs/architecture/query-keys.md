@@ -144,3 +144,77 @@ useMutation({
 - **Don't hardcode the namespace.** `list: () => ['users', 'list']` won't pick
   up a rename of `all`. Spread instead: `[...usersKeys.lists()]`.
 - **Don't share one global key file.** Colocate per feature.
+
+## Cache persistence
+
+The in-memory cache dies with the tab or the process, so both apps also write it
+to storage — `localStorage` on web, `AsyncStorage` on mobile — via TanStack's
+[`PersistQueryClientProvider`](https://tanstack.com/query/latest/docs/framework/react/plugins/persistQueryClient).
+A reload or a cold start renders from the restored cache and refetches in the
+background instead of showing spinners.
+
+The policy is shared by both apps from `@flama/frontend/react` so it can only
+drift in one place:
+
+```typescript
+import { createQueryPersistOptions, defaultQueryClientOptions } from '@flama/frontend/react';
+
+const queryClient = new QueryClient({ defaultOptions: defaultQueryClientOptions(60_000) });
+
+<PersistQueryClientProvider
+  client={queryClient}
+  persistOptions={{ persister, ...createQueryPersistOptions(appVersion) }}
+>
+```
+
+What that policy encodes:
+
+- **`maxAge` of 24h** — older entries are dropped on restore rather than
+  hydrated, so nobody sees week-old data flash on screen.
+- **`gcTime` ≥ `maxAge`** — a query garbage-collected from memory is never
+  written to storage. Leaving `gcTime` at its 5-minute default would silently
+  persist almost nothing, which is why `defaultQueryClientOptions` sets it.
+- **`buster` = app version** — a release that changes a response shape starts
+  from an empty cache instead of hydrating entries the new code misreads.
+- **A per-feature deny-list** (`shouldDehydrateQuery`) — this is where the key
+  convention pays off, since the first segment of every key names the feature:
+  - `auth` is never persisted. The session query is `staleTime: Infinity`, so a
+    restored entry would look fresh forever and `restoreSession()` would never
+    run — the app would render as signed in with no session behind it.
+  - `apiTokens` is never persisted. Token prefixes, scopes and the permission
+    catalog are credential metadata, and neither `localStorage` nor
+    `AsyncStorage` is encrypted at rest. Tokens themselves live in
+    `expo-secure-store` on mobile and never touch the query cache.
+  - Only **successful** queries are written; restoring an error or a pending
+    fetch would replay a failure the user has already moved past.
+
+Adding a feature whose data shouldn't outlive the session? Add its namespace to
+the non-persisted set in `packages/frontend/src/react/persistence.ts`.
+
+## Whose cache is it?
+
+Logging out clears everything — `useLogout` calls `queryClient.clear()` and the
+persister writes the emptied cache back to storage — but a persisted cache can
+still outlive the session it was written under: the session expires, an admin
+revokes it, or the tab closes in the second before the persister's throttled
+write lands. On a shared browser or device the next person would then see the
+previous user's data hydrate before the refetch replaces it.
+
+So the cache records who it belongs to. `useSessionRestore` calls
+`reconcileCacheOwner()` inside its `queryFn` — before the query resolves, and
+therefore before either app's gate renders anything:
+
+```typescript
+const userId = await app.auth.restoreSession(); // the signed-in user's id, or null
+reconcileCacheOwner(queryClient, userId);
+```
+
+- Same user as the recorded owner → the cache is kept.
+- Anyone else, **nobody** (no session), or **no owner recorded** (a cache
+  written before the marker existed) → every non-`auth` query is removed and the
+  new owner is recorded. `auth` is spared because the session query driving the
+  call is one of them.
+
+The owner marker is an ordinary query (`cacheOwnerKey`), so it is dehydrated and
+restored alongside the cache it describes, and `queryClient.clear()` on logout
+takes it with everything else.

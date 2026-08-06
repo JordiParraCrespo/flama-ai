@@ -69,18 +69,24 @@ export class AuthService {
   /**
    * Restores the session on app start by asking the auth client whether a
    * valid session exists, and syncs the `isAuthenticated` store accordingly.
+   *
+   * Returns the restored user's id, or `null` when there is no session. The
+   * caller uses it to decide whether a persisted query cache from an earlier
+   * run still belongs to the person now sitting in front of the app.
    */
-  async restoreSession(): Promise<void> {
+  async restoreSession(): Promise<string | null> {
     const session = await this.authRepository.getSession();
     this.store.setState({ isAuthenticated: Boolean(session) });
+
+    if (!session) return null;
 
     // Re-attach the identity to the analytics client on every app start, but
     // without an event — restoring a session is not a new sign-in, and
     // counting it as one would inflate the metric on every page load.
-    if (session) {
-      this.identify(session.user);
-      await this.captureCompletedSocialLogin();
-    }
+    this.identify(session.user);
+    await this.captureCompletedSocialLogin();
+
+    return session.user.id;
   }
 
   async forgotPassword(email: string): Promise<void> {
