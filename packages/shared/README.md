@@ -30,7 +30,7 @@ import { PAGINATION } from "@flama/shared/constants";
   validation from them and the typed API client is generated to match.
 - Authorization is database-backed dynamic RBAC. `defineAbilitiesFromPermissions`
   builds a CASL ability from a role's stored permissions and is shared by both
-  backend and frontend. See `.claude/rules/rbac-roles.md`.
+  backend and frontend. See `.agents/rules/rbac-roles.md`.
 
 ## Scripts
 

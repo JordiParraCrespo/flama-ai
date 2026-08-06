@@ -61,7 +61,7 @@ cookbook. Use the `/scaffold-module` skill to generate a compliant module
 skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
 (`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
-Detailed rules for the backend are in `.claude/rules/` (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
+Detailed rules for the backend are in `.agents/rules/` (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
 
 - `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
 - `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
@@ -94,7 +94,7 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 Both are governed by the **scope catalog** in `packages/shared/src/scopes/`.
 Roles say what a person may do; scopes say what a credential may do on their
 behalf, and effective access is the intersection — see
-`.claude/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
+`.agents/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
 
 - `apps/cli` — commander-based; commands in `src/commands/`, shared plumbing in
   `src/lib/` (config profiles, HTTP client, output, prompts). Exit codes are a

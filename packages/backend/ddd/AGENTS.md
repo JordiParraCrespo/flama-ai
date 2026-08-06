@@ -4,7 +4,7 @@ Domain-Driven Hexagon building blocks used by `apps/api`. Depends on
 `@flama/backend-core`.
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md), [`apps/api/ARCHITECTURE.md`](../../../apps/api/ARCHITECTURE.md),
-> and [`.claude/rules/nestjs-architecture.md`](../../../.claude/rules/nestjs-architecture.md).
+> and [`.agents/rules/nestjs-architecture.md`](../../../.agents/rules/nestjs-architecture.md).
 
 ## Building blocks
 

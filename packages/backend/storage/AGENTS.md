@@ -3,7 +3,7 @@
 Pluggable file storage (local filesystem or S3) for the NestJS API.
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) and
-> [`.claude/rules/backend-packages.md`](../../../.claude/rules/backend-packages.md).
+> [`.agents/rules/backend-packages.md`](../../../.agents/rules/backend-packages.md).
 
 ## Layout
 
