@@ -59,6 +59,9 @@ import { UsersModule } from './users/user.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         pretty: configService.get('app.nodeEnv') !== 'production',
+        // SQL query lines are emitted at debug; the opt-in is pointless if
+        // the logger's threshold (info by default) swallows them.
+        level: configService.get('database.logQueries') ? 'debug' : undefined,
       }),
     }),
     TypeOrmModule.forRootAsync({

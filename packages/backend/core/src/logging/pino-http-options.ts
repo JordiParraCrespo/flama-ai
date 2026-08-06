@@ -3,6 +3,11 @@ import type { Options } from 'pino-http';
 export interface LoggingOptions {
   /** Render through `pino-pretty` instead of emitting JSON (development only). */
   pretty?: boolean;
+  /**
+   * Minimum level to emit (pino's default is `info`). Raise to `debug` when a
+   * debug-level opt-in (like SQL query logging) must actually reach the sink.
+   */
+  level?: string;
 }
 
 /**
@@ -49,5 +54,6 @@ export function buildPinoHttpOptions(options: LoggingOptions = {}): Options {
       },
     },
     transport: options.pretty ? { target: 'pino-pretty' } : undefined,
+    ...(options.level ? { level: options.level } : {}),
   };
 }

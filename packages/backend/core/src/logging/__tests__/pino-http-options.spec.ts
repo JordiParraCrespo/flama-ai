@@ -65,6 +65,11 @@ describe('buildPinoHttpOptions', () => {
     );
   });
 
+  it('passes the minimum level through, defaulting to pino defaults', () => {
+    expect(buildPinoHttpOptions().level).toBeUndefined();
+    expect(buildPinoHttpOptions({ level: 'debug' }).level).toBe('debug');
+  });
+
   it('only enables pretty transport when asked to', () => {
     expect(buildPinoHttpOptions().transport).toBeUndefined();
     expect(buildPinoHttpOptions({ pretty: true }).transport).toEqual({

@@ -17,10 +17,16 @@ export class TypeOrmQueryLogger implements TypeOrmLogger {
   }
 
   logQueryError(error: string | Error, query: string): void {
-    this.logger.error(
-      { message: 'query failed', query },
-      error instanceof Error ? error.stack : String(error),
-    );
+    // Driver errors repeat bound values in their message and stack (a
+    // unique-violation names the conflicting email, a cast error echoes the
+    // rejected input), so neither is logged — only the SQL text and the
+    // sanitized driver error code. The full error still surfaces through the
+    // exception filter's handling of the failed request.
+    const code =
+      typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code: unknown }).code)
+        : undefined;
+    this.logger.error({ message: 'query failed', query, code });
   }
 
   logQuerySlow(time: number, query: string): void {
