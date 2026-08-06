@@ -1,6 +1,8 @@
 # @flama/mcp
 
 Model Context Protocol server for the Flama API, with per-tool permissions.
+Speaks protocol revision **`2026-07-28`**; clients that still open with the 2025
+`initialize` handshake are served from the same tool registry.
 
 An agent connected to this server only sees the tools its credential may
 actually use. Nothing is hidden by convention: the tool list is filtered from
@@ -52,13 +54,19 @@ which points the client at the API's OAuth metadata; the client then registers
 itself, sends the user through the consent screen, and returns with an access
 token carrying only the scopes the user approved.
 
-| Variable                | Default                 | Meaning                                 |
-| ----------------------- | ----------------------- | --------------------------------------- |
-| `FLAMA_API_URL`         | `http://localhost:3001` | Base URL of the Flama API               |
-| `FLAMA_API_TOKEN`       | —                       | Token for the stdio entrypoint          |
-| `PORT`                  | `3005`                  | Port for the HTTP entrypoint            |
-| `FLAMA_TIMEOUT_MS`      | `30000`                 | Per-request timeout against the API     |
-| `FLAMA_ALLOWED_ORIGINS` | _(none)_                | Browser origins allowed to reach `/mcp` |
+Nothing is retained between requests: `2026-07-28` removed the `initialize`
+handshake and the `Mcp-Session-Id` header, so each request carries its own
+protocol version, client identity and credential, and a server is built for
+that request alone. Replicas need share nothing.
+
+| Variable                   | Default                 | Meaning                                  |
+| -------------------------- | ----------------------- | ---------------------------------------- |
+| `FLAMA_API_URL`            | `http://localhost:3001` | Base URL of the Flama API                |
+| `FLAMA_API_TOKEN`          | —                       | Token for the stdio entrypoint           |
+| `PORT`                     | `3005`                  | Port for the HTTP entrypoint             |
+| `FLAMA_TIMEOUT_MS`         | `30000`                 | Per-request timeout against the API      |
+| `FLAMA_TOOLS_CACHE_TTL_MS` | `60000`                 | How long a client may cache `tools/list` |
+| `FLAMA_ALLOWED_ORIGINS`    | _(none)_                | Browser origins allowed to reach `/mcp`  |
 
 ## Adding a tool
 
@@ -70,7 +78,7 @@ defineTool({
   title: "Archive a project",
   description: "Archive a project. Archived projects stay readable.",
   requiredScopes: ["projects:write"],
-  inputSchema: { id: z.string().uuid() },
+  inputSchema: z.object({ id: z.string().uuid() }),
   annotations: { idempotentHint: true },
   handler: ({ id }, { client }) => client.post(`/projects/${id}/archive`),
 });

@@ -19,7 +19,7 @@ export const $CurrentCredentialResponseDto = {
         grantedScopes: {
             type: 'array',
             contains: {
-                type: 'string',
+                type: 'Enum',
             },
             isRequired: true,
             isNullable: true,
@@ -27,7 +27,7 @@ export const $CurrentCredentialResponseDto = {
         effectiveScopes: {
             type: 'array',
             contains: {
-                type: 'string',
+                type: 'Enum',
             },
             isRequired: true,
         },

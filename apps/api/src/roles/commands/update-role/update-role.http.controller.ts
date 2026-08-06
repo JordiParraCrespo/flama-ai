@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Param, ParseUUIDPipe, Patch, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -30,7 +31,7 @@ export class UpdateRoleHttpController {
   @RequireScopes('roles:write')
   @ApiOperation({ summary: 'Update a role (description and/or permissions)' })
   @ApiResponse({ status: 200, type: RoleResponseDto })
-  @ApiResponse({ status: 404, description: 'ROLE_001: Role not found' })
+  @ApiProblemResponse({ status: 404, description: 'Role not found', code: 'ROLE_001' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateRoleRequest,

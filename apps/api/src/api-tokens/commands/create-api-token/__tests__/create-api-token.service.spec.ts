@@ -89,9 +89,14 @@ describe('CreateApiTokenService', () => {
   it('names the offending scopes so the caller can fix the request', async () => {
     useAbility(READER_PERMISSIONS);
 
+    // The catalog message titles the problem type; the scopes this particular
+    // request over-reached on are the problem's detail (RFC 7807).
     await expect(
       service.execute(command({ scopes: ['users:read', 'roles:write'] })),
-    ).rejects.toThrow(/roles:write/);
+    ).rejects.toMatchObject({
+      detail: expect.stringContaining('roles:write'),
+      extensions: { ungrantableScopes: ['roles:write'] },
+    });
   });
 
   it('allows scopes the creator does hold', async () => {

@@ -48,4 +48,6 @@ container.bind(TOKENS.AuthRepository).to(AuthRepositoryImpl);
 ## Server state
 
 Server state is handled with TanStack Query. Query keys follow a colocated
-**query key factory** pattern — see [React Query Keys](./query-keys.md).
+**query key factory** pattern, and the cache is persisted to `localStorage`
+(web) / `AsyncStorage` (mobile) under a shared policy exported from
+`@flama/frontend/react` — see [React Query Keys](./query-keys.md).

@@ -44,7 +44,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedUsersResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -106,7 +113,14 @@
             }
           },
           "404": {
-            "description": "USER_001: User not found"
+            "description": "USER_001 — User not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -151,7 +165,14 @@
             }
           },
           "404": {
-            "description": "USER_001: User not found"
+            "description": "USER_001 — User not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -179,7 +200,14 @@
             "description": ""
           },
           "404": {
-            "description": "USER_001: User not found"
+            "description": "USER_001 — User not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -271,10 +299,24 @@
             }
           },
           "403": {
-            "description": "TOKEN_002: requested scopes exceed the caller’s own permissions; TOKEN_008: not a member of a requested organization"
+            "description": "TOKEN_002 / TOKEN_008 — Requested scopes exceed the caller’s own permissions, or the caller is not a member of a requested organization",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "409": {
-            "description": "TOKEN_009: active token limit reached"
+            "description": "TOKEN_009 — Active token limit reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -331,7 +373,14 @@
             "description": "Token revoked"
           },
           "404": {
-            "description": "TOKEN_001: token not found"
+            "description": "TOKEN_001 — Token not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -413,7 +462,14 @@
             }
           },
           "409": {
-            "description": "ROLE_002: A role with this name already exists"
+            "description": "ROLE_002 — A role with this name already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -450,7 +506,14 @@
             }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -495,7 +558,14 @@
             }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -523,10 +593,24 @@
             "description": ""
           },
           "403": {
-            "description": "ROLE_003: System roles cannot be deleted"
+            "description": "ROLE_003 — System roles cannot be deleted",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -573,7 +657,14 @@
             }
           },
           "404": {
-            "description": "ROLE_001: Role not found"
+            "description": "ROLE_001 — Role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -658,7 +749,14 @@
             }
           },
           "404": {
-            "description": "USER_001 / ROLE_001: User or role not found"
+            "description": "USER_001 / ROLE_001 — User or role not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2572,10 +2670,24 @@
             }
           },
           "409": {
-            "description": "BILLING_006: This user already has an active subscription"
+            "description": "BILLING_006 — This user already has an active subscription",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "503": {
-            "description": "BILLING_001: Billing is not configured"
+            "description": "BILLING_001 — Billing is not configured",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2613,7 +2725,14 @@
             }
           },
           "404": {
-            "description": "BILLING_002: No billing customer exists for this user"
+            "description": "BILLING_002 — No billing customer exists for this user",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2784,6 +2903,114 @@
           "updatedAt"
         ]
       },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Total matching records, across all pages.",
+            "example": 42
+          },
+          "page": {
+            "type": "number",
+            "description": "1-based page number.",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "Records per page.",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": ["total", "page", "limit", "totalPages"]
+      },
+      "PaginatedUsersResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": ["data", "meta"]
+      },
+      "InvalidParamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "email",
+            "description": "Dotted path to the offending field"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Invalid email",
+            "description": "Why the value was rejected"
+          }
+        },
+        "required": ["name", "reason"]
+      },
+      "ProblemDetailsDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "https://flama.dev/errors#user_001",
+            "description": "URI reference identifying the problem type. `about:blank` when the status code says everything."
+          },
+          "title": {
+            "type": "string",
+            "example": "User not found",
+            "description": "Short summary, stable per problem type"
+          },
+          "status": {
+            "type": "number",
+            "example": 404,
+            "description": "HTTP status code"
+          },
+          "detail": {
+            "type": "string",
+            "example": "No user with id 3f1c…",
+            "description": "Explanation specific to this occurrence"
+          },
+          "instance": {
+            "type": "string",
+            "example": "/api/v1/users/3f1c",
+            "description": "URI reference of the specific occurrence — the request path"
+          },
+          "code": {
+            "type": "string",
+            "example": "USER_001",
+            "description": "Machine-readable catalog code"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Correlation id of the request, for log lookups"
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z",
+            "description": "When it happened"
+          },
+          "invalidParams": {
+            "description": "Per-field validation failures",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvalidParamDto"
+            }
+          }
+        },
+        "required": ["type", "title", "status"]
+      },
       "UpdateUserRequest": {
         "type": "object",
         "properties": {
@@ -2817,18 +3044,62 @@
             "type": "string"
           },
           "grantedScopes": {
+            "type": "array",
             "description": "Scopes the credential carries. Null for a browser session, which is not scope-restricted.",
             "nullable": true,
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "effectiveScopes": {
-            "description": "What the credential can actually do: its scopes intersected with the owner’s current roles.",
             "type": "array",
+            "description": "What the credential can actually do: its scopes intersected with the owner’s current roles.",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "organizationIds": {
@@ -2870,11 +3141,33 @@
             "example": "flama_pat_a1b2c3"
           },
           "scopes": {
+            "type": "array",
             "description": "Granted permissions.",
             "example": ["users:read", "roles:write"],
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "organizationIds": {
@@ -2926,23 +3219,154 @@
           "createdAt"
         ]
       },
+      "ScopePolicyDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "example": "read"
+          },
+          "subject": {
+            "type": "string",
+            "example": "User"
+          }
+        },
+        "required": ["action", "subject"]
+      },
+      "ScopeLevelDto": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "profile:read",
+              "profile:write",
+              "users:read",
+              "users:write",
+              "admin:read",
+              "admin:write",
+              "roles:read",
+              "roles:write",
+              "organizations:read",
+              "organizations:write",
+              "members:read",
+              "members:write",
+              "invitations:read",
+              "invitations:write",
+              "workspaces:read",
+              "workspaces:write",
+              "tokens:read",
+              "tokens:write",
+              "billing:read",
+              "billing:write"
+            ],
+            "example": "users:read"
+          },
+          "label": {
+            "type": "string",
+            "example": "Read"
+          },
+          "description": {
+            "type": "string",
+            "example": "Browse the user directory."
+          },
+          "policies": {
+            "description": "Empty when the level governs the caller’s own account only.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScopePolicyDto"
+            }
+          }
+        },
+        "required": ["scope", "label", "description", "policies"]
+      },
+      "ScopeLevelsDto": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "$ref": "#/components/schemas/ScopeLevelDto"
+          },
+          "write": {
+            "$ref": "#/components/schemas/ScopeLevelDto"
+          }
+        },
+        "required": ["read", "write"]
+      },
+      "PermissionGroupDto": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "users",
+              "admin",
+              "roles",
+              "organizations",
+              "members",
+              "invitations",
+              "workspaces",
+              "tokens",
+              "billing"
+            ],
+            "example": "users"
+          },
+          "label": {
+            "type": "string",
+            "example": "Users"
+          },
+          "description": {
+            "type": "string",
+            "example": "The user directory."
+          },
+          "sensitive": {
+            "type": "boolean",
+            "description": "Grants account-takeover-adjacent powers. Consent and token screens call these out; enforcement treats them like any other group."
+          },
+          "levels": {
+            "$ref": "#/components/schemas/ScopeLevelsDto"
+          }
+        },
+        "required": ["resource", "label", "description", "levels"]
+      },
       "PermissionCatalogResponseDto": {
         "type": "object",
         "properties": {
           "groups": {
-            "type": "array",
             "description": "Every permission group, each with a Read and an Edit level. Render these as the permission picker.",
+            "type": "array",
             "items": {
-              "type": "object",
-              "additionalProperties": true
+              "$ref": "#/components/schemas/PermissionGroupDto"
             }
           },
           "grantable": {
+            "type": "array",
             "description": "Scopes the caller may put on a token. Anything outside this list is refused at creation.",
             "example": ["profile:read", "users:read"],
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           }
         },
@@ -3028,11 +3452,33 @@
             "example": "flama_pat_a1b2c3"
           },
           "scopes": {
+            "type": "array",
             "description": "Granted permissions.",
             "example": ["users:read", "roles:write"],
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "organizationIds": {

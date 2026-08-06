@@ -17,6 +17,11 @@ const schema = z.object({
   /** Request timeout in milliseconds. */
   timeoutMs: z.coerce.number().int().positive().default(30_000),
   /**
+   * `ttlMs` advertised on `tools/list` results, which `2026-07-28` made
+   * cacheable. Zero tells clients not to cache the list at all.
+   */
+  toolsCacheTtlMs: z.coerce.number().int().nonnegative().optional(),
+  /**
    * Origins allowed to reach the HTTP entrypoint from a browser. An empty list
    * disables cross-origin access, which is the right default for a server
    * spoken to by native MCP clients.
@@ -32,6 +37,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): McpConfig {
     apiToken: env.FLAMA_API_TOKEN,
     port: env.PORT ?? env.MCP_PORT,
     timeoutMs: env.FLAMA_TIMEOUT_MS,
+    toolsCacheTtlMs: env.FLAMA_TOOLS_CACHE_TTL_MS,
     allowedOrigins: env.FLAMA_ALLOWED_ORIGINS?.split(',')
       .map((origin) => origin.trim())
       .filter(Boolean),

@@ -51,8 +51,8 @@ export class ApiTokensApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                403: `TOKEN_002: requested scopes exceed the caller’s own permissions; TOKEN_008: not a member of a requested organization`,
-                409: `TOKEN_009: active token limit reached`,
+                403: `TOKEN_002 / TOKEN_008 — Requested scopes exceed the caller’s own permissions, or the caller is not a member of a requested organization`,
+                409: `TOKEN_009 — Active token limit reached`,
             },
         });
     }
@@ -85,7 +85,7 @@ export class ApiTokensApi {
                 'id': id,
             },
             errors: {
-                404: `TOKEN_001: token not found`,
+                404: `TOKEN_001 — Token not found`,
             },
         });
     }

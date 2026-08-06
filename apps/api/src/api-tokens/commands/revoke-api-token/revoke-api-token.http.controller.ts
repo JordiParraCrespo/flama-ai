@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import {
   Controller,
   Delete,
@@ -34,7 +35,7 @@ export class RevokeApiTokenHttpController {
       'Takes effect immediately. The record is kept so the audit trail survives; the secret stops working.',
   })
   @ApiResponse({ status: 204, description: 'Token revoked' })
-  @ApiResponse({ status: 404, description: 'TOKEN_001: token not found' })
+  @ApiProblemResponse({ status: 404, description: 'Token not found', code: 'TOKEN_001' })
   async revoke(
     @CurrentUser('id') userId: string,
     @Param('id', ParseUUIDPipe) id: string,

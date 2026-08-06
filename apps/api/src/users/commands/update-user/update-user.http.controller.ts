@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Param, ParseUUIDPipe, Patch, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -30,7 +31,7 @@ export class UpdateUserHttpController {
   @RequireScopes('users:write')
   @ApiOperation({ summary: 'Update user' })
   @ApiResponse({ status: 200, type: UserResponseDto })
-  @ApiResponse({ status: 404, description: 'USER_001: User not found' })
+  @ApiProblemResponse({ status: 404, description: 'User not found', code: 'USER_001' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateUserRequest,

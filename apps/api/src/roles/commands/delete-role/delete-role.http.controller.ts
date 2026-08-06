@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Controller, Delete, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -20,11 +21,12 @@ export class DeleteRoleHttpController {
   @RequireScopes('roles:write')
   @ApiOperation({ summary: 'Delete role' })
   @ApiResponse({ status: 200 })
-  @ApiResponse({
+  @ApiProblemResponse({
     status: 403,
-    description: 'ROLE_003: System roles cannot be deleted',
+    description: 'System roles cannot be deleted',
+    code: 'ROLE_003',
   })
-  @ApiResponse({ status: 404, description: 'ROLE_001: Role not found' })
+  @ApiProblemResponse({ status: 404, description: 'Role not found', code: 'ROLE_001' })
   async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     await this.commandBus.execute<DeleteRoleCommand, void>(new DeleteRoleCommand({ roleId: id }));
   }

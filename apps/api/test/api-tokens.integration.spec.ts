@@ -405,7 +405,7 @@ describe('API tokens & scopes (integration)', () => {
         token,
       });
 
-      expect(String(response.body?.message)).toContain('users:write');
+      expect(String(response.body?.detail)).toContain('users:write');
     });
 
     it('lets a write token through on a read route', async () => {

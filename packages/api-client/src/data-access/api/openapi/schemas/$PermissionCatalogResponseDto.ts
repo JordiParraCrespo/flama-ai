@@ -7,18 +7,14 @@ export const $PermissionCatalogResponseDto = {
         groups: {
             type: 'array',
             contains: {
-                type: 'dictionary',
-                contains: {
-                    properties: {
-                    },
-                },
+                type: 'PermissionGroupDto',
             },
             isRequired: true,
         },
         grantable: {
             type: 'array',
             contains: {
-                type: 'string',
+                type: 'Enum',
             },
             isRequired: true,
         },

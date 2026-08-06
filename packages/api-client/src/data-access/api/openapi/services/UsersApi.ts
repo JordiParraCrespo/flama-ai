@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { PaginatedUsersResponseDto } from '../../../../common/models/PaginatedUsersResponseDto';
 import type { UpdateUserRequest } from '../../../../common/models/UpdateUserRequest';
 import type { UserResponseDto } from '../../../../common/models/UserResponseDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -14,7 +15,7 @@ export class UsersApi {
      * @param role Filter by role name
      * @param limit Items per page (default: 20, max: 100)
      * @param page Page number (default: 1)
-     * @returns any
+     * @returns PaginatedUsersResponseDto
      * @throws ApiError
      */
     public static findAll(
@@ -22,7 +23,7 @@ export class UsersApi {
         role?: string,
         limit?: number,
         page?: number,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<PaginatedUsersResponseDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/users',
@@ -61,7 +62,7 @@ export class UsersApi {
                 'id': id,
             },
             errors: {
-                404: `USER_001: User not found`,
+                404: `USER_001 — User not found`,
             },
         });
     }
@@ -85,7 +86,7 @@ export class UsersApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `USER_001: User not found`,
+                404: `USER_001 — User not found`,
             },
         });
     }
@@ -105,7 +106,7 @@ export class UsersApi {
                 'id': id,
             },
             errors: {
-                404: `USER_001: User not found`,
+                404: `USER_001 — User not found`,
             },
         });
     }

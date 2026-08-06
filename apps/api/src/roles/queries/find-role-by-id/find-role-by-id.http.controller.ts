@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Controller, Get, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -26,7 +27,7 @@ export class FindRoleByIdHttpController {
   @RequireScopes('roles:read')
   @ApiOperation({ summary: 'Get role by ID' })
   @ApiResponse({ status: 200, type: RoleResponseDto })
-  @ApiResponse({ status: 404, description: 'ROLE_001: Role not found' })
+  @ApiProblemResponse({ status: 404, description: 'Role not found', code: 'ROLE_001' })
   async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<RoleResponseDto> {
     const role = await this.queryBus.execute<FindRoleByIdQuery, RoleEntity>(
       new FindRoleByIdQuery(id),

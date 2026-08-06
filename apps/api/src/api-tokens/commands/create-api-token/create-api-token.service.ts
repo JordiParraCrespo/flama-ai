@@ -52,9 +52,9 @@ export class CreateApiTokenService
 
     const exceeded = ungrantableScopes(ability, command.scopes);
     if (exceeded.length > 0) {
-      throw new AppError({
-        ...ApiTokenErrors.SCOPES_EXCEED_GRANTER,
-        message: `${ApiTokenErrors.SCOPES_EXCEED_GRANTER.message}: ${exceeded.join(', ')}`,
+      throw new AppError(ApiTokenErrors.SCOPES_EXCEED_GRANTER, {
+        detail: `The caller may not grant: ${exceeded.join(', ')}`,
+        extensions: { ungrantableScopes: exceeded },
       });
     }
 

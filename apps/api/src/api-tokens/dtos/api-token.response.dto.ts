@@ -1,4 +1,4 @@
-import type { Scope } from '@flama/shared';
+import { SCOPES, type Scope } from '@flama/shared';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ApiTokenResponseDto {
@@ -16,7 +16,8 @@ export class ApiTokenResponseDto {
 
   @ApiProperty({
     description: 'Granted permissions.',
-    type: [String],
+    enum: [...SCOPES],
+    isArray: true,
     example: ['users:read', 'roles:write'],
   })
   scopes!: Scope[];

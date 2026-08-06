@@ -1,4 +1,4 @@
-import { SanitizePipe } from '@flama/backend-core';
+import { ProblemDetailsDto, SanitizePipe } from '@flama/backend-core';
 import { setupBullBoard } from '@flama/backend-queue';
 import { QUEUE_NAMES } from '@flama/shared';
 import { VersioningType } from '@nestjs/common';
@@ -26,6 +26,9 @@ export function createSwaggerDocument(
 ) {
   return SwaggerModule.createDocument(app, createSwaggerConfig(), {
     operationIdFactory: (_controller, method) => method,
+    // Every error response references this schema (RFC 7807), so it must be in
+    // the document even if a route documents its failures loosely.
+    extraModels: [ProblemDetailsDto],
   });
 }
 

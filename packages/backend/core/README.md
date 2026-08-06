@@ -9,24 +9,45 @@ wired into the API.
 
 ## What's inside
 
-| Export                                                | Purpose                                             |
-| ----------------------------------------------------- | --------------------------------------------------- |
-| `AppError`, `ErrorDefinition`                         | Structured application error type                   |
-| `AllExceptionsFilter`                                 | Global exception filter mapping errors to responses |
-| `ZodValidationPipe`                                   | Validates DTOs against Zod schemas (`nestjs-zod`)   |
-| `SanitizePipe`                                        | Input sanitization pipe                             |
-| `RequestContextInterceptor` / `RequestContextService` | Per-request context propagation                     |
-| `PaginatedRequest`, `paginationSchema`                | Standard pagination query request                   |
-| `Mapper`                                              | Domain ↔ persistence/response mapper interface      |
+| Export                                                    | Purpose                                                                 |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `AppError`, `ErrorDefinition`                             | Catalog error: code, stable title, per-occurrence detail                |
+| `AllExceptionsFilter`                                     | Global filter rendering every exception as an RFC 7807 problem document |
+| `ProblemDetails`, `buildProblemDetails`, `problemTypeFor` | The problem-document contract and its builders                          |
+| `ProblemDetailsDto`, `ApiProblemResponse`                 | Swagger model + decorator for documenting failures                      |
+| `ZodValidationPipe`                                       | Validates DTOs against Zod schemas (`nestjs-zod`)                       |
+| `SanitizePipe`                                            | Input sanitization pipe                                                 |
+| `RequestContextInterceptor` / `RequestContextService`     | Per-request context propagation                                         |
+| `PaginatedRequest`, `paginationSchema`                    | Standard pagination query request                                       |
+| `Mapper`                                                  | Domain ↔ persistence/response mapper interface                          |
 
 ## Usage
 
 ```ts
 import {
   AllExceptionsFilter,
+  AppError,
   ZodValidationPipe,
   PaginatedRequest,
 } from "@flama/backend-core";
+
+// The catalog message titles the problem type; `detail` describes this request.
+throw new AppError(UserErrors.NOT_FOUND, { detail: `No user with id ${id}` });
+```
+
+Responses look like this (see the [error reference](https://flama.dev/errors)):
+
+```json
+{
+  "type": "https://flama.dev/errors#user_001",
+  "title": "User not found",
+  "status": 404,
+  "detail": "No user with id 3f1c…",
+  "instance": "/api/v1/users/3f1c…",
+  "code": "USER_001",
+  "correlationId": "2b4f…",
+  "timestamp": "2026-01-01T00:00:00.000Z"
+}
 ```
 
 ## Scripts

@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Controller, Get, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -26,7 +27,7 @@ export class FindUserByIdHttpController {
   @RequireScopes('users:read')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, type: UserResponseDto })
-  @ApiResponse({ status: 404, description: 'USER_001: User not found' })
+  @ApiProblemResponse({ status: 404, description: 'User not found', code: 'USER_001' })
   async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<UserResponseDto> {
     const user = await this.queryBus.execute<FindUserByIdQuery, UserEntity>(
       new FindUserByIdQuery(id),

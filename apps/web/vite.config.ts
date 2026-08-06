@@ -3,8 +3,14 @@ import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
+  // Busts the persisted query cache on release: a version bump drops entries
+  // that may not match the new response shapes.
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     TanStackRouterVite({
       routesDirectory: './src/routes',

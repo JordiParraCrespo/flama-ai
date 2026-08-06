@@ -106,6 +106,17 @@ Tools live in `apps/mcp/src/tools/` and declare `requiredScopes` matching the
 endpoint's `@RequireScopes`. Mismatched scopes mean a tool that is offered but
 then refused — the one failure mode the design exists to prevent.
 
+`inputSchema` is a Zod **object schema** (`z.object({ … })`), not a raw shape,
+and `apps/mcp` is on Zod 4 while the rest of the repo is on Zod 3 — the MCP SDK
+v2 requires it. Do not import Zod schemas from `@flama/shared` here; that is
+what keeps the two versions from meeting.
+
+The server is built **per request** from the calling credential, because
+protocol revision `2026-07-28` removed sessions: there is nowhere to cache the
+decision, and nowhere it could go stale. `tools/list` is sorted by name (the
+spec asks for a deterministic order) and returned with `cacheScope: 'private'`,
+since the list is derived from one credential's permissions.
+
 Annotate honestly: `readOnlyHint` only for tools whose scopes are all `:read`,
 `destructiveHint` for anything that deletes or is irreversible. Tests in
 `apps/mcp/src/__tests__/server.spec.ts` enforce both.

@@ -14,6 +14,8 @@ Expo (React Native) app using expo-router.
 - **React Hook Form** + `zodResolver` for forms (`Controller` per field — the
   DOM-ref `register()` path does not work in React Native)
 - **expo-secure-store** for secure token storage
+- **TanStack Query** for server state, persisted to `AsyncStorage` (policy from
+  `@flama/frontend/react`, wired in `lib/query.ts`)
 
 ## Layout
 

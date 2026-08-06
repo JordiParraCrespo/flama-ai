@@ -1,4 +1,4 @@
-import type { Scope } from '@flama/shared';
+import { SCOPES, type Scope } from '@flama/shared';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CurrentCredentialResponseDto {
@@ -17,7 +17,8 @@ export class CurrentCredentialResponseDto {
   @ApiProperty({
     description:
       'Scopes the credential carries. Null for a browser session, which is not scope-restricted.',
-    type: [String],
+    enum: [...SCOPES],
+    isArray: true,
     nullable: true,
   })
   grantedScopes!: Scope[] | null;
@@ -25,7 +26,8 @@ export class CurrentCredentialResponseDto {
   @ApiProperty({
     description:
       'What the credential can actually do: its scopes intersected with the owner’s current roles.',
-    type: [String],
+    enum: [...SCOPES],
+    isArray: true,
   })
   effectiveScopes!: Scope[];
 
