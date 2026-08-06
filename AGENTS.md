@@ -19,6 +19,7 @@ flama/
 │   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
+│   ├── auth/             # Shared Better Auth config + client helpers (@flama/auth)
 │   ├── backend/
 │   │   ├── cache/        # Redis cache abstraction (@flama/backend-cache)
 │   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
@@ -72,6 +73,7 @@ Errors are **RFC 7807 problem documents** (`application/problem+json`) produced 
 the global `AllExceptionsFilter`; the catalog message is the stable problem
 `title` and per-request specifics go in `AppError`'s `detail`. New error codes
 need a row in `apps/docs/docs/errors.md` — see `nestjs-architecture.md`.
+
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens, OAuth for MCP clients
 
@@ -152,6 +154,7 @@ Split into two independently versioned packages that share a mirrored component 
 ```
 packages/config           → used by all apps and packages (tsconfig extends)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
+packages/auth             → used by api, web, mobile (shared Better Auth config)
 packages/backend/core     → used by api, other backend packages
 packages/backend/ddd      → used by api (depends on backend/core)
 packages/backend/email    → used by api

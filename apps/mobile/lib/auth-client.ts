@@ -1,7 +1,6 @@
 import { expoClient } from '@better-auth/expo/client';
+import { sharedClientPlugins, toAuthSession, unwrap } from '@flama/auth/client';
 import type { IAuthClient } from '@flama/frontend';
-import type { Role } from '@flama/shared';
-import { adminClient, inferAdditionalFields, organizationClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 import * as SecureStore from 'expo-secure-store';
 
@@ -19,26 +18,12 @@ export const authClient = createAuthClient({
       storagePrefix: 'flama',
       storage: SecureStore,
     }),
-    inferAdditionalFields({
-      user: {
-        firstName: { type: 'string', required: true },
-        lastName: { type: 'string', required: true },
-        role: { type: 'string', required: false, input: false },
-        isActive: { type: 'boolean', required: false, input: false },
-      },
-    }),
-    // Super-admin operations under `authClient.admin.*` and organizations /
-    // members / invitations / workspaces (teams) under `authClient.organization.*`.
-    adminClient(),
-    organizationClient({ teams: { enabled: true } }),
+    // The shared plugin set (additional user fields, admin, organizations)
+    // comes from @flama/auth so the client types stay in lockstep with the
+    // server.
+    ...sharedClientPlugins(),
   ],
 });
-
-function unwrap(result: { error?: { message?: string } | null }): void {
-  if (result.error) {
-    throw new Error(result.error.message ?? 'Authentication request failed');
-  }
-}
 
 export const mobileAuthClient: IAuthClient = {
   async signIn(email, password) {
@@ -89,29 +74,7 @@ export const mobileAuthClient: IAuthClient = {
   },
 
   async getSession() {
-    const { data, error } = await authClient.getSession();
-    // Surface transport/server failures instead of collapsing them into `null`,
-    // which would be indistinguishable from a genuinely unauthenticated user and
-    // would silently sign someone out on a transient network blip.
-    if (error) {
-      throw new Error(error.message ?? 'Failed to restore session');
-    }
-    if (!data) return null;
-    const user = data.user as typeof data.user & {
-      firstName?: string;
-      lastName?: string;
-      role?: string;
-    };
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName ?? '',
-        lastName: user.lastName ?? '',
-        role: (user.role as Role) ?? 'user',
-        emailVerified: user.emailVerified,
-      },
-    };
+    return toAuthSession(await authClient.getSession());
   },
 
   // Attach the Better Auth session cookie (stored in SecureStore) to the

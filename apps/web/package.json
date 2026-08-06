@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@flama/api-client": "workspace:*",
+    "@flama/auth": "workspace:*",
     "@flama/design-system-web": "workspace:*",
     "@flama/frontend": "workspace:*",
     "@flama/shared": "workspace:*",
