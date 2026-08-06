@@ -38,6 +38,15 @@ export interface ClaimOptions {
   leaseMs?: number;
 }
 
+/**
+ * The slice of `AggregateRoot` that `writeWithEvents` needs: any aggregate
+ * that collects domain events and can be told they were taken over.
+ */
+export interface EventfulAggregate {
+  readonly domainEvents: readonly DomainEvent[];
+  clearEvents(): void;
+}
+
 const DEFAULT_MAX_ATTEMPTS = 8;
 const DEFAULT_BASE_RETRY_DELAY_MS = 5_000;
 const DEFAULT_MAX_RETRY_DELAY_MS = 15 * 60_000;
@@ -71,6 +80,38 @@ export class OutboxService {
     this.baseRetryDelayMs = options.baseRetryDelayMs ?? DEFAULT_BASE_RETRY_DELAY_MS;
     this.maxRetryDelayMs = options.maxRetryDelayMs ?? DEFAULT_MAX_RETRY_DELAY_MS;
     this.logger = options.logger;
+  }
+
+  /**
+   * Run a repository write and stage the aggregates' collected domain events
+   * **inside one transaction**, so the state change and the events it owes
+   * commit or roll back together. After commit the relay is woken to deliver
+   * immediately; if that fails, the rows stay pending and the relay's poll
+   * retries them. Writes with no events skip the explicit transaction — a
+   * single statement is already atomic.
+   *
+   * This is the one write path every repository adapter shares:
+   *
+   * ```ts
+   * await this.outbox.writeWithEvents([entity], (manager) =>
+   *   manager.getRepository(UserOrmEntity).save(record),
+   * );
+   * ```
+   */
+  async writeWithEvents<T>(
+    entities: readonly EventfulAggregate[],
+    write: (manager: EntityManager) => Promise<T>,
+  ): Promise<T> {
+    const events = entities.flatMap((e) => e.domainEvents);
+    if (events.length === 0) return write(this.dataSource.manager);
+    const result = await this.dataSource.transaction(async (manager) => {
+      const value = await write(manager);
+      await this.stageEvents(manager, events);
+      return value;
+    });
+    for (const entity of entities) entity.clearEvents();
+    await this.wake();
+    return result;
   }
 
   /**

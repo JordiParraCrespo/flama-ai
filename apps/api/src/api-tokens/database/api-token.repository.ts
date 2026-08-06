@@ -7,7 +7,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
-import { DataSource, type EntityManager, IsNull, MoreThan, type Repository } from 'typeorm';
+import { DataSource, IsNull, MoreThan, type Repository } from 'typeorm';
 import { ApiTokenMapper } from '../api-tokens.mapper';
 import type { ApiTokenEntity } from '../domain/api-token.entity';
 import { ApiTokenOrmEntity } from './api-token.orm-entity';
@@ -32,7 +32,7 @@ export class ApiTokenRepository implements ApiTokenRepositoryPort {
   async insert(entity: ApiTokenEntity | ApiTokenEntity[]): Promise<void> {
     const entities = Array.isArray(entity) ? entity : [entity];
     const records = entities.map((e) => this.mapper.toPersistence(e));
-    await this.writeWithEvents(entities, (manager) => {
+    await this.outbox.writeWithEvents(entities, (manager) => {
       const repository = manager.getRepository(ApiTokenOrmEntity);
       // Cast around TypeORM's `QueryDeepPartialEntity` recursion, which cannot
       // represent the jsonb array columns.
@@ -41,7 +41,7 @@ export class ApiTokenRepository implements ApiTokenRepositoryPort {
   }
 
   async save(entity: ApiTokenEntity): Promise<ApiTokenEntity> {
-    const record = await this.writeWithEvents([entity], (manager) =>
+    const record = await this.outbox.writeWithEvents([entity], (manager) =>
       manager.getRepository(ApiTokenOrmEntity).save(this.mapper.toPersistence(entity)),
     );
     return this.mapper.toDomain(record);
@@ -98,7 +98,7 @@ export class ApiTokenRepository implements ApiTokenRepositoryPort {
   }
 
   async delete(entity: ApiTokenEntity): Promise<boolean> {
-    const result = await this.writeWithEvents([entity], (manager) =>
+    const result = await this.outbox.writeWithEvents([entity], (manager) =>
       manager.getRepository(ApiTokenOrmEntity).delete({
         id: entity.id as AggregateID,
       }),
@@ -108,29 +108,5 @@ export class ApiTokenRepository implements ApiTokenRepositoryPort {
 
   transaction<T>(handler: () => Promise<T>): Promise<T> {
     return this.dataSource.transaction(() => handler());
-  }
-
-  /**
-   * Runs the write and stages the aggregates' collected domain events on the
-   * transactional outbox **inside one transaction**, so the state change and
-   * the events it owes commit or roll back together. After commit the outbox
-   * relay is woken to deliver immediately; if that fails, the rows stay
-   * pending and the relay's poll retries them. Writes with no events skip the
-   * explicit transaction — a single statement is already atomic.
-   */
-  private async writeWithEvents<T>(
-    entities: ApiTokenEntity[],
-    write: (manager: EntityManager) => Promise<T>,
-  ): Promise<T> {
-    const events = entities.flatMap((e) => e.domainEvents);
-    if (events.length === 0) return write(this.dataSource.manager);
-    const result = await this.dataSource.transaction(async (manager) => {
-      const value = await write(manager);
-      await this.outbox.stageEvents(manager, events);
-      return value;
-    });
-    for (const entity of entities) entity.clearEvents();
-    await this.outbox.wake();
-    return result;
   }
 }

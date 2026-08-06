@@ -150,4 +150,77 @@ describe('OutboxService', () => {
       await expect(service.wake()).resolves.toBeUndefined();
     });
   });
+
+  describe('writeWithEvents', () => {
+    it('runs the write and the event staging in one transaction, then clears and wakes', async () => {
+      const insert = vi.fn().mockResolvedValue(undefined);
+      const txManager = managerWith(insert);
+      const transaction = vi.fn(async (cb: (m: EntityManager) => Promise<unknown>) =>
+        cb(txManager),
+      );
+      const service = new OutboxService({
+        transaction,
+      } as unknown as DataSource);
+      const drainer = vi.fn().mockResolvedValue(0);
+      service.registerDrainer(drainer);
+
+      const event = new ThingDeletedDomainEvent({
+        aggregateId: 'agg-1',
+        name: 'thing',
+      });
+      const aggregate = {
+        domainEvents: [event],
+        clearEvents: vi.fn(),
+      };
+      const write = vi.fn().mockResolvedValue('written');
+
+      const result = await service.writeWithEvents([aggregate], write);
+
+      expect(result).toBe('written');
+      expect(transaction).toHaveBeenCalledTimes(1);
+      // The write and the staging both went through the transaction's manager.
+      expect(write).toHaveBeenCalledWith(txManager);
+      expect(insert).toHaveBeenCalledTimes(1);
+      expect(aggregate.clearEvents).toHaveBeenCalledTimes(1);
+      expect(drainer).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips the explicit transaction when no events were collected', async () => {
+      const manager = managerWith(vi.fn());
+      const transaction = vi.fn();
+      const service = new OutboxService({
+        transaction,
+        manager,
+      } as unknown as DataSource);
+      const write = vi.fn().mockResolvedValue('written');
+
+      const result = await service.writeWithEvents(
+        [{ domainEvents: [], clearEvents: vi.fn() }],
+        write,
+      );
+
+      expect(result).toBe('written');
+      expect(transaction).not.toHaveBeenCalled();
+      expect(write).toHaveBeenCalledWith(manager);
+    });
+
+    it('does not clear events or wake when the transaction fails', async () => {
+      const transaction = vi.fn().mockRejectedValue(new Error('constraint violation'));
+      const service = new OutboxService({
+        transaction,
+      } as unknown as DataSource);
+      const drainer = vi.fn();
+      service.registerDrainer(drainer);
+      const aggregate = {
+        domainEvents: [new ThingDeletedDomainEvent({ aggregateId: 'agg-1', name: 'thing' })],
+        clearEvents: vi.fn(),
+      };
+
+      await expect(service.writeWithEvents([aggregate], vi.fn())).rejects.toThrow(
+        'constraint violation',
+      );
+      expect(aggregate.clearEvents).not.toHaveBeenCalled();
+      expect(drainer).not.toHaveBeenCalled();
+    });
+  });
 });

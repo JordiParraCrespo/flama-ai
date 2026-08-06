@@ -59,7 +59,12 @@ export class OutboxRelayService implements OnApplicationBootstrap, OnApplication
       if (!queue) {
         throw new Error(`No BullMQ queue registered for outbox topic "${message.topic}"`);
       }
-      await queue.add(message.eventName, message.payload);
+      // The outbox row id doubles as the BullMQ job id: if the process dies
+      // between `queue.add` and `markProcessed`, the reclaimed row re-adds the
+      // same job id and BullMQ deduplicates instead of running it twice.
+      await queue.add(message.eventName, message.payload, {
+        jobId: message.id,
+      });
       return;
     }
     // Listeners receive the deserialized event payload — a plain object with

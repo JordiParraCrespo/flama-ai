@@ -3,7 +3,7 @@ import type { SubscriptionStatus } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
-import { DataSource, type EntityManager, In, MoreThanOrEqual, type Repository } from 'typeorm';
+import { DataSource, In, MoreThanOrEqual, type Repository } from 'typeorm';
 import type { SubscriptionEntity } from '../domain/subscription.entity';
 import { SubscriptionMapper } from '../subscription.mapper';
 import { SubscriptionOrmEntity } from './subscription.orm-entity';
@@ -31,13 +31,13 @@ export class SubscriptionRepository implements SubscriptionRepositoryPort {
   async insert(entity: SubscriptionEntity | SubscriptionEntity[]): Promise<void> {
     const entities = Array.isArray(entity) ? entity : [entity];
     const records = entities.map((e) => this.mapper.toPersistence(e));
-    await this.writeWithEvents(entities, (manager) =>
+    await this.outbox.writeWithEvents(entities, (manager) =>
       manager.getRepository(SubscriptionOrmEntity).insert(records),
     );
   }
 
   async save(entity: SubscriptionEntity): Promise<SubscriptionEntity> {
-    const record = await this.writeWithEvents([entity], (manager) =>
+    const record = await this.outbox.writeWithEvents([entity], (manager) =>
       manager.getRepository(SubscriptionOrmEntity).save(this.mapper.toPersistence(entity)),
     );
     return this.mapper.toDomain(record);
@@ -116,7 +116,7 @@ export class SubscriptionRepository implements SubscriptionRepositoryPort {
   }
 
   async delete(entity: SubscriptionEntity): Promise<boolean> {
-    const result = await this.writeWithEvents([entity], (manager) =>
+    const result = await this.outbox.writeWithEvents([entity], (manager) =>
       manager.getRepository(SubscriptionOrmEntity).delete({ id: entity.id }),
     );
     return result.affected ? result.affected > 0 : false;
@@ -124,29 +124,5 @@ export class SubscriptionRepository implements SubscriptionRepositoryPort {
 
   transaction<T>(handler: () => Promise<T>): Promise<T> {
     return this.dataSource.transaction(() => handler());
-  }
-
-  /**
-   * Runs the write and stages the aggregates' collected domain events on the
-   * transactional outbox **inside one transaction**, so the state change and
-   * the events it owes commit or roll back together. After commit the outbox
-   * relay is woken to deliver immediately; if that fails, the rows stay
-   * pending and the relay's poll retries them. Writes with no events skip the
-   * explicit transaction — a single statement is already atomic.
-   */
-  private async writeWithEvents<T>(
-    entities: SubscriptionEntity[],
-    write: (manager: EntityManager) => Promise<T>,
-  ): Promise<T> {
-    const events = entities.flatMap((e) => e.domainEvents);
-    if (events.length === 0) return write(this.dataSource.manager);
-    const result = await this.dataSource.transaction(async (manager) => {
-      const value = await write(manager);
-      await this.outbox.stageEvents(manager, events);
-      return value;
-    });
-    for (const entity of entities) entity.clearEvents();
-    await this.outbox.wake();
-    return result;
   }
 }

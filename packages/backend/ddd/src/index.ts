@@ -28,6 +28,7 @@ export { Guard } from './guard';
 export type { Mapper } from './mapper.interface';
 export {
   type ClaimOptions,
+  type EventfulAggregate,
   OutboxService,
   type OutboxServiceOptions,
   type StageJobParams,
