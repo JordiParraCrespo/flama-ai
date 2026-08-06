@@ -35,6 +35,23 @@ metro.config.js       # Metro bundler (monorepo-aware)
   storage, etc.) via its InversifyJS DI container.
 - Reusable UI comes from `@flama/design-system-mobile`.
 
+## Forms
+
+React Hook Form, validated by a Zod schema from `@flama/shared`. Full
+convention in [`.claude/rules/forms.md`](../../.agents/rules/forms.md); the
+short version:
+
+- `useForm({ resolver: useZodResolver(schema) })` — always via
+  `lib/use-zod-resolver.ts`, never `zodResolver` directly, or the messages come
+  out untranslated.
+- Every field goes through `Controller`: React Native has no DOM refs, so
+  `register()` does not work. Wire `value`, `onChangeText` **and** `onBlur` —
+  dropping `onBlur` leaves `touched` stale and silently disables blur-mode
+  validation.
+- Wrap each control in `components/form-field.tsx`, which mirrors the web
+  `Field` (label + control + inline error). Validation failures belong inline,
+  not in an `Alert`.
+
 ## Commands
 
 ```bash
