@@ -4,6 +4,6 @@ export {
   type AppErrorOptions,
   type ErrorDefinition,
   toAppError,
-  withAppError,
 } from './errors';
+export { MapApiError } from './map-api-error.decorator';
 export type { IStorageService } from './storage.service';

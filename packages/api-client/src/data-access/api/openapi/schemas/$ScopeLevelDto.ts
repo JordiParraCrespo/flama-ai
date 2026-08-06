@@ -2,19 +2,24 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export const $PermissionCatalogResponseDto = {
+export const $ScopeLevelDto = {
     properties: {
-        groups: {
-            type: 'array',
-            contains: {
-                type: 'PermissionGroupDto',
-            },
+        scope: {
+            type: 'Enum',
             isRequired: true,
         },
-        grantable: {
+        label: {
+            type: 'string',
+            isRequired: true,
+        },
+        description: {
+            type: 'string',
+            isRequired: true,
+        },
+        policies: {
             type: 'array',
             contains: {
-                type: 'Enum',
+                type: 'ScopePolicyDto',
             },
             isRequired: true,
         },

@@ -1,26 +1,18 @@
-import { UsersApi } from '@flama/api-client';
+import { type UserResponseDto, UsersApi } from '@flama/api-client';
 import type { Role, UpdateUserDto } from '@flama/shared';
 import { injectable } from 'inversify';
-import { AppError, withAppError } from '../core/errors';
+import { AppError } from '../core/errors';
+import { MapApiError } from '../core/map-api-error.decorator';
 import { UserEntity } from './user.entity';
 import { UsersErrors } from './users.errors';
 
-function toEntity(data: {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}): UserEntity {
+function toEntity(data: UserResponseDto): UserEntity {
   return new UserEntity(
     data.id,
     data.email,
     data.firstName,
     data.lastName,
-    data.role as Role,
+    data.role,
     data.isActive,
     new Date(data.createdAt),
     new Date(data.updatedAt),
@@ -29,18 +21,17 @@ function toEntity(data: {
 
 @injectable()
 export class UsersRepository {
+  @MapApiError(UsersErrors.FETCH_LIST_FAILED)
   async findAll(
     page?: number,
     limit?: number,
     search?: string,
-    role?: 'admin' | 'user',
+    role?: Role,
   ): Promise<{
     data: UserEntity[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
-    const result = await withAppError(UsersErrors.FETCH_LIST_FAILED, () =>
-      UsersApi.findAll(search, role, limit, page),
-    );
+    const result = await UsersApi.findAll(search, role, limit, page);
     if (!result) throw new AppError(UsersErrors.FETCH_LIST_FAILED);
     return {
       data: result.data.map(toEntity),
@@ -48,25 +39,29 @@ export class UsersRepository {
     };
   }
 
+  @MapApiError(UsersErrors.FETCH_FAILED)
   async me(): Promise<UserEntity> {
-    const data = await withAppError(UsersErrors.FETCH_FAILED, () => UsersApi.me());
+    const data = await UsersApi.me();
     if (!data) throw new AppError(UsersErrors.FETCH_FAILED);
     return toEntity(data);
   }
 
+  @MapApiError(UsersErrors.FETCH_FAILED)
   async findById(id: string): Promise<UserEntity> {
-    const data = await withAppError(UsersErrors.FETCH_FAILED, () => UsersApi.findOne(id));
+    const data = await UsersApi.findOne(id);
     if (!data) throw new AppError(UsersErrors.FETCH_FAILED);
     return toEntity(data);
   }
 
+  @MapApiError(UsersErrors.UPDATE_FAILED)
   async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
-    const data = await withAppError(UsersErrors.UPDATE_FAILED, () => UsersApi.update(id, dto));
+    const data = await UsersApi.update(id, dto);
     if (!data) throw new AppError(UsersErrors.UPDATE_FAILED);
     return toEntity(data);
   }
 
+  @MapApiError(UsersErrors.DELETE_FAILED)
   async delete(id: string): Promise<void> {
-    await withAppError(UsersErrors.DELETE_FAILED, () => UsersApi.remove(id));
+    await UsersApi.remove(id);
   }
 }

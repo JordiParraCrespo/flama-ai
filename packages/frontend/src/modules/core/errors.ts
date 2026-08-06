@@ -84,22 +84,3 @@ export function toAppError(error: unknown, fallback: ErrorDefinition): AppError 
 
   return new AppError(fallback, { status: candidate?.status, cause: error });
 }
-
-/**
- * Runs an api-client call, re-throwing whatever it fails with as an
- * {@link AppError} built from `fallback`.
- *
- * ```ts
- * const users = await withAppError(UsersErrors.FETCH_LIST_FAILED, () => UsersApi.findAll());
- * ```
- */
-export async function withAppError<T>(
-  fallback: ErrorDefinition,
-  call: () => Promise<T>,
-): Promise<T> {
-  try {
-    return await call();
-  } catch (error) {
-    throw toAppError(error, fallback);
-  }
-}

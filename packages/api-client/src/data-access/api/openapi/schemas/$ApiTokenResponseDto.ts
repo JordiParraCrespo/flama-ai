@@ -20,7 +20,7 @@ export const $ApiTokenResponseDto = {
         scopes: {
             type: 'array',
             contains: {
-                type: 'string',
+                type: 'Enum',
             },
             isRequired: true,
         },

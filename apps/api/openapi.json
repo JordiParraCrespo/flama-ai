@@ -44,7 +44,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedUsersResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2896,6 +2903,46 @@
           "updatedAt"
         ]
       },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Total matching records, across all pages.",
+            "example": 42
+          },
+          "page": {
+            "type": "number",
+            "description": "1-based page number.",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "Records per page.",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": ["total", "page", "limit", "totalPages"]
+      },
+      "PaginatedUsersResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": ["data", "meta"]
+      },
       "InvalidParamDto": {
         "type": "object",
         "properties": {
@@ -2997,18 +3044,62 @@
             "type": "string"
           },
           "grantedScopes": {
+            "type": "array",
             "description": "Scopes the credential carries. Null for a browser session, which is not scope-restricted.",
             "nullable": true,
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "effectiveScopes": {
-            "description": "What the credential can actually do: its scopes intersected with the owner’s current roles.",
             "type": "array",
+            "description": "What the credential can actually do: its scopes intersected with the owner’s current roles.",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "organizationIds": {
@@ -3050,11 +3141,33 @@
             "example": "flama_pat_a1b2c3"
           },
           "scopes": {
+            "type": "array",
             "description": "Granted permissions.",
             "example": ["users:read", "roles:write"],
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "organizationIds": {
@@ -3106,23 +3219,154 @@
           "createdAt"
         ]
       },
+      "ScopePolicyDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "example": "read"
+          },
+          "subject": {
+            "type": "string",
+            "example": "User"
+          }
+        },
+        "required": ["action", "subject"]
+      },
+      "ScopeLevelDto": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "profile:read",
+              "profile:write",
+              "users:read",
+              "users:write",
+              "admin:read",
+              "admin:write",
+              "roles:read",
+              "roles:write",
+              "organizations:read",
+              "organizations:write",
+              "members:read",
+              "members:write",
+              "invitations:read",
+              "invitations:write",
+              "workspaces:read",
+              "workspaces:write",
+              "tokens:read",
+              "tokens:write",
+              "billing:read",
+              "billing:write"
+            ],
+            "example": "users:read"
+          },
+          "label": {
+            "type": "string",
+            "example": "Read"
+          },
+          "description": {
+            "type": "string",
+            "example": "Browse the user directory."
+          },
+          "policies": {
+            "description": "Empty when the level governs the caller’s own account only.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScopePolicyDto"
+            }
+          }
+        },
+        "required": ["scope", "label", "description", "policies"]
+      },
+      "ScopeLevelsDto": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "$ref": "#/components/schemas/ScopeLevelDto"
+          },
+          "write": {
+            "$ref": "#/components/schemas/ScopeLevelDto"
+          }
+        },
+        "required": ["read", "write"]
+      },
+      "PermissionGroupDto": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "users",
+              "admin",
+              "roles",
+              "organizations",
+              "members",
+              "invitations",
+              "workspaces",
+              "tokens",
+              "billing"
+            ],
+            "example": "users"
+          },
+          "label": {
+            "type": "string",
+            "example": "Users"
+          },
+          "description": {
+            "type": "string",
+            "example": "The user directory."
+          },
+          "sensitive": {
+            "type": "boolean",
+            "description": "Grants account-takeover-adjacent powers. Consent and token screens call these out; enforcement treats them like any other group."
+          },
+          "levels": {
+            "$ref": "#/components/schemas/ScopeLevelsDto"
+          }
+        },
+        "required": ["resource", "label", "description", "levels"]
+      },
       "PermissionCatalogResponseDto": {
         "type": "object",
         "properties": {
           "groups": {
-            "type": "array",
             "description": "Every permission group, each with a Read and an Edit level. Render these as the permission picker.",
+            "type": "array",
             "items": {
-              "type": "object",
-              "additionalProperties": true
+              "$ref": "#/components/schemas/PermissionGroupDto"
             }
           },
           "grantable": {
+            "type": "array",
             "description": "Scopes the caller may put on a token. Anything outside this list is refused at creation.",
             "example": ["profile:read", "users:read"],
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           }
         },
@@ -3208,11 +3452,33 @@
             "example": "flama_pat_a1b2c3"
           },
           "scopes": {
+            "type": "array",
             "description": "Granted permissions.",
             "example": ["users:read", "roles:write"],
-            "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "profile:read",
+                "profile:write",
+                "users:read",
+                "users:write",
+                "admin:read",
+                "admin:write",
+                "roles:read",
+                "roles:write",
+                "organizations:read",
+                "organizations:write",
+                "members:read",
+                "members:write",
+                "invitations:read",
+                "invitations:write",
+                "workspaces:read",
+                "workspaces:write",
+                "tokens:read",
+                "tokens:write",
+                "billing:read",
+                "billing:write"
+              ]
             }
           },
           "organizationIds": {

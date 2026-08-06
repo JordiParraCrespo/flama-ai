@@ -7,6 +7,7 @@ import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { UserEntity } from '../../domain/user.entity';
+import { PaginatedUsersResponseDto } from '../../dtos/paginated-users.response.dto';
 import { UserMapper } from '../../user.mapper';
 import { FindUsersQuery } from './find-users.query';
 import { FindUsersRequest } from './find-users.request.dto';
@@ -50,8 +51,8 @@ export class FindUsersHttpController {
     type: String,
     description: 'Search by name or email',
   })
-  @ApiResponse({ status: 200 })
-  async findAll(@Query() query: FindUsersRequest) {
+  @ApiResponse({ status: 200, type: PaginatedUsersResponseDto })
+  async findAll(@Query() query: FindUsersRequest): Promise<PaginatedUsersResponseDto> {
     const result = await this.queryBus.execute<FindUsersQuery, Paginated<UserEntity>>(
       new FindUsersQuery(query),
     );
