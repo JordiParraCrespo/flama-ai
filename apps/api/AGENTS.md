@@ -2,7 +2,7 @@
 
 NestJS **Domain-Driven Hexagon** API. The authoritative references are
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) (layer model, module anatomy, the
-"add a module" cookbook) and the scoped rules in `.claude/rules/`
+"add a module" cookbook) and the scoped rules in `.agents/rules/`
 (`nestjs-architecture.md`, `nestjs-di.md`, `typeorm.md`, `api-config.md`,
 `rbac-roles.md`). Boundaries are enforced by `.dependency-cruiser.cjs`
 (`pnpm --filter @flama/api arch`). This file adds the conventions that are easy
@@ -60,7 +60,7 @@ infrastructure modules (controller → injectable service → `auth.api`), not
 CQRS/domain slices. Use `invokeBetterAuth` (maps Better Auth `APIError` →
 `HttpException`) and `betterAuthHeaders` from `src/auth/better-auth.util.ts`, and
 normalize every `auth.api` result through a mapper (see above). See
-`.claude/rules/rbac-roles.md` for the full RBAC + org/admin guide.
+`.agents/rules/rbac-roles.md` for the full RBAC + org/admin guide.
 
 ## Config
 
