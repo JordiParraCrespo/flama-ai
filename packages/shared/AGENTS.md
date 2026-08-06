@@ -4,7 +4,7 @@ Cross-cutting contracts shared between backend and frontend: Zod schemas,
 types, constants, and CASL permission helpers.
 
 > Read the root [`CLAUDE.md`](../../CLAUDE.md). The RBAC rules in
-> [`.claude/rules/rbac-roles.md`](../../.claude/rules/rbac-roles.md) also scope
+> [`.agents/rules/rbac-roles.md`](../../.agents/rules/rbac-roles.md) also scope
 > this package.
 
 ## Layout
@@ -51,7 +51,7 @@ translate from the issue code instead (`createZodErrorMap` in
 A `refine` whose meaning cannot be recovered from the issue code — an IP-or-CIDR
 check, say — is the exception, and falls through untranslated by design.
 
-Full context in [`.claude/rules/forms.md`](../../.agents/rules/forms.md).
+Full context in [`.agents/rules/forms.md`](../../.agents/rules/forms.md).
 
 ## When modifying
 

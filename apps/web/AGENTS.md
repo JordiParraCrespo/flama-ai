@@ -41,7 +41,7 @@ src/
 ## Forms
 
 React Hook Form, validated by a Zod schema from `@flama/shared`. Full
-convention in [`.claude/rules/forms.md`](../../.agents/rules/forms.md); the
+convention in [`.agents/rules/forms.md`](../../.agents/rules/forms.md); the
 short version:
 
 - `useForm({ resolver: useZodResolver(schema) })` — always via

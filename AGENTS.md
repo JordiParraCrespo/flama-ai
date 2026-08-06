@@ -19,6 +19,7 @@ flama/
 │   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
+│   ├── auth/             # Shared Better Auth config + client helpers (@flama/auth)
 │   ├── backend/
 │   │   ├── cache/        # Redis cache abstraction (@flama/backend-cache)
 │   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
@@ -60,7 +61,7 @@ cookbook. Use the `/scaffold-module` skill to generate a compliant module
 skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
 (`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
-Detailed rules live in `.claude/rules/`, each scoped by a `paths` glob so it
+Detailed rules live in `.agents/rules/`, each scoped by a `paths` glob so it
 loads only for the code it governs. The frontend has one — `forms.md`, covering
 React Hook Form and Zod validation across `apps/web`, `apps/mobile` and the
 shared schemas. The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
@@ -96,7 +97,7 @@ the guard resolves the ability via `AbilityFactory` and exposes it on
 Both are governed by the **scope catalog** in `packages/shared/src/scopes/`.
 Roles say what a person may do; scopes say what a credential may do on their
 behalf, and effective access is the intersection — see
-`.claude/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
+`.agents/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
 
 - `apps/cli` — commander-based; commands in `src/commands/`, shared plumbing in
   `src/lib/` (config profiles, HTTP client, output, prompts). Exit codes are a
@@ -150,7 +151,7 @@ messages stay translated. No `useState` per field, no `FormData` reads, no
 `safeParse` in a submit handler. Zod schemas therefore carry **no message
 strings** — an explicit message defeats the translation layer. The full
 convention, including the web/mobile patterns and how to add a message, is in
-[`.claude/rules/forms.md`](.agents/rules/forms.md).
+[`.agents/rules/forms.md`](.agents/rules/forms.md).
 
 ### Design system (packages/design-system)
 
@@ -170,6 +171,7 @@ Split into two independently versioned packages that share a mirrored component 
 ```
 packages/config           → used by all apps and packages (tsconfig extends)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
+packages/auth             → used by api, web, mobile (shared Better Auth config)
 packages/backend/core     → used by api, other backend packages
 packages/backend/ddd      → used by api (depends on backend/core)
 packages/backend/email    → used by api
@@ -215,6 +217,6 @@ pnpm changeset          # Create a changeset for versioning
 - New API endpoints need `@RequireScopes` or they are unreachable by API tokens and MCP clients
 - New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
 - `apps/web` must not import runtime values from the `@flama/shared` **root**: its CJS build is not tree-shakeable by Rollup, so the whole graph (CASL, the scope catalog) lands in the bundle. Import a narrow subpath instead — `@flama/shared/schemas/auth` pulls in nothing but Zod — or fetch the data from the API, as the permission catalog does. Workspace `dist` folders sit outside `node_modules`, so anything newly imported this way needs adding to `optimizeDeps.include` in `apps/web/vite.config.ts` for dev
-- Forms in `apps/web` and `apps/mobile` use **React Hook Form** with `zodResolver` over the `@flama/shared` schemas; wire the resolver through each app's `useZodResolver` so validation messages stay translated. See `.claude/rules/forms.md`
+- Forms in `apps/web` and `apps/mobile` use **React Hook Form** with `zodResolver` over the `@flama/shared` schemas; wire the resolver through each app's `useZodResolver` so validation messages stay translated. See `.agents/rules/forms.md`
 - Zod schemas in `packages/shared` state the constraint only — **never** a message string (`z.string().email()`, not `z.string().email('Invalid email address')`). Zod ignores the error map whenever a check carries its own message, which silently pins every consumer to English
 - A new `validation.*` message needs a case in `createZodErrorMap`, a key in `ValidationMessageKey`, and an entry in every locale; the apps' typed `t()` turns a missing locale entry into a compile error

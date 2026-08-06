@@ -25,7 +25,7 @@ index.ts              # exports the locale bundles
   `@flama/frontend/validation` resolves a Zod issue code to one of them. Adding
   a case there means adding the key here, in every locale — the apps type `t()`
   against this catalog, so a missing entry fails the build rather than shipping
-  a raw key. See [`.claude/rules/forms.md`](../../.agents/rules/forms.md).
+  a raw key. See [`.agents/rules/forms.md`](../../.agents/rules/forms.md).
 - Interpolate validation bounds with named params (`{{min}}`, `{{max}}`), not
   `count` — i18next reads `count` as a pluralisation trigger and looks for
   `_one` / `_other` variants.

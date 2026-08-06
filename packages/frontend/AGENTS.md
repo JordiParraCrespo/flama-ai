@@ -44,7 +44,7 @@ Per module, follow the layering: **domain → presentation → data-access**.
   locale in `@flama/translations`. `TranslateFn` is deliberately narrow: a `t`
   typed over the full catalog is assignable to it, so a key missing from the
   locales is a compile error in the apps. Full convention in
-  [`.claude/rules/forms.md`](../../.agents/rules/forms.md).
+  [`.agents/rules/forms.md`](../../.agents/rules/forms.md).
 
 ## Commands
 
