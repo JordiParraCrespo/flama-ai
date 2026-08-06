@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { OutboxMessageSchema } from '@flama/backend-ddd';
 import type { Role } from '@flama/shared';
 import { DataSource } from 'typeorm';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
@@ -41,6 +42,7 @@ const dataSource = new DataSource({
     InvitationOrmEntity,
     TeamOrmEntity,
     TeamMemberOrmEntity,
+    OutboxMessageSchema,
   ],
 });
 

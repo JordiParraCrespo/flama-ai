@@ -1,10 +1,9 @@
-import { Paginated, type PaginatedQueryParams } from '@flama/backend-ddd';
+import { OutboxService, Paginated, type PaginatedQueryParams } from '@flama/backend-ddd';
 import type { SubscriptionStatus } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
-import { DataSource, In, MoreThanOrEqual, type Repository } from 'typeorm';
+import { DataSource, type EntityManager, In, MoreThanOrEqual, type Repository } from 'typeorm';
 import type { SubscriptionEntity } from '../domain/subscription.entity';
 import { SubscriptionMapper } from '../subscription.mapper';
 import { SubscriptionOrmEntity } from './subscription.orm-entity';
@@ -16,7 +15,8 @@ import type {
 /**
  * TypeORM-backed adapter for the subscription aggregate. Translates between the
  * domain `SubscriptionEntity` and its ORM persistence model via
- * `SubscriptionMapper` and publishes domain events once a write succeeds.
+ * `SubscriptionMapper` and stages domain events on the transactional outbox,
+ * atomically with the write that raised them.
  */
 @Injectable()
 export class SubscriptionRepository implements SubscriptionRepositoryPort {
@@ -25,19 +25,21 @@ export class SubscriptionRepository implements SubscriptionRepositoryPort {
     private readonly repository: Repository<SubscriptionOrmEntity>,
     private readonly dataSource: DataSource,
     private readonly mapper: SubscriptionMapper,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly outbox: OutboxService,
   ) {}
 
   async insert(entity: SubscriptionEntity | SubscriptionEntity[]): Promise<void> {
     const entities = Array.isArray(entity) ? entity : [entity];
     const records = entities.map((e) => this.mapper.toPersistence(e));
-    await this.repository.insert(records);
-    await Promise.all(entities.map((e) => this.publishEvents(e)));
+    await this.writeWithEvents(entities, (manager) =>
+      manager.getRepository(SubscriptionOrmEntity).insert(records),
+    );
   }
 
   async save(entity: SubscriptionEntity): Promise<SubscriptionEntity> {
-    const record = await this.repository.save(this.mapper.toPersistence(entity));
-    await this.publishEvents(entity);
+    const record = await this.writeWithEvents([entity], (manager) =>
+      manager.getRepository(SubscriptionOrmEntity).save(this.mapper.toPersistence(entity)),
+    );
     return this.mapper.toDomain(record);
   }
 
@@ -114,8 +116,9 @@ export class SubscriptionRepository implements SubscriptionRepositoryPort {
   }
 
   async delete(entity: SubscriptionEntity): Promise<boolean> {
-    const result = await this.repository.delete({ id: entity.id });
-    await this.publishEvents(entity);
+    const result = await this.writeWithEvents([entity], (manager) =>
+      manager.getRepository(SubscriptionOrmEntity).delete({ id: entity.id }),
+    );
     return result.affected ? result.affected > 0 : false;
   }
 
@@ -123,12 +126,27 @@ export class SubscriptionRepository implements SubscriptionRepositoryPort {
     return this.dataSource.transaction(() => handler());
   }
 
-  private async publishEvents(entity: SubscriptionEntity): Promise<void> {
-    const events = entity.domainEvents;
-    if (events.length === 0) return;
-    await Promise.all(
-      events.map((event) => this.eventEmitter.emitAsync(event.constructor.name, event)),
-    );
-    entity.clearEvents();
+  /**
+   * Runs the write and stages the aggregates' collected domain events on the
+   * transactional outbox **inside one transaction**, so the state change and
+   * the events it owes commit or roll back together. After commit the outbox
+   * relay is woken to deliver immediately; if that fails, the rows stay
+   * pending and the relay's poll retries them. Writes with no events skip the
+   * explicit transaction — a single statement is already atomic.
+   */
+  private async writeWithEvents<T>(
+    entities: SubscriptionEntity[],
+    write: (manager: EntityManager) => Promise<T>,
+  ): Promise<T> {
+    const events = entities.flatMap((e) => e.domainEvents);
+    if (events.length === 0) return write(this.dataSource.manager);
+    const result = await this.dataSource.transaction(async (manager) => {
+      const value = await write(manager);
+      await this.outbox.stageEvents(manager, events);
+      return value;
+    });
+    for (const entity of entities) entity.clearEvents();
+    await this.outbox.wake();
+    return result;
   }
 }

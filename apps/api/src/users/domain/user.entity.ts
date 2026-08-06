@@ -73,6 +73,7 @@ export class UserEntity extends AggregateRoot<UserProps> {
       new UserDeletedDomainEvent({
         aggregateId: this.id,
         email: this.props.email.value,
+        reason: 'User account was deleted; downstream cleanup (sessions, files, analytics) is owed',
       }),
     );
   }

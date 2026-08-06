@@ -26,6 +26,24 @@ export {
 } from './exceptions';
 export { Guard } from './guard';
 export type { Mapper } from './mapper.interface';
+export {
+  type ClaimOptions,
+  OutboxService,
+  type OutboxServiceOptions,
+  type StageJobParams,
+} from './outbox/outbox.service';
+export {
+  OUTBOX_TABLE,
+  type OutboxChannel,
+  type OutboxMessageRecord,
+  OutboxMessageSchema,
+  type OutboxMessageStatus,
+} from './outbox/outbox-message';
+export {
+  type OutboxPublisher,
+  OutboxRelay,
+  type OutboxRelayOptions,
+} from './outbox/outbox-relay';
 export { QueryBase } from './query.base';
 export {
   type OrderBy,

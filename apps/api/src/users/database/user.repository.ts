@@ -1,9 +1,19 @@
-import { type AggregateID, Paginated, type PaginatedQueryParams } from '@flama/backend-ddd';
+import {
+  type AggregateID,
+  OutboxService,
+  Paginated,
+  type PaginatedQueryParams,
+} from '@flama/backend-ddd';
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
-import { DataSource, type FindOptionsWhere, ILike, type Repository } from 'typeorm';
+import {
+  DataSource,
+  type EntityManager,
+  type FindOptionsWhere,
+  ILike,
+  type Repository,
+} from 'typeorm';
 import type { UserEntity } from '../domain/user.entity';
 import { UserMapper } from '../user.mapper';
 import { UserOrmEntity } from './user.orm-entity';
@@ -12,7 +22,8 @@ import type { FindUsersParams, UserRepositoryPort } from './user.repository.port
 /**
  * TypeORM-backed adapter for the user aggregate. Translates between the domain
  * `UserEntity` and the `UserOrmEntity` persistence model via `UserMapper`, and
- * publishes any domain events the aggregate collected once a write succeeds.
+ * stages any domain events the aggregate collected on the transactional
+ * outbox, atomically with the write that raised them.
  */
 @Injectable()
 export class UserRepository implements UserRepositoryPort {
@@ -21,21 +32,23 @@ export class UserRepository implements UserRepositoryPort {
     private readonly repository: Repository<UserOrmEntity>,
     private readonly dataSource: DataSource,
     private readonly mapper: UserMapper,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly outbox: OutboxService,
   ) {}
 
   async insert(entity: UserEntity | UserEntity[]): Promise<void> {
     const entities = Array.isArray(entity) ? entity : [entity];
     const records = entities.map((e) => this.mapper.toPersistence(e));
-    await this.repository.insert(records);
-    await Promise.all(entities.map((e) => this.publishEvents(e)));
+    await this.writeWithEvents(entities, (manager) =>
+      manager.getRepository(UserOrmEntity).insert(records),
+    );
   }
 
   async save(entity: UserEntity): Promise<UserEntity> {
     // Only profile columns are written (see UserMapper.toPersistence); `name`
     // and `image` stay under Better Auth's control.
-    const record = await this.repository.save(this.mapper.toPersistence(entity));
-    await this.publishEvents(entity);
+    const record = await this.writeWithEvents([entity], (manager) =>
+      manager.getRepository(UserOrmEntity).save(this.mapper.toPersistence(entity)),
+    );
     return this.mapper.toDomain(record);
   }
 
@@ -100,10 +113,11 @@ export class UserRepository implements UserRepositoryPort {
   }
 
   async delete(entity: UserEntity): Promise<boolean> {
-    const result = await this.repository.delete({
-      id: entity.id as AggregateID,
-    });
-    await this.publishEvents(entity);
+    const result = await this.writeWithEvents([entity], (manager) =>
+      manager.getRepository(UserOrmEntity).delete({
+        id: entity.id as AggregateID,
+      }),
+    );
     return result.affected ? result.affected > 0 : false;
   }
 
@@ -112,15 +126,26 @@ export class UserRepository implements UserRepositoryPort {
   }
 
   /**
-   * Emits the aggregate's collected domain events through the shared
-   * `EventEmitter2` bus (keyed by event class name), then clears them.
+   * Runs the write and stages the aggregates' collected domain events on the
+   * transactional outbox **inside one transaction**, so the state change and
+   * the events it owes commit or roll back together. After commit the outbox
+   * relay is woken to deliver immediately; if that fails, the rows stay
+   * pending and the relay's poll retries them. Writes with no events skip the
+   * explicit transaction — a single statement is already atomic.
    */
-  private async publishEvents(entity: UserEntity): Promise<void> {
-    const events = entity.domainEvents;
-    if (events.length === 0) return;
-    await Promise.all(
-      events.map((event) => this.eventEmitter.emitAsync(event.constructor.name, event)),
-    );
-    entity.clearEvents();
+  private async writeWithEvents<T>(
+    entities: UserEntity[],
+    write: (manager: EntityManager) => Promise<T>,
+  ): Promise<T> {
+    const events = entities.flatMap((e) => e.domainEvents);
+    if (events.length === 0) return write(this.dataSource.manager);
+    const result = await this.dataSource.transaction(async (manager) => {
+      const value = await write(manager);
+      await this.outbox.stageEvents(manager, events);
+      return value;
+    });
+    for (const entity of entities) entity.clearEvents();
+    await this.outbox.wake();
+    return result;
   }
 }

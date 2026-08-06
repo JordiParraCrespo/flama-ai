@@ -97,6 +97,8 @@ export class SubscriptionEntity extends AggregateRoot<SubscriptionProps> {
           userId: props.userId,
           stripeSubscriptionId: props.stripeSubscriptionId,
           plan: props.plan,
+          reason:
+            'Subscription arrived from Stripe already active; activation side effects are owed',
         }),
       );
     }
@@ -159,6 +161,7 @@ export class SubscriptionEntity extends AggregateRoot<SubscriptionProps> {
           userId: this.props.userId,
           stripeSubscriptionId: this.props.stripeSubscriptionId,
           plan: this.props.plan,
+          reason: 'Stripe sync transitioned the subscription into an active status',
         }),
       );
     }
@@ -168,6 +171,7 @@ export class SubscriptionEntity extends AggregateRoot<SubscriptionProps> {
           aggregateId: this.id,
           userId: this.props.userId,
           stripeSubscriptionId: this.props.stripeSubscriptionId,
+          reason: 'Stripe sync transitioned the subscription into canceled',
         }),
       );
     }

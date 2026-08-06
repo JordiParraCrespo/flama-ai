@@ -28,6 +28,7 @@ import {
 } from './config';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
+import { OutboxModule } from './outbox/outbox.module';
 import { QueueModule } from './queue/queue.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/user.module';
@@ -109,6 +110,7 @@ import { UsersModule } from './users/user.module';
       disableGlobalAuthGuard: true,
       bodyParser: { rawBody: true },
     }),
+    OutboxModule,
     AuthModule,
     ApiTokensModule,
     UsersModule,

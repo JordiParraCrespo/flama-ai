@@ -19,6 +19,7 @@ export interface DomainEventMetadata {
 
 export type DomainEventProps<T> = Omit<T, 'id' | 'metadata'> & {
   aggregateId: string;
+  reason?: string;
   metadata?: Partial<DomainEventMetadata>;
 };
 
@@ -33,6 +34,12 @@ export abstract class DomainEvent {
   /** Aggregate id where the domain event occurred. */
   public readonly aggregateId: string;
 
+  /**
+   * Why this event's side effects are owed, in words. Recorded on the outbox
+   * row so a queued item is self-explaining when someone opens the table.
+   */
+  public readonly reason?: string;
+
   public readonly metadata: DomainEventMetadata;
 
   constructor(props: DomainEventProps<unknown>) {
@@ -41,6 +48,7 @@ export abstract class DomainEvent {
     }
     this.id = randomUUID();
     this.aggregateId = props.aggregateId;
+    this.reason = props.reason;
     this.metadata = {
       correlationId:
         props?.metadata?.correlationId ?? RequestContextService.getCorrelationId() ?? randomUUID(),
