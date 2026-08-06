@@ -16,6 +16,7 @@ src/
 ├── decorators/     # Swagger decorators (ApiProblemResponse)
 ├── dtos/           # Swagger models (ProblemDetailsDto)
 ├── interceptors/   # response/logging interceptors
+├── logging/        # hardened nestjs-pino setup (LoggingModule + helpers)
 ├── pipes/          # validation & transform pipes
 ├── requests/       # request-scoped helpers
 ├── services/       # shared base services

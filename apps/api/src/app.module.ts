@@ -1,5 +1,10 @@
 import { CacheModule } from '@flama/backend-cache';
-import { AllExceptionsFilter, RequestContextInterceptor } from '@flama/backend-core';
+import {
+  AllExceptionsFilter,
+  createAuthRouteLoggingMiddleware,
+  LoggingModule,
+  RequestContextInterceptor,
+} from '@flama/backend-core';
 import { EmailModule } from '@flama/backend-email';
 import { StorageModule } from '@flama/backend-storage';
 import { BullModule } from '@nestjs/bullmq';
@@ -10,7 +15,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
-import { LoggerModule } from 'nestjs-pino';
 import { AdminModule } from './admin/admin.module';
 import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { auth } from './auth/auth';
@@ -26,6 +30,7 @@ import {
   storageConfig,
   stripeConfig,
 } from './config';
+import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { QueueModule } from './queue/queue.module';
@@ -45,6 +50,16 @@ import { UsersModule } from './users/user.module';
         oauthConfig,
         stripeConfig,
       ],
+    }),
+    // Request logging with hardened defaults (credential redaction, no
+    // headers/query/bodies) plus the interceptor that attaches userId and
+    // scopes to every request's log context. See `LoggingModule` in
+    // `@flama/backend-core`.
+    LoggingModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        pretty: configService.get('app.nodeEnv') !== 'production',
+      }),
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -69,6 +84,14 @@ import { UsersModule } from './users/user.module';
           synchronize: false,
           migrations: isTest ? [] : [`${__dirname}/migrations/*{.ts,.js}`],
           migrationsRun: !isTest,
+          // Opt-in query logging (`DB_LOG_QUERIES=true`), off by default. The
+          // custom logger drops bound parameters — they carry user data.
+          ...(configService.get('database.logQueries')
+            ? {
+                logging: ['query', 'warn', 'error'] as const,
+                logger: new TypeOrmQueryLogger(),
+              }
+            : {}),
         };
       },
     }),
@@ -77,17 +100,6 @@ import { UsersModule } from './users/user.module';
       // Integration tests drive many requests through the same pipeline in
       // seconds; rate limiting there measures nothing but the limit itself.
       skipIf: () => process.env.NODE_ENV === 'test',
-    }),
-    LoggerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        pinoHttp: {
-          transport:
-            configService.get('app.nodeEnv') !== 'production'
-              ? { target: 'pino-pretty' }
-              : undefined,
-        },
-      }),
     }),
     BullModule.forRootAsync({
       inject: [ConfigService],
@@ -104,10 +116,18 @@ import { UsersModule } from './users/user.module';
     CacheModule.register(),
     // `bodyParser.rawBody` attaches the raw request buffer to `req.rawBody`,
     // which the Stripe webhook controller needs for signature verification.
+    //
+    // `middleware` is what gets `/api/auth/*` into the request log: Better
+    // Auth mounts its handler straight onto the HTTP adapter before Nest
+    // binds consumer middleware, so the `nestjs-pino` logger never sees those
+    // routes. The wrapper logs them with the same hardened defaults.
     BetterAuthModule.forRoot({
       auth,
       disableGlobalAuthGuard: true,
       bodyParser: { rawBody: true },
+      middleware: createAuthRouteLoggingMiddleware({
+        pretty: process.env.NODE_ENV !== 'production',
+      }),
     }),
     AuthModule,
     ApiTokensModule,
