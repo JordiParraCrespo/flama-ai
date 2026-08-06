@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@flama/env/load';
 import { randomUUID } from 'node:crypto';
 import { expo } from '@better-auth/expo';
 import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
@@ -147,7 +147,7 @@ async function provisionPersonalOrganization(user: {
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3001',
   basePath: '/api/auth',
-  secret: process.env.BETTER_AUTH_SECRET ?? process.env.JWT_SECRET,
+  secret: process.env.BETTER_AUTH_SECRET,
   database: pool,
   trustedOrigins: [frontendUrl, `${mobileScheme}://`],
   advanced: {

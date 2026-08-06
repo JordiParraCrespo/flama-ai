@@ -1,3 +1,4 @@
+import '@flama/env/load';
 import { ProblemDetailsDto, SanitizePipe } from '@flama/backend-core';
 import { setupBullBoard } from '@flama/backend-queue';
 import { QUEUE_NAMES } from '@flama/shared';

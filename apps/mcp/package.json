@@ -27,6 +27,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@flama/env": "workspace:*",
     "@flama/shared": "workspace:*",
     "@modelcontextprotocol/node": "^2.0.0",
     "@modelcontextprotocol/server": "^2.0.0",

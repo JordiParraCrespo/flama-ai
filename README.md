@@ -31,9 +31,8 @@ pnpm install
 # Start infrastructure (Postgres + Redis)
 pnpm docker:dev
 
-# Copy environment files
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
+# Copy the environment file (one .env at the repo root serves every app)
+cp .env.example .env
 
 # Start all apps in dev mode
 pnpm dev

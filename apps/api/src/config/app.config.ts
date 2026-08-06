@@ -17,7 +17,7 @@ export const appConfig = registerAs('app', () => {
   return schema.parse({
     port: process.env.PORT,
     nodeEnv: process.env.NODE_ENV,
-    betterAuthSecret: process.env.BETTER_AUTH_SECRET ?? process.env.JWT_SECRET,
+    betterAuthSecret: process.env.BETTER_AUTH_SECRET,
     betterAuthUrl: process.env.BETTER_AUTH_URL,
     frontendUrl: process.env.FRONTEND_URL,
     mobileScheme: process.env.MOBILE_SCHEME,

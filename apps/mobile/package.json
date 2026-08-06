@@ -19,6 +19,7 @@
     "@expo/metro-runtime": "~6.1.2",
     "@flama/api-client": "workspace:*",
     "@flama/design-system-mobile": "workspace:*",
+    "@flama/env": "workspace:*",
     "@flama/frontend": "workspace:*",
     "@flama/shared": "workspace:*",
     "@flama/translations": "workspace:*",

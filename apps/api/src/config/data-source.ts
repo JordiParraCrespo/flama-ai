@@ -1,3 +1,4 @@
+import '@flama/env/load';
 import { DataSource } from 'typeorm';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
 import { Account } from '../auth/entities/account.entity';
