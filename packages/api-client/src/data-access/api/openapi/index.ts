@@ -20,6 +20,7 @@ export { $ApiTokenResponseDto } from './schemas/$ApiTokenResponseDto';
 export { $AssignUserRolesRequest } from './schemas/$AssignUserRolesRequest';
 export { $BanUserRequest } from './schemas/$BanUserRequest';
 export { $BillingSessionResponseDto } from './schemas/$BillingSessionResponseDto';
+export { $CapabilitiesResponseDto } from './schemas/$CapabilitiesResponseDto';
 export { $CheckSlugRequest } from './schemas/$CheckSlugRequest';
 export { $CreateApiTokenRequest } from './schemas/$CreateApiTokenRequest';
 export { $CreateCheckoutRequest } from './schemas/$CreateCheckoutRequest';
