@@ -5,6 +5,29 @@ paths:
 
 # API Configuration Rules
 
+## One `.env`, at the root of the repo
+
+There is **one `.env`, at the workspace root**, and the root `.env.example` is
+its documentation. Never add a per-package `.env` or `.env.example`.
+
+- If you add a variable, add it to the root `.env.example` with a note on what
+  it does. The inverse rule keeps the file honest: every variable the repo
+  reads is in it, and nothing that is not read is in it.
+- Loading goes through `@flama/env` (`packages/env`): it finds the workspace
+  root, loads `.env` then `.env.local` (local wins between the files), and
+  **never overwrites a value already in `process.env`** — real environment
+  variables always win, so the same code is correct in CI and in production
+  containers. `vercel env pull` writes `.env.local`, which therefore silently
+  overrides `.env`.
+- Entry points load it as their first import: `import '@flama/env/load';`
+  (`main.ts`, `config/data-source.ts`, `database/seed.ts`,
+  `generate-openapi.ts`, `auth/auth.ts`). Do not import `dotenv/config` —
+  it resolves `.env` against `process.cwd()`, which is exactly the fragility
+  `@flama/env` replaces.
+- `apps/web` does not use the loader: `vite.config.ts` points `envDir` at the
+  workspace root. `apps/mobile` calls `loadEnv()` in `app.config.ts` so Metro
+  inlines `EXPO_PUBLIC_*` values from the root file.
+
 ## Optional capabilities: a missing key removes a feature, it never throws
 
 Anything a self-hoster might not have — OAuth credentials, Stripe, S3,

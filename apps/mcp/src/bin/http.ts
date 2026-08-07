@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import '@flama/env/load';
 import { toNodeHandler } from '@modelcontextprotocol/node';
 import { type AuthInfo, createMcpHandler } from '@modelcontextprotocol/server';
 import express, { type NextFunction, type Request, type Response } from 'express';

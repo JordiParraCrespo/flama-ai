@@ -18,10 +18,10 @@ adapter files depends on that choice.
 Analytics is off by default. Set a project key to enable it:
 
 ```bash
-# apps/web/.env
+# .env (repo root — there is a single .env for the whole monorepo)
+# web
 VITE_POSTHOG_KEY=phc_your_project_key
-
-# apps/mobile/.env
+# mobile
 EXPO_PUBLIC_POSTHOG_KEY=phc_your_project_key
 ```
 

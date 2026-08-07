@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@flama/env/load';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { VersioningType } from '@nestjs/common';
