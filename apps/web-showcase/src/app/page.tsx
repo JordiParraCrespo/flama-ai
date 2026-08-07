@@ -21,7 +21,6 @@ import {
 import { DeltaText } from "@flama/design-system-web/delta-text";
 import { FeatureRow } from "@flama/design-system-web/feature-row";
 import { IconButton } from "@flama/design-system-web/icon-button";
-import { Input } from "@flama/design-system-web/input";
 import { Kpi, KpiCard } from "@flama/design-system-web/kpi";
 import { PromptCard } from "@flama/design-system-web/prompt-card";
 import { SearchInput } from "@flama/design-system-web/search-input";
@@ -410,7 +409,7 @@ export default function DesignSystemPage() {
         title="Text field"
         meta="forms/Input"
         desc="Labelled single-line input on the shared control ladder — 28 / 36 / 44 — so a field and a button on the same toolbar row line up without either being overridden."
-        code={`<Input id="name" placeholder="…" />`}
+        code={`<Input size="sm" placeholder="…" />`}
       >
         <TextFields />
       </Spec>
