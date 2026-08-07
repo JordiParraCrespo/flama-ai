@@ -17,7 +17,13 @@
     "github": "GitHub"
   },
   "validation": {
-    "title": "Error de validación"
+    "title": "Error de validación",
+    "required": "Este campo es obligatorio",
+    "email": "Introduce una dirección de correo válida",
+    "minLength": "Debe tener al menos {{min}} caracteres",
+    "maxLength": "Debe tener como máximo {{max}} caracteres",
+    "minItems": "Selecciona al menos {{min}}",
+    "maxItems": "Selecciona como máximo {{max}}"
   },
   "auth": {
     "email": "Correo electrónico",
@@ -165,7 +171,8 @@
     "shownOnce": "Cópialo ahora: es la única vez que se muestra.",
     "copy": "Copiar",
     "copied": "Copiado",
-    "dismiss": "Descartar"
+    "dismiss": "Descartar",
+    "permissionsRequired": "Selecciona al menos un permiso"
   },
   "consent": {
     "title": "{{client}} quiere acceder a tu cuenta",

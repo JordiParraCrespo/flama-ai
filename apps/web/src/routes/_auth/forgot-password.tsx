@@ -6,13 +6,17 @@ import {
   CardHeader,
   CardTitle,
   Field,
+  FieldError,
   FieldGroup,
   FieldLabel,
   Input,
 } from '@flama/design-system-web';
 import { useForgotPassword } from '@flama/frontend/react';
+import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared/schemas/auth';
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useZodResolver } from '@/lib/use-zod-resolver';
 
 export const Route = createFileRoute('/_auth/forgot-password')({
   component: ForgotPasswordPage,
@@ -22,11 +26,16 @@ function ForgotPasswordPage() {
   const { t } = useTranslation();
   const { mutate, isPending, isSuccess, error } = useForgotPassword();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    mutate(form.get('email') as string);
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordDto>({
+    resolver: useZodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
+  });
+
+  const onSubmit = handleSubmit(({ email }) => mutate(email));
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,23 +50,25 @@ function ForgotPasswordPage() {
               {t('auth.forgotPassword.successMessage')}
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={onSubmit} noValidate>
               <FieldGroup>
                 {error && (
                   <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                     {error instanceof Error ? error.message : t('auth.forgotPassword.error')}
                   </div>
                 )}
-                <Field>
+                <Field data-invalid={Boolean(errors.email)}>
                   <FieldLabel htmlFor="email">{t('auth.email')}</FieldLabel>
                   <Input
+                    {...register('email')}
                     id="email"
-                    name="email"
                     type="email"
+                    autoComplete="email"
                     placeholder={t('auth.emailPlaceholder')}
-                    required
+                    aria-invalid={Boolean(errors.email)}
                     disabled={isPending}
                   />
+                  <FieldError errors={[errors.email]} />
                 </Field>
                 <Field>
                   <Button type="submit" disabled={isPending}>

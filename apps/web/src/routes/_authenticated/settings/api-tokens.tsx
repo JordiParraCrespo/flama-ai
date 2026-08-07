@@ -11,6 +11,7 @@ import {
   CardTitle,
   Checkbox,
   Field,
+  FieldError,
   FieldGroup,
   FieldLabel,
   Input,
@@ -39,6 +40,7 @@ import {
 import type { Scope } from '@flama/shared';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { PermissionPicker } from '@/components/permission-picker';
 
@@ -48,6 +50,25 @@ export const Route = createFileRoute('/_authenticated/settings/api-tokens')({
 
 /** Lifetimes offered in the form, in days. `null` means "does not expire". */
 const LIFETIMES: (number | null)[] = [7, 30, 90, 365, null];
+
+/**
+ * Mirrors `CreateApiTokenDto` minus the fields this form does not expose.
+ * Declared locally rather than derived from `createApiTokenSchema`, which would
+ * pull the scope catalog into the bundle — the page fetches it from the API.
+ */
+type CreateTokenFormValues = {
+  name: string;
+  scopes: Scope[];
+  expiresInDays: number | null;
+  organizationIds: string[];
+};
+
+const EMPTY_TOKEN_FORM: CreateTokenFormValues = {
+  name: '',
+  scopes: [],
+  expiresInDays: 90,
+  organizationIds: [],
+};
 
 function ApiTokensPage() {
   const { t } = useTranslation();
@@ -136,14 +157,15 @@ function CreateTokenCard({
   const organizations = useOrganizations();
   const create = useCreateApiToken();
 
-  const [name, setName] = useState('');
-  const [scopes, setScopes] = useState<Scope[]>([]);
-  const [expiresInDays, setExpiresInDays] = useState<number | null>(90);
-  const [organizationIds, setOrganizationIds] = useState<string[]>([]);
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CreateTokenFormValues>({ defaultValues: EMPTY_TOKEN_FORM });
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  const onSubmit = handleSubmit(({ name, scopes, expiresInDays, organizationIds }) => {
     create.mutate(
       {
         name,
@@ -154,13 +176,11 @@ function CreateTokenCard({
       {
         onSuccess: ({ secret }) => {
           onCreated(secret);
-          setName('');
-          setScopes([]);
-          setOrganizationIds([]);
+          reset(EMPTY_TOKEN_FORM);
         },
       },
     );
-  }
+  });
 
   return (
     <Card>
@@ -169,7 +189,7 @@ function CreateTokenCard({
         <CardDescription>{t('apiTokens.createDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onSubmit} noValidate>
           <FieldGroup>
             {create.error && (
               <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -177,86 +197,121 @@ function CreateTokenCard({
               </div>
             )}
 
-            <Field>
+            <Field data-invalid={Boolean(errors.name)}>
               <FieldLabel htmlFor="token-name">{t('apiTokens.name')}</FieldLabel>
               <Input
+                {...register('name', {
+                  required: t('validation.required'),
+                  maxLength: {
+                    value: 80,
+                    message: t('validation.maxLength', { max: 80 }),
+                  },
+                })}
                 id="token-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
                 placeholder={t('apiTokens.namePlaceholder')}
                 maxLength={80}
-                required
+                aria-invalid={Boolean(errors.name)}
                 disabled={create.isPending}
               />
+              <FieldError errors={[errors.name]} />
             </Field>
 
-            <Field>
-              <FieldLabel>{t('apiTokens.permissions')}</FieldLabel>
-              {loadingCatalog ? (
-                <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
-              ) : (
-                <PermissionPicker
-                  groups={groups}
-                  grantable={grantable}
-                  value={scopes}
-                  onChange={setScopes}
-                  disabled={create.isPending}
-                />
+            <Controller
+              control={control}
+              name="scopes"
+              rules={{
+                validate: (value) => value.length > 0 || t('apiTokens.permissionsRequired'),
+              }}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>{t('apiTokens.permissions')}</FieldLabel>
+                  {loadingCatalog ? (
+                    <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+                  ) : (
+                    <PermissionPicker
+                      groups={groups}
+                      grantable={grantable}
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={create.isPending}
+                    />
+                  )}
+                  <p className="text-xs text-muted-foreground">{t('apiTokens.permissionsHint')}</p>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
               )}
-              <p className="text-xs text-muted-foreground">{t('apiTokens.permissionsHint')}</p>
-            </Field>
+            />
 
-            <Field>
-              <FieldLabel htmlFor="token-expiry">{t('apiTokens.expiry')}</FieldLabel>
-              <Select
-                value={String(expiresInDays)}
-                onValueChange={(next) => setExpiresInDays(next === 'null' ? null : Number(next))}
-                disabled={create.isPending}
-              >
-                <SelectTrigger id="token-expiry">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LIFETIMES.map((days) => (
-                    <SelectItem key={String(days)} value={String(days)}>
-                      {days === null ? t('apiTokens.never') : t('apiTokens.days', { count: days })}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            <Controller
+              control={control}
+              name="expiresInDays"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor="token-expiry">{t('apiTokens.expiry')}</FieldLabel>
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(next) => field.onChange(next === 'null' ? null : Number(next))}
+                    disabled={create.isPending}
+                  >
+                    <SelectTrigger id="token-expiry">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LIFETIMES.map((days) => (
+                        <SelectItem key={String(days)} value={String(days)}>
+                          {days === null
+                            ? t('apiTokens.never')
+                            : t('apiTokens.days', { count: days })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
 
             {organizations.data && organizations.data.length > 0 && (
-              <Field>
-                <FieldLabel>{t('apiTokens.organizations')}</FieldLabel>
-                <p className="text-xs text-muted-foreground">{t('apiTokens.organizationsHint')}</p>
-                <div className="flex flex-col gap-2">
-                  {organizations.data.map((organization) => (
-                    <div key={organization.id} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`org-${organization.id}`}
-                        checked={organizationIds.includes(organization.id)}
-                        onCheckedChange={(checked) =>
-                          setOrganizationIds((current) =>
-                            checked
-                              ? [...current, organization.id]
-                              : current.filter((id) => id !== organization.id),
-                          )
-                        }
-                        disabled={create.isPending}
-                      />
-                      <Label htmlFor={`org-${organization.id}`} className="cursor-pointer text-sm">
-                        {organization.name}
-                      </Label>
+              <Controller
+                control={control}
+                name="organizationIds"
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>{t('apiTokens.organizations')}</FieldLabel>
+                    <p className="text-xs text-muted-foreground">
+                      {t('apiTokens.organizationsHint')}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {organizations.data.map((organization) => (
+                        <div key={organization.id} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`org-${organization.id}`}
+                            checked={field.value.includes(organization.id)}
+                            onCheckedChange={(checked) =>
+                              field.onChange(
+                                checked
+                                  ? [...field.value, organization.id]
+                                  : field.value.filter((id) => id !== organization.id),
+                              )
+                            }
+                            disabled={create.isPending}
+                          />
+                          <Label
+                            htmlFor={`org-${organization.id}`}
+                            className="cursor-pointer text-sm"
+                          >
+                            {organization.name}
+                          </Label>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </Field>
+                  </Field>
+                )}
+              />
             )}
 
             <Separator />
 
-            <Button type="submit" disabled={create.isPending || scopes.length === 0 || !name}>
+            <Button type="submit" disabled={create.isPending}>
               {create.isPending ? t('common.loading') : t('apiTokens.createButton')}
             </Button>
           </FieldGroup>
