@@ -1,4 +1,9 @@
+export type { AgentGradient } from './components/agent-card';
+export { AGENT_GRADIENTS, AgentCard } from './components/agent-card';
 export { Alert, AlertDescription, AlertTitle } from './components/alert';
+export { AppIcon, AppTile } from './components/app-icon';
+export type { AsyncOption } from './components/async-multi-select';
+export { AsyncMultiSelect } from './components/async-multi-select';
 export {
   Avatar,
   AvatarBadge,
@@ -8,6 +13,8 @@ export {
   AvatarImage,
 } from './components/avatar';
 export { Badge, badgeVariants } from './components/badge';
+export { BrandMark } from './components/brand-mark';
+export { BreakdownRow, TopItemRow } from './components/breakdown-row';
 export { Button, buttonVariants } from './components/button';
 export {
   Card,
@@ -27,6 +34,7 @@ export {
   ChartTooltip,
   ChartTooltipContent,
 } from './components/chart';
+export { ChatBubble, ChatMark, ChatTyping } from './components/chat-bubble';
 export { Checkbox } from './components/checkbox';
 export {
   Command,
@@ -39,6 +47,8 @@ export {
   CommandSeparator,
   CommandShortcut,
 } from './components/command';
+export { Composer } from './components/composer';
+export { DeltaText } from './components/delta-text';
 export {
   Dialog,
   DialogClose,
@@ -80,6 +90,7 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from './components/dropdown-menu';
+export { FeatureRow } from './components/feature-row';
 export {
   Field,
   FieldContent,
@@ -92,6 +103,7 @@ export {
   FieldSet,
   FieldTitle,
 } from './components/field';
+export { IconButton, iconButtonVariants } from './components/icon-button';
 export { Input } from './components/input';
 export {
   InputGroup,
@@ -101,6 +113,7 @@ export {
   InputGroupText,
   InputGroupTextarea,
 } from './components/input-group';
+export { Kpi, KpiCard } from './components/kpi';
 export { Label } from './components/label';
 export {
   Pagination,
@@ -120,7 +133,10 @@ export {
   PopoverTrigger,
 } from './components/popover';
 export { Progress } from './components/progress';
+export { PromptCard } from './components/prompt-card';
 export { RadioGroup, RadioGroupItem } from './components/radio-group';
+export { RecentItem } from './components/recent-item';
+export { SearchInput } from './components/search-input';
 export {
   Select,
   SelectContent,
@@ -133,6 +149,13 @@ export {
   SelectTrigger,
   SelectValue,
 } from './components/select';
+export { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentGroup, AttachmentMedia, AttachmentTitle, AttachmentTrigger } from './components/attachment';
+export { Bubble, BubbleContent, BubbleGroup, BubbleReactions } from './components/bubble';
+export { Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader } from './components/message';
+export { MessageScroller, MessageScrollerButton, MessageScrollerContent, MessageScrollerItem, MessageScrollerProvider, MessageScrollerViewport, useMessageScroller, useMessageScrollerScrollable, useMessageScrollerVisibility } from './components/message-scroller';
+export { Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoiceDescription, QuestionnaireChoices, QuestionnaireDescription, QuestionnaireError, QuestionnaireInput, QuestionnaireItem, QuestionnaireNext, QuestionnairePrevious, QuestionnaireProgress, QuestionnaireSkip, QuestionnaireSubmit, QuestionnaireTitle } from './components/questionnaire';
+export { Kbd } from './components/kbd';
+export { SelectMenu } from './components/select-menu';
 export { Separator } from './components/separator';
 export {
   Sheet,
@@ -172,6 +195,8 @@ export {
 } from './components/sidebar';
 export { Skeleton } from './components/skeleton';
 export { Toaster } from './components/sonner';
+export { Sparkline } from './components/sparkline';
+export { Stepper } from './components/stepper';
 export { Switch } from './components/switch';
 export {
   Table,
@@ -184,11 +209,10 @@ export {
   TableRow,
 } from './components/table';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/tabs';
+export { Tag, tagVariants } from './components/tag';
 export { Textarea } from './components/textarea';
 export { Toggle, toggleVariants } from './components/toggle';
 export { ToggleGroup, ToggleGroupItem } from './components/toggle-group';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/tooltip';
-
 export { useIsMobile } from './hooks/use-mobile';
-
 export { cn } from './lib/utils';
