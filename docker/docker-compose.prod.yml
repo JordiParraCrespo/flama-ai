@@ -43,8 +43,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-flama}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       FRONTEND_URL: ${FRONTEND_URL}
     ports:
       - "3001:3001"
@@ -54,8 +54,8 @@ services:
     restart: always
     depends_on:
       - api
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:3001}
+    # No runtime environment: the web image is a static Vite build served by
+    # nginx — VITE_* values are baked in at image build time.
     ports:
       - "3000:3000"
 

@@ -31,6 +31,7 @@ flama/
 │   ├── design-system/
 │   │   ├── web/          # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
 │   │   └── mobile/       # NativeWind + rn-primitives (@flama/design-system-mobile)
+│   ├── env/              # Root .env loader (@flama/env)
 │   ├── frontend/         # Clean architecture, InversifyJS DI, Zustand stores
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files
@@ -47,6 +48,11 @@ usage.
 ### General
 
 - Node 22 LTS, pnpm workspaces, Turborepo for task orchestration
+- **One `.env`, at the repo root**; the root `.env.example` is its
+  documentation (a note per variable, nothing unread in it). Never add a
+  per-package `.env`. Node apps load it via `@flama/env` (real env vars always
+  win); `apps/web` reads it through Vite's `envDir`; `apps/mobile` loads it in
+  `app.config.ts`
 - Biome for linting and formatting (not ESLint/Prettier)
 - Conventional commits enforced via commitlint
 - Independent versioning per package via Changesets
@@ -127,7 +133,8 @@ behalf, and effective access is the intersection — see
 - Vite SPA built to static assets, served by nginx in Docker
 - Tailwind CSS v4, shadcn/ui components
 - react-i18next for i18n (translations from `packages/translations`)
-- Vite env vars (`import.meta.env`, `VITE_`-prefixed) for configuration
+- Vite env vars (`import.meta.env`, `VITE_`-prefixed) for configuration, read
+  from the root `.env` (`envDir` in `vite.config.ts` points at the repo root)
 
 ### Mobile (apps/mobile)
 
@@ -153,6 +160,7 @@ Split into two independently versioned packages that share a mirrored component 
 
 ```
 packages/config           → used by all apps and packages (tsconfig extends)
+packages/env              → used by api, mcp, mobile (root .env loader)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
 packages/auth             → used by api, web, mobile (shared Better Auth config)
 packages/backend/core     → used by api, other backend packages
@@ -191,6 +199,8 @@ pnpm changeset          # Create a changeset for versioning
 ## When modifying code
 
 - Shared types/schemas go in `packages/shared`, not duplicated in apps
+- New env vars go in the root `.env.example` with a note on what they do; never
+  add a per-package `.env` (see `.agents/rules/api-config.md`)
 - New API endpoints need Swagger decorators for auto-generated client
 - After API changes, regenerate client: `pnpm generate:api-client`
 - New translations go in `packages/translations/{locale}/index.json`

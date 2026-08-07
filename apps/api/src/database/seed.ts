@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@flama/env/load';
 import { OutboxMessageSchema } from '@flama/backend-ddd';
 import type { Role } from '@flama/shared';
 import { DataSource } from 'typeorm';

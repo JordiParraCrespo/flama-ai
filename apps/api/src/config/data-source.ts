@@ -1,3 +1,4 @@
+import '@flama/env/load';
 import { OutboxMessageSchema } from '@flama/backend-ddd';
 import { DataSource } from 'typeorm';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
