@@ -2489,6 +2489,26 @@
         "tags": ["Health"]
       }
     },
+    "/api/v1/health/capabilities": {
+      "get": {
+        "operationId": "deploymentCapabilities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Which client-relevant optional features (OAuth providers, Stripe billing) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Client-facing capabilities of this deployment",
+        "tags": ["Health"]
+      }
+    },
     "/api/v1/ready": {
       "get": {
         "operationId": "readiness",
@@ -4282,6 +4302,24 @@
           }
         },
         "required": ["newPassword"]
+      },
+      "CapabilitiesResponseDto": {
+        "type": "object",
+        "properties": {
+          "google_oauth": {
+            "type": "boolean",
+            "description": "Sign-in with Google is configured."
+          },
+          "github_oauth": {
+            "type": "boolean",
+            "description": "Sign-in with GitHub is configured."
+          },
+          "stripe_billing": {
+            "type": "boolean",
+            "description": "Stripe billing is configured."
+          }
+        },
+        "required": ["google_oauth", "github_oauth", "stripe_billing"]
       },
       "CreateCheckoutRequest": {
         "type": "object",

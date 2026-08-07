@@ -41,6 +41,7 @@
       "noAccount": "¿No tienes una cuenta?",
       "signUp": "Regístrate",
       "invalidCredentials": "Correo electrónico o contraseña inválidos",
+      "noSocialProviders": "El inicio de sesión social no está configurado en este despliegue. Define GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET o GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET en la API para activarlo.",
       "failedTitle": "Error al iniciar sesión",
       "failedMessage": "No se pudo iniciar sesión."
     },
