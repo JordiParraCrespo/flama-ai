@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DomainEntity, DomainNotVerifiedError } from '../domain/domain.entity';
+import { DomainEntity } from '../domain/domain.entity';
 import { Hostname } from '../domain/value-objects/hostname.value-object';
 
 function connect(overrides: Partial<Parameters<typeof DomainEntity.connect>[0]> = {}) {
@@ -62,16 +62,8 @@ describe('DomainEntity.connect', () => {
 });
 
 describe('DomainEntity.update', () => {
-  it('refuses to activate an unverified domain', () => {
+  it('activates and raises a status-changed event', () => {
     const domain = connect();
-
-    expect(() => domain.update({ status: 'active' })).toThrow(DomainNotVerifiedError);
-    expect(domain.status).toBe('draft');
-  });
-
-  it('activates once verified and raises a status-changed event', () => {
-    const domain = connect();
-    domain.markVerified();
     domain.clearEvents();
 
     domain.update({ status: 'active' });
@@ -81,9 +73,16 @@ describe('DomainEntity.update', () => {
     expect(event).toMatchObject({ previousStatus: 'draft', status: 'active' });
   });
 
-  it('allows pausing a verified, active domain', () => {
+  it('activates without requiring verification, so `active` is reachable', () => {
     const domain = connect();
-    domain.markVerified();
+
+    expect(domain.isVerified).toBe(false);
+    expect(() => domain.update({ status: 'active' })).not.toThrow();
+    expect(domain.status).toBe('active');
+  });
+
+  it('allows pausing an active domain', () => {
+    const domain = connect();
     domain.update({ status: 'active' });
     domain.clearEvents();
 

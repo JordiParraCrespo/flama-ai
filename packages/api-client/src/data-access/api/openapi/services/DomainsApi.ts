@@ -41,7 +41,7 @@ export class DomainsApi {
                 'page': page,
             },
             errors: {
-                400: `DOMAIN_005 — No active organization on the session`,
+                400: `DOMAIN_003 — No active organization on the session`,
             },
         });
     }
@@ -61,7 +61,7 @@ export class DomainsApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                400: `DOMAIN_005 — No active organization on the session`,
+                400: `DOMAIN_003 — No active organization on the session`,
                 409: `DOMAIN_002 — Domain is already tracked in this organization`,
             },
         });
@@ -82,14 +82,14 @@ export class DomainsApi {
                 'id': id,
             },
             errors: {
-                403: `DOMAIN_006 — Caller has no access to this domain`,
+                403: `DOMAIN_004 — Caller has no access to this domain`,
                 404: `DOMAIN_001 — Domain not found`,
             },
         });
     }
     /**
      * Update a domain
-     * Changes the protocol, owner or lifecycle status. Activating a domain requires it to be verified first.
+     * Changes the protocol, owner or lifecycle status.
      * @param id
      * @param requestBody
      * @returns DomainResponseDto
@@ -108,9 +108,8 @@ export class DomainsApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                403: `DOMAIN_006 — Caller has no access to this domain`,
+                403: `DOMAIN_004 — Caller has no access to this domain`,
                 404: `DOMAIN_001 — Domain not found`,
-                409: `DOMAIN_004 — Domain must be verified before it can be activated`,
             },
         });
     }
@@ -131,7 +130,7 @@ export class DomainsApi {
                 'id': id,
             },
             errors: {
-                403: `DOMAIN_006 — Caller has no access to this domain`,
+                403: `DOMAIN_004 — Caller has no access to this domain`,
                 404: `DOMAIN_001 — Domain not found`,
             },
         });
@@ -175,6 +174,7 @@ export class DomainsApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                403: `DOMAIN_005 — Target user is not a member of this organization`,
                 404: `DOMAIN_001 — One or more domain ids are unknown in this organization`,
             },
         });

@@ -38,7 +38,7 @@ export class FindDomainByIdHttpController {
   @ApiProblemResponse({
     status: 403,
     description: 'Caller has no access to this domain',
-    code: 'DOMAIN_006',
+    code: 'DOMAIN_004',
   })
   async findById(
     @Req() request: RequestWithSession & { ability?: AppAbility },

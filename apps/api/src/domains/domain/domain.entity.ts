@@ -168,16 +168,17 @@ export class DomainEntity extends AggregateRoot<DomainProps> {
 
   /**
    * Move between lifecycle states, raising an event so metric ingestion can
-   * start or stop. Activating an unverified domain is refused: it would ingest
-   * data for a hostname the workspace has not proven it controls.
+   * start or stop.
+   *
+   * Activation is deliberately *not* gated on `verifiedAt`. Ownership only
+   * matters once something actually ingests for the hostname, and the first
+   * ingestion path (Search Console) will only ever return properties Google
+   * has already verified the account owns. Gating here instead would make
+   * `active` unreachable, since nothing yet performs a verification.
    */
   private changeStatus(status: DomainStatus): void {
     const previousStatus = this.props.status;
     if (previousStatus === status) return;
-
-    if (status === 'active' && !this.isVerified) {
-      throw new DomainNotVerifiedError(this.props.hostname.value);
-    }
 
     this.props.status = status;
     this.addEvent(
@@ -196,16 +197,5 @@ export class DomainEntity extends AggregateRoot<DomainProps> {
     if (!this.props.organizationId) {
       throw new ArgumentNotProvidedException('Domain organizationId cannot be empty');
     }
-  }
-}
-
-/**
- * Thrown when activation is attempted on an unverified domain. Kept in the
- * domain layer (no HTTP status) and translated to `DOMAIN_004` by the handler.
- */
-export class DomainNotVerifiedError extends Error {
-  constructor(hostname: string) {
-    super(`Domain ${hostname} must be verified before it can be activated`);
-    this.name = 'DomainNotVerifiedError';
   }
 }

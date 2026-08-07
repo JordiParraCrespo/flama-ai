@@ -104,6 +104,7 @@ describe('API tokens & scopes (integration)', () => {
       '../src/migrations/1781100000000-AddApiTokensAndOAuth'
     );
     const { AddOutbox1781300000000 } = await import('../src/migrations/1781300000000-AddOutbox');
+    const { AddDomains1781400000000 } = await import('../src/migrations/1781400000000-AddDomains');
 
     const migrationRunner = new DataSource({
       type: 'postgres',
@@ -118,6 +119,9 @@ describe('API tokens & scopes (integration)', () => {
         AddAdminAndOrganizations1781000000000,
         AddApiTokensAndOAuth1781100000000,
         AddOutbox1781300000000,
+        // Required by every authenticated request: `DomainAccessContributor`
+        // reads `user_domain_access` whenever an ability is built.
+        AddDomains1781400000000,
       ],
     });
 

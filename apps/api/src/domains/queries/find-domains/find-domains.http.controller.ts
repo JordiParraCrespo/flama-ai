@@ -64,7 +64,7 @@ export class FindDomainsHttpController {
   @ApiProblemResponse({
     status: 400,
     description: 'No active organization on the session',
-    code: 'DOMAIN_005',
+    code: 'DOMAIN_003',
   })
   async findAll(
     @Req() request: RequestWithSession,

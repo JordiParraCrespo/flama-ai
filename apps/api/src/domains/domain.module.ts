@@ -1,6 +1,7 @@
 import { Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { DomainRemovedDomainEventHandler } from './application/event-handlers/domain-removed.domain-event-handler';
 import { ConnectDomainHttpController } from './commands/connect-domain/connect-domain.http.controller';
 import { ConnectDomainService } from './commands/connect-domain/connect-domain.service';
@@ -12,9 +13,14 @@ import { UpdateDomainHttpController } from './commands/update-domain/update-doma
 import { UpdateDomainService } from './commands/update-domain/update-domain.service';
 import { DomainOrmEntity } from './database/domain.orm-entity';
 import { DomainRepository } from './database/domain.repository';
+import { OrganizationMembershipRepository } from './database/organization-membership.repository';
 import { UserDomainAccessOrmEntity } from './database/user-domain-access.orm-entity';
 import { UserDomainAccessRepository } from './database/user-domain-access.repository';
-import { DOMAIN_REPOSITORY, USER_DOMAIN_ACCESS_REPOSITORY } from './domain.di-tokens';
+import {
+  DOMAIN_REPOSITORY,
+  ORGANIZATION_MEMBERSHIP_REPOSITORY,
+  USER_DOMAIN_ACCESS_REPOSITORY,
+} from './domain.di-tokens';
 import { DomainMapper } from './domain.mapper';
 import { FindDomainByIdHttpController } from './queries/find-domain-by-id/find-domain-by-id.http.controller';
 import { FindDomainByIdQueryHandler } from './queries/find-domain-by-id/find-domain-by-id.query-handler';
@@ -60,6 +66,10 @@ const repositories: Provider[] = [
     provide: USER_DOMAIN_ACCESS_REPOSITORY,
     useClass: UserDomainAccessRepository,
   },
+  {
+    provide: ORGANIZATION_MEMBERSHIP_REPOSITORY,
+    useClass: OrganizationMembershipRepository,
+  },
 ];
 
 // Contributes the per-domain narrowing rules to every ability the
@@ -69,7 +79,10 @@ const repositories: Provider[] = [
 const abilityContributors: Provider[] = [DomainAccessContributor];
 
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([DomainOrmEntity, UserDomainAccessOrmEntity])],
+  imports: [
+    CqrsModule,
+    TypeOrmModule.forFeature([DomainOrmEntity, UserDomainAccessOrmEntity, MemberOrmEntity]),
+  ],
   controllers: [...httpControllers],
   providers: [
     ...commandHandlers,

@@ -2923,7 +2923,7 @@
             }
           },
           "400": {
-            "description": "DOMAIN_005 — No active organization on the session",
+            "description": "DOMAIN_003 — No active organization on the session",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2967,7 +2967,7 @@
             }
           },
           "400": {
-            "description": "DOMAIN_005 — No active organization on the session",
+            "description": "DOMAIN_003 — No active organization on the session",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3021,7 +3021,7 @@
             }
           },
           "403": {
-            "description": "DOMAIN_006 — Caller has no access to this domain",
+            "description": "DOMAIN_004 — Caller has no access to this domain",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3050,7 +3050,7 @@
         "tags": ["Domains"]
       },
       "patch": {
-        "description": "Changes the protocol, owner or lifecycle status. Activating a domain requires it to be verified first.",
+        "description": "Changes the protocol, owner or lifecycle status.",
         "operationId": "update",
         "parameters": [
           {
@@ -3084,7 +3084,7 @@
             }
           },
           "403": {
-            "description": "DOMAIN_006 — Caller has no access to this domain",
+            "description": "DOMAIN_004 — Caller has no access to this domain",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3095,16 +3095,6 @@
           },
           "404": {
             "description": "DOMAIN_001 — Domain not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "DOMAIN_004 — Domain must be verified before it can be activated",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3140,7 +3130,7 @@
             "description": "Domain removed"
           },
           "403": {
-            "description": "DOMAIN_006 — Caller has no access to this domain",
+            "description": "DOMAIN_004 — Caller has no access to this domain",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3233,6 +3223,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserDomainAccessResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "DOMAIN_005 — Target user is not a member of this organization",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }

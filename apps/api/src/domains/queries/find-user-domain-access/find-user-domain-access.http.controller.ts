@@ -1,10 +1,11 @@
-import { Controller, Get, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
+import { type RequestWithSession, requireActiveOrganizationId } from '../../active-organization';
 import { UserDomainAccessResponseDto } from '../../dtos/user-domain-access.response.dto';
 import { FindUserDomainAccessQuery } from './find-user-domain-access.query';
 
@@ -25,9 +26,14 @@ export class FindUserDomainAccessHttpController {
       'Returns the domains the user is restricted to. `unrestricted` is true when no restriction is recorded and their role applies workspace-wide.',
   })
   @ApiResponse({ status: 200, type: UserDomainAccessResponseDto })
-  findOne(@Param('userId', ParseUUIDPipe) userId: string): Promise<UserDomainAccessResponseDto> {
+  findOne(
+    @Req() request: RequestWithSession,
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<UserDomainAccessResponseDto> {
+    const organizationId = requireActiveOrganizationId(request);
+
     return this.queryBus.execute<FindUserDomainAccessQuery, UserDomainAccessResponseDto>(
-      new FindUserDomainAccessQuery({ userId }),
+      new FindUserDomainAccessQuery({ userId, organizationId }),
     );
   }
 }

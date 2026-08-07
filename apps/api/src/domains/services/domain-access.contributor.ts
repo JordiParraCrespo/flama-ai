@@ -17,9 +17,10 @@ import { USER_DOMAIN_ACCESS_REPOSITORY } from '../domain.di-tokens';
  * every existing instance-level `ability.can(...)` check picks the restriction
  * up for free.
  *
- * No rows for a user means unrestricted — their role applies workspace-wide.
- * That is deliberate: it keeps the common case (and every pre-existing user)
- * working without a backfill, and makes granting access an explicit act.
+ * No rows for a user in an organization means unrestricted **there** — their
+ * role applies to every domain in it. That default keeps the common case (and
+ * every pre-existing user) working without a backfill, and makes granting
+ * access an explicit act.
  */
 @Injectable()
 export class DomainAccessContributor implements AbilityContributor, OnModuleInit {
@@ -47,17 +48,23 @@ export class DomainAccessContributor implements AbilityContributor, OnModuleInit
   async contribute(user: AuthenticatedUser, _scope: AbilityScope): Promise<PermissionDefinition[]> {
     if (!user.id) return [];
 
-    const allowedDomainIds = await this.userDomainAccessRepository.findDomainIdsForUser(user.id);
-    if (allowedDomainIds.length === 0) return [];
+    const restrictions = await this.userDomainAccessRepository.findRestrictionsForUser(user.id);
+    if (restrictions.length === 0) return [];
 
-    // "Cannot touch anything outside my list." Expressed as $nin rather than a
-    // permissive $in so the rule only ever subtracts from what a role granted.
-    return DomainAccessContributor.SCOPED_SUBJECTS.map(({ subject, field }) => ({
-      action: 'manage',
-      subject,
-      conditions: { [field]: { $nin: allowedDomainIds } },
-      inverted: true,
-      reason: 'You do not have access to this domain',
-    }));
+    // One rule per organization the user is restricted in, each qualified by
+    // that `organizationId`. A single unqualified rule would deny every domain
+    // in the user's *other* organizations, where they are unrestricted.
+    return restrictions.flatMap(({ organizationId, domainIds }) =>
+      DomainAccessContributor.SCOPED_SUBJECTS.map(({ subject, field }) => ({
+        action: 'manage',
+        subject,
+        // "Cannot touch anything in this organization outside my list."
+        // Expressed as $nin rather than a permissive $in so the rule only ever
+        // subtracts from what a role granted.
+        conditions: { organizationId, [field]: { $nin: domainIds } },
+        inverted: true,
+        reason: 'You do not have access to this domain',
+      })),
+    );
   }
 }

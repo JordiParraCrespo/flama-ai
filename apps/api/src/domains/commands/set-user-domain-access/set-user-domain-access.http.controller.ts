@@ -42,6 +42,11 @@ export class SetUserDomainAccessHttpController {
   })
   @ApiResponse({ status: 200, type: UserDomainAccessResponseDto })
   @ApiProblemResponse({
+    status: 403,
+    description: 'Target user is not a member of this organization',
+    code: 'DOMAIN_005',
+  })
+  @ApiProblemResponse({
     status: 404,
     description: 'One or more domain ids are unknown in this organization',
     code: 'DOMAIN_001',
@@ -62,7 +67,7 @@ export class SetUserDomainAccessHttpController {
     );
 
     return this.queryBus.execute<FindUserDomainAccessQuery, UserDomainAccessResponseDto>(
-      new FindUserDomainAccessQuery({ userId }),
+      new FindUserDomainAccessQuery({ userId, organizationId }),
     );
   }
 }

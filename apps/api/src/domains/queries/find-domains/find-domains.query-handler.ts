@@ -29,6 +29,7 @@ export class FindDomainsQueryHandler
   async execute(query: FindDomainsQuery): Promise<Paginated<DomainEntity>> {
     const restrictedTo = await this.userDomainAccessRepository.findDomainIdsForUser(
       query.requesterId,
+      query.organizationId,
     );
 
     return this.domainRepository.findDomains({
@@ -38,8 +39,9 @@ export class FindDomainsQueryHandler
       status: query.status,
       ownerId: query.ownerId,
       search: query.search,
-      // No rows recorded means unrestricted, which the port expresses as
-      // `undefined` — an empty array would mean "restricted to nothing".
+      // No rows recorded *in this organization* means unrestricted here, which
+      // the port expresses as `undefined` — an empty array would mean
+      // "restricted to nothing".
       allowedDomainIds: restrictedTo.length === 0 ? undefined : restrictedTo,
     });
   }

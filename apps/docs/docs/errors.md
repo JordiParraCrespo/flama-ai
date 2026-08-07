@@ -119,19 +119,19 @@ one code so the endpoint cannot be used as a probing oracle.
 
 ## Domains
 
-| Code                               | Title                                              | HTTP |
-| ---------------------------------- | -------------------------------------------------- | ---- |
-| `DOMAIN_001` <a id="domain_001" /> | Domain not found                                   | 404  |
-| `DOMAIN_002` <a id="domain_002" /> | Domain is already tracked in this organization     | 409  |
-| `DOMAIN_003` <a id="domain_003" /> | Hostname is not a valid bare domain name           | 400  |
-| `DOMAIN_004` <a id="domain_004" /> | Domain must be verified before it can be activated | 409  |
-| `DOMAIN_005` <a id="domain_005" /> | No active organization on the session              | 400  |
-| `DOMAIN_006` <a id="domain_006" /> | You do not have access to this domain              | 403  |
+| Code                               | Title                                          | HTTP |
+| ---------------------------------- | ---------------------------------------------- | ---- |
+| `DOMAIN_001` <a id="domain_001" /> | Domain not found                               | 404  |
+| `DOMAIN_002` <a id="domain_002" /> | Domain is already tracked in this organization | 409  |
+| `DOMAIN_003` <a id="domain_003" /> | No active organization on the session          | 400  |
+| `DOMAIN_004` <a id="domain_004" /> | You do not have access to this domain          | 403  |
+| `DOMAIN_005` <a id="domain_005" /> | User is not a member of this organization      | 403  |
 
 A domain belonging to another organization is reported as `DOMAIN_001`
-(not found) rather than `DOMAIN_006`, so ids cannot be probed across tenants.
-`DOMAIN_006` is reserved for a domain the caller can see the existence of but
-has not been granted access to.
+(not found) rather than `DOMAIN_004`, so ids cannot be probed across tenants.
+`DOMAIN_004` is for a domain inside the caller's own organization that their
+per-domain access does not cover. `DOMAIN_005` behaves the same way for users:
+a user in another tenant is indistinguishable from one that does not exist.
 
 ## Domain invariants
 

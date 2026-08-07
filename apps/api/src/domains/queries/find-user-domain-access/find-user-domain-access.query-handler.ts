@@ -15,7 +15,10 @@ export class FindUserDomainAccessQueryHandler
   ) {}
 
   async execute(query: FindUserDomainAccessQuery): Promise<UserDomainAccessResponseDto> {
-    const domainIds = await this.userDomainAccessRepository.findDomainIdsForUser(query.userId);
+    const domainIds = await this.userDomainAccessRepository.findDomainIdsForUser(
+      query.userId,
+      query.organizationId,
+    );
 
     return {
       userId: query.userId,

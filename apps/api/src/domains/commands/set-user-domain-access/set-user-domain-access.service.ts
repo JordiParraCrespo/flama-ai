@@ -2,18 +2,31 @@ import { AppError } from '@flama/backend-core';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { DomainRepositoryPort } from '../../database/domain.repository.port';
+import type { OrganizationMembershipRepositoryPort } from '../../database/organization-membership.repository.port';
 import type { UserDomainAccessRepositoryPort } from '../../database/user-domain-access.repository.port';
 import { DomainErrors } from '../../domain/domain.errors';
-import { DOMAIN_REPOSITORY, USER_DOMAIN_ACCESS_REPOSITORY } from '../../domain.di-tokens';
+import {
+  DOMAIN_REPOSITORY,
+  ORGANIZATION_MEMBERSHIP_REPOSITORY,
+  USER_DOMAIN_ACCESS_REPOSITORY,
+} from '../../domain.di-tokens';
 import { SetUserDomainAccessCommand } from './set-user-domain-access.command';
 
 /**
- * Replaces the set of domains a user may reach.
+ * Replaces the set of domains a user may reach, within one organization.
  *
- * Every id is verified to exist **in the caller's organization** before
- * anything is written. Without that check an admin could grant access to a
- * domain id belonging to another tenant, and the join row would silently widen
- * that user's reach across the tenant boundary.
+ * Two checks stand between the caller and the write, and both are tenant
+ * boundaries rather than mere validation:
+ *
+ * 1. **The target user must belong to the organization.** `userId` arrives
+ *    from the path and is otherwise unconstrained, so without this an admin of
+ *    organization A could restrict — or silently clear — the domain access of
+ *    a user who only belongs to organization B.
+ * 2. **Every domain id must exist in the organization.** Otherwise a caller
+ *    could grant reach into another tenant's domain by id.
+ *
+ * The replacement itself is scoped to `organizationId` by the repository, so a
+ * user restricted in several organizations keeps the others intact.
  */
 @CommandHandler(SetUserDomainAccessCommand)
 export class SetUserDomainAccessService
@@ -24,9 +37,26 @@ export class SetUserDomainAccessService
     private readonly userDomainAccessRepository: UserDomainAccessRepositoryPort,
     @Inject(DOMAIN_REPOSITORY)
     private readonly domainRepository: DomainRepositoryPort,
+    @Inject(ORGANIZATION_MEMBERSHIP_REPOSITORY)
+    private readonly membershipRepository: OrganizationMembershipRepositoryPort,
   ) {}
 
   async execute(command: SetUserDomainAccessCommand): Promise<void> {
+    const isMember = await this.membershipRepository.isMember(
+      command.userId,
+      command.organizationId,
+    );
+    // Reported as "not a member" rather than "no such user": the caller is
+    // entitled to know about their own organization's membership and nothing
+    // beyond it, so a user in another tenant looks identical to one that does
+    // not exist.
+    if (!isMember) {
+      throw new AppError(DomainErrors.USER_NOT_IN_ORGANIZATION, {
+        detail: `User ${command.userId} is not a member of this organization`,
+        extensions: { userId: command.userId },
+      });
+    }
+
     const requested = [...new Set(command.domainIds)];
 
     if (requested.length > 0) {
@@ -42,6 +72,10 @@ export class SetUserDomainAccessService
       }
     }
 
-    await this.userDomainAccessRepository.replaceForUser(command.userId, requested);
+    await this.userDomainAccessRepository.replaceForUser(
+      command.userId,
+      command.organizationId,
+      requested,
+    );
   }
 }

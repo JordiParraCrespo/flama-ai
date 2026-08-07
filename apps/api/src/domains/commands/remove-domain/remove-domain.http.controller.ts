@@ -52,7 +52,7 @@ export class RemoveDomainHttpController {
   @ApiProblemResponse({
     status: 403,
     description: 'Caller has no access to this domain',
-    code: 'DOMAIN_006',
+    code: 'DOMAIN_004',
   })
   async remove(
     @Req() request: RequestWithSession & { ability?: AppAbility },

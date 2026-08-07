@@ -43,8 +43,7 @@ export class UpdateDomainHttpController {
   @RequireScopes('domains:write')
   @ApiOperation({
     summary: 'Update a domain',
-    description:
-      'Changes the protocol, owner or lifecycle status. Activating a domain requires it to be verified first.',
+    description: 'Changes the protocol, owner or lifecycle status.',
   })
   @ApiResponse({ status: 200, type: DomainResponseDto })
   @ApiProblemResponse({
@@ -55,11 +54,6 @@ export class UpdateDomainHttpController {
   @ApiProblemResponse({
     status: 403,
     description: 'Caller has no access to this domain',
-    code: 'DOMAIN_006',
-  })
-  @ApiProblemResponse({
-    status: 409,
-    description: 'Domain must be verified before it can be activated',
     code: 'DOMAIN_004',
   })
   async update(
