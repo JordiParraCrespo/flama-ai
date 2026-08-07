@@ -18,6 +18,9 @@ wired into the API.
 | `ZodValidationPipe`                                       | Validates DTOs against Zod schemas (`nestjs-zod`)                       |
 | `SanitizePipe`                                            | Input sanitization pipe                                                 |
 | `RequestContextInterceptor` / `RequestContextService`     | Per-request context propagation                                         |
+| `LoggingModule`, `buildPinoHttpOptions`                   | Hardened request logging (`nestjs-pino`): no headers/query/bodies       |
+| `UserContextInterceptor`                                  | Attaches `userId` + credential scopes to the request log context        |
+| `createAuthRouteLoggingMiddleware`                        | Request logging for Better Auth routes (its `middleware` option)        |
 | `PaginatedRequest`, `paginationSchema`                    | Standard pagination query request                                       |
 | `Mapper`                                                  | Domain ↔ persistence/response mapper interface                          |
 

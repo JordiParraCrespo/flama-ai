@@ -156,3 +156,45 @@ Apply `@Throttle()` on public-facing endpoints:
 ## Versioning
 
 All routes use URI versioning with `@Version('1')`. The default version is `v1`.
+
+## Logging
+
+Request logging comes from `LoggingModule` in `@flama/backend-core`
+(`nestjs-pino` with hardened defaults), imported once in `AppModule`.
+
+- **Never log headers, query strings, or request bodies.** They routinely carry
+  session cookies, bearer tokens, and personal data. The module's serializers
+  drop them (and redact credential headers as a backstop) — log only the
+  specific fields a handler knows are safe.
+- **Structured fields, one object per line.** Nest prints one line per
+  argument, so `logger.log('Saved', { userId })` emits two lines. Hoist fields
+  to the top level of a single object instead:
+
+  ```typescript
+  // WRONG — two log lines; fields never attach to the message
+  this.logger.log('Saved user', { userId });
+
+  // CORRECT — one JSON line with searchable top-level fields
+  this.logger.log({ message: 'Saved user', userId });
+  ```
+
+- **Errors pass the stack as the second argument.** Passing the error object
+  itself loses the trace:
+
+  ```typescript
+  this.logger.error(
+    { message: 'Subscription sync failed', subscriptionId },
+    error instanceof Error ? error.stack : String(error),
+  );
+  ```
+
+- **User context is automatic.** `UserContextInterceptor` attaches `userId`
+  (and the credential's effective `scopes`) to the request log context once the
+  auth guards resolve — never add them by hand, and never log emails or names.
+- **`/api/auth/*` is logged through Better Auth's `middleware` option** on
+  `BetterAuthModule.forRoot` in `AppModule`. Better Auth mounts its handler
+  onto the HTTP adapter before Nest binds consumer middleware, so the main
+  request logger cannot see those routes — keep that option wired.
+- **SQL query logging is opt-in** via `DB_LOG_QUERIES=true`, off by default
+  because it buries every other line under a wall of SELECTs. Even when
+  enabled, `TypeOrmQueryLogger` drops bound parameters — they carry user data.
