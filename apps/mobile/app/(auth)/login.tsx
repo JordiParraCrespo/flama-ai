@@ -7,21 +7,25 @@ import {
   CardTitle,
 } from '@flama/design-system-mobile/card';
 import { Input } from '@flama/design-system-mobile/input';
-import { Label } from '@flama/design-system-mobile/label';
 import { Text } from '@flama/design-system-mobile/text';
 import { useLogin, useSocialLogin } from '@flama/frontend/react';
-import { loginSchema } from '@flama/shared';
+import { type LoginDto, loginSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
-import * as React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { FormField } from '../../components/form-field';
 import { LanguageSwitcher } from '../../components/language-switcher';
+import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+
+  const { control, handleSubmit } = useForm<LoginDto>({
+    resolver: useZodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
   const login = useLogin({
     onSuccess: () => {
@@ -41,14 +45,7 @@ export default function LoginScreen() {
     },
   });
 
-  const handleLogin = () => {
-    const result = loginSchema.safeParse({ email, password });
-    if (!result.success) {
-      Alert.alert(t('validation.title'), result.error.errors[0].message);
-      return;
-    }
-    login.mutate(result.data);
-  };
+  const onSubmit = handleSubmit((values) => login.mutate(values));
 
   return (
     <KeyboardAvoidingView
@@ -65,32 +62,52 @@ export default function LoginScreen() {
             <CardDescription>{t('auth.login.description')}</CardDescription>
           </CardHeader>
           <CardContent className="gap-4">
-            <View className="gap-2">
-              <Label nativeID="email">{t('auth.email')}</Label>
-              <Input
-                placeholder={t('auth.emailPlaceholder')}
-                aria-labelledby="email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-              />
-            </View>
-            <View className="gap-2">
-              <Label nativeID="password">{t('auth.password')}</Label>
-              <Input
-                placeholder={t('auth.passwordPlaceholder')}
-                aria-labelledby="password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoComplete="password"
-                textContentType="password"
-              />
-            </View>
-            <Button onPress={handleLogin} disabled={login.isPending} className="mt-2">
+            <Controller
+              control={control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <FormField
+                  label={t('auth.email')}
+                  nativeID="email"
+                  error={fieldState.error?.message}
+                >
+                  <Input
+                    placeholder={t('auth.emailPlaceholder')}
+                    aria-labelledby="email"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
+                  />
+                </FormField>
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <FormField
+                  label={t('auth.password')}
+                  nativeID="password"
+                  error={fieldState.error?.message}
+                >
+                  <Input
+                    placeholder={t('auth.passwordPlaceholder')}
+                    aria-labelledby="password"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    secureTextEntry
+                    autoComplete="password"
+                    textContentType="password"
+                  />
+                </FormField>
+              )}
+            />
+            <Button onPress={onSubmit} disabled={login.isPending} className="mt-2">
               <Text>{login.isPending ? t('auth.login.submitting') : t('auth.login.submit')}</Text>
             </Button>
             <View className="flex-row items-center gap-3 py-1">

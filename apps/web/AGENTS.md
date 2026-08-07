@@ -12,6 +12,7 @@ Vite SPA (React) built to static assets, served by nginx in Docker.
   `@flama/frontend/react`, wired in `src/providers/query-provider.tsx`)
 - **Tailwind CSS v4** + **shadcn/ui** (from `@flama/design-system-web`)
 - **react-i18next** for i18n (translations from `@flama/translations`)
+- **React Hook Form** + `zodResolver` for forms
 - Config via Vite env vars (`import.meta.env`, `VITE_`-prefixed), loaded from
   the root `.env` (`envDir` points at the repo root — a `.env` in this app
   directory is deliberately not read)
@@ -38,6 +39,24 @@ src/
 - Reusable UI primitives come from `@flama/design-system-web`.
 - Server calls go through `@flama/api-client` (generated) wrapped in
   `@flama/frontend` data-access.
+
+## Forms
+
+React Hook Form, validated by a Zod schema from `@flama/shared`. Full
+convention in [`.agents/rules/forms.md`](../../.agents/rules/forms.md); the
+short version:
+
+- `useForm({ resolver: useZodResolver(schema) })` — always via
+  `src/lib/use-zod-resolver.ts`, never `zodResolver` directly, or the messages
+  come out untranslated.
+- `register()` for plain inputs, `Controller` for `Select`, checkbox groups and
+  other ref-less controls.
+- Errors render through the design system's `Field` / `FieldError`, which
+  already accept React Hook Form's error shape. Set `data-invalid` on the
+  `Field` and `aria-invalid` on the control, and put `noValidate` on the
+  `<form>` so the native layer does not compete.
+- Import auth schemas from `@flama/shared/schemas/auth`, not the package root —
+  see the bundle note in the repo-root `AGENTS.md`.
 
 ## Commands
 

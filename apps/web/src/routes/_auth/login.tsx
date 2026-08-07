@@ -6,14 +6,18 @@ import {
   CardHeader,
   CardTitle,
   Field,
+  FieldError,
   FieldGroup,
   FieldLabel,
   Input,
 } from '@flama/design-system-web';
 import { useLogin } from '@flama/frontend/react';
+import { type LoginDto, loginSchema } from '@flama/shared/schemas/auth';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { SocialLoginButtons } from '../../components/social-login-buttons';
+import { SocialLoginButtons } from '@/components/social-login-buttons';
+import { useZodResolver } from '@/lib/use-zod-resolver';
 
 export const Route = createFileRoute('/_auth/login')({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
@@ -28,21 +32,22 @@ function LoginPage() {
   const { redirect: redirectTo } = Route.useSearch();
   const { mutate, isPending, error } = useLogin();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const email = form.get('email') as string;
-    const password = form.get('password') as string;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginDto>({
+    resolver: useZodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
-    mutate(
-      { email, password },
-      {
-        onSuccess: () => {
-          navigate({ to: redirectTo ?? '/dashboard' });
-        },
+  const onSubmit = handleSubmit((values) => {
+    mutate(values, {
+      onSuccess: () => {
+        navigate({ to: redirectTo ?? '/dashboard' });
       },
-    );
-  }
+    });
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,25 +57,27 @@ function LoginPage() {
           <CardDescription>{t('auth.login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={onSubmit} noValidate>
             <FieldGroup>
               {error && (
                 <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                   {error instanceof Error ? error.message : t('auth.login.invalidCredentials')}
                 </div>
               )}
-              <Field>
+              <Field data-invalid={Boolean(errors.email)}>
                 <FieldLabel htmlFor="email">{t('auth.email')}</FieldLabel>
                 <Input
+                  {...register('email')}
                   id="email"
-                  name="email"
                   type="email"
+                  autoComplete="email"
                   placeholder={t('auth.emailPlaceholder')}
-                  required
+                  aria-invalid={Boolean(errors.email)}
                   disabled={isPending}
                 />
+                <FieldError errors={[errors.email]} />
               </Field>
-              <Field>
+              <Field data-invalid={Boolean(errors.password)}>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">{t('auth.password')}</FieldLabel>
                   <Link
@@ -81,13 +88,15 @@ function LoginPage() {
                   </Link>
                 </div>
                 <Input
+                  {...register('password')}
                   id="password"
-                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   placeholder={t('auth.passwordPlaceholder')}
-                  required
+                  aria-invalid={Boolean(errors.password)}
                   disabled={isPending}
                 />
+                <FieldError errors={[errors.password]} />
               </Field>
               <Field>
                 <Button type="submit" disabled={isPending}>

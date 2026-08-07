@@ -6,13 +6,23 @@ import {
   CardHeader,
   CardTitle,
   Field,
+  FieldError,
   FieldGroup,
   FieldLabel,
   Input,
 } from '@flama/design-system-web';
 import { useResetPassword } from '@flama/frontend/react';
+import { resetPasswordSchema } from '@flama/shared/schemas/auth';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import type { z } from 'zod';
+import { useZodResolver } from '@/lib/use-zod-resolver';
+
+/** The token rides in the URL, so only the password is user input. */
+const newPasswordSchema = resetPasswordSchema.pick({ password: true });
+
+type NewPasswordValues = z.infer<typeof newPasswordSchema>;
 
 export const Route = createFileRoute('/_auth/reset-password')({
   validateSearch: (search: Record<string, unknown>): { token?: string; error?: string } => ({
@@ -28,15 +38,19 @@ function ResetPasswordPage() {
   const { token, error: linkError } = Route.useSearch();
   const { mutate, isPending, error } = useResetPassword();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<NewPasswordValues>({
+    resolver: useZodResolver(newPasswordSchema),
+    defaultValues: { password: '' },
+  });
+
+  const onSubmit = handleSubmit(({ password }) => {
     if (!token) return;
-    const form = new FormData(e.currentTarget);
-    mutate(
-      { token, password: form.get('password') as string },
-      { onSuccess: () => navigate({ to: '/login' }) },
-    );
-  }
+    mutate({ token, password }, { onSuccess: () => navigate({ to: '/login' }) });
+  });
 
   const invalidLink = !token || Boolean(linkError);
 
@@ -53,24 +67,25 @@ function ResetPasswordPage() {
               {t('auth.resetPassword.invalidMessage')}
             </div>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={onSubmit} noValidate>
               <FieldGroup>
                 {error && (
                   <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
                     {error instanceof Error ? error.message : t('auth.resetPassword.error')}
                   </div>
                 )}
-                <Field>
+                <Field data-invalid={Boolean(errors.password)}>
                   <FieldLabel htmlFor="password">{t('auth.resetPassword.newPassword')}</FieldLabel>
                   <Input
+                    {...register('password')}
                     id="password"
-                    name="password"
                     type="password"
+                    autoComplete="new-password"
                     placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
-                    required
-                    minLength={8}
+                    aria-invalid={Boolean(errors.password)}
                     disabled={isPending}
                   />
+                  <FieldError errors={[errors.password]} />
                 </Field>
                 <Field>
                   <Button type="submit" disabled={isPending}>
