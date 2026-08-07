@@ -7,22 +7,24 @@ import {
   CardTitle,
 } from '@flama/design-system-mobile/card';
 import { Input } from '@flama/design-system-mobile/input';
-import { Label } from '@flama/design-system-mobile/label';
 import { Text } from '@flama/design-system-mobile/text';
 import { useRegister } from '@flama/frontend/react';
-import { registerSchema } from '@flama/shared';
+import { type RegisterDto, registerSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
-import * as React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { FormField } from '../../components/form-field';
+import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [firstName, setFirstName] = React.useState('');
-  const [lastName, setLastName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+
+  const { control, handleSubmit } = useForm<RegisterDto>({
+    resolver: useZodResolver(registerSchema),
+    defaultValues: { firstName: '', lastName: '', email: '', password: '' },
+  });
 
   const register = useRegister({
     onSuccess: () => {
@@ -35,19 +37,7 @@ export default function RegisterScreen() {
     },
   });
 
-  const handleRegister = () => {
-    const result = registerSchema.safeParse({
-      firstName,
-      lastName,
-      email,
-      password,
-    });
-    if (!result.success) {
-      Alert.alert(t('validation.title'), result.error.errors[0].message);
-      return;
-    }
-    register.mutate(result.data);
-  };
+  const onSubmit = handleSubmit((values) => register.mutate(values));
 
   return (
     <KeyboardAvoidingView
@@ -65,55 +55,99 @@ export default function RegisterScreen() {
           </CardHeader>
           <CardContent className="gap-4">
             <View className="flex-row gap-3">
-              <View className="flex-1 gap-2">
-                <Label nativeID="firstName">{t('auth.firstName')}</Label>
-                <Input
-                  placeholder="John"
-                  aria-labelledby="firstName"
-                  value={firstName}
-                  onChangeText={setFirstName}
-                  autoComplete="given-name"
-                  textContentType="givenName"
+              <View className="flex-1">
+                <Controller
+                  control={control}
+                  name="firstName"
+                  render={({ field, fieldState }) => (
+                    <FormField
+                      label={t('auth.firstName')}
+                      nativeID="firstName"
+                      error={fieldState.error?.message}
+                    >
+                      <Input
+                        placeholder="John"
+                        aria-labelledby="firstName"
+                        value={field.value}
+                        onChangeText={field.onChange}
+                        onBlur={field.onBlur}
+                        autoComplete="given-name"
+                        textContentType="givenName"
+                      />
+                    </FormField>
+                  )}
                 />
               </View>
-              <View className="flex-1 gap-2">
-                <Label nativeID="lastName">{t('auth.lastName')}</Label>
-                <Input
-                  placeholder="Doe"
-                  aria-labelledby="lastName"
-                  value={lastName}
-                  onChangeText={setLastName}
-                  autoComplete="family-name"
-                  textContentType="familyName"
+              <View className="flex-1">
+                <Controller
+                  control={control}
+                  name="lastName"
+                  render={({ field, fieldState }) => (
+                    <FormField
+                      label={t('auth.lastName')}
+                      nativeID="lastName"
+                      error={fieldState.error?.message}
+                    >
+                      <Input
+                        placeholder="Doe"
+                        aria-labelledby="lastName"
+                        value={field.value}
+                        onChangeText={field.onChange}
+                        onBlur={field.onBlur}
+                        autoComplete="family-name"
+                        textContentType="familyName"
+                      />
+                    </FormField>
+                  )}
                 />
               </View>
             </View>
-            <View className="gap-2">
-              <Label nativeID="reg-email">{t('auth.email')}</Label>
-              <Input
-                placeholder={t('auth.emailPlaceholder')}
-                aria-labelledby="reg-email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-              />
-            </View>
-            <View className="gap-2">
-              <Label nativeID="reg-password">{t('auth.password')}</Label>
-              <Input
-                placeholder={t('auth.register.passwordPlaceholder')}
-                aria-labelledby="reg-password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoComplete="new-password"
-                textContentType="newPassword"
-              />
-            </View>
-            <Button onPress={handleRegister} disabled={register.isPending} className="mt-2">
+            <Controller
+              control={control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <FormField
+                  label={t('auth.email')}
+                  nativeID="reg-email"
+                  error={fieldState.error?.message}
+                >
+                  <Input
+                    placeholder={t('auth.emailPlaceholder')}
+                    aria-labelledby="reg-email"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
+                  />
+                </FormField>
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <FormField
+                  label={t('auth.password')}
+                  nativeID="reg-password"
+                  error={fieldState.error?.message}
+                >
+                  <Input
+                    placeholder={t('auth.register.passwordPlaceholder')}
+                    aria-labelledby="reg-password"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    secureTextEntry
+                    autoComplete="new-password"
+                    textContentType="newPassword"
+                  />
+                </FormField>
+              )}
+            />
+            <Button onPress={onSubmit} disabled={register.isPending} className="mt-2">
               <Text>
                 {register.isPending ? t('auth.register.submitting') : t('auth.register.submit')}
               </Text>

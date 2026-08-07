@@ -67,7 +67,10 @@ cookbook. Use the `/scaffold-module` skill to generate a compliant module
 skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
 (`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
-Detailed rules for the backend are in `.agents/rules/` (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
+Detailed rules live in `.agents/rules/`, each scoped by a `paths` glob so it
+loads only for the code it governs. The frontend has one — `forms.md`, covering
+React Hook Form and Zod validation across `apps/web`, `apps/mobile` and the
+shared schemas. The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
 
 - `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
 - `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
@@ -127,12 +130,15 @@ behalf, and effective access is the intersection — see
 - Zustand vanilla stores (shared between web and mobile)
 - TanStack Query for server state
 - Platform-specific implementations injected via DI container
+- `validation/` bridges Zod issue codes to translated messages for both apps'
+  forms (`createZodErrorMap`)
 
 ### Web (apps/web)
 
 - Vite SPA built to static assets, served by nginx in Docker
 - Tailwind CSS v4, shadcn/ui components
 - react-i18next for i18n (translations from `packages/translations`)
+- React Hook Form + `zodResolver` for forms
 - Vite env vars (`import.meta.env`, `VITE_`-prefixed) for configuration, read
   from the root `.env` (`envDir` in `vite.config.ts` points at the repo root)
 
@@ -141,7 +147,18 @@ behalf, and effective access is the intersection — see
 - Expo with expo-router
 - NativeWind + `@flama/design-system-mobile` components for UI
 - i18next for i18n (translations from `packages/translations`)
+- React Hook Form + `zodResolver` for forms (`Controller` per field)
 - expo-secure-store for secure token storage
+
+#### Forms (both apps)
+
+Every form uses **React Hook Form** validated by a Zod schema from
+`@flama/shared`, with the resolver wired through the app's `useZodResolver` so
+messages stay translated. No `useState` per field, no `FormData` reads, no
+`safeParse` in a submit handler. Zod schemas therefore carry **no message
+strings** — an explicit message defeats the translation layer. The full
+convention, including the web/mobile patterns and how to add a message, is in
+[`.agents/rules/forms.md`](.agents/rules/forms.md).
 
 ### Design system (packages/design-system)
 
@@ -209,4 +226,7 @@ pnpm changeset          # Create a changeset for versioning
 - Keep pluggable service pattern: abstract class → concrete implementations → factory in module
 - New API endpoints need `@RequireScopes` or they are unreachable by API tokens and MCP clients
 - New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
-- `apps/web` imports only _types_ from `@flama/shared`; its CJS build is not tree-shakeable by Rollup, so fetch runtime data (like the permission catalog) from the API
+- `apps/web` must not import runtime values from the `@flama/shared` **root**: its CJS build is not tree-shakeable by Rollup, so the whole graph (CASL, the scope catalog) lands in the bundle. Import a narrow subpath instead — `@flama/shared/schemas/auth` pulls in nothing but Zod — or fetch the data from the API, as the permission catalog does. Workspace `dist` folders sit outside `node_modules`, so anything newly imported this way needs adding to `optimizeDeps.include` in `apps/web/vite.config.ts` for dev
+- Forms in `apps/web` and `apps/mobile` use **React Hook Form** with `zodResolver` over the `@flama/shared` schemas; wire the resolver through each app's `useZodResolver` so validation messages stay translated. See `.agents/rules/forms.md`
+- Zod schemas in `packages/shared` state the constraint only — **never** a message string (`z.string().email()`, not `z.string().email('Invalid email address')`). Zod ignores the error map whenever a check carries its own message, which silently pins every consumer to English
+- A new `validation.*` message needs a case in `createZodErrorMap`, a key in `ValidationMessageKey`, and an entry in every locale; the apps' typed `t()` turns a missing locale entry into a compile error

@@ -35,6 +35,19 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    // Workspace packages are linked, not installed, so dev has to be told to
+    // pre-bundle this CommonJS entrypoint into ESM.
+    include: ['@flama/shared/schemas/auth'],
+  },
+  build: {
+    commonjsOptions: {
+      // `@flama/shared` builds to CommonJS for the API's sake. Its `dist` sits
+      // outside `node_modules`, so the interop plugin skips it by default and
+      // Rollup cannot see the named exports.
+      include: [/node_modules/, /packages[\\/]shared[\\/]dist/],
+    },
+  },
   server: {
     port: 3000,
     proxy: {

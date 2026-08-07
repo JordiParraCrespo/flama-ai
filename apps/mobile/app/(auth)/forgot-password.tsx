@@ -7,19 +7,25 @@ import {
   CardTitle,
 } from '@flama/design-system-mobile/card';
 import { Input } from '@flama/design-system-mobile/input';
-import { Label } from '@flama/design-system-mobile/label';
 import { Text } from '@flama/design-system-mobile/text';
 import { useForgotPassword } from '@flama/frontend/react';
-import { forgotPasswordSchema } from '@flama/shared';
+import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared';
 import { Link } from 'expo-router';
 import * as React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { FormField } from '../../components/form-field';
+import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
-  const [email, setEmail] = React.useState('');
   const [submitted, setSubmitted] = React.useState(false);
+
+  const { control, handleSubmit } = useForm<ForgotPasswordDto>({
+    resolver: useZodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
+  });
 
   const forgotPassword = useForgotPassword({
     onSuccess: () => {
@@ -30,14 +36,7 @@ export default function ForgotPasswordScreen() {
     },
   });
 
-  const handleSubmit = () => {
-    const result = forgotPasswordSchema.safeParse({ email });
-    if (!result.success) {
-      Alert.alert(t('validation.title'), result.error.errors[0].message);
-      return;
-    }
-    forgotPassword.mutate(result.data.email);
-  };
+  const onSubmit = handleSubmit(({ email }) => forgotPassword.mutate(email));
 
   if (submitted) {
     return (
@@ -74,20 +73,30 @@ export default function ForgotPasswordScreen() {
             <CardDescription>{t('auth.forgotPassword.description')}</CardDescription>
           </CardHeader>
           <CardContent className="gap-4">
-            <View className="gap-2">
-              <Label nativeID="fp-email">{t('auth.email')}</Label>
-              <Input
-                placeholder={t('auth.emailPlaceholder')}
-                aria-labelledby="fp-email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-              />
-            </View>
-            <Button onPress={handleSubmit} disabled={forgotPassword.isPending} className="mt-2">
+            <Controller
+              control={control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <FormField
+                  label={t('auth.email')}
+                  nativeID="fp-email"
+                  error={fieldState.error?.message}
+                >
+                  <Input
+                    placeholder={t('auth.emailPlaceholder')}
+                    aria-labelledby="fp-email"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
+                  />
+                </FormField>
+              )}
+            />
+            <Button onPress={onSubmit} disabled={forgotPassword.isPending} className="mt-2">
               <Text>
                 {forgotPassword.isPending
                   ? t('auth.forgotPassword.submitting')
