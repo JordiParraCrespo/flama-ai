@@ -20,7 +20,7 @@ export function assertCanReachDomain(
   // No ability means no `@CheckPolicies` ran on the route. Fail closed: a
   // domain route reaching this helper without a guard is a wiring bug, and
   // guessing "allow" would turn it into a silent access-control hole.
-  if (!ability || !ability.can(action, subject('Domain', { id: domain.id }))) {
+  if (!ability?.can(action, subject('Domain', { id: domain.id }))) {
     throw new AppError(DomainErrors.FORBIDDEN_DOMAIN, {
       detail: `Your access does not include the domain ${domain.hostname}`,
       extensions: { domainId: domain.id },
