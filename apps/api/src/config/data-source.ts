@@ -1,4 +1,5 @@
 import '@flama/env/load';
+import { OutboxMessageSchema } from '@flama/backend-ddd';
 import { DataSource } from 'typeorm';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
 import { Account } from '../auth/entities/account.entity';
@@ -46,6 +47,7 @@ export default new DataSource({
     InvitationOrmEntity,
     TeamOrmEntity,
     TeamMemberOrmEntity,
+    OutboxMessageSchema,
   ],
   migrations: [`${__dirname}/../migrations/*{.ts,.js}`],
 });

@@ -72,7 +72,8 @@ single-responsibility is enforced (no god-services).
   `RepositoryPort<Aggregate>` from `@flama/backend-ddd`. Lookups return
   `Option<T>` (from `oxide.ts`), not `T | null`.
 - The TypeORM adapter implements the port, maps domain ↔ ORM via the mapper, and
-  publishes the aggregate's domain events after a successful write.
+  stages the aggregate's domain events on the **transactional outbox** inside
+  the same transaction as the write (see "Event-driven async processing").
 - Inject the port through a DI token (see `nestjs-di.md`), never the concrete class.
 
 ## Mapper
@@ -144,16 +145,46 @@ Document each failure on the controller so it reaches the OpenAPI document:
 @ApiProblemResponse({ status: 404, description: 'User not found', code: 'USER_001' })
 ```
 
-## Event-driven async processing
+## Event-driven async processing (transactional outbox)
 
-Domain events are raised by aggregates and published by the repository after a
-write through `EventEmitter2` (keyed by the event class name). BullMQ handles
-async jobs. Work that can be deferred (e.g. sending email) must not block the
-request.
+Domain events are raised by aggregates and **staged on the transactional
+outbox** (`outbox_message`) by the repository, via
+`OutboxService.stageEvents(manager, events)` from `@flama/backend-ddd`, **inside
+the same TypeORM transaction as the aggregate write**. The state change and the
+events it owes commit or roll back together — `commit(); emit();` has no window
+in which a listener crash, a Redis blip, or a killed process can silently lose
+the side effect. The row *is* the message: `aggregateId` is a plain column with
+no foreign key, so a queued event outlives the record it names.
+
+After commit the repository wakes the relay (`OutboxRelayService` in
+`apps/api/src/outbox/`); a background poll is the safety net for rows whose
+process died between commit and delivery. The relay claims due rows with
+`FOR UPDATE SKIP LOCKED` — concurrent API replicas lease disjoint rows, which is
+what makes the pattern safe under horizontal scaling — and delivers them:
+
+- `channel: 'event'` rows → re-emitted on `EventEmitter2`, keyed by event class
+  name. Existing `@OnEvent` handlers are unchanged, but they receive the
+  deserialized **payload** (a plain object with the event's fields), not the
+  class instance.
+- `channel: 'queue'` rows (staged with `OutboxService.stageJob`) → added to the
+  BullMQ queue named by `topic`.
+
+Delivery failures retry with exponential backoff and park as `failed` after
+`maxAttempts` — kept for inspection, never dropped. Leases expire
+(`lockedUntil`), so rows owned by a dead process are reclaimed rather than
+stuck. Every row records a human-readable **reason** (pass `reason` when raising
+the event) so the table is self-explaining at 2am.
+
+This does **not** replace BullMQ: BullMQ still owns retries, delayed jobs and
+concurrency for queued work. The outbox sits in front of it and solves exactly
+one problem BullMQ cannot — atomicity with the database transaction. Work that
+can be deferred (e.g. sending email) must still not block the request.
 
 ```
-DeleteUserCommand → UserEntity.delete() raises UserDeletedDomainEvent
-  → repository publishes after delete → @OnEvent handler → (Email Queue → Processor)
+DeleteUserCommand → UserEntity.delete() raises UserDeletedDomainEvent (with reason)
+  → repository stages it on the outbox in the same transaction as the delete
+  → commit → relay delivers (wake now; poll as safety net)
+  → @OnEvent handler → (Email Queue → Processor)
 ```
 
 ## Cross-cutting concerns

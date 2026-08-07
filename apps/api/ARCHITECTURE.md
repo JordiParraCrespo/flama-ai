@@ -111,9 +111,13 @@ Extends `ValueObject`, immutable, structural equality, validated in `validate()`
 
 ### Domain event (`domain/events/*.domain-event.ts`)
 
-Extends `DomainEvent`. Raised by the aggregate via `addEvent`, **published by the
-repository after a successful write** through `EventEmitter2` (keyed by class
-name), then cleared.
+Extends `DomainEvent`. Raised by the aggregate via `addEvent` (with a
+human-readable `reason` for the outbox row), **staged on the transactional
+outbox by the repository inside the same transaction as the write**, then
+cleared after commit. The outbox relay delivers the row to `EventEmitter2`
+(keyed by class name) after commit — immediately via a post-commit wake, with a
+background poll reclaiming rows whose process died first. See
+`.claude/rules/nestjs-architecture.md` ("Event-driven async processing").
 
 ### Repository port + adapter (`database/`)
 
@@ -129,7 +133,8 @@ export interface UserRepositoryPort extends RepositoryPort<UserEntity> {
 ```
 
 The adapter (`user.repository.ts`) is the **only** place that touches both the
-ORM entity and the domain entity. It maps via the mapper and publishes events.
+ORM entity and the domain entity. It maps via the mapper and stages the
+aggregate's domain events on the outbox, atomically with the write.
 
 ### Command + handler (`commands/<use-case>/`)
 
@@ -190,7 +195,8 @@ three interface ones for these cross-boundary shapes.
 Write:  HTTP → Controller → new Command → CommandBus → Handler
         → load aggregate (port) → domain method → repo.save → returns id
         → Controller dispatches Query → maps → ResponseDto
-        (repo publishes domain events → @OnEvent handler → side effects)
+        (repo stages domain events on the outbox in the same transaction
+         → relay delivers after commit → @OnEvent handler → side effects)
 
 Read:   HTTP → Controller → new Query → QueryBus → QueryHandler
         → port read → mapper.toResponse → ResponseDto
@@ -224,7 +230,8 @@ the domain. Manual checklist:
 
 1. `domain/` — aggregate (+ value objects), events, `errors.ts`. Keep it pure.
 2. `database/` — `*.orm-entity.ts`, `*.repository.port.ts` (extends
-   `RepositoryPort`), `*.repository.ts` (implements port, maps, publishes events).
+   `RepositoryPort`), `*.repository.ts` (implements port, maps, stages events
+   on the outbox).
 3. One folder per use case under `commands/` and `queries/`.
 4. `*.mapper.ts`, `*.di-tokens.ts`, `dtos/*.response.dto.ts`.
 5. `*.module.ts` — import `CqrsModule` + `TypeOrmModule.forFeature([OrmEntity])`,

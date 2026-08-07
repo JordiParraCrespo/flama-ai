@@ -194,6 +194,8 @@ export class ApiTokenEntity extends AggregateRoot<ApiTokenProps> {
         aggregateId: this.id,
         userId: this.props.userId,
         tokenHash: this.props.tokenHash,
+        reason:
+          'Token was revoked; its cached delegated session must be dropped so the credential stops working immediately',
       }),
     );
   }

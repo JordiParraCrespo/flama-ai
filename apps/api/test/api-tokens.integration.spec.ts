@@ -103,6 +103,7 @@ describe('API tokens & scopes (integration)', () => {
     const { AddApiTokensAndOAuth1781100000000 } = await import(
       '../src/migrations/1781100000000-AddApiTokensAndOAuth'
     );
+    const { AddOutbox1781300000000 } = await import('../src/migrations/1781300000000-AddOutbox');
 
     const migrationRunner = new DataSource({
       type: 'postgres',
@@ -116,6 +117,7 @@ describe('API tokens & scopes (integration)', () => {
         AddRolesRbac1780900000000,
         AddAdminAndOrganizations1781000000000,
         AddApiTokensAndOAuth1781100000000,
+        AddOutbox1781300000000,
       ],
     });
 
@@ -531,6 +533,38 @@ describe('API tokens & scopes (integration)', () => {
       );
       expect(rows).toHaveLength(1);
       expect(rows[0].revokedAt).not.toBeNull();
+    });
+
+    it('records the revocation on the transactional outbox and delivers it', async () => {
+      const created = await mintToken({
+        name: 'outboxed',
+        scopes: ['users:read'],
+      });
+      await call(`/api/v1/tokens/${created.id}`, {
+        method: 'DELETE',
+        token: user.sessionToken,
+      });
+
+      // The event row was written in the same transaction as the revocation
+      // and drained by the relay before the request returned: processed, with
+      // a lease trail and a human-readable reason.
+      const rows: {
+        status: string;
+        reason: string;
+        attempts: number;
+        lockedBy: string | null;
+        processedAt: Date | null;
+      }[] = await dataSource.query(
+        `SELECT "status", "reason", "attempts", "lockedBy", "processedAt"
+         FROM "outbox_message"
+         WHERE "eventName" = 'ApiTokenRevokedDomainEvent' AND "aggregateId" = $1`,
+        [created.id],
+      );
+      expect(rows).toHaveLength(1);
+      expect(rows[0].status).toBe('processed');
+      expect(rows[0].reason).toContain('revoked');
+      expect(rows[0].attempts).toBeGreaterThanOrEqual(1);
+      expect(rows[0].processedAt).not.toBeNull();
     });
 
     it('refuses an expired token', async () => {

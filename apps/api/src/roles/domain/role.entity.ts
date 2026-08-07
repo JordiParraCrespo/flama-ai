@@ -103,6 +103,7 @@ export class RoleEntity extends AggregateRoot<RoleProps> {
       new RoleDeletedDomainEvent({
         aggregateId: this.id,
         name: this.props.name,
+        reason: 'Role was deleted; listeners react to it disappearing from every holder',
       }),
     );
   }

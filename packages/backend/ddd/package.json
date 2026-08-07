@@ -17,7 +17,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "oxide.ts": "^1.1.0"
+    "oxide.ts": "^1.1.0",
+    "typeorm": "^0.3.31"
   },
   "devDependencies": {
     "@flama/config": "workspace:^",
