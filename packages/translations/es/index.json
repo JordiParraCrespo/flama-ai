@@ -87,7 +87,9 @@
       "errorMessage": "No pudimos restaurar tu sesión. Comprueba tu conexión e inténtalo de nuevo.",
       "retry": "Reintentar",
       "retrying": "Reintentando..."
-    }
+    },
+    "panelTitle": "Todo lo que mueve a tu equipo, en un solo sitio.",
+    "panelBody": "Leads, dominios y analítica con un único acceso."
   },
   "dashboard": {
     "title": "Panel",

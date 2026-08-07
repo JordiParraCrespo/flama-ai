@@ -29,26 +29,22 @@ export function SocialLoginButtons({ disabled }: { disabled?: boolean }) {
 
   if (!google && !github) {
     return (
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        {t('auth.login.noSocialProviders')}
-      </p>
+      <p className="mt-5 text-center text-xs text-ink-400">{t('auth.login.noSocialProviders')}</p>
     );
   }
 
   return (
     <>
-      <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">{t('common.orContinueWith')}</span>
-        </div>
+      <div className="my-5 flex items-center gap-3">
+        <span className="h-px flex-1 bg-border-subtle" />
+        <span className="text-xs text-ink-400">{t('common.orContinueWith')}</span>
+        <span className="h-px flex-1 bg-border-subtle" />
       </div>
-      <div className={google && github ? 'grid grid-cols-2 gap-4' : 'grid gap-4'}>
+      <div className={google && github ? 'grid grid-cols-2 gap-2.5' : 'grid gap-2.5'}>
         {google && (
           <Button
-            variant="outline"
+            variant="secondary"
+            size="lg"
             type="button"
             disabled={disabled || social.isPending}
             onClick={() => social.mutate('google')}
@@ -58,7 +54,8 @@ export function SocialLoginButtons({ disabled }: { disabled?: boolean }) {
         )}
         {github && (
           <Button
-            variant="outline"
+            variant="secondary"
+            size="lg"
             type="button"
             disabled={disabled || social.isPending}
             onClick={() => social.mutate('github')}

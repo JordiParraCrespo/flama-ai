@@ -53,14 +53,14 @@ function LoginPage() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">{t('auth.login.title')}</CardTitle>
+          <CardTitle className="text-2xl">{t('auth.login.title')}</CardTitle>
           <CardDescription>{t('auth.login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} noValidate>
             <FieldGroup>
               {error && (
-                <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <div className="rounded-md border border-status-ended/25 px-3 py-2 text-base text-status-ended">
                   {error instanceof Error ? error.message : t('auth.login.invalidCredentials')}
                 </div>
               )}
@@ -82,7 +82,7 @@ function LoginPage() {
                   <FieldLabel htmlFor="password">{t('auth.password')}</FieldLabel>
                   <Link
                     to="/forgot-password"
-                    className="ml-auto text-sm underline-offset-4 hover:underline"
+                    className="ml-auto text-sm text-ink-600 transition-colors hover:text-ink-900"
                   >
                     {t('auth.login.forgotPassword')}
                   </Link>
@@ -99,7 +99,7 @@ function LoginPage() {
                 <FieldError errors={[errors.password]} />
               </Field>
               <Field>
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" size="lg" className="w-full" disabled={isPending}>
                   {isPending ? t('auth.login.submitting') : t('auth.login.submit')}
                 </Button>
               </Field>
@@ -108,9 +108,12 @@ function LoginPage() {
           <SocialLoginButtons disabled={isPending} />
         </CardContent>
       </Card>
-      <div className="text-center text-sm">
+      <div className="text-center text-base text-ink-600">
         {t('auth.login.noAccount')}{' '}
-        <Link to="/register" className="underline underline-offset-4 hover:text-primary">
+        <Link
+          to="/register"
+          className="font-medium text-ink-900 transition-colors hover:text-accent-blue"
+        >
           {t('auth.login.signUp')}
         </Link>
       </div>

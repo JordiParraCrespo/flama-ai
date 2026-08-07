@@ -41,7 +41,7 @@ function ForgotPasswordPage() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">{t('auth.forgotPassword.title')}</CardTitle>
+          <CardTitle className="text-2xl">{t('auth.forgotPassword.title')}</CardTitle>
           <CardDescription>{t('auth.forgotPassword.description')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -53,7 +53,7 @@ function ForgotPasswordPage() {
             <form onSubmit={onSubmit} noValidate>
               <FieldGroup>
                 {error && (
-                  <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  <div className="rounded-md border border-status-ended/25 px-3 py-2 text-base text-status-ended">
                     {error instanceof Error ? error.message : t('auth.forgotPassword.error')}
                   </div>
                 )}
@@ -71,7 +71,7 @@ function ForgotPasswordPage() {
                   <FieldError errors={[errors.email]} />
                 </Field>
                 <Field>
-                  <Button type="submit" disabled={isPending}>
+                  <Button type="submit" size="lg" className="w-full" disabled={isPending}>
                     {isPending
                       ? t('auth.forgotPassword.submitting')
                       : t('auth.forgotPassword.submit')}
@@ -82,8 +82,11 @@ function ForgotPasswordPage() {
           )}
         </CardContent>
       </Card>
-      <div className="text-center text-sm">
-        <Link to="/login" className="underline underline-offset-4 hover:text-primary">
+      <div className="text-center text-base text-ink-600">
+        <Link
+          to="/login"
+          className="font-medium text-ink-900 transition-colors hover:text-accent-blue"
+        >
           {t('auth.forgotPassword.backToSignIn')}
         </Link>
       </div>

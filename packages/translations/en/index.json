@@ -87,7 +87,9 @@
       "errorMessage": "We couldn't restore your session. Check your connection and try again.",
       "retry": "Try again",
       "retrying": "Retrying..."
-    }
+    },
+    "panelTitle": "Everything your team runs on, in one place.",
+    "panelBody": "Leads, domains and analytics under a single sign-in."
   },
   "dashboard": {
     "title": "Dashboard",

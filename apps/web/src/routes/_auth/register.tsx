@@ -48,14 +48,14 @@ function RegisterPage() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">{t('auth.register.title')}</CardTitle>
+          <CardTitle className="text-2xl">{t('auth.register.title')}</CardTitle>
           <CardDescription>{t('auth.register.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} noValidate>
             <FieldGroup>
               {error && (
-                <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <div className="rounded-md border border-status-ended/25 px-3 py-2 text-base text-status-ended">
                   {error instanceof Error ? error.message : t('auth.register.failed')}
                 </div>
               )}
@@ -112,7 +112,7 @@ function RegisterPage() {
                 <FieldError errors={[errors.password]} />
               </Field>
               <Field>
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" size="lg" className="w-full" disabled={isPending}>
                   {isPending ? t('auth.register.submitting') : t('auth.register.submit')}
                 </Button>
               </Field>
@@ -120,9 +120,12 @@ function RegisterPage() {
           </form>
         </CardContent>
       </Card>
-      <div className="text-center text-sm">
+      <div className="text-center text-base text-ink-600">
         {t('auth.register.hasAccount')}{' '}
-        <Link to="/login" className="underline underline-offset-4 hover:text-primary">
+        <Link
+          to="/login"
+          className="font-medium text-ink-900 transition-colors hover:text-accent-blue"
+        >
           {t('auth.register.signIn')}
         </Link>
       </div>
