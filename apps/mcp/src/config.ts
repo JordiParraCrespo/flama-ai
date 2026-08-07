@@ -35,7 +35,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): McpConfig {
   return schema.parse({
     apiUrl: env.FLAMA_API_URL,
     apiToken: env.FLAMA_API_TOKEN,
-    port: env.PORT ?? env.MCP_PORT,
+    // MCP_PORT first: in a shared root .env, PORT belongs to the API (3001),
+    // and the HTTP entrypoint must not collide with it.
+    port: env.MCP_PORT ?? env.PORT,
     timeoutMs: env.FLAMA_TIMEOUT_MS,
     toolsCacheTtlMs: env.FLAMA_TOOLS_CACHE_TTL_MS,
     allowedOrigins: env.FLAMA_ALLOWED_ORIGINS?.split(',')

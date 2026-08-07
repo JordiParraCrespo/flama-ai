@@ -8,6 +8,7 @@ COPY apps/api/package.json ./apps/api/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/config/package.json ./packages/config/
+COPY packages/env/package.json ./packages/env/
 COPY packages/backend/core/package.json ./packages/backend/core/
 COPY packages/backend/ddd/package.json ./packages/backend/ddd/
 COPY packages/backend/cache/package.json ./packages/backend/cache/

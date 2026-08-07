@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@flama/env/load';
 import type { Role } from '@flama/shared';
 import { DataSource } from 'typeorm';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';

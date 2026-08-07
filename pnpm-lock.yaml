@@ -60,6 +60,9 @@ importers:
       '@flama/backend-storage':
         specifier: workspace:*
         version: link:../../packages/backend/storage
+      '@flama/env':
+        specifier: workspace:*
+        version: link:../../packages/env
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -111,9 +114,6 @@ importers:
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
       helmet:
         specifier: ^8.3.0
         version: 8.3.0
@@ -258,6 +258,9 @@ importers:
 
   apps/mcp:
     dependencies:
+      '@flama/env':
+        specifier: workspace:*
+        version: link:../../packages/env
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -310,6 +313,9 @@ importers:
       '@flama/design-system-mobile':
         specifier: workspace:*
         version: link:../../packages/design-system/mobile
+      '@flama/env':
+        specifier: workspace:*
+        version: link:../../packages/env
       '@flama/frontend':
         specifier: workspace:*
         version: link:../../packages/frontend
@@ -1147,6 +1153,25 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/env:
+    dependencies:
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.1)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0)
 
   packages/frontend:
     dependencies:
@@ -21569,7 +21594,7 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 26.1.1
+      '@types/node': 22.20.1
 
   '@types/bonjour@3.5.13':
     dependencies:
@@ -21655,7 +21680,7 @@ snapshots:
 
   '@types/express-serve-static-core@5.1.2':
     dependencies:
-      '@types/node': 26.1.1
+      '@types/node': 22.20.1
       '@types/qs': 6.15.1
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -21810,7 +21835,7 @@ snapshots:
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 26.1.1
+      '@types/node': 22.20.1
 
   '@types/sockjs@0.3.36':
     dependencies:
@@ -23674,7 +23699,7 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.4.7
+      dotenv: 16.6.1
 
   dotenv-expand@12.0.3:
     dependencies:
@@ -23954,7 +23979,7 @@ snapshots:
 
   eval@0.1.8:
     dependencies:
-      '@types/node': 26.1.1
+      '@types/node': 22.20.1
       require-like: 0.1.2
 
   event-target-shim@5.0.1: {}
@@ -25288,7 +25313,7 @@ snapshots:
       '@jest/environment': 29.7.0
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 26.1.1
+      '@types/node': 22.20.1
       jest-mock: 29.7.0
       jest-util: 29.7.0
 

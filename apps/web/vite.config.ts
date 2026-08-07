@@ -6,6 +6,9 @@ import { defineConfig } from 'vite';
 import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
+  // There is one .env, at the monorepo root; a .env placed in apps/web is
+  // deliberately not read. Only VITE_-prefixed values reach the client bundle.
+  envDir: path.resolve(__dirname, '../..'),
   // Busts the persisted query cache on release: a version bump drops entries
   // that may not match the new response shapes.
   define: {
