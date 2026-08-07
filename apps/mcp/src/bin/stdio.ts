@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import '@flama/env/load';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { FlamaClient } from '../client';
 import { loadConfig } from '../config';

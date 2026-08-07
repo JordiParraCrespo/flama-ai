@@ -20,6 +20,7 @@
     "@flama/api-client": "workspace:*",
     "@flama/auth": "workspace:*",
     "@flama/design-system-mobile": "workspace:*",
+    "@flama/env": "workspace:*",
     "@flama/frontend": "workspace:*",
     "@flama/shared": "workspace:*",
     "@flama/translations": "workspace:*",

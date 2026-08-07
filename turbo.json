@@ -1,10 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": [".env", ".env.local"],
   "concurrency": "15",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": ["VITE_*", "EXPO_PUBLIC_*"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"]
     },
     "dev": {
