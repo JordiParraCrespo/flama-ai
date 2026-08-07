@@ -1,3 +1,4 @@
+import { subject } from '@casl/ability';
 import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
@@ -5,6 +6,7 @@ import type { UserRoleRepositoryPort } from '../../database/user-role.repository
 import { RoleEntity } from '../../domain/role.entity';
 import { Permission } from '../../domain/value-objects/permission.value-object';
 import { AbilityFactory } from '../ability.factory';
+import { AbilityContributorRegistry } from '../ability-contributor';
 
 function makeRole(name: string, permissions: Permission[], isSystem = false): RoleEntity {
   return RoleEntity.create({
@@ -17,6 +19,7 @@ describe('AbilityFactory', () => {
   let factory: AbilityFactory;
   let userRoleRepo: UserRoleRepositoryPort;
   let roleRepo: Pick<RoleRepositoryPort, 'findOneByName'>;
+  let contributorRegistry: AbilityContributorRegistry;
 
   beforeEach(() => {
     userRoleRepo = {
@@ -25,7 +28,8 @@ describe('AbilityFactory', () => {
       setRolesForUser: vi.fn(),
     };
     roleRepo = { findOneByName: vi.fn().mockResolvedValue(None) };
-    factory = new AbilityFactory(userRoleRepo, roleRepo as RoleRepositoryPort);
+    contributorRegistry = new AbilityContributorRegistry();
+    factory = new AbilityFactory(userRoleRepo, roleRepo as RoleRepositoryPort, contributorRegistry);
   });
 
   it('builds the ability from the union of the user’s assigned roles', async () => {
@@ -88,5 +92,52 @@ describe('AbilityFactory', () => {
 
     expect(ability.can('read', 'User')).toBe(true);
     expect(ability.can('delete', 'User')).toBe(false);
+  });
+  describe('ability contributors', () => {
+    it('applies a contributed `cannot` rule on top of the role-granted access', async () => {
+      vi.mocked(userRoleRepo.findRolesForUser).mockResolvedValue([
+        makeRole('editor', [Permission.fromDefinition({ action: 'manage', subject: 'Domain' })]),
+      ]);
+      contributorRegistry.register({
+        contribute: vi.fn().mockResolvedValue([
+          {
+            action: 'manage',
+            subject: 'Domain',
+            conditions: { id: { $nin: ['allowed'] } },
+            inverted: true,
+          },
+        ]),
+      });
+
+      const ability = await factory.createForUser({ id: 'user-1' });
+
+      expect(ability.can('read', subject('Domain', { id: 'allowed' }))).toBe(true);
+      expect(ability.can('read', subject('Domain', { id: 'other' }))).toBe(false);
+    });
+
+    it('drops a permissive contributed rule — a contributor may only narrow', async () => {
+      vi.mocked(userRoleRepo.findRolesForUser).mockResolvedValue([]);
+      contributorRegistry.register({
+        contribute: vi
+          .fn()
+          .mockResolvedValue([{ action: 'manage', subject: 'all', inverted: false }]),
+      });
+
+      const ability = await factory.createForUser({ id: 'user-1' });
+
+      expect(ability.can('delete', 'User')).toBe(false);
+    });
+
+    it('passes the ability scope through to each contributor', async () => {
+      const contribute = vi.fn().mockResolvedValue([]);
+      contributorRegistry.register({ contribute });
+
+      await factory.createForUser({ id: 'user-1' }, { activeOrganizationId: 'org-9' });
+
+      expect(contribute).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'user-1' }),
+        expect.objectContaining({ activeOrganizationId: 'org-9' }),
+      );
+    });
   });
 });

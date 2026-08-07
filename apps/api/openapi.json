@@ -2859,6 +2859,403 @@
         "summary": "Get aggregate revenue metrics (admin)",
         "tags": ["Billing"]
       }
+    },
+    "/api/v1/domains": {
+      "get": {
+        "description": "Lists domains in the caller’s active organization, narrowed to the domains the caller has access to.",
+        "operationId": "findAll",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by hostname",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ownerId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by owner",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["draft", "active", "paused"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (default: 20, max: 100)",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedDomainsResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "DOMAIN_005 — No active organization on the session",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List domains",
+        "tags": ["Domains"]
+      },
+      "post": {
+        "description": "Starts tracking a domain in the caller’s active organization. The domain is created in `draft` and becomes activatable once verified.",
+        "operationId": "connect",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectDomainRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "DOMAIN_005 — No active organization on the session",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "DOMAIN_002 — Domain is already tracked in this organization",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Connect a domain",
+        "tags": ["Domains"]
+      }
+    },
+    "/api/v1/domains/{id}": {
+      "get": {
+        "operationId": "findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "DOMAIN_006 — Caller has no access to this domain",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "DOMAIN_001 — Domain not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a domain",
+        "tags": ["Domains"]
+      },
+      "patch": {
+        "description": "Changes the protocol, owner or lifecycle status. Activating a domain requires it to be verified first.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDomainRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "DOMAIN_006 — Caller has no access to this domain",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "DOMAIN_001 — Domain not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "DOMAIN_004 — Domain must be verified before it can be activated",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a domain",
+        "tags": ["Domains"]
+      },
+      "delete": {
+        "description": "Stops tracking the domain. Leads captured from it are kept and detached rather than deleted.",
+        "operationId": "remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Domain removed"
+          },
+          "403": {
+            "description": "DOMAIN_006 — Caller has no access to this domain",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "DOMAIN_001 — Domain not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a domain",
+        "tags": ["Domains"]
+      }
+    },
+    "/api/v1/users/{userId}/domains": {
+      "get": {
+        "description": "Returns the domains the user is restricted to. `unrestricted` is true when no restriction is recorded and their role applies workspace-wide.",
+        "operationId": "findOne",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDomainAccessResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a user’s domain access",
+        "tags": ["Domains"]
+      },
+      "put": {
+        "description": "Restricts the user to the given domains. An empty list clears the restriction, returning them to workspace-wide access under their role.",
+        "operationId": "set",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserDomainAccessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDomainAccessResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "DOMAIN_001 — One or more domain ids are unknown in this organization",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a user’s domain access",
+        "tags": ["Domains"]
+      }
     }
   },
   "info": {
@@ -3326,6 +3723,7 @@
               "members",
               "invitations",
               "workspaces",
+              "domains",
               "tokens",
               "billing"
             ],
@@ -4505,6 +4903,172 @@
           "canceledLast30Days",
           "churnRate"
         ]
+      },
+      "DomainResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "hostname": {
+            "type": "string",
+            "example": "blog.example.com"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["https", "http"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "active", "paused"]
+          },
+          "ownerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "example": "https://blog.example.com",
+            "description": "Canonical URL"
+          },
+          "importSearchConsole": {
+            "type": "boolean"
+          },
+          "runInitialCrawl": {
+            "type": "boolean"
+          },
+          "verifiedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastCrawledAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "hostname",
+          "protocol",
+          "status",
+          "ownerId",
+          "url",
+          "importSearchConsole",
+          "runInitialCrawl",
+          "verifiedAt",
+          "lastCrawledAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PaginatedDomainsResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DomainResponseDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": ["data", "meta"]
+      },
+      "ConnectDomainRequest": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 253,
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["https", "http"],
+            "default": "https"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "importSearchConsole": {
+            "type": "boolean",
+            "default": true
+          },
+          "runInitialCrawl": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": ["hostname"]
+      },
+      "UpdateDomainRequest": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "enum": ["https", "http"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "active", "paused"]
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "UserDomainAccessResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "domainIds": {
+            "description": "Domain ids the user is restricted to. Empty when unrestricted.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unrestricted": {
+            "type": "boolean",
+            "description": "True when no per-domain restriction is recorded."
+          }
+        },
+        "required": ["userId", "domainIds", "unrestricted"]
+      },
+      "SetUserDomainAccessRequest": {
+        "type": "object",
+        "properties": {
+          "domainIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": ["domainIds"]
       }
     }
   }

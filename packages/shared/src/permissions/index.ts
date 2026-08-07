@@ -3,6 +3,7 @@ import {
   createMongoAbility,
   type MongoAbility,
   type MongoQuery,
+  type Subject,
 } from '@casl/ability';
 import type { Role } from '../types';
 
@@ -29,10 +30,22 @@ export const KNOWN_SUBJECTS = [
   'ApiToken',
   'AuditLog',
   'Billing',
+  'Domain',
   'all',
 ] as const;
 
-export type AppAbility = MongoAbility<[Actions, Subjects]>;
+/**
+ * The ability type guards check against.
+ *
+ * Rules are *stored* with a plain string subject ({@link Subjects}), but a
+ * check may pass either a subject name (`can('read', 'Domain')` — the type-level
+ * check a route guard does) or a tagged instance
+ * (`can('read', subject('Domain', row))` — the resource-scoped check a handler
+ * does once it has the row). CASL's `Subject` covers both; narrowing this to
+ * `string` would make every instance-level check a type error and push callers
+ * into casts.
+ */
+export type AppAbility = MongoAbility<[Actions, Subject]>;
 
 /**
  * A single CASL rule as stored on a role. `conditions` enables resource
@@ -84,10 +97,11 @@ function resolvePath(path: string, context: AbilityContext): unknown {
  * with the corresponding value from the context. Non-placeholder values are
  * passed through untouched.
  */
-// CASL parameterizes conditions by the subject's field type. Because our
-// subjects are free-form strings (not typed records), that collapses to
-// `MongoQuery<never>`; conditions are validated at runtime instead.
-type AbilityConditions = MongoQuery<never>;
+// CASL parameterizes conditions by the subject's field type. Our subjects are
+// free-form and resolved at runtime, so there is no compile-time field list to
+// key off — the untyped `MongoQuery` is the honest type, and conditions are
+// validated at runtime instead.
+type AbilityConditions = MongoQuery;
 
 function interpolateConditions(
   conditions: Record<string, unknown>,

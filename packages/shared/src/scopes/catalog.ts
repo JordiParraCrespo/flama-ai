@@ -21,6 +21,7 @@ export const SCOPE_RESOURCES = [
   'members',
   'invitations',
   'workspaces',
+  'domains',
   'tokens',
   'billing',
 ] as const;
@@ -246,6 +247,30 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
           { action: 'create', subject: 'Workspace' },
           { action: 'update', subject: 'Workspace' },
           { action: 'delete', subject: 'Workspace' },
+        ],
+      },
+    },
+  },
+  {
+    resource: 'domains',
+    label: 'Domains',
+    description: 'Tracked domains and which members may reach them.',
+    levels: {
+      read: {
+        scope: 'domains:read',
+        label: 'Read',
+        description: 'List and read tracked domains.',
+        policies: [{ action: 'read', subject: 'Domain' }],
+      },
+      write: {
+        scope: 'domains:write',
+        label: 'Edit',
+        description:
+          'Add, update, pause and remove tracked domains, and manage per-member domain access.',
+        policies: [
+          { action: 'create', subject: 'Domain' },
+          { action: 'update', subject: 'Domain' },
+          { action: 'delete', subject: 'Domain' },
         ],
       },
     },

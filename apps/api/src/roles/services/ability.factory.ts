@@ -8,22 +8,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { RoleRepositoryPort } from '../database/role.repository.port';
 import type { UserRoleRepositoryPort } from '../database/user-role.repository.port';
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from '../roles.di-tokens';
+import type { AbilityScope, AuthenticatedUser } from './ability.types';
+import { AbilityContributorRegistry } from './ability-contributor';
 
-/** Minimal shape of the authenticated principal the guard hands to the factory. */
-export interface AuthenticatedUser {
-  id?: string;
-  /** Legacy single-role column, used as a fallback before migration. */
-  role?: string;
-  [key: string]: unknown;
-}
-
-/** Request-scoped context used to interpolate resource-scoping conditions. */
-export interface AbilityScope {
-  /** The caller's active organization (from `session.activeOrganizationId`). */
-  activeOrganizationId?: string | null;
-  /** The caller's active workspace/team (from `session.activeTeamId`). */
-  activeTeamId?: string | null;
-}
+export type { AbilityScope, AuthenticatedUser } from './ability.types';
 
 /**
  * Builds a CASL ability for an authenticated user from the union of every role
@@ -43,10 +31,12 @@ export class AbilityFactory {
     private readonly userRoleRepository: UserRoleRepositoryPort,
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepositoryPort,
+    private readonly contributorRegistry: AbilityContributorRegistry,
   ) {}
 
   async createForUser(user: AuthenticatedUser, scope: AbilityScope = {}): Promise<AppAbility> {
     const permissions = await this.resolvePermissions(user);
+    permissions.push(...(await this.resolveContributedRestrictions(user, scope)));
     // Pass the principal and active-org scope so resource-scoping conditions
     // (e.g. `${user.id}`, `${activeOrganizationId}`) can be interpolated when
     // the ability is built.
@@ -55,6 +45,31 @@ export class AbilityFactory {
       activeOrganizationId: scope.activeOrganizationId ?? null,
       activeTeamId: scope.activeTeamId ?? null,
     });
+  }
+
+  /**
+   * Collect narrowing rules from feature modules (see {@link AbilityContributor}).
+   * These are appended after the role-derived rules, so a `cannot` here always
+   * wins over a `can` a role granted — CASL gives the last matching rule
+   * precedence.
+   *
+   * Only `inverted` rules are honoured. A contributor is a feature module, not
+   * an administrator: letting one return a permissive rule would be a path to
+   * access no role ever granted, so permissive rules are dropped rather than
+   * trusted.
+   */
+  private async resolveContributedRestrictions(
+    user: AuthenticatedUser,
+    scope: AbilityScope,
+  ): Promise<PermissionDefinition[]> {
+    const contributors = this.contributorRegistry.all();
+    if (contributors.length === 0) return [];
+
+    const contributed = await Promise.all(
+      contributors.map((contributor) => contributor.contribute(user, scope)),
+    );
+
+    return contributed.flat().filter((rule) => rule.inverted === true);
   }
 
   private async resolvePermissions(user: AuthenticatedUser): Promise<PermissionDefinition[]> {

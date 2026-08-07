@@ -2,6 +2,7 @@
 export { AdminApi } from './AdminApi';
 export { ApiTokensApi } from './ApiTokensApi';
 export { BillingApi } from './BillingApi';
+export { DomainsApi } from './DomainsApi';
 export { HealthApi } from './HealthApi';
 export { InvitationsApi } from './InvitationsApi';
 export { OrganizationInvitationsApi } from './OrganizationInvitationsApi';

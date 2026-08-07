@@ -32,6 +32,7 @@ import {
   stripeConfig,
 } from './config';
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
+import { DomainsModule } from './domains/domain.module';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { OutboxModule } from './outbox/outbox.module';
@@ -145,6 +146,7 @@ import { UsersModule } from './users/user.module';
     HealthModule,
     QueueModule,
     BillingModule,
+    DomainsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

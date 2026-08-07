@@ -99,6 +99,31 @@ if (!request.ability.can('update', subject('Article', article))) {
 `${user.id}` (any `user.*` path) is interpolated from the authenticated principal
 when the ability is built.
 
+### Narrowing an ability from a feature module (`AbilityContributor`)
+
+Some restrictions are not expressible as a static role permission because they
+depend on a feature module's own data — per-member domain access, for instance,
+lives in the `domains` module's `user_domain_access` join. `roles/` cannot
+import that module (every feature module already depends on the global roles
+module, so it would be a cycle).
+
+The extension point is `AbilityContributor` in
+`roles/services/ability-contributor.ts`. A feature module implements it and
+registers itself with the global `AbilityContributorRegistry` from its own
+`onModuleInit`; `AbilityFactory` calls every contributor when it builds an
+ability, appending their rules after the role-derived ones so a `cannot` wins.
+
+**Contributors may only narrow.** Return `inverted` rules — express the
+restriction as "cannot touch anything outside my list"
+(`conditions: { id: { $nin: allowed } }, inverted: true`), never as a permissive
+`$in`. `AbilityFactory` drops any non-inverted rule a contributor returns: a
+feature module must not be able to hand out access no role granted.
+
+`DomainAccessContributor` (`apps/api/src/domains/services/`) is the reference
+implementation. Note that a restriction also needs applying at the **query**
+level — see `FindDomainsQueryHandler`, which filters with `WHERE id IN (...)`
+rather than post-filtering a page, so `total` and page sizes stay honest.
+
 ## Adding a new protected resource
 
 1. Pick a `subject` string (e.g. `'Invoice'`) and annotate the endpoints with

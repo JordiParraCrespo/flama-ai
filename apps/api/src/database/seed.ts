@@ -10,6 +10,8 @@ import { OAuthApplicationOrmEntity } from '../auth/entities/oauth-application.en
 import { OAuthConsentOrmEntity } from '../auth/entities/oauth-consent.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
+import { DomainOrmEntity } from '../domains/database/domain.orm-entity';
+import { UserDomainAccessOrmEntity } from '../domains/database/user-domain-access.orm-entity';
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
@@ -42,6 +44,8 @@ const dataSource = new DataSource({
     InvitationOrmEntity,
     TeamOrmEntity,
     TeamMemberOrmEntity,
+    DomainOrmEntity,
+    UserDomainAccessOrmEntity,
     OutboxMessageSchema,
   ],
 });

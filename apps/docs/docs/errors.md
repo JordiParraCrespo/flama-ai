@@ -117,6 +117,22 @@ one code so the endpoint cannot be used as a probing oracle.
 | `BILLING_007` <a id="billing_007" /> | Failed to open the Stripe Customer Portal    | 502  |
 | `BILLING_008` <a id="billing_008" /> | Failed to create a Stripe customer           | 502  |
 
+## Domains
+
+| Code                               | Title                                              | HTTP |
+| ---------------------------------- | -------------------------------------------------- | ---- |
+| `DOMAIN_001` <a id="domain_001" /> | Domain not found                                   | 404  |
+| `DOMAIN_002` <a id="domain_002" /> | Domain is already tracked in this organization     | 409  |
+| `DOMAIN_003` <a id="domain_003" /> | Hostname is not a valid bare domain name           | 400  |
+| `DOMAIN_004` <a id="domain_004" /> | Domain must be verified before it can be activated | 409  |
+| `DOMAIN_005` <a id="domain_005" /> | No active organization on the session              | 400  |
+| `DOMAIN_006` <a id="domain_006" /> | You do not have access to this domain              | 403  |
+
+A domain belonging to another organization is reported as `DOMAIN_001`
+(not found) rather than `DOMAIN_006`, so ids cannot be probed across tenants.
+`DOMAIN_006` is reserved for a domain the caller can see the existence of but
+has not been granted access to.
+
 ## Domain invariants
 
 Exceptions raised by the DDD building blocks in `@flama/backend-ddd` surface
