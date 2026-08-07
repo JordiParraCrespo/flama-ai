@@ -1,89 +1,1107 @@
+import { AgentCard } from "@flama/design-system-web/agent-card";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from '@flama/design-system-web/breadcrumb';
-import { Button } from '@flama/design-system-web/button';
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@flama/design-system-web/alert";
+import { AppIcon, AppTile } from "@flama/design-system-web/app-icon";
+import { Avatar, AvatarFallback } from "@flama/design-system-web/avatar";
+import { Badge } from "@flama/design-system-web/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@flama/design-system-web/card';
-import { Separator } from '@flama/design-system-web/separator';
-import { SidebarTrigger } from '@flama/design-system-web/sidebar';
-import { BlocksIcon, ComponentIcon, FlameIcon } from 'lucide-react';
+  BreakdownRow,
+  TopItemRow,
+} from "@flama/design-system-web/breakdown-row";
+import { Button } from "@flama/design-system-web/button";
+import { Card, CardContent } from "@flama/design-system-web/card";
+import {
+  ChatBubble,
+  ChatMark,
+  ChatTyping,
+} from "@flama/design-system-web/chat-bubble";
+import { DeltaText } from "@flama/design-system-web/delta-text";
+import { FeatureRow } from "@flama/design-system-web/feature-row";
+import { IconButton } from "@flama/design-system-web/icon-button";
+import { Kpi, KpiCard } from "@flama/design-system-web/kpi";
+import { PromptCard } from "@flama/design-system-web/prompt-card";
+import { SearchInput } from "@flama/design-system-web/search-input";
+import { Separator } from "@flama/design-system-web/separator";
+import { Skeleton } from "@flama/design-system-web/skeleton";
+import { Sparkline } from "@flama/design-system-web/sparkline";
+import { Switch } from "@flama/design-system-web/switch";
+import { Tag } from "@flama/design-system-web/tag";
+import { Toggle } from "@flama/design-system-web/toggle";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@flama/design-system-web/toggle-group";
+import {
+  AlertCircleIcon,
+  BellIcon,
+  BoldIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  FileTextIcon,
+  InfoIcon,
+  GlobeIcon,
+  ItalicIcon,
+  MonitorIcon,
+  PlugIcon,
+  PauseCircleIcon,
+  PlusIcon,
+  SettingsIcon,
+  SmartphoneIcon,
+  SparklesIcon,
+  Trash2Icon,
+  TrendingUpIcon,
+  UnderlineIcon,
+  UserRoundIcon,
+  UsersIcon,
+} from "lucide-react";
+import {
+  ChartDemo,
+  CommandPaletteDemo,
+  ComposerDemo,
+  DialogDemo,
+} from "@/components/component-demos";
+import {
+  Attachments,
+  Bubbles,
+  Messages,
+  QuestionnaireDemo,
+  Scroller,
+} from "@/components/chat";
+import { LeadTable } from "@/components/lead-table";
+import {
+  RolePill,
+  ScopeCell,
+  ScoreCell,
+  SourceCell,
+  StageTag,
+  TeamStatus,
+} from "@/components/data-cells";
+import {
+  ActionsDropdown,
+  Autocompletes,
+  Choices,
+  EnvDropdown,
+  SelectMenus,
+  Selects,
+  StatusFilter,
+  TextFields,
+} from "@/components/forms";
+import {
+  Colors,
+  ICON_NAMES,
+  Icons,
+  Radii,
+  Typography,
+} from "@/components/foundations";
+import { PageHead, PageShell, Spec, Swatch } from "@/components/page-shell";
+import {
+  NavItems,
+  Recents,
+  SectionLabels,
+  Segmented,
+  StepperDemo,
+  UnderlineTabs,
+} from "@/components/patterns";
+import { TOC_COUNT } from "@/lib/toc";
 
-export default function Page() {
+/**
+ * One callout per status tone. The copy is deliberately operational — a status
+ * callout earns its colour by reporting a state, not by decorating a notice.
+ */
+const ALERT_STATUSES = [
+  {
+    variant: "active" as const,
+    icon: CircleCheckIcon,
+    title: "Campaign is live",
+    body: "Leads are syncing every 5 minutes.",
+  },
+  {
+    variant: "paused" as const,
+    icon: PauseCircleIcon,
+    title: "Sync paused",
+    body: "Resume it to keep pulling new leads.",
+  },
+  {
+    variant: "ended" as const,
+    icon: CircleXIcon,
+    title: "Import failed",
+    body: "Four rows were rejected. Download the report to fix them.",
+  },
+  {
+    variant: "draft" as const,
+    icon: InfoIcon,
+    title: "Draft not published",
+    body: "Only you can see this campaign until you publish it.",
+  },
+];
+
+const APPS = [
+  "slack",
+  "zoom",
+  "notion",
+  "figma",
+  "github",
+  "asana",
+  "trello",
+  "x",
+];
+
+/* ────────────────────────────────────────────────────────────────────────── */
+
+export default function DesignSystemPage() {
   return (
-    <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Home</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 p-4">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <FlameIcon className="size-8" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">Flama Showcase</h1>
-          <p className="max-w-md text-muted-foreground">
-            Browse the design system components and pre-built blocks that power the Flama platform.
-          </p>
-        </div>
-        <div className="grid w-full max-w-2xl gap-4 md:grid-cols-2">
-          <a href="/components">
-            <Card className="h-full transition-colors hover:bg-muted/50">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <ComponentIcon className="size-5 text-muted-foreground" />
-                  <CardTitle>Components</CardTitle>
-                </div>
-                <CardDescription>
-                  Individual UI primitives — buttons, inputs, cards, badges, and more.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="secondary" size="sm">
-                  Browse components
-                </Button>
-              </CardContent>
-            </Card>
-          </a>
-          <a href="/blocks">
-            <Card className="h-full transition-colors hover:bg-muted/50">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <BlocksIcon className="size-5 text-muted-foreground" />
-                  <CardTitle>Blocks</CardTitle>
-                </div>
-                <CardDescription>
-                  Ready-made compositions — login forms, dashboards, and layouts.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="secondary" size="sm">
-                  Browse blocks
-                </Button>
-              </CardContent>
-            </Card>
-          </a>
-        </div>
+    <PageShell>
+      <PageHead
+        title="Components"
+        sub="Every building block in the system — live, on-brand, and ready to compose. Foundations, core, forms, data, patterns, product, navigation and the assistant."
+      />
+
+      <div className="mb-12 flex flex-wrap gap-2">
+        <Tag size="sm" selected>
+          {TOC_COUNT} components
+        </Tag>
+        <Tag size="sm">Flat · monochrome</Tag>
+        <Tag size="sm">SF Pro · 4 sizes</Tag>
       </div>
-    </>
+
+      {/* ── Foundations ───────────────────────────────────────────────── */}
+
+      <Spec
+        id="colors"
+        title="Colors"
+        meta="tokens/colors.css"
+        desc="Three neutral inks over warm off-white surfaces. Color appears only as a status signal — never decoration."
+      >
+        <Colors />
+      </Spec>
+
+      <Spec
+        id="type"
+        title="Typography"
+        meta="tokens/typography.css"
+        desc="SF Pro, regular and medium only, tracked −0.15px. Just four sizes; hierarchy comes from ink and weight, not size alone."
+      >
+        <Typography />
+      </Spec>
+
+      <Spec
+        id="radius"
+        title="Radius"
+        meta="tokens/radius.css"
+        desc="Exactly three radii across the system."
+      >
+        <Radii />
+      </Spec>
+
+      <Spec
+        id="icons"
+        title="Icons"
+        meta="core/Icon · Lucide"
+        desc={`Thin single-weight line icons from Lucide. 14px in navigation, 20px on cards. Any Lucide name works — these are the ${ICON_NAMES.length} used across the product.`}
+        code={`<UsersIcon className="size-3.5 text-ink-600" />`}
+      >
+        <Icons />
+      </Spec>
+
+      {/* ── Core ──────────────────────────────────────────────────────── */}
+
+      <Spec
+        id="buttons"
+        title="Buttons"
+        meta="core/Button"
+        desc="The pill CTA. Primary is warm near-black; sentence-case, verb-first labels."
+        code={`<Button icon="plus">New task</Button>`}
+      >
+        <Swatch label="primary">
+          <Button>New task</Button>
+        </Swatch>
+        <Swatch label="secondary">
+          <Button variant="secondary">Copy</Button>
+        </Swatch>
+        <Swatch label="ghost">
+          <Button variant="ghost">Cancel</Button>
+        </Swatch>
+        <Swatch label="with icon">
+          <Button>
+            <PlusIcon />
+            Add domain
+          </Button>
+        </Swatch>
+        <Swatch label="small">
+          <Button size="sm">Publish</Button>
+        </Swatch>
+        <Swatch label="disabled">
+          <Button disabled>Connect</Button>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="iconbuttons"
+        title="Icon buttons"
+        meta="core/IconButton"
+        desc="Square single-icon control for toolbars and add actions."
+        code={`<IconButton variant="outline"><PlusIcon /></IconButton>`}
+      >
+        <Swatch label="outline">
+          <IconButton aria-label="Add">
+            <PlusIcon />
+          </IconButton>
+        </Swatch>
+        <Swatch label="ghost">
+          <IconButton variant="ghost" aria-label="Notifications">
+            <BellIcon />
+          </IconButton>
+        </Swatch>
+        <Swatch label="filled">
+          <IconButton variant="filled" aria-label="Settings">
+            <SettingsIcon />
+          </IconButton>
+        </Swatch>
+        <Swatch label="disabled">
+          <IconButton disabled aria-label="Delete">
+            <Trash2Icon />
+          </IconButton>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="toggle"
+        title="Toggle"
+        meta="core/Switch"
+        desc="iOS-style switch. Blue track when on; used for permissions and settings."
+        code={`<Switch checked={on} onCheckedChange={setOn} />`}
+      >
+        <Swatch label="on">
+          <Switch defaultChecked />
+        </Swatch>
+        <Swatch label="off">
+          <Switch />
+        </Swatch>
+        <Swatch label="disabled">
+          <Switch defaultChecked disabled />
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="inputs"
+        title="Inputs"
+        meta="core/SearchInput"
+        desc="Quiet search field with a leading icon and an optional ⌘K hint."
+        code={`<SearchInput placeholder="Search" />`}
+      >
+        <Swatch label="default" width={280}>
+          <SearchInput />
+        </Swatch>
+        <Swatch label="no hint" width={280}>
+          <SearchInput hint={null} placeholder="Search leads…" />
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="tags"
+        title="Chips & tags"
+        meta="core/Tag"
+        desc="Category pills. Selected is a dark fill; unselected is white with a hairline."
+        code={`<Tag selected>All agents</Tag>`}
+      >
+        <Swatch label="selected">
+          <Tag selected>All agents</Tag>
+        </Swatch>
+        <Swatch label="default">
+          <Tag>Sales</Tag>
+        </Swatch>
+        <Swatch label="small">
+          <Tag size="sm">Hotel</Tag>
+        </Swatch>
+        <Swatch label="row">
+          <div className="flex gap-2">
+            <Tag size="sm" selected>
+              All
+            </Tag>
+            <Tag size="sm">Real estate</Tag>
+            <Tag size="sm">Content</Tag>
+          </div>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="badges"
+        title="Badges"
+        meta="core/Badge"
+        desc="Small markers: a blue count pill, the pink “New” label, or a neutral chip."
+        code={`<Badge variant="count">6</Badge>`}
+      >
+        <Swatch label="count">
+          <Badge variant="count">6</Badge>
+        </Swatch>
+        <Swatch label="new">
+          <Badge variant="new">New</Badge>
+        </Swatch>
+        <Swatch label="neutral">
+          <Badge variant="neutral">Draft</Badge>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="avatars"
+        title="Avatars"
+        meta="core/Avatar"
+        desc="Round user or org mark — an image, or an initial on a soft brand gradient."
+        code={`<Avatar size={32}><AvatarFallback gradient="purple">A</AvatarFallback></Avatar>`}
+      >
+        {(["purple", "blue", "teal", "pink"] as const).map(
+          (gradient, index) => (
+            <Swatch key={gradient} label={gradient}>
+              <Avatar size={40}>
+                <AvatarFallback gradient={gradient}>
+                  {["A", "M", "N", "L"][index]}
+                </AvatarFallback>
+              </Avatar>
+            </Swatch>
+          ),
+        )}
+        <Swatch label="sizes">
+          <div className="flex items-center gap-2">
+            {[20, 28, 40].map((size) => (
+              <Avatar key={size} size={size}>
+                <AvatarFallback gradient="purple">A</AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="cards"
+        title="Cards"
+        meta="core/Card"
+        desc="The base white surface — 16px radius, hairline border, no shadow. Stack rows or hold any content."
+      >
+        <Swatch label="base" width={240}>
+          <Card className="w-60">
+            <CardContent>
+              <div className="text-base font-medium">Workspace</div>
+              <div className="mt-1 text-sm text-ink-400">
+                4 members · 5 domains
+              </div>
+            </CardContent>
+          </Card>
+        </Swatch>
+        <Swatch label="interactive" width={240}>
+          <Card interactive className="w-60">
+            <CardContent>
+              <div className="text-base font-medium">Real estate</div>
+              <div className="mt-1 text-sm text-ink-400">
+                Hover to lift the border
+              </div>
+            </CardContent>
+          </Card>
+        </Swatch>
+      </Spec>
+
+      {/* ── Forms ─────────────────────────────────────────────────────── */}
+
+      <Spec
+        id="textfield"
+        title="Text field"
+        meta="forms/Input"
+        desc="Labelled single-line input on the shared control ladder — 28 / 36 / 44 — so a field and a button on the same toolbar row line up without either being overridden."
+        code={`<Input size="sm" placeholder="…" />`}
+      >
+        <TextFields />
+      </Spec>
+
+      <Spec
+        id="select"
+        title="Select"
+        meta="forms/Select"
+        desc="Single-choice dropdown with a chevron affordance; on-brand menu chrome with a check on the active row."
+        code={`<Select><SelectTrigger>…</SelectTrigger><SelectContent>…</SelectContent></Select>`}
+      >
+        <Selects />
+      </Spec>
+
+      <Spec
+        id="selectmenu"
+        title="Select menu"
+        meta="forms/SelectMenu"
+        desc="A pill trigger that opens a menu with a checkmark on the selected row and hover tint — used for the analytics domain and date-range filters. Unlike Select, it takes a leading icon and never carries a field label."
+        code={`<SelectMenu value={v} options={[…]} onValueChange={setV} icon={<GlobeIcon />} />`}
+      >
+        <SelectMenus />
+      </Spec>
+
+      <Spec
+        id="asyncselect"
+        title="Autocomplete"
+        meta="forms/AsyncMultiSelect"
+        desc="Typeahead combobox for high-cardinality fields — pages or keywords numbering in the thousands. Debounced async search, windowed results (loads more on scroll), pinned selected chips, and full keyboard nav. Use this instead of the checkbox Filter menu whenever the option set is large or dynamic."
+        code={`<AsyncMultiSelect fetcher={q => api.pages(q)} selected={sel} onSelectedChange={setSel} />`}
+      >
+        <Autocompletes />
+      </Spec>
+
+      <Spec
+        id="dropdown"
+        title="Dropdown menu"
+        meta="forms/DropdownMenu"
+        desc="A trigger button that opens a floating action menu; closes on outside click. Destructive items take the red ink, never a red fill."
+        code={`<DropdownMenu /> — Rename / Duplicate / Share / Delete`}
+      >
+        <ActionsDropdown />
+      </Spec>
+
+      <Spec
+        id="filtermenu"
+        title="Filter menus"
+        meta="pattern"
+        desc="Toolbar filter triggers with rich popovers: a multi-select status filter (overlapping colour dots, an n/total count, dark checkboxes and a hover “Check all”) and a single-select dropdown with a check on the active option."
+      >
+        <Swatch label="multi-select">
+          <StatusFilter />
+        </Swatch>
+        <Swatch label="single-select">
+          <EnvDropdown />
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="choice"
+        title="Checkbox & radio"
+        meta="forms/Checkbox · RadioGroup"
+        desc="Multi- and single-select controls sharing the blue accent and hairline outline."
+        code={`<Checkbox label="…" /> · <RadioGroup options={[…]} />`}
+      >
+        <Choices />
+      </Spec>
+
+      {/* ── Overlays ──────────────────────────────────────────────────── */}
+
+      <Spec
+        id="dialog"
+        title="Modals"
+        meta="overlays/Dialog"
+        desc="A card-radius sheet with 24px interior on a dimmed backdrop — one of the few places the system allows depth."
+        code={`<Dialog><DialogTrigger …/><DialogContent>…</DialogContent></Dialog>`}
+      >
+        <Swatch label="basic sheet">
+          <DialogDemo />
+        </Swatch>
+        <Swatch label="install pattern">
+          <DialogDemo variant="install" />
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="command"
+        title="Command palette"
+        meta="overlays/Command · ⌘K"
+        desc="Search or jump to. Grouped results, keyboard-first, opened from the topbar or ⌘K anywhere."
+        code={`<CommandDialog open={open}><CommandInput /><CommandList>…</CommandList></CommandDialog>`}
+      >
+        <CommandPaletteDemo />
+      </Spec>
+
+      {/* ── Data ──────────────────────────────────────────────────────── */}
+
+      <Spec
+        id="status"
+        title="Status pills"
+        meta="core/Badge · status variants"
+        desc="Tinted row status. The four tones map to the status token set: active green, paused amber, ended red, draft blue."
+        code={`<Badge variant="active">Active</Badge>`}
+      >
+        <Swatch label="active">
+          <Badge variant="active">Active</Badge>
+        </Swatch>
+        <Swatch label="paused">
+          <Badge variant="paused">Paused</Badge>
+        </Swatch>
+        <Swatch label="ended">
+          <Badge variant="ended">Ended</Badge>
+        </Swatch>
+        <Swatch label="draft">
+          <Badge variant="draft">Draft</Badge>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="delta"
+        title="Delta & sparkline"
+        meta="data/DeltaText · Sparkline"
+        desc="A signed change, green up / red down, and a tiny SVG trend that fits inside a table cell."
+        code={`<DeltaText value={12} caret /> · <Sparkline data={[…]} />`}
+      >
+        <Swatch label="up">
+          <DeltaText value={12} caret />
+        </Swatch>
+        <Swatch label="down">
+          <DeltaText value={-4.2} caret />
+        </Swatch>
+        <Swatch label="no caret">
+          <DeltaText value={8} />
+        </Swatch>
+        <Swatch label="line">
+          <Sparkline data={[4, 6, 5, 9, 8, 12, 11, 15]} />
+        </Swatch>
+        <Swatch label="area">
+          <Sparkline data={[4, 6, 5, 9, 8, 12, 11, 15]} fill />
+        </Swatch>
+        <Swatch label="bar">
+          <Sparkline
+            data={[4, 6, 5, 9, 8, 12, 11, 15]}
+            type="bar"
+            color="var(--data-track)"
+          />
+        </Swatch>
+        <Swatch label="down trend">
+          <Sparkline
+            data={[15, 12, 13, 9, 10, 6, 5]}
+            color="var(--data-down)"
+          />
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="kpi"
+        title="KPIs"
+        meta="data/KpiCard · Kpi"
+        desc="Bordered metric card with sparkline, or a bare stat block for the strip above a chart."
+      >
+        <div className="grid w-full grid-cols-[repeat(2,minmax(210px,1fr))] gap-3.5">
+          <KpiCard
+            label="Total leads"
+            icon={<UserRoundIcon />}
+            value="399"
+            delta={12}
+            spark={[240, 270, 300, 340, 370, 399]}
+          />
+          <KpiCard
+            label="Qualified"
+            icon={<CircleCheckIcon />}
+            value="148"
+            delta={8}
+            spark={[96, 108, 120, 132, 140, 148]}
+          />
+        </div>
+        <Card className="flex w-full flex-row gap-0 p-0">
+          <Kpi
+            label="Domains"
+            value="5"
+            delta={4}
+            icon={<GlobeIcon />}
+            selected
+          />
+          <Kpi
+            label="Members"
+            value="4"
+            delta={0}
+            icon={<UsersIcon />}
+            divider
+          />
+          <Kpi
+            label="Conversion"
+            value="33.6%"
+            delta={-2}
+            icon={<TrendingUpIcon />}
+            divider
+          />
+        </Card>
+      </Spec>
+
+      <Spec
+        id="breakdown"
+        title="Breakdown & rankings"
+        meta="data/BreakdownRow · TopItemRow"
+        desc="Labeled line items with a trend spark, and ranked rows with a share bar."
+      >
+        <Card className="w-[340px]">
+          <CardContent>
+            <div className="mb-1.5 text-base font-medium">Leads by stage</div>
+            <BreakdownRow
+              label="Qualified"
+              value="148"
+              trend={[110, 120, 132, 140, 148]}
+            />
+            <BreakdownRow
+              label="Contacted"
+              value="132"
+              trend={[100, 108, 118, 126, 132]}
+            />
+            <BreakdownRow
+              label="Lost"
+              value="32"
+              trend={[40, 38, 36, 34, 32]}
+              up={false}
+            />
+          </CardContent>
+        </Card>
+        <Card className="w-[340px]">
+          <CardContent>
+            <div className="mb-2 text-base font-medium">Top domains</div>
+            <TopItemRow
+              media="🌐"
+              name="flama.dev"
+              value="214"
+              count="54%"
+              ratio={1}
+            />
+            <TopItemRow
+              media="🌐"
+              name="app.flama.dev"
+              value="96"
+              count="24%"
+              ratio={0.45}
+            />
+            <TopItemRow
+              media="🌐"
+              name="blog.flama.dev"
+              value="58"
+              count="15%"
+              ratio={0.27}
+            />
+          </CardContent>
+        </Card>
+      </Spec>
+
+      <Spec
+        id="chart"
+        title="Line chart"
+        meta="data/Chart · Recharts"
+        desc="The primary series in blue with a dotted comparison line, hairline gridlines and a card-radius tooltip."
+        code={`<ChartContainer config={config}><LineChart …/></ChartContainer>`}
+      >
+        <ChartDemo />
+      </Spec>
+
+      <Spec
+        id="tableblock"
+        title="Table"
+        meta="DataTableBlock"
+        desc="The one table pattern used across the product: a toolbar (left search, right filter + primary action), sortable headers, row selection with a bulk-action bar, a right-aligned per-row actions menu, a multi-select filter popover and a pagination footer."
+        code={`<Table><TableHeader>…</TableHeader><TableBody>…</TableBody></Table>`}
+      >
+        <LeadTable />
+      </Spec>
+
+      <Spec
+        id="datacells"
+        title="Data cells"
+        meta="pattern"
+        desc="The small in-table cells used across Team and Leads: a role pill, member status, domain scope, lead source, a score meter and the pipeline stage tag."
+      >
+        <Swatch label="RolePill">
+          <RolePill role="SEO manager" />
+        </Swatch>
+        <Swatch label="member status">
+          <TeamStatus status="active" />
+        </Swatch>
+        <Swatch label="away">
+          <TeamStatus status="away" />
+        </Swatch>
+        <Swatch label="invited">
+          <TeamStatus status="invited" />
+        </Swatch>
+        <Swatch label="domain scope">
+          <ScopeCell scope="some" count={3} />
+        </Swatch>
+        <Swatch label="lead source">
+          <SourceCell source="Organic search" />
+        </Swatch>
+        <Swatch label="lead score">
+          <ScoreCell score={88} />
+        </Swatch>
+        <Swatch label="pipeline stage">
+          <StageTag stage="Qualified" />
+        </Swatch>
+      </Spec>
+
+      {/* ── Patterns ──────────────────────────────────────────────────── */}
+
+      <Spec
+        id="tabs"
+        title="Tabs"
+        meta="pattern"
+        desc="Underline tab strip with a count per tab and a blue active indicator — used to split the Team page into Members and Roles."
+      >
+        <UnderlineTabs />
+      </Spec>
+
+      <Spec
+        id="segmented"
+        title="Segmented control"
+        meta="pattern"
+        desc="A compact 2–3 option switch with a dark active pill. Used for per-area permissions (None / View / Edit) and access presets."
+      >
+        <Swatch label="permission level">
+          <Segmented />
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="togglebutton"
+        title="Toggle button"
+        meta="patterns/Toggle"
+        desc="A pill chip for editor controls. Pressed reads as the brand's selected state: dark fill, white label."
+        code={`<Toggle aria-label="Bold"><BoldIcon /></Toggle>`}
+      >
+        <Swatch label="pressed">
+          <Toggle aria-label="Bold" defaultPressed>
+            <BoldIcon />
+          </Toggle>
+        </Swatch>
+        <Swatch label="default">
+          <Toggle aria-label="Italic">
+            <ItalicIcon />
+          </Toggle>
+        </Swatch>
+        <Swatch label="outline">
+          <Toggle variant="outline" aria-label="Underline">
+            <UnderlineIcon />
+          </Toggle>
+        </Swatch>
+        <Swatch label="group">
+          <ToggleGroup defaultValue={["bold"]}>
+            <ToggleGroupItem value="bold" aria-label="Bold">
+              <BoldIcon />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="italic" aria-label="Italic">
+              <ItalicIcon />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="underline" aria-label="Underline">
+              <UnderlineIcon />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="stepper"
+        title="Stage stepper"
+        meta="patterns/Stepper"
+        desc="The pipeline bar from the lead drawer: flat tracks filled to the current stage, with terminal stages taking their own tone."
+        code={`<Stepper steps={STAGES} value={stage} onValueChange={setStage} />`}
+      >
+        <StepperDemo />
+      </Spec>
+
+      {/* ── Product ───────────────────────────────────────────────────── */}
+
+      <Spec
+        id="agent"
+        title="Agent cards"
+        meta="product/AgentCard"
+        desc="The marketplace card: an aurora-gradient header carrying floating white app plates, then a white body with the title, one line of description and the maker credit. The gradients are the only imagery in the system."
+        code={`<AgentCard title="…" apps={['slack']} author="Rico" gradient="blueLilac" />`}
+      >
+        <AgentCard
+          title="Niche Content Composer"
+          description="Daily niche content, fully automated"
+          apps={["notion", "slack"]}
+          author="Rico"
+          gradient="blueLilac"
+        />
+        <AgentCard
+          title="Probate & FSBO Lead Hunter"
+          description="Finds high-intent real estate leads"
+          apps={["googlesheets", "whatsapp"]}
+          author="Mara"
+          gradient="peachYellow"
+        />
+      </Spec>
+
+      <Spec
+        id="apps"
+        title="App icons & tiles"
+        meta="product/AppIcon · AppTile"
+        desc="Full-color brand marks on rounded tiles, and connect rows for the Apps grid."
+      >
+        <Swatch label="icons" width="100%">
+          <div className="flex flex-wrap gap-3">
+            {APPS.map((app) => (
+              <AppIcon key={app} app={app} size={44} />
+            ))}
+          </div>
+        </Swatch>
+        <div className="w-full max-w-[420px]">
+          <AppTile
+            app="slack"
+            name="Slack"
+            description="Collaborate directly from Slack"
+          />
+          <AppTile
+            app="zoom"
+            name="Zoom"
+            description="Host virtual meetings and webinars"
+            connected
+          />
+        </div>
+      </Spec>
+
+      <Spec
+        id="feature"
+        title="Feature rows"
+        meta="product/FeatureRow"
+        desc="A 20px line icon beside a 2–3 word title and one supporting line. Stack several inside a card; rows self-divide with a hairline."
+        code={`<FeatureRow icon={<MonitorIcon />} title="Resume instantly" description="…" />`}
+      >
+        <Card className="w-full max-w-lg gap-0 py-0">
+          <FeatureRow
+            icon={<MonitorIcon />}
+            title="Resume instantly"
+            description="Pick up any agent run or workspace from your desktop"
+          />
+          <FeatureRow
+            icon={<SmartphoneIcon />}
+            title="Start from anywhere"
+            description="Kick off a task from your phone and finish on the desktop"
+          />
+          <FeatureRow
+            icon={<PlugIcon />}
+            title="Bring your tools"
+            description="Connect the apps your team already runs on"
+          />
+        </Card>
+      </Spec>
+
+      {/* ── Navigation ────────────────────────────────────────────────── */}
+
+      <Spec
+        id="nav"
+        title="Nav items"
+        meta="navigation/NavItem"
+        desc="Sidebar row: 14px icon + label with an optional trailing slot. Active gets a sunken fill."
+      >
+        <NavItems />
+      </Spec>
+
+      <Spec
+        id="recents"
+        title="Recents"
+        meta="navigation/RecentItem"
+        desc="A live status dot and a truncating label — filled cyan when a run is active."
+      >
+        <Recents />
+      </Spec>
+
+      <Spec
+        id="sectionlabel"
+        title="Section labels"
+        meta="navigation/SectionLabel"
+        desc="The quiet gray group header in the sidebar."
+      >
+        <SectionLabels />
+      </Spec>
+
+      {/* ── Assistant ─────────────────────────────────────────────────── */}
+
+      <Spec
+        id="askai"
+        title="Ask AI button"
+        meta="patterns · Button"
+        desc="The topbar entry point to the assistant: a white hairline pill with the sparkle mark, sitting beside the utility icons."
+        code={`<Button variant="outline" size="sm"><SparklesIcon />Ask AI</Button>`}
+      >
+        <Swatch label="top-bar trigger">
+          <Button variant="secondary" size="sm">
+            <SparklesIcon />
+            Ask AI
+          </Button>
+        </Swatch>
+      </Spec>
+
+      <Spec
+        id="promptcards"
+        title="Prompt cards"
+        meta="assistant/PromptCard"
+        desc="The assistant's empty state: suggested prompts as tiled rows with a title, one line of description and a trailing chevron."
+        code={`<PromptCard icon={<UserRoundIcon />} title="Find high-intent leads" description="…" />`}
+      >
+        <div className="flex w-full max-w-[460px] flex-col gap-2">
+          <PromptCard
+            icon={<UserRoundIcon />}
+            title="Find high-intent leads"
+            description="Surface this week's best leads across domains"
+          />
+          <PromptCard
+            icon={<TrendingUpIcon />}
+            title="What changed in rankings?"
+            description="Summarise position gains and drops"
+          />
+          <PromptCard
+            icon={<FileTextIcon />}
+            title="Draft a follow-up"
+            description="Write an email for a qualified lead"
+          />
+        </div>
+      </Spec>
+
+      <Spec
+        id="chat"
+        title="Chat bubbles"
+        meta="assistant/ChatBubble"
+        desc="The user's turn is the dark inverse fill, right-aligned; the assistant's is a white card with a hairline, led by its mark."
+        code={`<ChatBubble role="user">…</ChatBubble>`}
+      >
+        <div className="flex w-full max-w-[460px] flex-col gap-4.5">
+          <ChatBubble
+            role="user"
+            avatar={
+              <Avatar size={28}>
+                <AvatarFallback gradient="purple">A</AvatarFallback>
+              </Avatar>
+            }
+          >
+            Find high-intent leads this week
+          </ChatBubble>
+          <ChatBubble
+            role="assistant"
+            avatar={
+              <ChatMark>
+                <SparklesIcon className="text-ink-600" />
+              </ChatMark>
+            }
+          >
+            Three leads stand out: Priya Nair (88), Amara Okafor (95) and Tomás
+            Rivera (76). Want follow-ups drafted?
+          </ChatBubble>
+          <ChatBubble
+            role="assistant"
+            avatar={
+              <ChatMark>
+                <SparklesIcon className="text-ink-600" />
+              </ChatMark>
+            }
+          >
+            <ChatTyping />
+          </ChatBubble>
+        </div>
+      </Spec>
+
+      <Spec
+        id="composer"
+        title="Composer"
+        meta="assistant/Composer"
+        desc="A card-radius well with an auto-growing textarea over a toolbar row and the blue send button. Enter sends; Shift+Enter adds a line. The toolbar takes anything — here a ghost SelectMenu picking the model."
+        code={`<Composer value={value} onValueChange={setValue} onSubmit={send} toolbar={<SelectMenu variant="ghost" … />} />`}
+      >
+        <ComposerDemo />
+      </Spec>
+
+
+      {/* ── Chat ──────────────────────────────────────────────────────── */}
+
+      <Spec
+        id="attachment"
+        title="Attachment"
+        meta="chat/Attachment"
+        desc="A file chip for the composer and the thread: media tile, name, type and size, with actions that stay separately clickable inside a full-card trigger."
+        code={`<Attachment><AttachmentMedia>…</AttachmentMedia><AttachmentContent>…</AttachmentContent></Attachment>`}
+      >
+        <Attachments />
+      </Spec>
+
+      <Spec
+        id="bubble"
+        title="Bubble"
+        meta="chat/Bubble"
+        desc="The message surface itself. Filled for the person speaking, muted for the reply — the brand keeps both at the tile radius and neither takes elevation."
+        code={`<Bubble variant="muted"><BubbleContent>…</BubbleContent></Bubble>`}
+      >
+        <Bubbles />
+      </Spec>
+
+      <Spec
+        id="message"
+        title="Message"
+        meta="chat/Message"
+        desc="The conversation row that positions a bubble: avatar, alignment, header and footer. Align end to flip the whole row for the outgoing side."
+        code={`<Message align="end"><MessageContent><Bubble>…</Bubble></MessageContent></Message>`}
+      >
+        <Messages />
+      </Spec>
+
+      <Spec
+        id="messagescroller"
+        title="Message scroller"
+        meta="chat/MessageScroller"
+        desc="The scroll container for a thread — anchored turns, streamed replies, restored position and a jump-to-end control that only appears once you have scrolled away."
+        code={`<MessageScrollerProvider><MessageScroller>…<MessageScrollerButton /></MessageScroller></MessageScrollerProvider>`}
+      >
+        <Scroller />
+      </Spec>
+
+      <Spec
+        id="questionnaire"
+        title="Questionnaire"
+        meta="chat/Questionnaire"
+        desc="A stepped set of questions the assistant can ask inline: progress, single- or multi-choice items with descriptions, and previous/next actions."
+        code={`<Questionnaire><QuestionnaireItem name="…"><QuestionnaireChoices>…</QuestionnaireChoices></QuestionnaireItem></Questionnaire>`}
+      >
+        <QuestionnaireDemo />
+      </Spec>
+
+      {/* ── Utility ───────────────────────────────────────────────────── */}
+
+      <Spec
+        id="alert"
+        title="Alerts"
+        meta="core/Alert"
+        desc="A card-radius surface with a leading icon. Status callouts share Badge's vocabulary — active, paused, ended, draft — and colour the ink and the hairline, never the fill."
+        code={`<Alert variant="paused"><AlertTitle>…</AlertTitle><AlertDescription>…</AlertDescription></Alert>`}
+      >
+        <Alert className="w-full max-w-lg">
+          <AlertCircleIcon className="size-4" />
+          <AlertTitle>Heads up</AlertTitle>
+          <AlertDescription>
+            Two domains have not been verified yet.
+          </AlertDescription>
+        </Alert>
+        {ALERT_STATUSES.map((status) => (
+          <Alert
+            key={status.variant}
+            variant={status.variant}
+            className="w-full max-w-lg"
+          >
+            <status.icon className="size-4" />
+            <AlertTitle>{status.title}</AlertTitle>
+            <AlertDescription>{status.body}</AlertDescription>
+          </Alert>
+        ))}
+      </Spec>
+
+      <Spec
+        id="separator"
+        title="Separator"
+        meta="core/Separator"
+        desc="The hairline that carries the structure everywhere else in the system."
+        code={`<Separator />`}
+      >
+        <div className="w-full max-w-lg space-y-3">
+          <p className="text-base">Above the separator</p>
+          <Separator />
+          <p className="text-base">Below the separator</p>
+        </div>
+      </Spec>
+
+      <Spec
+        id="skeleton"
+        title="Skeleton"
+        meta="core/Skeleton"
+        desc="Loading placeholders at the control radius, on the inactive-fill neutral so they stay legible on both card and canvas."
+        code={`<Skeleton className="h-4 w-[250px]" />`}
+      >
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
+        </div>
+      </Spec>
+    </PageShell>
   );
 }

@@ -42,3 +42,9 @@ coverage/
 
 # Claude Code scratchpad (temp workflow scripts, not part of the repo)
 scratchpad/
+
+# Design handoff material — reference deliverables used to build the brand,
+# not part of the codebase. Large, and carries third-party branding.
+/Alpaca Labs Design System.zip
+/CRM SaaS Design Pages.zip
+/Adri Rodrigo - Design System.html

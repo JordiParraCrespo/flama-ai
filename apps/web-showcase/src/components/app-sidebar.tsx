@@ -1,10 +1,6 @@
-'use client';
+"use client";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@flama/design-system-web/collapsible';
+import { BrandMark } from "@flama/design-system-web/brand-mark";
 import {
   Sidebar,
   SidebarContent,
@@ -14,94 +10,122 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
-} from '@flama/design-system-web/sidebar';
-import { BlocksIcon, ChevronRightIcon, ComponentIcon, FlameIcon } from 'lucide-react';
-import * as React from 'react';
+} from "@flama/design-system-web/sidebar";
+import * as React from "react";
+import { TOC, TOC_COUNT } from "@/lib/toc";
 
-const nav = [
-  {
-    title: 'Components',
-    url: '/components',
-    icon: <ComponentIcon className="size-4" />,
-    isActive: true,
-    items: [
-      { title: 'Button', url: '/components#button' },
-      { title: 'Input', url: '/components#input' },
-      { title: 'Card', url: '/components#card' },
-      { title: 'Badge', url: '/components#badge' },
-      { title: 'Alert', url: '/components#alert' },
-      { title: 'Avatar', url: '/components#avatar' },
-      { title: 'Checkbox', url: '/components#checkbox' },
-      { title: 'Switch', url: '/components#switch' },
-      { title: 'Separator', url: '/components#separator' },
-      { title: 'Tabs', url: '/components#tabs' },
-      { title: 'Toggle', url: '/components#toggle' },
-      { title: 'Skeleton', url: '/components#skeleton' },
-    ],
-  },
-  {
-    title: 'Blocks',
-    url: '/blocks',
-    icon: <BlocksIcon className="size-4" />,
-    items: [{ title: 'Login', url: '/blocks#login' }],
-  },
-];
-
+/**
+ * The design system's table of contents. Every entry on the page gets a row,
+ * grouped the way the inventory is grouped, and the row for whatever section
+ * is currently in view fills with the sunken surface.
+ */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const active = useActiveSection();
+
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<a href="/" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <FlameIcon className="size-4" />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Flama</span>
-                <span className="truncate text-xs text-muted-foreground">Showcase</span>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="flex items-center gap-2.5 px-2 py-2">
+          <span className="flex size-6 shrink-0 items-center justify-center">
+            <BrandMark size={20} />
+          </span>
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate text-base font-medium text-ink-900">
+              Design system
+            </span>
+            <span className="block truncate text-xs text-ink-400">
+              {TOC_COUNT} components
+            </span>
+          </span>
+        </div>
       </SidebarHeader>
+
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Browse</SidebarGroupLabel>
-          <SidebarMenu>
-            {nav.map((item) => (
-              <Collapsible
-                key={item.title}
-                defaultOpen={item.isActive}
-                className="group/collapsible"
-                render={<SidebarMenuItem />}
-              >
-                <CollapsibleTrigger render={<SidebarMenuButton tooltip={item.title} />}>
-                  {item.icon}
-                  <span>{item.title}</span>
-                  <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.items.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton render={<a href={subItem.url} />}>
-                          <span>{subItem.title}</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+        {TOC.map((section) => (
+          <SidebarGroup key={section.group}>
+            <SidebarGroupLabel>{section.group}</SidebarGroupLabel>
+            <SidebarMenu>
+              {section.items.map((item) => (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton
+                    tooltip={item.label}
+                    isActive={active === item.id}
+                    render={<a href={`#${item.id}`} />}
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
   );
+}
+
+/**
+ * Tracks which `<section id>` is in view inside the main scroll container.
+ *
+ * A scroll calculation rather than an IntersectionObserver, because the two
+ * edges of the page need explicit answers an observer does not give: at the
+ * very top nothing has crossed the trigger line yet, and the final section can
+ * never reach it — there is no content left to scroll past it. So: the active
+ * section is the last one whose top has passed the trigger line, except when
+ * scrolled to the bottom, where it is simply the last section.
+ */
+const TRIGGER_OFFSET = 120;
+
+function useActiveSection() {
+  const [active, setActive] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const root = document.getElementById("main-scroll");
+    if (!root) return;
+
+    const sections = Array.from(
+      root.querySelectorAll<HTMLElement>("section[id]"),
+    );
+    if (sections.length === 0) return;
+
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      if (!root) return;
+
+      const atBottom =
+        root.scrollTop + root.clientHeight >= root.scrollHeight - 2;
+      if (atBottom) {
+        setActive(sections[sections.length - 1].id);
+        return;
+      }
+
+      const line = root.getBoundingClientRect().top + TRIGGER_OFFSET;
+      let current = sections[0].id;
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= line) current = section.id;
+        else break;
+      }
+      setActive(current);
+    }
+
+    function onScroll() {
+      if (frame === 0) frame = requestAnimationFrame(update);
+    }
+
+    update();
+    root.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (frame !== 0) cancelAnimationFrame(frame);
+      root.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  return active;
 }
