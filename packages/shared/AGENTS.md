@@ -4,7 +4,7 @@ Cross-cutting contracts shared between backend and frontend: Zod schemas,
 types, constants, and CASL permission helpers.
 
 > Read the root [`CLAUDE.md`](../../CLAUDE.md). The RBAC rules in
-> [`.claude/rules/rbac-roles.md`](../../.claude/rules/rbac-roles.md) also scope
+> [`.agents/rules/rbac-roles.md`](../../.agents/rules/rbac-roles.md) also scope
 > this package.
 
 ## Layout

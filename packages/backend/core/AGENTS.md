@@ -5,7 +5,7 @@ interceptors, request helpers, and base services. Consumed by `apps/api` and
 other backend packages.
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) first, and the backend rules
-> in [`.claude/rules/backend-packages.md`](../../../.claude/rules/backend-packages.md).
+> in [`.agents/rules/backend-packages.md`](../../../.agents/rules/backend-packages.md).
 
 ## Layout
 

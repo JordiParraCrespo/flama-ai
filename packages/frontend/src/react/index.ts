@@ -30,6 +30,10 @@ export {
   useSessionRestore,
   useSocialLogin,
 } from './auth.queries';
+export {
+  capabilitiesKeys,
+  useDeploymentCapabilities,
+} from './capabilities.queries';
 export { FlamaProvider, useFlamaApp } from './context';
 export { useAuthState } from './hooks';
 export { organizationsKeys, useOrganizations } from './organizations.queries';

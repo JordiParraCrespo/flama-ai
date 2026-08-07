@@ -10,9 +10,10 @@ import {
   FieldLabel,
   Input,
 } from '@flama/design-system-web';
-import { useLogin, useSocialLogin } from '@flama/frontend/react';
+import { useLogin } from '@flama/frontend/react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { SocialLoginButtons } from '../../components/social-login-buttons';
 
 export const Route = createFileRoute('/_auth/login')({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
@@ -26,7 +27,6 @@ function LoginPage() {
   const navigate = useNavigate();
   const { redirect: redirectTo } = Route.useSearch();
   const { mutate, isPending, error } = useLogin();
-  const social = useSocialLogin();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -96,34 +96,7 @@ function LoginPage() {
               </Field>
             </FieldGroup>
           </form>
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                {t('common.orContinueWith')}
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              variant="outline"
-              type="button"
-              disabled={isPending || social.isPending}
-              onClick={() => social.mutate('google')}
-            >
-              {t('common.google')}
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              disabled={isPending || social.isPending}
-              onClick={() => social.mutate('github')}
-            >
-              {t('common.github')}
-            </Button>
-          </div>
+          <SocialLoginButtons disabled={isPending} />
         </CardContent>
       </Card>
       <div className="text-center text-sm">

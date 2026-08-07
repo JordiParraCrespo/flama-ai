@@ -18,6 +18,7 @@
     "@better-auth/expo": "^1.6.25",
     "@expo/metro-runtime": "~6.1.2",
     "@flama/api-client": "workspace:*",
+    "@flama/auth": "workspace:*",
     "@flama/design-system-mobile": "workspace:*",
     "@flama/frontend": "workspace:*",
     "@flama/shared": "workspace:*",
