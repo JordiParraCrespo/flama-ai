@@ -2,8 +2,9 @@ import type { IncomingHttpHeaders } from 'node:http';
 import type { AdminCreateUserDto, AdminUpdateUserDto, ListUsersQuery } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { auth } from '../auth/auth';
-import { betterAuthHeaders, invokeBetterAuth } from '../auth/better-auth.util';
+import { betterAuthHeaders } from '../auth/better-auth.util';
 import { mapSessionsFromResult, mapSuccess, mapUserFromResult, mapUserList } from './admin.mappers';
+import { invokeAdminApi } from './admin-error.mapper';
 import type {
   AdminSessionResponseDto,
   AdminUserListResponseDto,
@@ -35,7 +36,7 @@ export class AdminService {
     headers: IncomingHttpHeaders,
     query: Partial<ListUsersQuery>,
   ): Promise<AdminUserListResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.listUsers({
         query: {
           searchValue: query.searchValue,
@@ -52,7 +53,7 @@ export class AdminService {
   }
 
   async getUser(headers: IncomingHttpHeaders, id: string): Promise<AdminUserResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.getUser({ query: { id }, headers: this.headers(headers) }),
     );
     return mapUserFromResult(result);
@@ -62,7 +63,7 @@ export class AdminService {
     headers: IncomingHttpHeaders,
     dto: AdminCreateUserDto,
   ): Promise<AdminUserResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.createUser({
         body: {
           email: dto.email,
@@ -81,7 +82,7 @@ export class AdminService {
     id: string,
     data: AdminUpdateUserDto,
   ): Promise<AdminUserResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.adminUpdateUser({
         body: { userId: id, data },
         headers: this.headers(headers),
@@ -95,7 +96,7 @@ export class AdminService {
     id: string,
     role: string | string[],
   ): Promise<AdminUserResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.setRole({
         body: { userId: id, role: asAdminRole(role) },
         headers: this.headers(headers),
@@ -109,7 +110,7 @@ export class AdminService {
     id: string,
     opts: { banReason?: string; banExpiresIn?: number },
   ): Promise<AdminUserResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.banUser({
         body: {
           userId: id,
@@ -123,7 +124,7 @@ export class AdminService {
   }
 
   async unban(headers: IncomingHttpHeaders, id: string): Promise<AdminUserResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.unbanUser({
         body: { userId: id },
         headers: this.headers(headers),
@@ -133,7 +134,7 @@ export class AdminService {
   }
 
   async remove(headers: IncomingHttpHeaders, id: string): Promise<{ success: boolean }> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.removeUser({
         body: { userId: id },
         headers: this.headers(headers),
@@ -143,7 +144,7 @@ export class AdminService {
   }
 
   async listSessions(headers: IncomingHttpHeaders, id: string): Promise<AdminSessionResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.listUserSessions({
         body: { userId: id },
         headers: this.headers(headers),
@@ -156,7 +157,7 @@ export class AdminService {
     headers: IncomingHttpHeaders,
     sessionToken: string,
   ): Promise<{ success: boolean }> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.revokeUserSession({
         body: { sessionToken },
         headers: this.headers(headers),
@@ -166,7 +167,7 @@ export class AdminService {
   }
 
   async revokeAllSessions(headers: IncomingHttpHeaders, id: string): Promise<{ success: boolean }> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.revokeUserSessions({
         body: { userId: id },
         headers: this.headers(headers),
@@ -180,7 +181,7 @@ export class AdminService {
     id: string,
     newPassword: string,
   ): Promise<{ success: boolean }> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeAdminApi(() =>
       auth.api.setUserPassword({
         body: { userId: id, newPassword },
         headers: this.headers(headers),
@@ -197,7 +198,7 @@ export class AdminService {
     headers: IncomingHttpHeaders,
     id: string,
   ): Promise<{ user: AdminUserResponseDto; headers: Headers }> {
-    const { response, headers: outHeaders } = await invokeBetterAuth(() =>
+    const { response, headers: outHeaders } = await invokeAdminApi(() =>
       auth.api.impersonateUser({
         body: { userId: id },
         headers: this.headers(headers),
@@ -211,7 +212,7 @@ export class AdminService {
   async stopImpersonating(
     headers: IncomingHttpHeaders,
   ): Promise<{ user: AdminUserResponseDto; headers: Headers }> {
-    const { response, headers: outHeaders } = await invokeBetterAuth(() =>
+    const { response, headers: outHeaders } = await invokeAdminApi(() =>
       auth.api.stopImpersonating({
         headers: this.headers(headers),
         returnHeaders: true,

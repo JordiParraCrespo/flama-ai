@@ -45,6 +45,15 @@ export class AdminApi {
                 'sortBy': sortBy,
                 'sortDirection': sortDirection,
             },
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -61,6 +70,15 @@ export class AdminApi {
             url: '/api/v1/admin/users',
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -72,6 +90,15 @@ export class AdminApi {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/admin/stop-impersonating',
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -83,6 +110,15 @@ export class AdminApi {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/admin/sessions/revoke',
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -99,6 +135,15 @@ export class AdminApi {
             url: '/api/v1/admin/users/{id}',
             path: {
                 'id': id,
+            },
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
             },
         });
     }
@@ -121,6 +166,15 @@ export class AdminApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -137,6 +191,15 @@ export class AdminApi {
             url: '/api/v1/admin/users/{id}',
             path: {
                 'id': id,
+            },
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
             },
         });
     }
@@ -159,6 +222,15 @@ export class AdminApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -180,6 +252,15 @@ export class AdminApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -196,6 +277,15 @@ export class AdminApi {
             url: '/api/v1/admin/users/{id}/unban',
             path: {
                 'id': id,
+            },
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
             },
         });
     }
@@ -214,6 +304,15 @@ export class AdminApi {
             path: {
                 'id': id,
             },
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -231,6 +330,15 @@ export class AdminApi {
             path: {
                 'id': id,
             },
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
     /**
@@ -247,6 +355,15 @@ export class AdminApi {
             url: '/api/v1/admin/users/{id}/revoke-sessions',
             path: {
                 'id': id,
+            },
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
             },
         });
     }
@@ -269,6 +386,15 @@ export class AdminApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ADMIN_001 — The user does not exist`,
+                409: `ADMIN_002 — A user with that email already exists`,
+                502: `ADMIN_008 — The admin service failed to handle the request`,
+            },
         });
     }
 }

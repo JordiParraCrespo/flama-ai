@@ -16,6 +16,7 @@ import { type RegisterDto, registerSchema } from '@flama/shared/schemas/auth';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useErrorMessage } from '@/lib/use-error-message';
 import { useZodResolver } from '@/lib/use-zod-resolver';
 
 export const Route = createFileRoute('/_auth/register')({
@@ -24,6 +25,7 @@ export const Route = createFileRoute('/_auth/register')({
 
 function RegisterPage() {
   const { t } = useTranslation();
+  const resolveError = useErrorMessage();
   const navigate = useNavigate();
   const { mutate, isPending, error } = useRegister();
 
@@ -56,7 +58,7 @@ function RegisterPage() {
             <FieldGroup>
               {error && (
                 <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error instanceof Error ? error.message : t('auth.register.failed')}
+                  {resolveError(error, t('auth.register.failed')).message}
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">

@@ -33,6 +33,10 @@ export class UsersApi {
                 'limit': limit,
                 'page': page,
             },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
         });
     }
     /**
@@ -44,6 +48,10 @@ export class UsersApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/users/me',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
         });
     }
     /**
@@ -62,6 +70,8 @@ export class UsersApi {
                 'id': id,
             },
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `USER_001 — User not found`,
             },
         });
@@ -86,6 +96,8 @@ export class UsersApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `USER_001 — User not found`,
             },
         });
@@ -106,6 +118,8 @@ export class UsersApi {
                 'id': id,
             },
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `USER_001 — User not found`,
             },
         });

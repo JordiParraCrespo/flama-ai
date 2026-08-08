@@ -1,3 +1,4 @@
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { Controller, Get, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -12,6 +13,7 @@ import type { CurrentCredentialScopes } from './find-current-credential.query-ha
 
 @ApiTags('API tokens')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard)
 @Controller('me')
 export class FindCurrentCredentialHttpController {

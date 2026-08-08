@@ -57,10 +57,18 @@ Shared shaping helpers (`asRecord`, `asArray`, `unwrap`, `unwrapArray`) live in
 plugin operations as typed, Swagger-documented, CASL-guarded REST endpoints that
 **delegate to `auth.api.*`** — Better Auth owns the tables, so these are
 infrastructure modules (controller → injectable service → `auth.api`), not
-CQRS/domain slices. Use `invokeBetterAuth` (maps Better Auth `APIError` →
-`HttpException`) and `betterAuthHeaders` from `src/auth/better-auth.util.ts`, and
-normalize every `auth.api` result through a mapper (see above). See
+CQRS/domain slices. Use `betterAuthHeaders` from `src/auth/better-auth.util.ts`,
+and normalize every `auth.api` result through a mapper (see above). See
 `.agents/rules/rbac-roles.md` for the full RBAC + org/admin guide.
+
+**Wrap every `auth.api.*` call in the module's own invoker** —
+`invokeOrganizationApi` (`organizations/organization-error.mapper.ts`) or
+`invokeAdminApi` (`admin/admin-error.mapper.ts`), both built with
+`betterAuthInvoker`. They fold Better Auth's `APIError` onto the module's error
+catalog so the response is a proper problem document with an `ORG_*`/`ADMIN_*`
+code, keeping the upstream code as an `upstreamCode` extension. Throwing a bare
+`HttpException` here loses the code entirely — see "Structured errors" in
+`.agents/rules/nestjs-architecture.md`.
 
 ## Config
 

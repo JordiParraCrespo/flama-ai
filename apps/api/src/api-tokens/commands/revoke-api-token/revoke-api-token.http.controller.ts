@@ -1,4 +1,4 @@
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import {
   Controller,
   Delete,
@@ -19,6 +19,7 @@ import { RevokeApiTokenCommand } from './revoke-api-token.command';
 
 @ApiTags('API tokens')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('tokens')
 export class RevokeApiTokenHttpController {

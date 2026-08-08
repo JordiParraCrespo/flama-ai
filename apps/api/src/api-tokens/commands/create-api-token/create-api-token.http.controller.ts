@@ -1,4 +1,4 @@
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import { Body, Controller, Post, Req, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -19,6 +19,7 @@ import type { CreateApiTokenResult } from './create-api-token.service';
 
 @ApiTags('API tokens')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('tokens')
 export class CreateApiTokenHttpController {

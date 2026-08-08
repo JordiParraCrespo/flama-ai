@@ -2,9 +2,10 @@ import type { IncomingHttpHeaders } from 'node:http';
 import type { InviteMemberDto } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { auth } from '../auth/auth';
-import { betterAuthHeaders, invokeBetterAuth, unwrap } from '../auth/better-auth.util';
+import { betterAuthHeaders, unwrap } from '../auth/better-auth.util';
 import type { InvitationResponseDto } from './dtos/organization.response.dto';
 import { mapInvitation, mapInvitations } from './organization.mappers';
+import { invokeOrganizationApi } from './organization-error.mapper';
 
 /** Delegating façade over the Better Auth organization plugin's invitation endpoints. */
 @Injectable()
@@ -18,7 +19,7 @@ export class InvitationsService {
     organizationId: string,
     dto: InviteMemberDto,
   ): Promise<InvitationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.createInvitation({
         body: {
           email: dto.email,
@@ -33,7 +34,7 @@ export class InvitationsService {
   }
 
   async accept(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.acceptInvitation({
         body: { invitationId },
         headers: this.headers(headers),
@@ -43,7 +44,7 @@ export class InvitationsService {
   }
 
   async reject(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.rejectInvitation({
         body: { invitationId },
         headers: this.headers(headers),
@@ -53,7 +54,7 @@ export class InvitationsService {
   }
 
   async cancel(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.cancelInvitation({
         body: { invitationId },
         headers: this.headers(headers),
@@ -63,7 +64,7 @@ export class InvitationsService {
   }
 
   async get(headers: IncomingHttpHeaders, invitationId: string): Promise<InvitationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.getInvitation({
         query: { id: invitationId },
         headers: this.headers(headers),
@@ -76,7 +77,7 @@ export class InvitationsService {
     headers: IncomingHttpHeaders,
     organizationId: string,
   ): Promise<InvitationResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.listInvitations({
         query: { organizationId },
         headers: this.headers(headers),
@@ -86,7 +87,7 @@ export class InvitationsService {
   }
 
   async listForCaller(headers: IncomingHttpHeaders): Promise<InvitationResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.listUserInvitations({ headers: this.headers(headers) }),
     );
     return mapInvitations(result);

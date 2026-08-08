@@ -1,3 +1,4 @@
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { PERMISSION_GROUPS, type Scope } from '@flama/shared';
 import { Controller, Get, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
@@ -11,6 +12,7 @@ import { FindGrantablePermissionsQuery } from './find-grantable-permissions.quer
 
 @ApiTags('API tokens')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard)
 @Controller('tokens')
 export class FindGrantablePermissionsHttpController {

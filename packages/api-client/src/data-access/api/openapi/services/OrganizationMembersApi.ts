@@ -18,6 +18,14 @@ export class OrganizationMembersApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/organizations/{orgId}/members/me',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 / ORG_005 — The organization or the member does not exist`,
+                409: `ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -34,6 +42,14 @@ export class OrganizationMembersApi {
             url: '/api/v1/organizations/{orgId}/members',
             path: {
                 'orgId': orgId,
+            },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 / ORG_005 — The organization or the member does not exist`,
+                409: `ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
             },
         });
     }
@@ -56,6 +72,14 @@ export class OrganizationMembersApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 / ORG_005 — The organization or the member does not exist`,
+                409: `ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -80,6 +104,14 @@ export class OrganizationMembersApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 / ORG_005 — The organization or the member does not exist`,
+                409: `ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -100,6 +132,14 @@ export class OrganizationMembersApi {
                 'orgId': orgId,
                 'memberIdOrEmail': memberIdOrEmail,
             },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 / ORG_005 — The organization or the member does not exist`,
+                409: `ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -116,6 +156,14 @@ export class OrganizationMembersApi {
             url: '/api/v1/organizations/{orgId}/leave',
             path: {
                 'orgId': orgId,
+            },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 / ORG_005 — The organization or the member does not exist`,
+                409: `ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
             },
         });
     }

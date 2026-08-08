@@ -5,7 +5,11 @@ import { ZodValidationException } from 'nestjs-zod';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { AppError, type ErrorDefinition } from '../../errors/app.error';
-import { PROBLEM_JSON_CONTENT_TYPE, type ProblemDetails } from '../../errors/problem-details';
+import {
+  DEFAULT_PROBLEM_TYPE,
+  PROBLEM_JSON_CONTENT_TYPE,
+  type ProblemDetails,
+} from '../../errors/problem-details';
 import { AllExceptionsFilter } from '../all-exceptions.filter';
 
 const USER_NOT_FOUND: ErrorDefinition = {
@@ -158,6 +162,43 @@ describe('AllExceptionsFilter', () => {
     expect(problem.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     expect(problem.title).toBe('Internal Server Error');
     expect(JSON.stringify(problem)).not.toContain('hunter2');
+  });
+
+  it('gives a bare HttpException no code — a code requires a catalog entry', () => {
+    // Documented, deliberate behaviour, and the reason the Better Auth façades
+    // throw `AppError` rather than passing an upstream `{ message, code }` body
+    // through: only curated catalog codes are part of the public contract, so
+    // the filter will not lift one off an arbitrary exception body.
+    const problem = handle(
+      new HttpException({ message: 'Organization slug already taken', code: 'SLUG_TAKEN' }, 409),
+    ).problem();
+
+    expect(problem.status).toBe(409);
+    expect(problem.title).toBe('Conflict');
+    expect(problem.detail).toBe('Organization slug already taken');
+    expect(problem.code).toBeUndefined();
+    expect(problem.type).toBe(DEFAULT_PROBLEM_TYPE);
+  });
+
+  it("carries an AppError's extension members onto the problem document", () => {
+    const problem = handle(
+      new AppError(
+        { code: 'ORG_002', message: 'That organization slug is already taken', httpStatus: 409 },
+        {
+          detail: 'Organization slug already taken',
+          extensions: { upstreamCode: 'ORGANIZATION_SLUG_ALREADY_TAKEN' },
+        },
+      ),
+    ).problem();
+
+    expect(problem).toMatchObject({
+      type: 'https://flama.dev/errors#org_002',
+      title: 'That organization slug is already taken',
+      status: 409,
+      detail: 'Organization slug already taken',
+      code: 'ORG_002',
+      upstreamCode: 'ORGANIZATION_SLUG_ALREADY_TAKEN',
+    });
   });
 
   it('keeps a 5xx status but not its message', () => {

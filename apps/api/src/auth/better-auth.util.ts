@@ -1,5 +1,6 @@
 import type { IncomingHttpHeaders } from 'node:http';
-import { HttpException, InternalServerErrorException } from '@nestjs/common';
+import { AppError } from '@flama/backend-core';
+import type { ErrorDefinition } from '@flama/backend-ddd';
 import { APIError } from 'better-auth/api';
 import { fromNodeHeaders } from 'better-auth/node';
 
@@ -43,29 +44,79 @@ export function unwrapArray(value: unknown, key: string): unknown[] {
   return key in record ? asArray(record[key]) : asArray(value);
 }
 
+/** What a Better Auth `APIError` carries, once narrowed. */
+export interface BetterAuthFailure {
+  /** Better Auth's own `SCREAMING_SNAKE_CASE` code, when it set one. */
+  upstreamCode?: string;
+  /** Better Auth's English explanation, used as the problem `detail`. */
+  message?: string;
+  status: number;
+}
+
 /**
- * Run a Better Auth server-API call, translating its `APIError` into the
- * matching NestJS `HttpException` so the global exception filter renders a clean
- * response (e.g. slug-taken → 409, not-a-member → 403).
+ * Folds a Better Auth failure onto an entry in the calling module's error
+ * catalog — see `organizations/organization-error.mapper.ts`.
  */
-export async function invokeBetterAuth<T>(fn: () => Promise<T>): Promise<T> {
-  try {
-    return await fn();
-  } catch (err) {
-    if (err instanceof APIError) {
-      // Better Auth's APIError carries an HTTP `statusCode` and a `body`
-      // ({ message, code }); its public type doesn't surface them, so read them
-      // through `asRecord`.
-      const e = asRecord(err);
-      const status = typeof e.statusCode === 'number' ? e.statusCode : 500;
-      const body = asRecord(e.body);
-      throw new HttpException(
-        'message' in body ? body : { message: String(e.message ?? 'Request failed') },
-        status,
-      );
+export type BetterAuthErrorMapper = (failure: BetterAuthFailure) => ErrorDefinition;
+
+/**
+ * Narrow an `APIError` to the fields we need. It carries an HTTP `statusCode`
+ * and a `body` (`{ message, code }`), neither of which its public type
+ * surfaces, so read them through `asRecord`.
+ */
+function readApiError(err: APIError): BetterAuthFailure {
+  const e = asRecord(err);
+  const body = asRecord(e.body);
+
+  return {
+    upstreamCode: typeof body.code === 'string' ? body.code : undefined,
+    message:
+      typeof body.message === 'string'
+        ? body.message
+        : typeof e.message === 'string'
+          ? e.message
+          : undefined,
+    status: typeof e.statusCode === 'number' ? e.statusCode : 500,
+  };
+}
+
+/**
+ * Builds the `invoke` helper a façade module wraps every `auth.api.*` call in.
+ *
+ * Better Auth raises `APIError`s carrying its own code; the mapper folds one
+ * onto a catalog {@link ErrorDefinition} so the response is a first-class
+ * problem document with a documented `code` and a dereferenceable `type` — the
+ * same contract as any hand-thrown `AppError`. Throwing a bare `HttpException`
+ * here would not do: `AllExceptionsFilter` reads no `code` off one, so the
+ * response would degrade to a bare status phrase ("Conflict") with nothing for
+ * a client to branch on.
+ *
+ * Nothing Better Auth said is lost — its code becomes the `upstreamCode`
+ * extension member and its message the problem `detail`.
+ *
+ * ```ts
+ * const invokeOrganizationApi = betterAuthInvoker(mapOrganizationError);
+ * const org = await invokeOrganizationApi(() => auth.api.createOrganization({ … }));
+ * ```
+ */
+export function betterAuthInvoker(mapper: BetterAuthErrorMapper) {
+  return async function invoke<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err instanceof APIError) {
+        const failure = readApiError(err);
+        throw new AppError(mapper(failure), {
+          detail: failure.message,
+          extensions: failure.upstreamCode ? { upstreamCode: failure.upstreamCode } : undefined,
+          cause: err,
+        });
+      }
+
+      // Not an `APIError` at all — a transport failure, or a bug in the plugin.
+      // The module's own upstream-failure entry keeps it inside the catalog;
+      // the filter blanks the detail of a 5xx, so the cause only reaches the log.
+      throw new AppError(mapper({ status: 500 }), { cause: err });
     }
-    throw new InternalServerErrorException(
-      err instanceof Error ? err.message : 'Better Auth request failed',
-    );
-  }
+  };
 }

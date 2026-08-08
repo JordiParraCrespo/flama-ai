@@ -52,6 +52,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -74,6 +94,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -108,6 +148,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -164,6 +224,26 @@
               }
             }
           },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "USER_001 — User not found",
             "content": {
@@ -198,6 +278,26 @@
         "responses": {
           "200": {
             "description": ""
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "404": {
             "description": "USER_001 — User not found",
@@ -234,6 +334,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -260,6 +380,26 @@
                   "items": {
                     "$ref": "#/components/schemas/ApiTokenResponseDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -294,6 +434,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CreatedApiTokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -343,6 +493,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -371,6 +541,26 @@
         "responses": {
           "204": {
             "description": "Token revoked"
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "404": {
             "description": "TOKEN_001 — Token not found",
@@ -427,6 +617,26 @@
         "responses": {
           "200": {
             "description": ""
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -457,6 +667,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -501,6 +731,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -557,6 +807,26 @@
               }
             }
           },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "ROLE_001 — Role not found",
             "content": {
@@ -591,6 +861,16 @@
         "responses": {
           "200": {
             "description": ""
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           },
           "403": {
             "description": "ROLE_003 — System roles cannot be deleted",
@@ -656,6 +936,26 @@
               }
             }
           },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "ROLE_001 — Role not found",
             "content": {
@@ -699,6 +999,26 @@
                   "items": {
                     "$ref": "#/components/schemas/RoleResponseDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -748,6 +1068,26 @@
               }
             }
           },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
           "404": {
             "description": "USER_001 / ROLE_001 — User or role not found",
             "content": {
@@ -792,6 +1132,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member of the organization, or their org role does not allow this\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_002 / ORG_014 — The slug is taken, or an organization limit has been reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -815,6 +1205,56 @@
                   "items": {
                     "$ref": "#/components/schemas/OrganizationResponseDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member of the organization, or their org role does not allow this\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_002 / ORG_014 — The slug is taken, or an organization limit has been reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -853,6 +1293,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member of the organization, or their org role does not allow this\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_002 / ORG_014 — The slug is taken, or an organization limit has been reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -884,6 +1374,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FullOrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member of the organization, or their org role does not allow this\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_002 / ORG_014 — The slug is taken, or an organization limit has been reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -929,6 +1469,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member of the organization, or their org role does not allow this\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_002 / ORG_014 — The slug is taken, or an organization limit has been reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -958,6 +1548,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member of the organization, or their org role does not allow this\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_002 / ORG_014 — The slug is taken, or an organization limit has been reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -995,6 +1635,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member of the organization, or their org role does not allow this\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_002 / ORG_014 — The slug is taken, or an organization limit has been reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1017,6 +1707,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 / ORG_005 — The organization or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1054,6 +1794,56 @@
                   "items": {
                     "$ref": "#/components/schemas/MemberResponseDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 / ORG_005 — The organization or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1096,6 +1886,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 / ORG_005 — The organization or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1151,6 +1991,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 / ORG_005 — The organization or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1193,6 +2083,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 / ORG_005 — The organization or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1224,6 +2164,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MemberResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 / ORG_005 — The organization or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_006 / ORG_007 / ORG_014 — Already a member, the last owner cannot leave, or a membership limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1271,6 +2261,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1306,6 +2346,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_001 — The organization does not exist, or is not visible to the caller",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1331,6 +2421,56 @@
                   "items": {
                     "$ref": "#/components/schemas/InvitationResponseDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_008 — The invitation does not exist or is no longer retrievable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1368,6 +2508,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_008 — The invitation does not exist or is no longer retrievable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1399,6 +2589,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InvitationResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_008 — The invitation does not exist or is no longer retrievable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1436,6 +2676,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_008 — The invitation does not exist or is no longer retrievable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1470,6 +2760,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_008 — The invitation does not exist or is no longer retrievable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1495,6 +2835,56 @@
                   "items": {
                     "$ref": "#/components/schemas/WorkspaceResponseDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1535,6 +2925,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1565,6 +3005,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1612,6 +3102,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1637,6 +3177,56 @@
         "responses": {
           "204": {
             "description": ""
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1668,6 +3258,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1705,6 +3345,56 @@
                   "items": {
                     "$ref": "#/components/schemas/WorkspaceMemberResponseDto"
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1750,6 +3440,56 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1785,6 +3525,56 @@
         "responses": {
           "204": {
             "description": ""
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ORG_016 — The organization service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1861,6 +3651,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1894,6 +3744,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1919,6 +3829,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1941,6 +3911,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminSuccessResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -1975,6 +4005,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminUserResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -2020,6 +4110,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2049,6 +4199,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminSuccessResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -2096,6 +4306,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2140,6 +4410,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2174,6 +4504,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2205,6 +4595,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminUserResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -2245,6 +4695,66 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2276,6 +4786,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminSuccessResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -2320,6 +4890,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminSuccessResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ADMIN_001 — The user does not exist",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ADMIN_002 — A user with that email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "ADMIN_008 — The admin service failed to handle the request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -2824,6 +5454,16 @@
         "responses": {
           "200": {
             "description": ""
+          },
+          "403": {
+            "description": "AUTH_002 — The caller's roles do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2846,6 +5486,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RevenueMetricsResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 — The caller's roles do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
                 }
               }
             }
@@ -2878,6 +5528,74 @@
       }
     },
     "schemas": {
+      "InvalidParamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "email",
+            "description": "Dotted path to the offending field"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Invalid email",
+            "description": "Why the value was rejected"
+          }
+        },
+        "required": ["name", "reason"]
+      },
+      "ProblemDetailsDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "https://flama.dev/errors#user_001",
+            "description": "URI reference identifying the problem type. `about:blank` when the status code says everything."
+          },
+          "title": {
+            "type": "string",
+            "example": "User not found",
+            "description": "Short summary, stable per problem type"
+          },
+          "status": {
+            "type": "number",
+            "example": 404,
+            "description": "HTTP status code"
+          },
+          "detail": {
+            "type": "string",
+            "example": "No user with id 3f1c…",
+            "description": "Explanation specific to this occurrence"
+          },
+          "instance": {
+            "type": "string",
+            "example": "/api/v1/users/3f1c",
+            "description": "URI reference of the specific occurrence — the request path"
+          },
+          "code": {
+            "type": "string",
+            "example": "USER_001",
+            "description": "Machine-readable catalog code"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Correlation id of the request, for log lookups"
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-01-01T00:00:00.000Z",
+            "description": "When it happened"
+          },
+          "invalidParams": {
+            "description": "Per-field validation failures",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvalidParamDto"
+            }
+          }
+        },
+        "required": ["type", "title", "status"]
+      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -2962,74 +5680,6 @@
           }
         },
         "required": ["data", "meta"]
-      },
-      "InvalidParamDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "email",
-            "description": "Dotted path to the offending field"
-          },
-          "reason": {
-            "type": "string",
-            "example": "Invalid email",
-            "description": "Why the value was rejected"
-          }
-        },
-        "required": ["name", "reason"]
-      },
-      "ProblemDetailsDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "example": "https://flama.dev/errors#user_001",
-            "description": "URI reference identifying the problem type. `about:blank` when the status code says everything."
-          },
-          "title": {
-            "type": "string",
-            "example": "User not found",
-            "description": "Short summary, stable per problem type"
-          },
-          "status": {
-            "type": "number",
-            "example": 404,
-            "description": "HTTP status code"
-          },
-          "detail": {
-            "type": "string",
-            "example": "No user with id 3f1c…",
-            "description": "Explanation specific to this occurrence"
-          },
-          "instance": {
-            "type": "string",
-            "example": "/api/v1/users/3f1c",
-            "description": "URI reference of the specific occurrence — the request path"
-          },
-          "code": {
-            "type": "string",
-            "example": "USER_001",
-            "description": "Machine-readable catalog code"
-          },
-          "correlationId": {
-            "type": "string",
-            "description": "Correlation id of the request, for log lookups"
-          },
-          "timestamp": {
-            "type": "string",
-            "example": "2026-01-01T00:00:00.000Z",
-            "description": "When it happened"
-          },
-          "invalidParams": {
-            "description": "Per-field validation failures",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InvalidParamDto"
-            }
-          }
-        },
-        "required": ["type", "title", "status"]
       },
       "UpdateUserRequest": {
         "type": "object",

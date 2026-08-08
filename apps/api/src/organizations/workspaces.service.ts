@@ -2,7 +2,7 @@ import type { IncomingHttpHeaders } from 'node:http';
 import type { CreateWorkspaceDto, UpdateWorkspaceDto } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { auth } from '../auth/auth';
-import { betterAuthHeaders, invokeBetterAuth } from '../auth/better-auth.util';
+import { betterAuthHeaders } from '../auth/better-auth.util';
 import type {
   WorkspaceMemberResponseDto,
   WorkspaceResponseDto,
@@ -13,6 +13,7 @@ import {
   mapWorkspaceMembers,
   mapWorkspaces,
 } from './organization.mappers';
+import { invokeOrganizationApi } from './organization-error.mapper';
 
 /**
  * Delegating façade over the Better Auth organization plugin's team endpoints.
@@ -28,7 +29,7 @@ export class WorkspacesService {
     headers: IncomingHttpHeaders,
     dto: CreateWorkspaceDto,
   ): Promise<WorkspaceResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.createTeam({
         body: { name: dto.name, organizationId: dto.organizationId },
         headers: this.headers(headers),
@@ -42,7 +43,7 @@ export class WorkspacesService {
     teamId: string,
     dto: UpdateWorkspaceDto,
   ): Promise<WorkspaceResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.updateTeam({
         body: { teamId, data: { name: dto.name } },
         headers: this.headers(headers),
@@ -52,7 +53,7 @@ export class WorkspacesService {
   }
 
   async remove(headers: IncomingHttpHeaders, teamId: string): Promise<void> {
-    await invokeBetterAuth(() =>
+    await invokeOrganizationApi(() =>
       auth.api.removeTeam({ body: { teamId }, headers: this.headers(headers) }),
     );
   }
@@ -61,7 +62,7 @@ export class WorkspacesService {
     headers: IncomingHttpHeaders,
     teamId: string,
   ): Promise<WorkspaceResponseDto | null> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.setActiveTeam({
         body: { teamId },
         headers: this.headers(headers),
@@ -74,7 +75,7 @@ export class WorkspacesService {
     headers: IncomingHttpHeaders,
     organizationId?: string,
   ): Promise<WorkspaceResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.listOrganizationTeams({
         query: organizationId ? { organizationId } : {},
         headers: this.headers(headers),
@@ -84,7 +85,7 @@ export class WorkspacesService {
   }
 
   async listForCaller(headers: IncomingHttpHeaders): Promise<WorkspaceResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.listUserTeams({ headers: this.headers(headers) }),
     );
     return mapWorkspaces(result);
@@ -94,7 +95,7 @@ export class WorkspacesService {
     headers: IncomingHttpHeaders,
     teamId: string,
   ): Promise<WorkspaceMemberResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.listTeamMembers({
         query: { teamId },
         headers: this.headers(headers),
@@ -108,7 +109,7 @@ export class WorkspacesService {
     teamId: string,
     userId: string,
   ): Promise<WorkspaceMemberResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.addTeamMember({
         body: { teamId, userId },
         headers: this.headers(headers),
@@ -118,7 +119,7 @@ export class WorkspacesService {
   }
 
   async removeMember(headers: IncomingHttpHeaders, teamId: string, userId: string): Promise<void> {
-    await invokeBetterAuth(() =>
+    await invokeOrganizationApi(() =>
       auth.api.removeTeamMember({
         body: { teamId, userId },
         headers: this.headers(headers),

@@ -1,4 +1,4 @@
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import { Controller, Delete, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -10,6 +10,7 @@ import { DeleteRoleCommand } from './delete-role.command';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('roles')
 export class DeleteRoleHttpController {

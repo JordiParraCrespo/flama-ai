@@ -69,6 +69,21 @@ the endpoint's Zod schema. Every rejected field is listed in `invalidParams`:
 }
 ```
 
+## Authentication & authorization
+
+Raised by the guards on every protected route, before a handler runs.
+
+| Code                           | Title                                                | HTTP |
+| ------------------------------ | ---------------------------------------------------- | ---- |
+| `AUTH_001` <a id="auth_001" /> | Authentication required                              | 401  |
+| `AUTH_002` <a id="auth_002" /> | You do not have permission to perform this action    | 403  |
+
+These are deliberately coarse. Naming the rule that failed, or distinguishing
+an absent session from an expired one, would turn the endpoint into a probing
+oracle for the permission model — the specifics stay in the server log. Where
+the caller already proved who they are and needs to know what their credential
+is short of, the more precise `TOKEN_*` codes are used instead.
+
 ## Users
 
 | Code                           | Title          | HTTP |
@@ -117,6 +132,69 @@ one code so the endpoint cannot be used as a probing oracle.
 | `BILLING_007` <a id="billing_007" /> | Failed to open the Stripe Customer Portal    | 502  |
 | `BILLING_008` <a id="billing_008" /> | Failed to create a Stripe customer           | 502  |
 
+## Organizations, teams & invitations
+
+The organization tables are owned by Better Auth, whose plugin raises its own
+`SCREAMING_SNAKE_CASE` codes. Those are an upstream detail — there are ~60, they
+are grouped by the wording of an English sentence rather than by what a client
+would do about them, and they change between releases. The API folds them onto
+the catalog below and preserves the original as an **`upstreamCode`** extension
+member, so debugging keeps everything Better Auth said:
+
+```json
+{
+  "type": "https://flama.dev/errors#org_002",
+  "title": "That organization slug is already taken",
+  "status": 409,
+  "detail": "Organization slug already taken",
+  "code": "ORG_002",
+  "upstreamCode": "ORGANIZATION_SLUG_ALREADY_TAKEN"
+}
+```
+
+Branch on `code`. `upstreamCode` is diagnostic only — it is not part of the
+API's compatibility promise.
+
+| Code                           | Title                                                     | HTTP |
+| ------------------------------ | --------------------------------------------------------- | ---- |
+| `ORG_001` <a id="org_001" /> | Organization not found                                    | 404  |
+| `ORG_002` <a id="org_002" /> | That organization slug is already taken                   | 409  |
+| `ORG_003` <a id="org_003" /> | You are not a member of this organization                 | 403  |
+| `ORG_004` <a id="org_004" /> | Your role in this organization does not allow that        | 403  |
+| `ORG_005` <a id="org_005" /> | Member not found in this organization                     | 404  |
+| `ORG_006` <a id="org_006" /> | That user is already a member of this organization        | 409  |
+| `ORG_007` <a id="org_007" /> | An organization cannot be left without an owner           | 409  |
+| `ORG_008` <a id="org_008" /> | Invitation not found                                      | 404  |
+| `ORG_009` <a id="org_009" /> | This invitation was issued to a different account         | 403  |
+| `ORG_010` <a id="org_010" /> | That user has already been invited to this organization   | 409  |
+| `ORG_011` <a id="org_011" /> | Verify your email address before acting on invitations    | 403  |
+| `ORG_012` <a id="org_012" /> | Team not found                                            | 404  |
+| `ORG_013` <a id="org_013" /> | A team with that name already exists                      | 409  |
+| `ORG_014` <a id="org_014" /> | A limit on this organization has been reached             | 409  |
+| `ORG_015` <a id="org_015" /> | The organization service rejected this request            | 400  |
+| `ORG_016` <a id="org_016" /> | The organization service failed to handle this request    | 502  |
+
+`ORG_015` and `ORG_016` are the fallbacks for an upstream code this version does
+not recognise — a client should treat them as "retry or report", and the
+`upstreamCode` says what actually happened.
+
+## Admin
+
+Same arrangement as organizations: Better Auth's admin plugin owns the
+operation, its code is folded onto the catalog, and the original survives as
+`upstreamCode`.
+
+| Code                               | Title                                                             | HTTP |
+| ---------------------------------- | ----------------------------------------------------------------- | ---- |
+| `ADMIN_001` <a id="admin_001" /> | User not found                                                    | 404  |
+| `ADMIN_002` <a id="admin_002" /> | A user with that email already exists                             | 409  |
+| `ADMIN_003` <a id="admin_003" /> | Your account is not allowed to perform this administrative action | 403  |
+| `ADMIN_004` <a id="admin_004" /> | An administrator cannot perform this action on their own account  | 403  |
+| `ADMIN_005` <a id="admin_005" /> | That role does not exist or cannot be assigned                    | 400  |
+| `ADMIN_006` <a id="admin_006" /> | That user is banned from this application                         | 403  |
+| `ADMIN_007` <a id="admin_007" /> | The admin service rejected this request                           | 400  |
+| `ADMIN_008` <a id="admin_008" /> | The admin service failed to handle this request                   | 502  |
+
 ## Domain invariants
 
 Exceptions raised by the DDD building blocks in `@flama/backend-ddd` surface
@@ -145,17 +223,55 @@ not be reached at all.
 
 ## Adding an error
 
-Add an entry to the module's catalog in `apps/api/src/<module>/domain/<module>.errors.ts`
-and throw it:
+1. Add an entry to the module's catalog in
+   `apps/api/src/<module>/domain/<module>.errors.ts`.
+2. Throw it with `AppError`:
 
-```ts
-throw new AppError(UserErrors.NOT_FOUND, {
-  detail: `No user with id ${id}`,
-  extensions: { userId: id },
-});
-```
+   ```ts
+   throw new AppError(UserErrors.NOT_FOUND, {
+     detail: `No user with id ${id}`,
+     extensions: { userId: id },
+   });
+   ```
+
+3. Document it on the endpoint with
+   `@ApiProblemResponse({ status, description, code })` so it reaches the
+   OpenAPI document and the generated client.
+4. Add a row to this page — the problem `type` URI is an anchor here, so an
+   undocumented code points at a dead link.
+5. Add a message for the code under `errors.byCode` in **every** locale in
+   `packages/translations`, so the web and mobile apps can show it in the
+   user's language. A code with no entry falls back to a generic sentence.
 
 The catalog `message` becomes the problem `title`, so keep it stable and put
-anything specific to the request in `detail`. Document the failure on the
-endpoint with `@ApiProblemResponse({ status, description, code })`, then add a
-row to this page.
+anything specific to the request in `detail`.
+
+### Only `AppError` carries a code
+
+`AllExceptionsFilter` reads a `code` from **`AppError` alone**. A bare
+`HttpException` — including `new HttpException({ message, code }, status)` —
+produces a problem document with no `code` and `type: about:blank`, whose
+`title` is just the status phrase ("Conflict"). This is deliberate: only
+curated catalog codes are part of the public contract, so the filter will not
+lift one off an arbitrary exception body.
+
+The practical consequence is that **`throw new ForbiddenException(...)` or
+`new NotFoundException(...)` in a handler silently drops out of the catalog**.
+Use `AppError` with a catalog entry instead. Domain invariants raised by
+`@flama/backend-ddd` (`ArgumentInvalidException` and friends) are the
+exception — they carry their own `code` and `httpStatus`, and are listed above.
+
+### Wrapping a third-party service
+
+When a module delegates to something that raises its own errors — as the
+organization and admin façades do with Better Auth — do not pass the upstream
+error through. Fold its code onto a catalog entry with a mapper and keep the
+original as an `upstreamCode` extension member:
+
+```ts
+export const invokeOrganizationApi = betterAuthInvoker(mapOrganizationError);
+```
+
+A mapper must be **total**: match the codes worth branching on, then fall back
+on the HTTP status, so a code added by a future release of the dependency still
+produces a documented problem instead of an unhandled 500.
