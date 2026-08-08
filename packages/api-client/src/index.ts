@@ -45,6 +45,7 @@ export type { CheckSlugRequest } from './common/models/CheckSlugRequest';
 export type { CreateAccessGrantRequest } from './common/models/CreateAccessGrantRequest';
 export type { CreateApiTokenRequest } from './common/models/CreateApiTokenRequest';
 export type { CreateCheckoutRequest } from './common/models/CreateCheckoutRequest';
+export type { CreateLeadRequest } from './common/models/CreateLeadRequest';
 export type { CreateOrganizationRequest } from './common/models/CreateOrganizationRequest';
 export type { CreatePortalRequest } from './common/models/CreatePortalRequest';
 export type { CreateRoleRequest } from './common/models/CreateRoleRequest';

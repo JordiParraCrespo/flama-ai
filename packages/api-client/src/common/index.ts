@@ -21,6 +21,7 @@ export type { CheckSlugRequest } from "./models/CheckSlugRequest";
 export type { CreateAccessGrantRequest } from "./models/CreateAccessGrantRequest";
 export type { CreateApiTokenRequest } from "./models/CreateApiTokenRequest";
 export type { CreateCheckoutRequest } from "./models/CreateCheckoutRequest";
+export type { CreateLeadRequest } from "./models/CreateLeadRequest";
 export type { CreateOrganizationRequest } from "./models/CreateOrganizationRequest";
 export type { CreatePortalRequest } from "./models/CreatePortalRequest";
 export type { CreateRoleRequest } from "./models/CreateRoleRequest";

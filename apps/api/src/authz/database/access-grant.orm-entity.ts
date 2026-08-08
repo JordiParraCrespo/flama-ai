@@ -1,7 +1,5 @@
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
-
-/** Who a grant is addressed to. */
-export type AccessGrantPrincipalType = 'user' | 'team' | 'role';
+import type { AccessGrantPrincipalType } from '../domain/access-grant.entity';
 
 /**
  * An explicit grant of access to rows a caller would not otherwise reach.

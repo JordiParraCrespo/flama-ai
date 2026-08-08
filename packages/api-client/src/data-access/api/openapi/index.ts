@@ -31,6 +31,7 @@ export { $CreateAccessGrantRequest } from './schemas/$CreateAccessGrantRequest';
 export { $CreateApiTokenRequest } from './schemas/$CreateApiTokenRequest';
 export { $CreateCheckoutRequest } from './schemas/$CreateCheckoutRequest';
 export { $CreatedApiTokenResponseDto } from './schemas/$CreatedApiTokenResponseDto';
+export { $CreateLeadRequest } from './schemas/$CreateLeadRequest';
 export { $CreateOrganizationRequest } from './schemas/$CreateOrganizationRequest';
 export { $CreatePortalRequest } from './schemas/$CreatePortalRequest';
 export { $CreateRoleRequest } from './schemas/$CreateRoleRequest';

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { CreateLeadRequest } from '../../../../common/models/CreateLeadRequest';
 import type { LeadResponseDto } from '../../../../common/models/LeadResponseDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -16,6 +17,23 @@ export class LeadsApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/leads',
+        });
+    }
+    /**
+     * Create a lead
+     * The lead is filed into the caller’s active organization; the body cannot name a different one.
+     * @param requestBody
+     * @returns LeadResponseDto
+     * @throws ApiError
+     */
+    public static create(
+        requestBody: CreateLeadRequest,
+    ): CancelablePromise<LeadResponseDto> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/leads',
+            body: requestBody,
+            mediaType: 'application/json',
         });
     }
     /**
