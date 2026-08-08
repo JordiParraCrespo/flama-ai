@@ -110,6 +110,18 @@
     /* Off-state track for switches (matches the brand's iOS-ish toggle) */
     --track-off: #e3e2df;
 
+    /* ---- Aurora ---------------------------------------------------------
+       The brand's only imagery: a soft blurred pastel blend. It appears as
+       agent-card headers, hero strips and the auth panel — never as the
+       background of a working surface. A primitive so the dark theme can
+       restate it: the light ramp under dark-theme ink is unreadable.       */
+    --gradient-aurora: linear-gradient(
+      150deg,
+      #a7c7ff 0%,
+      #c9b8ff 55%,
+      #9fd3ff 100%
+    );
+
     /* ---- Overlay depth -------------------------------------------------
        The four heights a floating layer can sit at. Everything inline stays
        flat; only these carry a shadow. Values are primitives so the dark
@@ -216,6 +228,13 @@
 
     --on-inverse: #161513;
     --on-inverse-muted: rgba(0, 0, 0, 0.55);
+
+    --gradient-aurora: linear-gradient(
+      150deg,
+      #24365c 0%,
+      #332a55 55%,
+      #1f3850 100%
+    );
 
     --elevation-menu: 0 8px 28px rgba(0, 0, 0, 0.55);
     --elevation-popover: 0 10px 30px rgba(0, 0, 0, 0.6);

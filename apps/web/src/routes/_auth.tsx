@@ -16,10 +16,13 @@ export const Route = createFileRoute('/_auth')({
  * The shell every auth screen sits in: a half-and-half split, form on the left
  * and a brand panel on the right.
  *
- * The panel is the inverse surface rather than an image or a gradient. The
- * brand's aurora gradients are reserved for agent cards and hero strips and
- * are explicitly not page backgrounds, and a coloured wash here would be the
- * only decorative colour in the product.
+ * The panel carries the brand's aurora ramp — the one place in the product a
+ * gradient is allowed to fill a surface. It reads from `--gradient-aurora`
+ * rather than a literal so the dark theme can swap it: the light pastel under
+ * dark-theme ink is unreadable.
+ *
+ * Copy uses `text-ink-*` rather than `text-on-inverse`, because the inks flip
+ * with the theme and land the right way up on both ramps.
  *
  * Below `lg` the panel is dropped entirely rather than stacked — on a phone it
  * would push the form below the fold to show decoration.
@@ -43,15 +46,13 @@ function AuthLayout() {
         </div>
       </div>
 
-      <div className="hidden w-1/2 flex-col justify-between bg-surface-inverse p-12 lg:flex">
-        <BrandMark size={26} className="text-on-inverse" />
+      <div className="hidden w-1/2 flex-col justify-between bg-[image:var(--gradient-aurora)] p-12 lg:flex">
+        <BrandMark size={26} className="text-ink-900" />
         <div className="max-w-105">
-          <p className="text-2xl leading-snug font-medium text-on-inverse">
-            {t('auth.panelTitle')}
-          </p>
-          <p className="mt-3 text-base text-on-inverse-muted">{t('auth.panelBody')}</p>
+          <p className="text-2xl leading-snug font-medium text-ink-900">{t('auth.panelTitle')}</p>
+          <p className="mt-3 text-base text-ink-600">{t('auth.panelBody')}</p>
         </div>
-        <span className="text-xs text-on-inverse-muted">{t('common.appName')}</span>
+        <span className="text-xs text-ink-600">{t('common.appName')}</span>
       </div>
     </div>
   );
