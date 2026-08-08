@@ -4,7 +4,7 @@ import type { AddMemberDto, CreateOrganizationDto, UpdateOrganizationDto } from 
 import { Injectable } from '@nestjs/common';
 import { APIError } from 'better-auth/api';
 import { auth } from '../auth/auth';
-import { betterAuthHeaders, invokeBetterAuth, unwrap, unwrapArray } from '../auth/better-auth.util';
+import { betterAuthHeaders, unwrap, unwrapArray } from '../auth/better-auth.util';
 import type {
   FullOrganizationResponseDto,
   MemberResponseDto,
@@ -18,6 +18,7 @@ import {
   mapOrganization,
   mapOrganizations,
 } from './organization.mappers';
+import { invokeOrganizationApi } from './organization-error.mapper';
 
 /**
  * Delegating façade over the Better Auth organization plugin's server API
@@ -47,7 +48,7 @@ export class OrganizationsService {
     headers: IncomingHttpHeaders,
     dto: CreateOrganizationDto,
   ): Promise<OrganizationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.createOrganization({
         body: {
           name: dto.name,
@@ -65,7 +66,7 @@ export class OrganizationsService {
     organizationId: string,
     dto: UpdateOrganizationDto,
   ): Promise<OrganizationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.updateOrganization({
         body: { data: dto, organizationId },
         headers: this.headers(headers),
@@ -78,7 +79,7 @@ export class OrganizationsService {
     headers: IncomingHttpHeaders,
     organizationId: string,
   ): Promise<OrganizationResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.deleteOrganization({
         body: { organizationId },
         headers: this.headers(headers),
@@ -91,7 +92,7 @@ export class OrganizationsService {
     headers: IncomingHttpHeaders,
     organizationId: string,
   ): Promise<OrganizationResponseDto | null> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.setActiveOrganization({
         body: { organizationId },
         headers: this.headers(headers),
@@ -101,7 +102,7 @@ export class OrganizationsService {
   }
 
   async list(headers: IncomingHttpHeaders): Promise<OrganizationResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.listOrganizations({ headers: this.headers(headers) }),
     );
     return mapOrganizations(result);
@@ -111,7 +112,7 @@ export class OrganizationsService {
     headers: IncomingHttpHeaders,
     organizationId: string,
   ): Promise<FullOrganizationResponseDto | null> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.getFullOrganization({
         query: { organizationId },
         headers: this.headers(headers),
@@ -143,7 +144,7 @@ export class OrganizationsService {
     headers: IncomingHttpHeaders,
     organizationId: string,
   ): Promise<MemberResponseDto[]> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.listMembers({
         query: { organizationId },
         headers: this.headers(headers),
@@ -157,7 +158,7 @@ export class OrganizationsService {
     organizationId: string,
     dto: AddMemberDto,
   ): Promise<MemberResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.addMember({
         body: {
           userId: dto.userId,
@@ -176,7 +177,7 @@ export class OrganizationsService {
     organizationId: string,
     memberIdOrEmail: string,
   ): Promise<MemberResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.removeMember({
         body: { memberIdOrEmail, organizationId },
         headers: this.headers(headers),
@@ -191,7 +192,7 @@ export class OrganizationsService {
     memberId: string,
     role: string,
   ): Promise<MemberResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.updateMemberRole({
         body: { memberId, role, organizationId },
         headers: this.headers(headers),
@@ -201,7 +202,7 @@ export class OrganizationsService {
   }
 
   async leave(headers: IncomingHttpHeaders, organizationId: string): Promise<MemberResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.leaveOrganization({
         body: { organizationId },
         headers: this.headers(headers),
@@ -211,7 +212,7 @@ export class OrganizationsService {
   }
 
   async getActiveMember(headers: IncomingHttpHeaders): Promise<MemberResponseDto> {
-    const result = await invokeBetterAuth(() =>
+    const result = await invokeOrganizationApi(() =>
       auth.api.getActiveMember({ headers: this.headers(headers) }),
     );
     return mapMember(result);

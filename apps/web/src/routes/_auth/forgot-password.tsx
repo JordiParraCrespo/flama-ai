@@ -16,6 +16,7 @@ import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared/sche
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useErrorMessage } from '@/lib/use-error-message';
 import { useZodResolver } from '@/lib/use-zod-resolver';
 
 export const Route = createFileRoute('/_auth/forgot-password')({
@@ -24,6 +25,7 @@ export const Route = createFileRoute('/_auth/forgot-password')({
 
 function ForgotPasswordPage() {
   const { t } = useTranslation();
+  const resolveError = useErrorMessage();
   const { mutate, isPending, isSuccess, error } = useForgotPassword();
 
   const {
@@ -54,7 +56,7 @@ function ForgotPasswordPage() {
               <FieldGroup>
                 {error && (
                   <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {error instanceof Error ? error.message : t('auth.forgotPassword.error')}
+                    {resolveError(error, t('auth.forgotPassword.error')).message}
                   </div>
                 )}
                 <Field data-invalid={Boolean(errors.email)}>

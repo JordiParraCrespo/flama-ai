@@ -1,3 +1,4 @@
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import type { Paginated } from '@flama/backend-ddd';
 import { Controller, Get, Query, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
@@ -14,6 +15,7 @@ import { FindUsersRequest } from './find-users.request.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('users')
 export class FindUsersHttpController {

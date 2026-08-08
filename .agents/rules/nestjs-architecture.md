@@ -139,11 +139,80 @@ and surface through the same filter. Validation failures list every rejected
 field in `invalidParams`. 5xx responses never echo the underlying message —
 only a correlation id.
 
+### Only `AppError` gets a code — never throw a bare Nest exception
+
+`AllExceptionsFilter` reads a `code` from **`AppError` alone**. A bare
+`HttpException` — including `new HttpException({ message, code }, status)` —
+renders as a problem document with **no `code`** and `type: about:blank`, whose
+`title` is only the status phrase ("Conflict", "Forbidden"). That is deliberate:
+only curated catalog codes are part of the public contract. The consequence is
+that `throw new ForbiddenException(...)` / `new NotFoundException(...)` in a
+handler or guard silently leaves the catalog, and every client — CLI exit codes,
+MCP tool errors, the web app's translated messages — loses the thing it branches
+on.
+
+```typescript
+// WRONG — reaches the client as a bare 403 with no code
+throw new ForbiddenException('No user found in request');
+
+// WRONG — the `code` is dropped; the filter does not read it off the body
+throw new HttpException({ message: 'Slug taken', code: 'SLUG_TAKEN' }, 409);
+
+// CORRECT
+throw new AppError(AuthErrors.FORBIDDEN);
+```
+
+A guard that returns `false` also yields Nest's own codeless 403 — throw the
+catalog error instead of returning `false`.
+
+The only sanctioned non-`AppError` throws are the `@flama/backend-ddd` domain
+exceptions (`ArgumentInvalidException`, `NotFoundException`, …), which carry
+their own `code`/`httpStatus` and are documented as `GENERIC.*`; framework
+contracts a library owns (Terminus's `HealthCheckError`); and plain `Error` on
+paths that never reach an HTTP response (the outbox relay, queue processors,
+the standalone `packages/backend/*` services, which have no `@flama` deps by
+design).
+
+### Wrapping a third-party service
+
+When a module delegates to something with its own error vocabulary — as the
+organization and admin façades do with Better Auth — **do not pass the upstream
+error through**. Fold its code onto a catalog entry with a mapper, and keep the
+original as an `upstreamCode` extension member so debugging loses nothing:
+
+```typescript
+// organizations/organization-error.mapper.ts
+export const invokeOrganizationApi = betterAuthInvoker(mapOrganizationError);
+```
+
+Group upstream codes by **what a client would do about them**, not one-to-one:
+Better Auth has ~60 organization codes distinguished by the wording of an
+English sentence. A mapper must be **total** — match the codes worth branching
+on, then fall back on the HTTP status — so a code added by a future release
+still produces a documented problem instead of an unhandled 500.
+
+### Documenting failures
+
 Document each failure on the controller so it reaches the OpenAPI document:
 
 ```typescript
 @ApiProblemResponse({ status: 404, description: 'User not found', code: 'USER_001' })
 ```
+
+The 401/403 every guarded route can produce are covered once at the **class**
+level by `@ApiAuthProblemResponses()` from `@flama/backend-core` — apply that to
+the controller rather than repeating two decorators on every method.
+
+### A new code needs four things
+
+A catalog entry alone is not enough. Adding one means:
+
+1. the entry in `apps/api/src/<module>/domain/<module>.errors.ts`;
+2. an `@ApiProblemResponse` on the endpoint that can raise it;
+3. a row in `apps/docs/docs/errors.md` — the problem `type` URI is an anchor on
+   that page, so an undocumented code points at a dead link;
+4. a message under `errors.byCode.<CODE>` in **every** locale in
+   `packages/translations`, or the apps fall back to a generic sentence.
 
 ## Event-driven async processing (transactional outbox)
 

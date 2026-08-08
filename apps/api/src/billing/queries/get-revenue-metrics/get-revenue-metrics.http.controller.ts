@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import { Controller, Get, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -10,6 +11,11 @@ import { GetRevenueMetricsQuery } from './get-revenue-metrics.query';
 
 @ApiTags('Billing')
 @ApiBearerAuth()
+@ApiProblemResponse({
+  status: 403,
+  description: "The caller's roles do not permit this",
+  code: 'AUTH_002',
+})
 @UseGuards(AuthGuard, PoliciesGuard)
 @Controller('billing')
 export class GetRevenueMetricsHttpController {

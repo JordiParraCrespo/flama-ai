@@ -1,4 +1,5 @@
 export {
+  ApiAuthProblemResponses,
   ApiProblemResponse,
   type ApiProblemResponseOptions,
 } from './decorators/api-problem-response.decorator';

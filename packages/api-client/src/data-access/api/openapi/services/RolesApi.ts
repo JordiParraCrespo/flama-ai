@@ -32,6 +32,10 @@ export class RolesApi {
                 'limit': limit,
                 'page': page,
             },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
         });
     }
     /**
@@ -49,6 +53,8 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 409: `ROLE_002 — A role with this name already exists`,
             },
         });
@@ -69,6 +75,8 @@ export class RolesApi {
                 'id': id,
             },
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `ROLE_001 — Role not found`,
             },
         });
@@ -93,6 +101,8 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `ROLE_001 — Role not found`,
             },
         });
@@ -113,6 +123,7 @@ export class RolesApi {
                 'id': id,
             },
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
                 403: `ROLE_003 — System roles cannot be deleted`,
                 404: `ROLE_001 — Role not found`,
             },
@@ -138,6 +149,8 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `ROLE_001 — Role not found`,
             },
         });
@@ -156,6 +169,10 @@ export class RolesApi {
             url: '/api/v1/users/{userId}/roles',
             path: {
                 'userId': userId,
+            },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
             },
         });
     }
@@ -179,6 +196,8 @@ export class RolesApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `USER_001 / ROLE_001 — User or role not found`,
             },
         });

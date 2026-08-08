@@ -17,6 +17,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { z } from 'zod';
+import { useErrorMessage } from '@/lib/use-error-message';
 import { useZodResolver } from '@/lib/use-zod-resolver';
 
 /** The token rides in the URL, so only the password is user input. */
@@ -34,6 +35,7 @@ export const Route = createFileRoute('/_auth/reset-password')({
 
 function ResetPasswordPage() {
   const { t } = useTranslation();
+  const resolveError = useErrorMessage();
   const navigate = useNavigate();
   const { token, error: linkError } = Route.useSearch();
   const { mutate, isPending, error } = useResetPassword();
@@ -71,7 +73,7 @@ function ResetPasswordPage() {
               <FieldGroup>
                 {error && (
                   <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {error instanceof Error ? error.message : t('auth.resetPassword.error')}
+                    {resolveError(error, t('auth.resetPassword.error')).message}
                   </div>
                 )}
                 <Field data-invalid={Boolean(errors.password)}>

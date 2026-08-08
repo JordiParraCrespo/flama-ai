@@ -20,6 +20,14 @@ export class WorkspacesApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/workspaces/mine',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -37,6 +45,14 @@ export class WorkspacesApi {
             query: {
                 'organizationId': organizationId,
             },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -53,6 +69,14 @@ export class WorkspacesApi {
             url: '/api/v1/workspaces',
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -74,6 +98,14 @@ export class WorkspacesApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -90,6 +122,14 @@ export class WorkspacesApi {
             url: '/api/v1/workspaces/{id}',
             path: {
                 'id': id,
+            },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
             },
         });
     }
@@ -108,6 +148,14 @@ export class WorkspacesApi {
             path: {
                 'id': id,
             },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -124,6 +172,14 @@ export class WorkspacesApi {
             url: '/api/v1/workspaces/{id}/members',
             path: {
                 'id': id,
+            },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
             },
         });
     }
@@ -146,6 +202,14 @@ export class WorkspacesApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -165,6 +229,14 @@ export class WorkspacesApi {
             path: {
                 'id': id,
                 'userId': userId,
+            },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing workspaces
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_012 / ORG_001 / ORG_005 — The workspace, its organization, or the member does not exist`,
+                409: `ORG_013 / ORG_014 — A workspace with that name exists, or a workspace limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
             },
         });
     }
