@@ -3,6 +3,7 @@ import { PERMISSION_GROUPS, type Scope } from '@flama/shared';
 import { Controller, Get, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
@@ -19,6 +20,7 @@ export class FindGrantablePermissionsHttpController {
   constructor(private readonly queryBus: QueryBus) {}
 
   @Get('permissions')
+  @NoPolicy('the catalog plus what this caller may grant, derived from their own ability')
   @Version('1')
   @RequireScopes('tokens:read')
   @ApiOperation({

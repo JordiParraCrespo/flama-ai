@@ -42,6 +42,9 @@ importers:
       '@flama/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@flama/backend-authz':
+        specifier: workspace:*
+        version: link:../../packages/backend/authz
       '@flama/backend-cache':
         specifier: workspace:*
         version: link:../../packages/backend/cache
@@ -750,6 +753,43 @@ importers:
       '@flama/config':
         specifier: workspace:^
         version: link:../config
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/debug@4.1.13)(@types/node@26.1.1)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0)
+
+  packages/backend/authz:
+    dependencies:
+      '@casl/ability':
+        specifier: ^6.8.1
+        version: 6.8.1
+      '@flama/backend-core':
+        specifier: workspace:*
+        version: link:../core
+      '@flama/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@nestjs/common':
+        specifier: ^11.1.28
+        version: 11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: ^11.1.28
+        version: 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../config
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
+      typeorm:
+        specifier: ^0.3.28
+        version: 0.3.31(ioredis@5.11.1)(pg@8.22.0)(ts-node@10.9.2(@swc/core@1.15.24)(@types/node@26.1.1)(typescript@6.0.3))
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -20423,9 +20463,7 @@ snapshots:
       metro-runtime: 0.84.4
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.81.5': {}
 

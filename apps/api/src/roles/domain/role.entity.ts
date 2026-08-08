@@ -13,12 +13,15 @@ export interface RoleProps {
   description: string | null;
   /** System roles (`admin`, `user`) are seeded and cannot be deleted/renamed. */
   isSystem: boolean;
+  /** Owning organization, or `null` for a global/system role template. */
+  organizationId: string | null;
   permissions: Permission[];
 }
 
 export interface CreateRoleProps {
   name: string;
   description?: string | null;
+  organizationId?: string | null;
   permissions?: Permission[];
 }
 
@@ -41,6 +44,7 @@ export class RoleEntity extends AggregateRoot<RoleProps> {
         name: props.name,
         description: props.description ?? null,
         isSystem: false,
+        organizationId: props.organizationId ?? null,
         permissions: props.permissions ?? [],
       },
     });
@@ -56,6 +60,20 @@ export class RoleEntity extends AggregateRoot<RoleProps> {
 
   get isSystem(): boolean {
     return this.props.isSystem;
+  }
+
+  /** `null` for a global role; otherwise the tenant that owns it. */
+  get organizationId(): string | null {
+    return this.props.organizationId;
+  }
+
+  /**
+   * Whether this role is global rather than owned by a tenant. Global roles
+   * are editable only by the platform tier — an organization admin editing one
+   * would be changing every other tenant's authorization.
+   */
+  isGlobal(): boolean {
+    return this.props.organizationId === null;
   }
 
   get permissions(): Permission[] {

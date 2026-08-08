@@ -65,13 +65,68 @@ export interface AbilityContext {
   activeOrganizationId?: string | null;
   /** The caller's active workspace/team (from `session.activeTeamId`). */
   activeTeamId?: string | null;
+  /** The caller's resolved access scope, for `${scope.*}` placeholders. */
+  scope?: AbilityScopeContext;
+}
+
+/** Grants the caller holds over one resource type: specific ids, or all of them. */
+export type ScopeGrant = readonly string[] | 'all';
+
+/**
+ * The scope half of the ability context. Mirrors the backend's `AccessScope`
+ * without depending on it — this package must stay free of server concerns.
+ *
+ * The array-valued members are what make set-membership scoping expressible as
+ * a CASL condition (`{ teamId: { $in: '${scope.teamIds}' } }`), which is what
+ * keeps `ability.can()` honest about rows the caller cannot actually reach.
+ */
+export interface AbilityScopeContext {
+  organizationId?: string | null;
+  /** Teams the caller belongs to in the active organization. */
+  teamIds?: readonly string[];
+  /** Explicit grants, keyed by resource subject. */
+  grants?: Readonly<Record<string, ScopeGrant>>;
 }
 
 const PLACEHOLDER = /^\$\{([^}]+)\}$/;
 
-/** Resolve a dotted path (e.g. `user.id`) against the ability context. */
+/**
+ * Marks a placeholder that resolved to "no restriction at all" — an `'all'`
+ * grant. The branch it appears in is dropped from the conditions rather than
+ * interpolated, because the alternative (an `$in` over every id in existence)
+ * cannot be written down. See {@link interpolateConditions}.
+ */
+const UNRESTRICTED = Symbol('authz.unrestricted');
+
+/**
+ * Paths under `scope.` that must resolve to an array. Returning `undefined`
+ * for these would produce `{ $in: undefined }`, which matches unpredictably;
+ * an empty array matches nothing, which is the safe reading of "you hold no
+ * teams / no grants".
+ */
+function resolveScopePath(segments: string[], context: AbilityContext): unknown {
+  const scope = context.scope;
+  const [head, ...rest] = segments;
+
+  if (head === 'teamIds') return scope?.teamIds ?? [];
+  if (head === 'organizationId') return scope?.organizationId ?? null;
+  if (head === 'grants') {
+    // `${scope.grants.Lead}` — a grant over one subject.
+    const subjectName = rest[0];
+    if (!subjectName) return [];
+    const grant = scope?.grants?.[subjectName];
+    if (grant === 'all') return UNRESTRICTED;
+    return grant ?? [];
+  }
+  return undefined;
+}
+
+/** Resolve a dotted path (e.g. `user.id`, `scope.teamIds`) against the context. */
 function resolvePath(path: string, context: AbilityContext): unknown {
-  return path.split('.').reduce<unknown>((acc, key) => {
+  const segments = path.split('.');
+  if (segments[0] === 'scope') return resolveScopePath(segments.slice(1), context);
+
+  return segments.reduce<unknown>((acc, key) => {
     if (acc && typeof acc === 'object' && key in (acc as Record<string, unknown>)) {
       return (acc as Record<string, unknown>)[key];
     }
@@ -92,7 +147,7 @@ type AbilityConditions = MongoQuery<never>;
 function interpolateConditions(
   conditions: Record<string, unknown>,
   context: AbilityContext,
-): AbilityConditions {
+): AbilityConditions | undefined {
   const walk = (value: unknown): unknown => {
     if (typeof value === 'string') {
       const match = value.match(PLACEHOLDER);
@@ -100,14 +155,45 @@ function interpolateConditions(
     }
     if (Array.isArray(value)) return value.map(walk);
     if (value && typeof value === 'object') {
-      return Object.fromEntries(
-        Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, walk(v)]),
-      );
+      const source = value as Record<string, unknown>;
+      const entries: [string, unknown][] = [];
+      for (const [key, raw] of Object.entries(source)) {
+        const walked = walk(raw);
+        // An unrestricted branch removes the constraint it belonged to.
+        if (walked === UNRESTRICTED) continue;
+        entries.push([key, walked]);
+      }
+      // Every branch dropped ⇒ this object no longer restricts anything.
+      if (Object.keys(source).length > 0 && entries.length === 0) {
+        return UNRESTRICTED;
+      }
+      return Object.fromEntries(entries);
     }
     return value;
   };
 
-  return walk(conditions) as AbilityConditions;
+  const result = walk(conditions);
+  if (result === UNRESTRICTED) return undefined;
+  return result as AbilityConditions;
+}
+
+/**
+ * Order rules so every `cannot` is applied after every `can`.
+ *
+ * CASL is last-rule-wins. A user holding several roles has their permissions
+ * unioned in whatever order the database returned the roles, so without this a
+ * deny in one role is silently overridden by a grant in another and the
+ * effective ability depends on row order. Denies last makes "deny wins" a
+ * property of the system rather than an accident. The split is stable, so
+ * relative order within each group is preserved.
+ */
+function denyLast(permissions: readonly PermissionDefinition[]): PermissionDefinition[] {
+  const allows: PermissionDefinition[] = [];
+  const denies: PermissionDefinition[] = [];
+  for (const permission of permissions) {
+    (permission.inverted ? denies : allows).push(permission);
+  }
+  return [...allows, ...denies];
 }
 
 /**
@@ -122,7 +208,7 @@ export function defineAbilitiesFromPermissions(
 ): AppAbility {
   const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-  for (const permission of permissions) {
+  for (const permission of denyLast(permissions)) {
     const apply = permission.inverted ? cannot : can;
     const conditions = permission.conditions
       ? interpolateConditions(permission.conditions, context)

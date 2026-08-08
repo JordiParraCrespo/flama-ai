@@ -7,6 +7,7 @@ import { RoleEntity } from '../../domain/role.entity';
 import { RoleErrors } from '../../domain/role.errors';
 import { Permission } from '../../domain/value-objects/permission.value-object';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
+import { RoleGrantPolicy } from '../../services/role-grant.policy';
 import { UpdateRolePermissionsCommand } from './update-role-permissions.command';
 
 /** Replaces a role's full permission set — the granular permission editor. */
@@ -17,9 +18,23 @@ export class UpdateRolePermissionsService
   constructor(
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepositoryPort,
+    private readonly grantPolicy: RoleGrantPolicy,
   ) {}
 
   async execute(command: UpdateRolePermissionsCommand): Promise<AggregateID> {
+    // No privilege escalation: the author must already hold everything they
+    // are putting on the role.
+    await this.grantPolicy.assertGrantable(
+      command.actorId
+        ? {
+            id: command.actorId,
+            role: command.actorRole,
+            activeOrganizationId: command.activeOrganizationId,
+          }
+        : undefined,
+      command.permissions,
+    );
+
     const found = await this.roleRepository.findOneById(command.roleId);
     if (found.isNone()) throw new AppError(RoleErrors.NOT_FOUND);
 

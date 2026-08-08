@@ -14,6 +14,7 @@ export class RoleMapper implements Mapper<RoleEntity, RoleOrmEntity, RoleRespons
     record.name = entity.name;
     record.description = entity.description;
     record.isSystem = entity.isSystem;
+    record.organizationId = entity.organizationId;
     record.permissions = entity.permissions.map((permission) => permission.toDefinition());
     return record;
   }
@@ -27,6 +28,7 @@ export class RoleMapper implements Mapper<RoleEntity, RoleOrmEntity, RoleRespons
         name: record.name,
         description: record.description,
         isSystem: record.isSystem,
+        organizationId: record.organizationId ?? null,
         permissions: (record.permissions ?? []).map((definition) =>
           Permission.fromDefinition(definition),
         ),
@@ -40,6 +42,7 @@ export class RoleMapper implements Mapper<RoleEntity, RoleOrmEntity, RoleRespons
     dto.name = entity.name;
     dto.description = entity.description;
     dto.isSystem = entity.isSystem;
+    dto.organizationId = entity.organizationId;
     dto.permissions = entity.permissions.map((permission) => permission.toDefinition());
     dto.createdAt = entity.createdAt;
     dto.updatedAt = entity.updatedAt;

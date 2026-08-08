@@ -2,6 +2,7 @@ import { Controller, Get, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import type { SubscriptionEntity } from '../../domain/subscription.entity';
@@ -20,6 +21,7 @@ export class GetMySubscriptionHttpController {
   ) {}
 
   @Get('subscription')
+  @NoPolicy('returns the caller’s own subscription')
   @Version('1')
   @RequireScopes('billing:read')
   @ApiOperation({

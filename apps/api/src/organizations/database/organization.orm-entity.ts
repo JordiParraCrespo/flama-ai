@@ -23,6 +23,14 @@ export class OrganizationOrmEntity {
   @Column({ type: 'text', nullable: true })
   metadata!: string | null;
 
+  /**
+   * Bumped in the same transaction as any role or assignment write in this
+   * organization. Used as the cache key for the tenant's role rules, so a
+   * write invalidates every cached ability without an explicit fan-out.
+   */
+  @Column({ type: 'int', default: 1 })
+  roleVersion!: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

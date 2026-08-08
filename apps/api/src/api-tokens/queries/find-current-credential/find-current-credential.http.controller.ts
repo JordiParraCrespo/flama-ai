@@ -2,6 +2,7 @@ import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { Controller, Get, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentScope } from '../../../auth/decorators/current-scope.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { AllowAnyScope } from '../../../auth/decorators/require-scopes.decorator';
@@ -20,6 +21,7 @@ export class FindCurrentCredentialHttpController {
   constructor(private readonly queryBus: QueryBus) {}
 
   @Get('credential')
+  @NoPolicy('describes only the calling credential itself')
   @Version('1')
   // Every credential may ask what it is; that is the point of this route, and
   // requiring a scope for it would make a token unable to discover its own.

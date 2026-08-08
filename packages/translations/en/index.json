@@ -92,7 +92,17 @@
       "TOKEN_EXPIRED": "That link has expired. Request a new one.",
       "SESSION_EXPIRED": "Your session has expired. Please sign in again.",
       "CREDENTIAL_ACCOUNT_NOT_FOUND": "That account uses a different sign-in method.",
-      "FAILED_TO_CREATE_USER": "Your account could not be created. Please try again."
+      "FAILED_TO_CREATE_USER": "Your account could not be created. Please try again.",
+      "ROLE_005": "You cannot give a role more access than you have yourself.",
+      "ROLE_006": "That role belongs to another organization.",
+      "AUTHZ_001": "You are not a member of that organization.",
+      "AUTHZ_002": "Something is misconfigured on the server. Please try again later.",
+      "GRANT_001": "That access grant could not be found.",
+      "GRANT_002": "You cannot grant more access than you have yourself.",
+      "GRANT_003": "That person or team is not part of this organization.",
+      "GRANT_004": "Choose an organization before managing access grants.",
+      "LEAD_001": "That lead could not be found.",
+      "LEAD_002": "Choose an organization before creating leads."
     }
   },
   "auth": {

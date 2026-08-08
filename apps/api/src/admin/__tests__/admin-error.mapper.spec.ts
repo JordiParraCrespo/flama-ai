@@ -1,3 +1,4 @@
+import type { ErrorDefinition } from '@flama/backend-ddd';
 import { describe, expect, it } from 'vitest';
 import { mapAdminError } from '../admin-error.mapper';
 import { AdminErrors } from '../domain/admin.errors';

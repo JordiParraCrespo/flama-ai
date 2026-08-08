@@ -11,6 +11,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import type { Request } from 'express';
+import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
 import { HandleStripeWebhookCommand } from './handle-stripe-webhook.command';
 
 /**
@@ -24,6 +25,7 @@ export class HandleStripeWebhookHttpController {
   constructor(private readonly commandBus: CommandBus) {}
 
   @Post('webhook')
+  @NoPolicy('authenticated by Stripe signature, not by a user')
   @Version('1')
   @HttpCode(200)
   @SkipThrottle()

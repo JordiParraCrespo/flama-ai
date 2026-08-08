@@ -22,6 +22,11 @@ export const $RoleResponseDto = {
             description: `System roles cannot be deleted or renamed.`,
             isRequired: true,
         },
+        organizationId: {
+            type: 'string',
+            description: `Owning organization, or null for a global role template shared by every tenant.`,
+            isNullable: true,
+        },
         permissions: {
             type: 'array',
             contains: {

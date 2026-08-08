@@ -17,6 +17,20 @@ export interface AuthenticatedUser {
   [key: string]: unknown;
 }
 
+/** Where the per-request ability is memoized. */
+const ABILITY_CACHE = Symbol('authz.ability');
+
+/** The subset of the request object the factory reads and writes. */
+export interface AbilityRequest {
+  user?: AuthenticatedUser;
+  session?: {
+    activeOrganizationId?: string | null;
+    activeTeamId?: string | null;
+  } | null;
+  ability?: AppAbility;
+  [ABILITY_CACHE]?: AppAbility;
+}
+
 /** Request-scoped context used to interpolate resource-scoping conditions. */
 export interface AbilityScope {
   /** The caller's active organization (from `session.activeOrganizationId`). */
@@ -45,8 +59,29 @@ export class AbilityFactory {
     private readonly roleRepository: RoleRepositoryPort,
   ) {}
 
+  /**
+   * The caller's ability for this request, built once and memoized on the
+   * request object.
+   *
+   * Four call sites resolve the ability during a single request (the guard plus
+   * three api-token handlers). Without the memo each one re-reads the role
+   * tables, so the same answer is computed up to four times per request.
+   */
+  async forRequest(request: AbilityRequest): Promise<AppAbility> {
+    if (request[ABILITY_CACHE]) return request[ABILITY_CACHE];
+
+    const ability = await this.createForUser(request.user ?? {}, {
+      activeOrganizationId: request.session?.activeOrganizationId ?? null,
+      activeTeamId: request.session?.activeTeamId ?? null,
+    });
+
+    request[ABILITY_CACHE] = ability;
+    request.ability = ability;
+    return ability;
+  }
+
   async createForUser(user: AuthenticatedUser, scope: AbilityScope = {}): Promise<AppAbility> {
-    const permissions = await this.resolvePermissions(user);
+    const permissions = await this.resolvePermissions(user, scope.activeOrganizationId ?? null);
     // Pass the principal and active-org scope so resource-scoping conditions
     // (e.g. `${user.id}`, `${activeOrganizationId}`) can be interpolated when
     // the ability is built.
@@ -57,12 +92,18 @@ export class AbilityFactory {
     });
   }
 
-  private async resolvePermissions(user: AuthenticatedUser): Promise<PermissionDefinition[]> {
+  private async resolvePermissions(
+    user: AuthenticatedUser,
+    activeOrganizationId: string | null,
+  ): Promise<PermissionDefinition[]> {
     const permissions: PermissionDefinition[] = [];
 
-    // 1. Roles assigned through the `user_role` join (dynamic RBAC).
+    // 1. Roles assigned through the `user_role` join (dynamic RBAC), narrowed
+    //    to the active organization. The repository unions the caller's global
+    //    assignments with the ones scoped to that organization, so a role
+    //    granted in one tenant has no effect in another.
     if (user.id) {
-      const roles = await this.userRoleRepository.findRolesForUser(user.id);
+      const roles = await this.userRoleRepository.findRolesForUser(user.id, activeOrganizationId);
       for (const role of roles) {
         permissions.push(...role.permissions.map((permission) => permission.toDefinition()));
       }

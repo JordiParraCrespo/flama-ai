@@ -11,6 +11,10 @@ export type RoleResponseDto = {
      */
     isSystem: boolean;
     /**
+     * Owning organization, or null for a global role template shared by every tenant.
+     */
+    organizationId?: string | null;
+    /**
      * CASL permission rules granted by this role.
      */
     permissions: Array<Record<string, any>>;

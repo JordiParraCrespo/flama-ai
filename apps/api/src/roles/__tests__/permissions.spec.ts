@@ -1,4 +1,4 @@
-import { subject } from '@casl/ability';
+import { canAccessRow } from '@flama/backend-authz';
 import { defineAbilitiesFromPermissions } from '@flama/shared';
 import { describe, expect, it } from 'vitest';
 
@@ -34,8 +34,8 @@ describe('defineAbilitiesFromPermissions', () => {
       { user: { id: 'user-1' } },
     );
 
-    expect(ability.can('update', subject('Article', { authorId: 'user-1' }))).toBe(true);
-    expect(ability.can('update', subject('Article', { authorId: 'user-2' }))).toBe(false);
+    expect(canAccessRow(ability, 'update', 'Article', { authorId: 'user-1' })).toBe(true);
+    expect(canAccessRow(ability, 'update', 'Article', { authorId: 'user-2' })).toBe(false);
   });
 
   it('interpolates the active-organization placeholder for tenant scoping', () => {
@@ -51,8 +51,8 @@ describe('defineAbilitiesFromPermissions', () => {
       { user: { id: 'user-1' }, activeOrganizationId: 'org-1' },
     );
 
-    expect(ability.can('read', subject('Article', { organizationId: 'org-1' }))).toBe(true);
-    expect(ability.can('read', subject('Article', { organizationId: 'org-2' }))).toBe(false);
+    expect(canAccessRow(ability, 'read', 'Article', { organizationId: 'org-1' })).toBe(true);
+    expect(canAccessRow(ability, 'read', 'Article', { organizationId: 'org-2' })).toBe(false);
   });
 
   it('applies inverted rules as `cannot`', () => {

@@ -2,6 +2,7 @@ import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { Controller, Get, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
@@ -22,6 +23,7 @@ export class GetMeHttpController {
   ) {}
 
   @Get('me')
+  @NoPolicy('returns the caller’s own profile')
   @Version('1')
   @RequireScopes('profile:read')
   @ApiOperation({ summary: 'Get current user profile' })

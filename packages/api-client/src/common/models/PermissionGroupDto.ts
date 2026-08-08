@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { ScopeLevelsDto } from './ScopeLevelsDto';
 export type PermissionGroupDto = {
-    resource: 'profile' | 'users' | 'admin' | 'roles' | 'organizations' | 'members' | 'invitations' | 'workspaces' | 'tokens' | 'billing';
+    resource: 'profile' | 'users' | 'admin' | 'roles' | 'organizations' | 'members' | 'invitations' | 'workspaces' | 'tokens' | 'billing' | 'leads';
     label: string;
     description: string;
     /**

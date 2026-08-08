@@ -16,6 +16,7 @@ function makeRole(id: string): RoleEntity {
       name: `role-${id}`,
       description: null,
       isSystem: false,
+      organizationId: null,
       permissions: [],
     },
   });

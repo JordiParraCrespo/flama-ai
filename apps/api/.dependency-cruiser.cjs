@@ -17,14 +17,14 @@ module.exports = {
     {
       name: 'domain-stays-pure',
       comment:
-        'The domain layer may only depend on @flama/backend-ddd, @flama/shared and node core. No NestJS, TypeORM, oxide.ts, @flama/backend-core, or any other infrastructure.',
+        'The domain layer may only depend on @flama/backend-ddd, @flama/backend-authz, @flama/shared and node core. No NestJS, TypeORM, oxide.ts, @flama/backend-core, or any other infrastructure.',
       severity: 'error',
       from: { path: '^src/[^/]+/domain/' },
       to: {
         // Ignore node built-ins; flag everything else that is not an allowed
         // workspace package or another domain file in the same layer.
         dependencyTypesNot: ['core'],
-        pathNot: ['^src/[^/]+/domain/', 'packages/(backend/ddd|shared)/'],
+        pathNot: ['^src/[^/]+/domain/', 'packages/(backend/ddd|backend/authz|shared)/'],
       },
     },
     {

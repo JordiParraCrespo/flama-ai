@@ -24,6 +24,7 @@
   "dependencies": {
     "@better-auth/expo": "^1.6.25",
     "@flama/auth": "workspace:*",
+    "@flama/backend-authz": "workspace:*",
     "@flama/backend-cache": "workspace:*",
     "@flama/backend-core": "workspace:*",
     "@flama/backend-ddd": "workspace:*",

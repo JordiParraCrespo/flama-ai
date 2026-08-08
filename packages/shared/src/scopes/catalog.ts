@@ -23,6 +23,7 @@ export const SCOPE_RESOURCES = [
   'workspaces',
   'tokens',
   'billing',
+  'leads',
 ] as const;
 export type ScopeResource = (typeof SCOPE_RESOURCES)[number];
 
@@ -289,6 +290,25 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
         label: 'Edit',
         description: 'Start a checkout session and open the customer portal.',
         policies: [{ action: 'manage', subject: 'Billing' }],
+      },
+    },
+  },
+  {
+    resource: 'leads',
+    label: 'Leads',
+    description: 'The CRM lead records the caller can reach.',
+    levels: {
+      read: {
+        scope: 'leads:read',
+        label: 'Read',
+        description: 'Browse and export leads within your scope.',
+        policies: [{ action: 'read', subject: 'Lead' }],
+      },
+      write: {
+        scope: 'leads:write',
+        label: 'Edit',
+        description: 'Create, edit and delete leads within your scope.',
+        policies: [{ action: 'update', subject: 'Lead' }],
       },
     },
   },

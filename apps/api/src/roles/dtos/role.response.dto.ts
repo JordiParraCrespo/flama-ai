@@ -1,5 +1,5 @@
 import type { PermissionDefinition } from '@flama/shared';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RoleResponseDto {
   @ApiProperty()
@@ -13,6 +13,13 @@ export class RoleResponseDto {
 
   @ApiProperty({ description: 'System roles cannot be deleted or renamed.' })
   isSystem!: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Owning organization, or null for a global role template shared by every tenant.',
+    nullable: true,
+    type: String,
+  })
+  organizationId!: string | null;
 
   @ApiProperty({
     description: 'CASL permission rules granted by this role.',

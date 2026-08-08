@@ -1,10 +1,14 @@
-import type { Actions, Subjects } from '@flama/shared';
-import { SetMetadata } from '@nestjs/common';
-
-export interface PolicyRule {
-  action: Actions;
-  subject: Subjects;
-}
-
-export const CHECK_POLICIES_KEY = 'check_policies';
-export const CheckPolicies = (...rules: PolicyRule[]) => SetMetadata(CHECK_POLICIES_KEY, rules);
+/**
+ * Policy decorators now live in the authorization kernel
+ * (`@flama/backend-authz`) so the registry, guards and containment checks can
+ * share one definition of a policy rule. This module re-exports them from the
+ * path the application already imports, keeping the kernel move invisible to
+ * call sites.
+ */
+export {
+  CHECK_POLICIES_KEY,
+  CheckPolicies,
+  NO_POLICY_KEY,
+  NoPolicy,
+  type PolicyRule,
+} from '@flama/backend-authz';

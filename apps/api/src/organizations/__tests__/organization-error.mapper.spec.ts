@@ -1,3 +1,4 @@
+import type { ErrorDefinition } from '@flama/backend-ddd';
 import { describe, expect, it } from 'vitest';
 import { OrganizationErrors } from '../domain/organization.errors';
 import { mapOrganizationError } from '../organization-error.mapper';

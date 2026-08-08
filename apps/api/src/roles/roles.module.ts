@@ -25,6 +25,7 @@ import { FindUserRolesQueryHandler } from './queries/find-user-roles/find-user-r
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from './roles.di-tokens';
 import { RoleMapper } from './roles.mapper';
 import { AbilityFactory } from './services/ability.factory';
+import { RoleGrantPolicy } from './services/role-grant.policy';
 
 // Register list/static routes before parameterized ones.
 const httpControllers = [
@@ -68,7 +69,21 @@ const repositories: Provider[] = [
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([RoleOrmEntity, UserRoleOrmEntity]), UsersModule],
   controllers: [...httpControllers],
-  providers: [...commandHandlers, ...queryHandlers, ...mappers, ...repositories, AbilityFactory],
-  exports: [ROLE_REPOSITORY, USER_ROLE_REPOSITORY, AbilityFactory, RoleMapper, TypeOrmModule],
+  providers: [
+    ...commandHandlers,
+    ...queryHandlers,
+    ...mappers,
+    ...repositories,
+    AbilityFactory,
+    RoleGrantPolicy,
+  ],
+  exports: [
+    ROLE_REPOSITORY,
+    USER_ROLE_REPOSITORY,
+    AbilityFactory,
+    RoleGrantPolicy,
+    RoleMapper,
+    TypeOrmModule,
+  ],
 })
 export class RolesModule {}

@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { CheckPolicies, NoPolicy } from '../auth/decorators/check-policies.decorator';
 import { OrganizationScoped } from '../auth/decorators/organization-scoped.decorator';
 import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
@@ -118,6 +118,7 @@ export class InvitationsController {
   constructor(private readonly invitations: InvitationsService) {}
 
   @Get()
+  @NoPolicy('lists invitations addressed to the caller’s own email')
   @Version('1')
   @RequireScopes('invitations:read')
   @ApiOperation({ summary: "List the caller's pending invitations" })
@@ -127,6 +128,7 @@ export class InvitationsController {
   }
 
   @Get(':id')
+  @NoPolicy('an invitation the caller was sent; Better Auth checks the recipient')
   @Version('1')
   @RequireScopes('invitations:read')
   @ApiOperation({ summary: 'Get an invitation by id' })
@@ -136,6 +138,7 @@ export class InvitationsController {
   }
 
   @Post(':id/accept')
+  @NoPolicy('the caller acting on their own invitation')
   @Version('1')
   @RequireScopes('invitations:write')
   @ApiOperation({ summary: 'Accept an invitation' })
@@ -148,6 +151,7 @@ export class InvitationsController {
   }
 
   @Post(':id/reject')
+  @NoPolicy('the caller acting on their own invitation')
   @Version('1')
   @RequireScopes('invitations:write')
   @ApiOperation({ summary: 'Reject an invitation' })

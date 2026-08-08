@@ -207,3 +207,98 @@ describe('known catalogs', () => {
     expect(KNOWN_SUBJECTS).toContain('Workspace');
   });
 });
+
+describe('deny precedence', () => {
+  it('applies a deny from one role even when another role grants it later', () => {
+    // Order matters to CASL (last rule wins). The grant is listed *after* the
+    // deny here, which is exactly the ordering a database union can produce.
+    const ability = defineAbilitiesFromPermissions([
+      { action: 'read', subject: 'Lead', fields: ['value'], inverted: true },
+      { action: 'read', subject: 'Lead' },
+    ]);
+
+    expect(ability.can('read', 'Lead')).toBe(true);
+    expect(ability.can('read', 'Lead', 'value')).toBe(false);
+  });
+
+  it('does not depend on the order permissions arrive in', () => {
+    const rules: PermissionDefinition[] = [
+      { action: 'manage', subject: 'Lead' },
+      { action: 'delete', subject: 'Lead', inverted: true },
+    ];
+
+    const forwards = defineAbilitiesFromPermissions(rules);
+    const backwards = defineAbilitiesFromPermissions([...rules].reverse());
+
+    expect(forwards.can('delete', 'Lead')).toBe(false);
+    expect(backwards.can('delete', 'Lead')).toBe(false);
+    expect(forwards.can('update', 'Lead')).toBe(true);
+    expect(backwards.can('update', 'Lead')).toBe(true);
+  });
+});
+
+describe('scope placeholders', () => {
+  const lead = (attrs: Record<string, unknown>) => subject('Lead', attrs);
+
+  it('interpolates ${scope.teamIds} into an $in condition', () => {
+    const ability = defineAbilitiesFromPermissions(
+      [{ action: 'read', subject: 'Lead', conditions: { teamId: { $in: '${scope.teamIds}' } } }],
+      { scope: { teamIds: ['team-a', 'team-b'] } },
+    );
+
+    expect(ability.can('read', lead({ teamId: 'team-a' }))).toBe(true);
+    expect(ability.can('read', lead({ teamId: 'team-c' }))).toBe(false);
+  });
+
+  it('matches nothing when the caller holds no teams', () => {
+    // The dangerous alternative is `$in: undefined`, which does not reliably
+    // match nothing — "no teams" must mean "no rows", never "all rows".
+    const ability = defineAbilitiesFromPermissions(
+      [{ action: 'read', subject: 'Lead', conditions: { teamId: { $in: '${scope.teamIds}' } } }],
+      { scope: { teamIds: [] } },
+    );
+
+    expect(ability.can('read', lead({ teamId: 'team-a' }))).toBe(false);
+  });
+
+  it('interpolates a specific grant set', () => {
+    const ability = defineAbilitiesFromPermissions(
+      [{ action: 'read', subject: 'Lead', conditions: { id: { $in: '${scope.grants.Lead}' } } }],
+      { scope: { grants: { Lead: ['lead-1'] } } },
+    );
+
+    expect(ability.can('read', lead({ id: 'lead-1' }))).toBe(true);
+    expect(ability.can('read', lead({ id: 'lead-2' }))).toBe(false);
+  });
+
+  it("drops the condition entirely for an 'all' grant", () => {
+    // `'all'` cannot be written as an `$in`; the rule must become
+    // unconditional instead of collapsing to an empty (and ambiguous) query.
+    const ability = defineAbilitiesFromPermissions(
+      [{ action: 'read', subject: 'Lead', conditions: { id: { $in: '${scope.grants.Lead}' } } }],
+      { scope: { grants: { Lead: 'all' } } },
+    );
+
+    expect(ability.can('read', lead({ id: 'anything-at-all' }))).toBe(true);
+    expect(ability.can('read', 'Lead')).toBe(true);
+  });
+
+  it('keeps sibling constraints when one branch is unrestricted', () => {
+    const ability = defineAbilitiesFromPermissions(
+      [
+        {
+          action: 'read',
+          subject: 'Lead',
+          conditions: {
+            organizationId: '${scope.organizationId}',
+            id: { $in: '${scope.grants.Lead}' },
+          },
+        },
+      ],
+      { scope: { organizationId: 'org-1', grants: { Lead: 'all' } } },
+    );
+
+    expect(ability.can('read', lead({ organizationId: 'org-1', id: 'x' }))).toBe(true);
+    expect(ability.can('read', lead({ organizationId: 'org-2', id: 'x' }))).toBe(false);
+  });
+});

@@ -28,6 +28,7 @@ describe('RoleEntity full-access guard (admin lockout protection)', () => {
         name: 'admin',
         description: null,
         isSystem: true,
+        organizationId: null,
         permissions: [manageAll()],
       },
     });
@@ -37,6 +38,7 @@ describe('RoleEntity full-access guard (admin lockout protection)', () => {
         name: 'editor',
         description: null,
         isSystem: false,
+        organizationId: null,
         permissions: [readUser()],
       },
     });

@@ -10,6 +10,8 @@ import { OAuthApplicationOrmEntity } from '../auth/entities/oauth-application.en
 import { OAuthConsentOrmEntity } from '../auth/entities/oauth-consent.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
+import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
+import { LeadOrmEntity } from '../leads/database/lead.orm-entity';
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
@@ -36,6 +38,8 @@ const dataSource = new DataSource({
     OAuthAccessTokenOrmEntity,
     OAuthConsentOrmEntity,
     RoleOrmEntity,
+    AccessGrantOrmEntity,
+    LeadOrmEntity,
     UserRoleOrmEntity,
     OrganizationOrmEntity,
     MemberOrmEntity,

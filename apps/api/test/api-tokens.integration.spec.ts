@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { GenericContainer, type StartedTestContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';
+import { runAllMigrations } from './run-migrations';
 
 /**
  * End-to-end coverage of scoped credentials against a real Postgres and Redis.
@@ -91,39 +92,12 @@ describe('API tokens & scopes (integration)', () => {
 
   // --- helpers -------------------------------------------------------------
 
-  /** Run the real migration chain, in order, against the fresh database. */
+  /**
+   * Build the schema from the **actual migration chain**, discovered from the
+   * directory so it cannot drift when a migration is added.
+   */
   async function runMigrations(): Promise<void> {
-    const [{ InitAuthSchema1780746627458 }, { AddRolesRbac1780900000000 }] = await Promise.all([
-      import('../src/migrations/1780746627458-InitAuthSchema'),
-      import('../src/migrations/1780900000000-AddRolesRbac'),
-    ]);
-    const { AddAdminAndOrganizations1781000000000 } = await import(
-      '../src/migrations/1781000000000-AddAdminAndOrganizations'
-    );
-    const { AddApiTokensAndOAuth1781100000000 } = await import(
-      '../src/migrations/1781100000000-AddApiTokensAndOAuth'
-    );
-    const { AddOutbox1781300000000 } = await import('../src/migrations/1781300000000-AddOutbox');
-
-    const migrationRunner = new DataSource({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      username: 'test',
-      password: 'test',
-      database: 'test',
-      migrations: [
-        InitAuthSchema1780746627458,
-        AddRolesRbac1780900000000,
-        AddAdminAndOrganizations1781000000000,
-        AddApiTokensAndOAuth1781100000000,
-        AddOutbox1781300000000,
-      ],
-    });
-
-    await migrationRunner.initialize();
-    await migrationRunner.runMigrations();
-    await migrationRunner.destroy();
+    await runAllMigrations();
   }
 
   interface CallOptions {

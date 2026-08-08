@@ -319,6 +319,221 @@
         "tags": ["Users"]
       }
     },
+    "/api/v1/authz/catalog": {
+      "get": {
+        "description": "Drives the role builder. Resources are contributed by the modules that own them, so a new module appears here without editing a central catalog.",
+        "operationId": "catalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthzCatalogResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every declared resource and what the caller may grant",
+        "tags": ["Authorization"]
+      }
+    },
+    "/api/v1/access-grants": {
+      "get": {
+        "operationId": "list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccessGrantResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the access grants in the active organization",
+        "tags": ["Access grants"]
+      },
+      "post": {
+        "description": "The grant may not exceed the granter’s own access. Omitting resourceId grants every resource of that type, which requires already holding all of them.",
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccessGrantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessGrantResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GRANT_003 — The named principal does not belong to this organization",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "GRANT_002 — An access grant cannot exceed the granter's own access",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Grant access to specific records",
+        "tags": ["Access grants"]
+      }
+    },
+    "/api/v1/access-grants/{id}": {
+      "delete": {
+        "operationId": "revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoked"
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "GRANT_001 — Access grant not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke an access grant",
+        "tags": ["Access grants"]
+      }
+    },
     "/api/v1/me/credential": {
       "get": {
         "description": "Returns the credential kind, its granted scopes and what those scopes actually amount to once the owner’s roles are applied. The MCP server filters its tool list by `effectiveScopes`.",
@@ -3586,6 +3801,172 @@
         "tags": ["Workspaces"]
       }
     },
+    "/api/v1/leads": {
+      "get": {
+        "operationId": "list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeadResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the leads the caller can reach",
+        "tags": ["Leads"]
+      },
+      "post": {
+        "description": "The lead is filed into the caller’s active organization; the body cannot name a different one.",
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a lead",
+        "tags": ["Leads"]
+      }
+    },
+    "/api/v1/leads/{id}": {
+      "get": {
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LEAD_001 — Lead not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one lead",
+        "tags": ["Leads"]
+      }
+    },
     "/api/v1/admin/users": {
       "get": {
         "operationId": "listUsers",
@@ -5699,6 +6080,202 @@
           }
         }
       },
+      "ResourceActionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "read"
+          },
+          "label": {
+            "type": "string",
+            "example": "View leads"
+          },
+          "sensitive": {
+            "type": "boolean",
+            "description": "Flagged in the role builder. Not treated differently at request time.",
+            "example": false
+          }
+        },
+        "required": ["name"]
+      },
+      "AuthzResourceDto": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "example": "Lead"
+          },
+          "label": {
+            "type": "string",
+            "example": "Leads"
+          },
+          "group": {
+            "type": "string",
+            "example": "crm"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceActionDto"
+            }
+          },
+          "fields": {
+            "description": "Attributes that may be granted or denied individually.",
+            "example": ["value", "notes"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scopes": {
+            "description": "Scope dimensions this resource can be narrowed by.",
+            "example": ["organization", "team"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "credentialScope": {
+            "type": "string",
+            "description": "Credential-scope group, when the resource is reachable by API tokens.",
+            "example": "leads"
+          }
+        },
+        "required": ["subject", "label", "group", "actions", "scopes"]
+      },
+      "AuthzResourceGroupDto": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "string",
+            "example": "crm"
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthzResourceDto"
+            }
+          }
+        },
+        "required": ["group", "resources"]
+      },
+      "AuthzRuleDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "example": "read"
+          },
+          "subject": {
+            "type": "string",
+            "example": "Lead"
+          }
+        },
+        "required": ["action", "subject"]
+      },
+      "AuthzCatalogResponseDto": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthzResourceGroupDto"
+            }
+          },
+          "grantable": {
+            "description": "Rules the caller may put on a role. Anything outside this list is rejected, so the role builder can disable it up front.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthzRuleDto"
+            }
+          }
+        },
+        "required": ["groups", "grantable"]
+      },
+      "AccessGrantResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "principalType": {
+            "type": "string",
+            "enum": ["user", "team", "role"]
+          },
+          "principalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceType": {
+            "type": "string",
+            "example": "Lead",
+            "description": "A registry subject."
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Null grants every resource of that type within the organization."
+          },
+          "grantedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "principalType",
+          "principalId",
+          "resourceType",
+          "grantedBy",
+          "createdAt"
+        ]
+      },
+      "CreateAccessGrantRequest": {
+        "type": "object",
+        "properties": {
+          "principalType": {
+            "type": "string",
+            "enum": ["user", "team", "role"]
+          },
+          "principalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": ["principalType", "principalId", "resourceType"]
+      },
       "CurrentCredentialResponseDto": {
         "type": "object",
         "properties": {
@@ -5739,7 +6316,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -5768,7 +6347,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -5836,7 +6417,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -5928,7 +6511,9 @@
               "tokens:read",
               "tokens:write",
               "billing:read",
-              "billing:write"
+              "billing:write",
+              "leads:read",
+              "leads:write"
             ],
             "example": "users:read"
           },
@@ -5977,7 +6562,8 @@
               "invitations",
               "workspaces",
               "tokens",
-              "billing"
+              "billing",
+              "leads"
             ],
             "example": "users"
           },
@@ -6035,7 +6621,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           }
@@ -6075,7 +6663,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -6147,7 +6737,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -6273,6 +6865,11 @@
           "isSystem": {
             "type": "boolean",
             "description": "System roles cannot be deleted or renamed."
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization, or null for a global role template shared by every tenant.",
+            "nullable": true
           },
           "permissions": {
             "type": "array",
@@ -6745,6 +7342,91 @@
           }
         },
         "required": ["userId"]
+      },
+      "LeadResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Acme Corp"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "number",
+            "description": "Deal value in minor units.",
+            "example": 250000
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "organizationId", "name", "value", "createdAt", "updatedAt"]
+      },
+      "CreateLeadRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "value": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": false
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000,
+            "nullable": true
+          }
+        },
+        "required": ["name"]
       },
       "AdminUserResponseDto": {
         "type": "object",
