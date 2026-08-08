@@ -8,6 +8,7 @@ import { betterAuth } from 'better-auth';
 import { admin, bearer, mcp, organization } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
+import { orUndefined } from '../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue';
 
 /**
@@ -38,12 +39,16 @@ const OAUTH_SCOPES_SUPPORTED = ['openid', 'profile', 'email', 'offline_access', 
 const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
 
+// Read through `orUndefined` so a blank `DB_X=` means "unset" here exactly as
+// it does in `database.config.ts`. Better Auth owns its own pool rather than
+// TypeORM's, and two connections that disagree about the credentials would
+// leave half the API unable to reach the database.
 const pool = new Pool({
-  host: process.env.DB_HOST ?? 'localhost',
-  port: Number.parseInt(process.env.DB_PORT ?? '5432', 10),
-  user: process.env.DB_USERNAME ?? 'flama',
-  password: process.env.DB_PASSWORD ?? 'flama',
-  database: process.env.DB_DATABASE ?? 'flama',
+  host: orUndefined(process.env.DB_HOST) ?? 'localhost',
+  port: Number.parseInt(orUndefined(process.env.DB_PORT) ?? '5432', 10),
+  user: orUndefined(process.env.DB_USERNAME) ?? 'flama',
+  password: orUndefined(process.env.DB_PASSWORD) ?? 'flama',
+  database: orUndefined(process.env.DB_DATABASE) ?? 'flama',
 });
 
 // `pg` emits `error` on the pool when an *idle* client's connection drops — a

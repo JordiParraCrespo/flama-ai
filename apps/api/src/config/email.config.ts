@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
-import { orUndefined } from './env';
+import { parseEnv } from './env';
 
 // Optional-capability config: with no transport settings the console provider
 // prints emails to stdout. Transport keys are genuinely optional — a blank or
@@ -16,14 +16,14 @@ const schema = z.object({
   resendApiKey: z.string().optional(),
 });
 
-export const emailConfig = registerAs('email', () => {
-  return schema.parse({
-    provider: orUndefined(process.env.EMAIL_PROVIDER),
-    from: orUndefined(process.env.EMAIL_FROM),
-    smtpHost: orUndefined(process.env.SMTP_HOST),
-    smtpPort: orUndefined(process.env.SMTP_PORT),
-    smtpUser: orUndefined(process.env.SMTP_USER),
-    smtpPass: orUndefined(process.env.SMTP_PASS),
-    resendApiKey: orUndefined(process.env.RESEND_API_KEY),
-  });
-});
+export const emailConfig = registerAs('email', () =>
+  parseEnv('email', schema, {
+    provider: 'EMAIL_PROVIDER',
+    from: 'EMAIL_FROM',
+    smtpHost: 'SMTP_HOST',
+    smtpPort: 'SMTP_PORT',
+    smtpUser: 'SMTP_USER',
+    smtpPass: 'SMTP_PASS',
+    resendApiKey: 'RESEND_API_KEY',
+  }),
+);

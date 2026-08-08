@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
+import { parseEnv } from './env';
 
 const schema = z.object({
   port: z.coerce.number().default(3001),
@@ -16,14 +17,14 @@ const schema = z.object({
   errorTypeBaseUrl: z.string().url().default('https://flama.dev/errors'),
 });
 
-export const appConfig = registerAs('app', () => {
-  return schema.parse({
-    port: process.env.PORT,
-    nodeEnv: process.env.NODE_ENV,
-    betterAuthSecret: process.env.BETTER_AUTH_SECRET,
-    betterAuthUrl: process.env.BETTER_AUTH_URL,
-    frontendUrl: process.env.FRONTEND_URL,
-    mobileScheme: process.env.MOBILE_SCHEME,
-    errorTypeBaseUrl: process.env.ERROR_TYPE_BASE_URL,
-  });
-});
+export const appConfig = registerAs('app', () =>
+  parseEnv('app', schema, {
+    port: 'PORT',
+    nodeEnv: 'NODE_ENV',
+    betterAuthSecret: 'BETTER_AUTH_SECRET',
+    betterAuthUrl: 'BETTER_AUTH_URL',
+    frontendUrl: 'FRONTEND_URL',
+    mobileScheme: 'MOBILE_SCHEME',
+    errorTypeBaseUrl: 'ERROR_TYPE_BASE_URL',
+  }),
+);
