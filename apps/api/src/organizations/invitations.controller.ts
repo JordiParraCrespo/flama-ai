@@ -1,3 +1,4 @@
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import {
   Body,
   Controller,
@@ -23,6 +24,29 @@ import { InvitationsService } from './invitations.service';
 /** Organization-scoped invitation management (requires `Invitation` policies). */
 @ApiTags('Organization invitations')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
+@ApiProblemResponse({
+  status: 403,
+  description:
+    'The invitation was issued to another account, the caller may not manage invitations, or their email is unverified',
+  code: ['ORG_009', 'ORG_004', 'ORG_011'],
+})
+@ApiProblemResponse({
+  status: 409,
+  description:
+    'That user is already invited or already a member, or an invitation limit was reached',
+  code: ['ORG_010', 'ORG_006', 'ORG_014'],
+})
+@ApiProblemResponse({
+  status: 502,
+  description: 'The organization service failed to handle the request',
+  code: 'ORG_016',
+})
+@ApiProblemResponse({
+  status: 404,
+  description: 'The organization does not exist, or is not visible to the caller',
+  code: 'ORG_001',
+})
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('organizations')
 export class OrganizationInvitationsController {
@@ -65,6 +89,29 @@ export class OrganizationInvitationsController {
  */
 @ApiTags('Invitations')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
+@ApiProblemResponse({
+  status: 403,
+  description:
+    'The invitation was issued to another account, the caller may not manage invitations, or their email is unverified',
+  code: ['ORG_009', 'ORG_004', 'ORG_011'],
+})
+@ApiProblemResponse({
+  status: 409,
+  description:
+    'That user is already invited or already a member, or an invitation limit was reached',
+  code: ['ORG_010', 'ORG_006', 'ORG_014'],
+})
+@ApiProblemResponse({
+  status: 502,
+  description: 'The organization service failed to handle the request',
+  code: 'ORG_016',
+})
+@ApiProblemResponse({
+  status: 404,
+  description: 'The invitation does not exist or is no longer retrievable',
+  code: 'ORG_008',
+})
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('invitations')
 export class InvitationsController {

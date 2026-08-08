@@ -21,6 +21,10 @@ export class ApiTokensApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/me/credential',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
         });
     }
     /**
@@ -33,6 +37,10 @@ export class ApiTokensApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/tokens',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
         });
     }
     /**
@@ -51,6 +59,7 @@ export class ApiTokensApi {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
                 403: `TOKEN_002 / TOKEN_008 — Requested scopes exceed the caller’s own permissions, or the caller is not a member of a requested organization`,
                 409: `TOKEN_009 — Active token limit reached`,
             },
@@ -66,6 +75,10 @@ export class ApiTokensApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/tokens/permissions',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
         });
     }
     /**
@@ -85,6 +98,8 @@ export class ApiTokensApi {
                 'id': id,
             },
             errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
                 404: `TOKEN_001 — Token not found`,
             },
         });

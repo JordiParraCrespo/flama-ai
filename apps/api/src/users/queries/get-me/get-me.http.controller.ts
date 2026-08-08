@@ -1,3 +1,4 @@
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { Controller, Get, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -12,6 +13,7 @@ import { FindUserByIdQuery } from '../find-user-by-id/find-user-by-id.query';
 
 @ApiTags('Users')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard)
 @Controller('users')
 export class GetMeHttpController {

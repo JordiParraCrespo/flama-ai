@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { toAuthSession } from './session';
-import { unwrap } from './unwrap';
+import { AuthRequestError, unwrap } from './unwrap';
 
 describe('unwrap', () => {
   it('does nothing on success', () => {
@@ -16,6 +16,31 @@ describe('unwrap', () => {
 
   it('falls back to a generic message when the error has none', () => {
     expect(() => unwrap({ error: {} })).toThrow('Authentication request failed');
+  });
+
+  it('preserves the status and code so callers can tell why it failed', () => {
+    // Without these a UI cannot distinguish "wrong password" (the server
+    // answered 401) from "the server is unreachable" (no status at all), and
+    // ends up telling someone who mistyped their password to check their wifi.
+    const error = (() => {
+      try {
+        unwrap({
+          error: {
+            message: 'Invalid email or password',
+            code: 'INVALID_EMAIL_OR_PASSWORD',
+            status: 401,
+            statusText: 'Unauthorized',
+          },
+        });
+      } catch (e) {
+        return e as AuthRequestError;
+      }
+    })();
+
+    expect(error).toBeInstanceOf(AuthRequestError);
+    expect(error?.status).toBe(401);
+    expect(error?.code).toBe('INVALID_EMAIL_OR_PASSWORD');
+    expect(error?.message).toBe('Invalid email or password');
   });
 });
 

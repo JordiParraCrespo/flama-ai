@@ -1,7 +1,14 @@
-import { HttpException, InternalServerErrorException } from '@nestjs/common';
+import { AppError } from '@flama/backend-core';
 import { APIError } from 'better-auth/api';
 import { describe, expect, it } from 'vitest';
-import { asArray, asRecord, invokeBetterAuth, unwrap, unwrapArray } from '../better-auth.util';
+import {
+  asArray,
+  asRecord,
+  type BetterAuthFailure,
+  betterAuthInvoker,
+  unwrap,
+  unwrapArray,
+} from '../better-auth.util';
 
 describe('asRecord', () => {
   it('returns the object itself when given a plain object', () => {
@@ -65,56 +72,76 @@ describe('unwrapArray', () => {
   });
 });
 
-describe('invokeBetterAuth', () => {
+describe('betterAuthInvoker', () => {
+  const CATALOG = {
+    NOT_FOUND: { code: 'ORG_001', message: 'Organization not found', httpStatus: 404 },
+    SLUG_TAKEN: {
+      code: 'ORG_002',
+      message: 'That organization slug is already taken',
+      httpStatus: 409,
+    },
+    UPSTREAM_FAILED: {
+      code: 'ORG_016',
+      message: 'The organization service failed to handle this request',
+      httpStatus: 502,
+    },
+  } as const;
+
+  const mapper = ({ upstreamCode, status }: BetterAuthFailure) => {
+    if (upstreamCode === 'ORGANIZATION_SLUG_ALREADY_TAKEN') return CATALOG.SLUG_TAKEN;
+    if (status >= 500) return CATALOG.UPSTREAM_FAILED;
+    return CATALOG.NOT_FOUND;
+  };
+
+  const invoke = betterAuthInvoker(mapper);
+
   it('returns the value from a successful call', async () => {
-    await expect(invokeBetterAuth(() => Promise.resolve('ok'))).resolves.toBe('ok');
+    await expect(invoke(() => Promise.resolve('ok'))).resolves.toBe('ok');
   });
 
-  it('translates an APIError into an HttpException preserving status and body', async () => {
+  it('turns an APIError into a catalog AppError, keeping the upstream code and message', async () => {
     const apiError = new APIError('CONFLICT', {
-      message: 'slug taken',
-      code: 'SLUG_TAKEN',
+      message: 'Organization slug already taken',
+      code: 'ORGANIZATION_SLUG_ALREADY_TAKEN',
     });
 
-    const promise = invokeBetterAuth(() => Promise.reject(apiError));
+    const err = await invoke(() => Promise.reject(apiError)).catch((e: AppError) => e);
 
-    await expect(promise).rejects.toBeInstanceOf(HttpException);
-    const err = await promise.catch((e: HttpException) => e);
+    expect(err).toBeInstanceOf(AppError);
+    // The catalog entry decides the client-facing contract...
+    expect(err.code).toBe('ORG_002');
+    expect(err.title).toBe('That organization slug is already taken');
     expect(err.getStatus()).toBe(409);
-    expect(err.getResponse()).toMatchObject({
-      message: 'slug taken',
-      code: 'SLUG_TAKEN',
-    });
+    // ...and nothing Better Auth said is lost.
+    expect(err.detail).toBe('Organization slug already taken');
+    expect(err.extensions).toEqual({ upstreamCode: 'ORGANIZATION_SLUG_ALREADY_TAKEN' });
   });
 
-  it('falls back to the message when an APIError has no body message', async () => {
-    const apiError = new APIError('BAD_REQUEST', {});
-
-    const err = await invokeBetterAuth(() => Promise.reject(apiError)).catch(
-      (e: HttpException) => e,
+  it('passes the status to the mapper when the APIError carries no code', async () => {
+    const err = await invoke(() => Promise.reject(new APIError('BAD_REQUEST', {}))).catch(
+      (e: AppError) => e,
     );
 
-    expect(err).toBeInstanceOf(HttpException);
-    expect(err.getStatus()).toBe(400);
-    const response = err.getResponse();
-    expect(typeof (response as { message: unknown }).message).toBe('string');
+    expect(err.code).toBe('ORG_001');
+    expect(err.extensions).toEqual({});
   });
 
-  it('wraps a non-APIError as an InternalServerErrorException with its message', async () => {
-    const err = await invokeBetterAuth(() => Promise.reject(new Error('boom'))).catch(
-      (e: InternalServerErrorException) => e,
-    );
+  it('maps a non-APIError onto the catalog as an upstream failure', async () => {
+    const cause = new Error('socket hang up');
+    const err = await invoke(() => Promise.reject(cause)).catch((e: AppError) => e);
 
-    expect(err).toBeInstanceOf(InternalServerErrorException);
-    expect((err.getResponse() as { message: string }).message).toBe('boom');
+    expect(err).toBeInstanceOf(AppError);
+    expect(err.code).toBe('ORG_016');
+    expect(err.getStatus()).toBe(502);
+    // The underlying message is for the log only — never the response.
+    expect(err.detail).toBeUndefined();
+    expect(err.cause).toBe(cause);
   });
 
-  it('wraps a thrown non-Error value with a generic message', async () => {
-    const err = await invokeBetterAuth(() => Promise.reject('string failure')).catch(
-      (e: InternalServerErrorException) => e,
-    );
+  it('maps a thrown non-Error value the same way', async () => {
+    const err = await invoke(() => Promise.reject('string failure')).catch((e: AppError) => e);
 
-    expect(err).toBeInstanceOf(InternalServerErrorException);
-    expect((err.getResponse() as { message: string }).message).toBe('Better Auth request failed');
+    expect(err).toBeInstanceOf(AppError);
+    expect(err.code).toBe('ORG_016');
   });
 });

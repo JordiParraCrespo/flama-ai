@@ -1,4 +1,4 @@
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import {
   Body,
@@ -27,6 +27,7 @@ import { UpdateRoleRequest } from './update-role.request.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('roles')
 export class UpdateRoleHttpController {

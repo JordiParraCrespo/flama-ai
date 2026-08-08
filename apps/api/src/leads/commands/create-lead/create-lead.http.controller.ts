@@ -1,5 +1,5 @@
 import type { AccessScope } from '@flama/backend-authz';
-import { AppError } from '@flama/backend-core';
+import { ApiAuthProblemResponses, AppError } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import type { AppAbility } from '@flama/shared';
 import { Body, Controller, Post, Req, UseGuards, UseInterceptors, Version } from '@nestjs/common';
@@ -21,6 +21,7 @@ import { CreateLeadRequest } from './create-lead.request.dto';
 
 @ApiTags('Leads')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @UseInterceptors(AccessScopeInterceptor)
 @Controller('leads')

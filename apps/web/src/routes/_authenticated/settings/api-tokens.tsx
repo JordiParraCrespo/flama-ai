@@ -43,6 +43,7 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { PermissionPicker } from '@/components/permission-picker';
+import { useErrorMessage } from '@/lib/use-error-message';
 
 export const Route = createFileRoute('/_authenticated/settings/api-tokens')({
   component: ApiTokensPage,
@@ -154,6 +155,7 @@ function CreateTokenCard({
   onCreated: (secret: string) => void;
 }) {
   const { t } = useTranslation();
+  const resolveError = useErrorMessage();
   const organizations = useOrganizations();
   const create = useCreateApiToken();
 
@@ -193,7 +195,7 @@ function CreateTokenCard({
           <FieldGroup>
             {create.error && (
               <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {create.error.message}
+                {resolveError(create.error).message}
               </div>
             )}
 

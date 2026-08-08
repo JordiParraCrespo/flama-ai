@@ -38,3 +38,10 @@ pnpm dev
 | API                | http://localhost:3001          |
 | API Docs (Swagger) | http://localhost:3001/api/docs |
 | Docs               | http://localhost:3002          |
+
+## Optional features
+
+Optional integrations stay off until their credentials are in the root `.env`,
+and the API reports what a deployment can actually do at
+`GET /api/v1/health/capabilities`. To enable Google sign-in, see
+[Google sign-in](./google-sign-in.md).

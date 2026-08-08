@@ -27,6 +27,14 @@ export class OrganizationInvitationsApi {
             },
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 — The organization does not exist, or is not visible to the caller`,
+                409: `ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
+            },
         });
     }
     /**
@@ -43,6 +51,14 @@ export class OrganizationInvitationsApi {
             url: '/api/v1/organizations/{orgId}/invitations',
             path: {
                 'orgId': orgId,
+            },
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `ORG_009 / ORG_004 / ORG_011 — The invitation was issued to another account, the caller may not manage invitations, or their email is unverified
+                AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                404: `ORG_001 — The organization does not exist, or is not visible to the caller`,
+                409: `ORG_010 / ORG_006 / ORG_014 — That user is already invited or already a member, or an invitation limit was reached`,
+                502: `ORG_016 — The organization service failed to handle the request`,
             },
         });
     }

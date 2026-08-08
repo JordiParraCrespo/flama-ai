@@ -17,6 +17,10 @@ export class AuthorizationApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/authz/catalog',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
         });
     }
 }

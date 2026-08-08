@@ -1,3 +1,4 @@
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { Controller, Get, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -13,6 +14,7 @@ import { FindApiTokensQuery } from './find-api-tokens.query';
 
 @ApiTags('API tokens')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('tokens')
 export class FindApiTokensHttpController {

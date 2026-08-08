@@ -82,6 +82,9 @@ export class BillingApi {
                 'limit': limit,
                 'page': page,
             },
+            errors: {
+                403: `AUTH_002 — The caller's roles do not permit this`,
+            },
         });
     }
     /**
@@ -93,6 +96,9 @@ export class BillingApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/billing/metrics',
+            errors: {
+                403: `AUTH_002 — The caller's roles do not permit this`,
+            },
         });
     }
 }

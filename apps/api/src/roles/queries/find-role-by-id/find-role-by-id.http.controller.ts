@@ -1,4 +1,4 @@
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import { Controller, Get, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -13,6 +13,7 @@ import { FindRoleByIdQuery } from './find-role-by-id.query';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('roles')
 export class FindRoleByIdHttpController {

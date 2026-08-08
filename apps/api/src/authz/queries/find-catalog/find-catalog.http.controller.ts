@@ -1,3 +1,4 @@
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { Controller, Get, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -11,6 +12,7 @@ import { FindAuthzCatalogQuery } from './find-catalog.query';
 
 @ApiTags('Authorization')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard)
 @Controller('authz')
 export class FindAuthzCatalogHttpController {

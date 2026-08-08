@@ -1,3 +1,4 @@
+import { ApiProblemResponse } from '@flama/backend-core';
 import type { Paginated } from '@flama/backend-ddd';
 import { Controller, Get, Query, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
@@ -13,6 +14,11 @@ import { FindSubscriptionsRequest } from './find-subscriptions.request.dto';
 
 @ApiTags('Billing')
 @ApiBearerAuth()
+@ApiProblemResponse({
+  status: 403,
+  description: "The caller's roles do not permit this",
+  code: 'AUTH_002',
+})
 @UseGuards(AuthGuard, PoliciesGuard)
 @Controller('billing')
 export class FindSubscriptionsHttpController {

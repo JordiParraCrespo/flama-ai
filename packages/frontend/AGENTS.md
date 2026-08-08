@@ -46,6 +46,17 @@ Per module, follow the layering: **domain → presentation → data-access**.
   locales is a compile error in the apps. Full convention in
   [`.agents/rules/forms.md`](../../.agents/rules/forms.md).
 
+- `modules/core/error-message.ts` is the same idea for **API failures**:
+  `createErrorMessageResolver` turns anything thrown by a repository into a
+  message translated from the problem document's `code`. Screens must not render
+  `error.message` — the server's `detail`/`title` are English, written for
+  operators and the CLI, so putting them on screen leaks English into every
+  locale. Each app wraps it in a hook (`useErrorMessage` in `apps/web/src/lib/`).
+
+  A new API error code needs an entry under `errors.byCode.<CODE>` in every
+  locale in `@flama/translations`; an unknown code falls back to a generic
+  translated sentence rather than the server's wording.
+
 ## Commands
 
 ```bash

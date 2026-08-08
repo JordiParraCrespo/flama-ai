@@ -1,4 +1,4 @@
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Post, Req, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -18,6 +18,7 @@ import { CreateRoleRequest } from './create-role.request.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller('roles')
 export class CreateRoleHttpController {

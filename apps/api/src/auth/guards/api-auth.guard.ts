@@ -1,11 +1,8 @@
-import {
-  type CanActivate,
-  type ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { AppError } from '@flama/backend-core';
+import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
 import { auth } from '../auth';
 import { betterAuthHeaders } from '../better-auth.util';
+import { AuthErrors } from '../domain/auth.errors';
 import type { ScopedRequest } from '../scope-context';
 import { CredentialScopeResolver } from '../services/credential-scope.resolver';
 import { DelegatedSessionService } from '../services/delegated-session.service';
@@ -81,7 +78,14 @@ export class ApiAuthGuard implements CanActivate {
     request.user = session?.user ?? null;
     request.scopeContext = null;
 
-    if (!session) throw new UnauthorizedException();
+    if (!session) {
+      // The token paths report TOKEN_003 from `CredentialScopeResolver`; the
+      // cookie path gets its own code rather than Nest's codeless 401, so every
+      // authentication failure is something a client can branch on.
+      throw new AppError(AuthErrors.UNAUTHENTICATED, {
+        detail: 'No valid session cookie or bearer credential was presented.',
+      });
+    }
     return true;
   }
 }

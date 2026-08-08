@@ -2,11 +2,11 @@ import { NO_POLICY_KEY } from '@flama/backend-authz';
 import { AppError } from '@flama/backend-core';
 import { defineAbilitiesFromPermissions } from '@flama/shared';
 import type { ExecutionContext } from '@nestjs/common';
-import { ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AbilityFactory } from '../../../roles/services/ability.factory';
 import { CHECK_POLICIES_KEY } from '../../decorators/check-policies.decorator';
+import { AuthErrors } from '../../domain/auth.errors';
 import { PoliciesGuard } from '../policies.guard';
 
 /** Metadata the route under test declares, keyed the way the reflector reads it. */
@@ -59,7 +59,14 @@ describe('PoliciesGuard', () => {
       abilityFactory,
     );
 
-    await expect(guard.canActivate(contextWith({ user: { id: 'u1' } }))).resolves.toBe(false);
+    // Returning `false` would hand back Nest's own codeless 403; the guard
+    // throws the catalog error so the response carries AUTH_002.
+    const error = await guard
+      .canActivate(contextWith({ user: { id: 'u1' } }))
+      .catch((thrown: AppError) => thrown);
+
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as AppError).code).toBe(AuthErrors.FORBIDDEN.code);
   });
 
   it('rejects a route that declares no policy at all', async () => {
@@ -79,7 +86,7 @@ describe('PoliciesGuard', () => {
     await expect(guard.canActivate(contextWith({ user: { id: 'u1' } }))).resolves.toBe(true);
   });
 
-  it('refuses to evaluate a policy without an authenticated caller', async () => {
+  it('reports a missing principal as unauthenticated, not forbidden', async () => {
     const guard = new PoliciesGuard(
       reflectorFor({
         [CHECK_POLICIES_KEY]: [{ action: 'read', subject: 'Lead' }],
@@ -87,7 +94,12 @@ describe('PoliciesGuard', () => {
       abilityFactory,
     );
 
-    await expect(guard.canActivate(contextWith({}))).rejects.toThrow(ForbiddenException);
+    // 401 tells the client to re-authenticate; a 403 would have it give up on
+    // a request a fresh session would satisfy.
+    const error = await guard.canActivate(contextWith({})).catch((thrown: AppError) => thrown);
+
+    expect(error).toBeInstanceOf(AppError);
+    expect((error as AppError).code).toBe(AuthErrors.UNAUTHENTICATED.code);
   });
 
   it('builds the ability once per request', async () => {

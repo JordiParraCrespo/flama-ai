@@ -124,10 +124,10 @@ describe('lead capabilities (CASL)', () => {
   it('scopes editing to the leads a rep owns', () => {
     expectAbility(
       [
-        // biome-ignore lint/suspicious/noTemplateCurlyInString: a placeholder interpolated at build time
         {
           action: 'update',
           subject: 'Lead',
+          // biome-ignore lint/suspicious/noTemplateCurlyInString: a placeholder interpolated when the ability is built
           conditions: { ownerId: '${user.id}' },
         },
       ],
@@ -159,10 +159,10 @@ describe('lead capabilities (CASL)', () => {
 
     expectAbility(
       [
-        // biome-ignore lint/suspicious/noTemplateCurlyInString: a placeholder interpolated at build time
         {
           action: 'read',
           subject: 'Lead',
+          // biome-ignore lint/suspicious/noTemplateCurlyInString: a placeholder interpolated when the ability is built
           conditions: { id: { $in: '${scope.grants.Lead}' } },
         },
       ],

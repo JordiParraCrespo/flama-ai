@@ -1,5 +1,5 @@
 import type { AccessScope } from '@flama/backend-authz';
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import {
   Controller,
   Delete,
@@ -23,6 +23,7 @@ import { RevokeAccessGrantCommand } from './revoke-access-grant.command';
 
 @ApiTags('Access grants')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @UseInterceptors(AccessScopeInterceptor)
 @Controller('access-grants')

@@ -17,6 +17,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { SocialLoginButtons } from '@/components/social-login-buttons';
+import { useErrorMessage } from '@/lib/use-error-message';
 import { useZodResolver } from '@/lib/use-zod-resolver';
 
 export const Route = createFileRoute('/_auth/login')({
@@ -28,6 +29,7 @@ export const Route = createFileRoute('/_auth/login')({
 
 function LoginPage() {
   const { t } = useTranslation();
+  const resolveError = useErrorMessage();
   const navigate = useNavigate();
   const { redirect: redirectTo } = Route.useSearch();
   const { mutate, isPending, error } = useLogin();
@@ -61,7 +63,7 @@ function LoginPage() {
             <FieldGroup>
               {error && (
                 <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error instanceof Error ? error.message : t('auth.login.invalidCredentials')}
+                  {resolveError(error, t('auth.login.invalidCredentials')).message}
                 </div>
               )}
               <Field data-invalid={Boolean(errors.email)}>

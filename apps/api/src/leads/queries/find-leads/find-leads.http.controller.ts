@@ -1,4 +1,5 @@
 import type { AccessScope } from '@flama/backend-authz';
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import type { AppAbility } from '@flama/shared';
 import { Controller, Get, Req, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
@@ -16,6 +17,7 @@ import { FindLeadsQuery } from './find-leads.query';
 
 @ApiTags('Leads')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @UseInterceptors(AccessScopeInterceptor)
 @Controller('leads')

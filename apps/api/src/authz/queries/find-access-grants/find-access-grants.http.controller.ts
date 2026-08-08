@@ -1,4 +1,5 @@
 import type { AccessScope } from '@flama/backend-authz';
+import { ApiAuthProblemResponses } from '@flama/backend-core';
 import { Controller, Get, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -20,6 +21,7 @@ import { FindAccessGrantsQuery } from './find-access-grants.query';
  */
 @ApiTags('Access grants')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @UseInterceptors(AccessScopeInterceptor)
 @Controller('access-grants')

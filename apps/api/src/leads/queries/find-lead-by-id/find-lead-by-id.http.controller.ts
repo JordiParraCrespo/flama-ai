@@ -1,5 +1,5 @@
 import type { AccessScope } from '@flama/backend-authz';
-import { ApiProblemResponse } from '@flama/backend-core';
+import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
 import type { AppAbility } from '@flama/shared';
 import {
   Controller,
@@ -26,6 +26,7 @@ import { FindLeadByIdQuery } from './find-lead-by-id.query';
 
 @ApiTags('Leads')
 @ApiBearerAuth()
+@ApiAuthProblemResponses()
 @UseGuards(ApiAuthGuard, PoliciesGuard)
 @UseInterceptors(AccessScopeInterceptor)
 @Controller('leads')
