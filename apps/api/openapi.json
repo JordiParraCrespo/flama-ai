@@ -2942,7 +2942,7 @@
         "tags": ["Domains"]
       },
       "post": {
-        "description": "Starts tracking a domain in the caller’s active organization. The domain is created in `draft` and becomes activatable once verified.",
+        "description": "Starts tracking a domain in the caller’s active organization. The domain is created in `draft`; move it to `active` with PATCH to begin ingesting metrics.",
         "operationId": "connect",
         "parameters": [],
         "requestBody": {

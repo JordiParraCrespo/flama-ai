@@ -33,7 +33,7 @@ export class ConnectDomainHttpController {
   @ApiOperation({
     summary: 'Connect a domain',
     description:
-      'Starts tracking a domain in the caller’s active organization. The domain is created in `draft` and becomes activatable once verified.',
+      'Starts tracking a domain in the caller’s active organization. The domain is created in `draft`; move it to `active` with PATCH to begin ingesting metrics.',
   })
   @ApiResponse({ status: 201, type: DomainResponseDto })
   @ApiProblemResponse({

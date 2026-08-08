@@ -43,9 +43,10 @@ export interface UpdateDomainProps {
  * hangs off: leads record the domain they were captured on, and search metrics
  * roll up per domain.
  *
- * A newly connected domain starts as `draft` and only becomes `active` once it
- * is verified, so nothing ingests metrics for a hostname the workspace has not
- * proven it controls.
+ * A newly connected domain starts as `draft` and is moved to `active` when the
+ * workspace wants metrics ingested for it; `paused` keeps the record and its
+ * history but stops ingestion. See `changeStatus` for why activation is not
+ * gated on `verifiedAt`.
  */
 export class DomainEntity extends AggregateRoot<DomainProps> {
   static create(create: CreateEntityProps<DomainProps>): DomainEntity {

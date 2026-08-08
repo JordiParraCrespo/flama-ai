@@ -12,11 +12,16 @@ and search metrics will roll up per domain.
 
 **`apps/api/src/domains/`** is a standard Domain-Driven Hexagon slice. The
 `DomainEntity` aggregate owns a `Hostname` value object (bare hostnames only —
-subdomains are tracked as separate domains) and the lifecycle invariant that a
-domain cannot be activated before it is verified. Connecting, changing status
-and removing a domain each raise a domain event, staged on the transactional
-outbox by the repository so the on-connect work (Search Console import, initial
-crawl) and the on-removal cleanup cannot be lost.
+subdomains are tracked as separate domains) and the `draft` → `active` →
+`paused` lifecycle. Connecting, changing status and removing a domain each raise
+a domain event, staged on the transactional outbox by the repository so the
+on-connect work (Search Console import, initial crawl) and the on-removal
+cleanup cannot be lost.
+
+Domain access is **per-organization**: a user may be narrowed to three domains
+in one organization and unrestricted in another, so both the join writes and the
+CASL rules are qualified by `organizationId`. Setting a user's access also
+requires them to be a member of that organization.
 
 Endpoints, all `@RequireScopes`-gated by the new `domains:read` / `domains:write`
 scopes and `@CheckPolicies`-gated on the new `Domain` CASL subject:

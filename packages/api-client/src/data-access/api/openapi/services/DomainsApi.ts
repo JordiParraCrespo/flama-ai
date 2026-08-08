@@ -47,7 +47,7 @@ export class DomainsApi {
     }
     /**
      * Connect a domain
-     * Starts tracking a domain in the caller’s active organization. The domain is created in `draft` and becomes activatable once verified.
+     * Starts tracking a domain in the caller’s active organization. The domain is created in `draft`; move it to `active` with PATCH to begin ingesting metrics.
      * @param requestBody
      * @returns DomainResponseDto
      * @throws ApiError
