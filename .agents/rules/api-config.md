@@ -44,7 +44,10 @@ without it. Model absence honestly:
   check.
 - Normalize blank env vars (`FOO=`) to `undefined` before validation with the
   `orUndefined` helper in `config/env.ts`, so `.url().optional()` and friends
-  still boot.
+  still boot. It uses whitespace to decide **blankness only** and never trims
+  the value it returns — a credential may legitimately be padded, and a config
+  that quietly rewrote `DB_PASSWORD` would disagree with Better Auth's pool,
+  which reads `process.env` directly. Do not add a trim here or at a call site.
 - Declare the feature in `resolveCapabilities()`
   (`src/capabilities/capabilities.module.ts`). The resolved set — currently
   `google_oauth`, `github_oauth`, `stripe_billing`, `s3_storage`,
@@ -172,10 +175,10 @@ Request logging comes from `LoggingModule` in `@flama/backend-core`
 
   ```typescript
   // WRONG — two log lines; fields never attach to the message
-  this.logger.log('Saved user', { userId });
+  this.logger.log("Saved user", { userId });
 
   // CORRECT — one JSON line with searchable top-level fields
-  this.logger.log({ message: 'Saved user', userId });
+  this.logger.log({ message: "Saved user", userId });
   ```
 
 - **Errors pass the stack as the second argument.** Passing the error object
@@ -183,7 +186,7 @@ Request logging comes from `LoggingModule` in `@flama/backend-core`
 
   ```typescript
   this.logger.error(
-    { message: 'Subscription sync failed', subscriptionId },
+    { message: "Subscription sync failed", subscriptionId },
     error instanceof Error ? error.stack : String(error),
   );
   ```

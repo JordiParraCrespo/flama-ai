@@ -17,8 +17,6 @@ const schema = z.object({
     .transform((value) => value === 'true'),
 });
 
-/** Treat unset OR blank ("DB_X=") env vars alike. */
-
 export const databaseConfig = registerAs('database', () =>
   parseEnv('database', schema, {
     host: 'DB_HOST',

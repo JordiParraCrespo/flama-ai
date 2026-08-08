@@ -1,14 +1,21 @@
 import type { z } from 'zod';
 
 /**
- * Normalizes unset AND blank (`FOO=`) env vars to `undefined`, so optional
- * schema keys (`z.string().optional()`, `.url().optional()`) treat both the
- * same and absence stays representable in the parsed config.
+ * Normalizes unset AND blank (`FOO=`, or whitespace-only) env vars to
+ * `undefined`, so optional schema keys (`z.string().optional()`,
+ * `.url().optional()`) treat both the same and absence stays representable in
+ * the parsed config.
+ *
+ * Whitespace decides *blankness only* — a value that survives is returned
+ * verbatim, never trimmed. A credential may legitimately carry leading or
+ * trailing whitespace (`DB_PASSWORD`, `S3_SECRET_ACCESS_KEY`, `RESEND_API_KEY`),
+ * and silently altering it would hand different credentials to different
+ * consumers: TypeORM reads the parsed config while Better Auth's pool reads
+ * `process.env` directly, so a trim here would let one connect and the other
+ * fail with no visible cause.
  */
-export const orUndefined = (value: string | undefined): string | undefined => {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : undefined;
-};
+export const orUndefined = (value: string | undefined): string | undefined =>
+  value?.trim() ? value : undefined;
 
 /**
  * Reads a config section from the environment and validates it, failing with a
