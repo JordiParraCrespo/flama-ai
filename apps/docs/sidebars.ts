@@ -6,7 +6,11 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Getting Started',
-      items: ['getting-started/installation', 'getting-started/project-structure'],
+      items: [
+        'getting-started/installation',
+        'getting-started/project-structure',
+        'getting-started/google-sign-in',
+      ],
     },
     {
       type: 'category',
