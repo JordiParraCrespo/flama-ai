@@ -1,12 +1,23 @@
 import { ApiProblemResponse } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
-import { Body, Controller, Param, ParseUUIDPipe, Put, UseGuards, Version } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  ParseUUIDPipe,
+  Put,
+  Req,
+  UseGuards,
+  Version,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
+import type { ScopedRequest } from '../../../auth/scope-context';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
 import { FindRoleByIdQuery } from '../../queries/find-role-by-id/find-role-by-id.query';
@@ -35,11 +46,16 @@ export class UpdateRolePermissionsHttpController {
   async updatePermissions(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateRolePermissionsRequest,
+    @CurrentUser() actor: { id: string; role?: string },
+    @Req() request: ScopedRequest,
   ): Promise<RoleResponseDto> {
     const roleId = await this.commandBus.execute<UpdateRolePermissionsCommand, AggregateID>(
       new UpdateRolePermissionsCommand({
         roleId: id,
         permissions: body.permissions,
+        actorId: actor.id,
+        actorRole: actor.role,
+        activeOrganizationId: activeOrganizationIdOf(request),
       }),
     );
     const role = await this.queryBus.execute<FindRoleByIdQuery, RoleEntity>(
@@ -47,4 +63,12 @@ export class UpdateRolePermissionsHttpController {
     );
     return this.mapper.toResponse(role);
   }
+}
+
+/** The organization the caller is acting in, from their session. */
+function activeOrganizationIdOf(request: ScopedRequest): string | null {
+  const session = request.session as {
+    activeOrganizationId?: string | null;
+  } | null;
+  return session?.activeOrganizationId ?? null;
 }

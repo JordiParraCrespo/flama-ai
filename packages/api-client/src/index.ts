@@ -11,6 +11,10 @@ export type { AdminUserListResponseDto } from './common/models/AdminUserListResp
 export type { AdminUserResponseDto } from './common/models/AdminUserResponseDto';
 export type { ApiTokenResponseDto } from './common/models/ApiTokenResponseDto';
 export type { AssignUserRolesRequest } from './common/models/AssignUserRolesRequest';
+export type { AuthzCatalogResponseDto } from './common/models/AuthzCatalogResponseDto';
+export type { AuthzResourceDto } from './common/models/AuthzResourceDto';
+export type { AuthzResourceGroupDto } from './common/models/AuthzResourceGroupDto';
+export type { AuthzRuleDto } from './common/models/AuthzRuleDto';
 export type { BanUserRequest } from './common/models/BanUserRequest';
 export type { BillingSessionResponseDto } from './common/models/BillingSessionResponseDto';
 export type { CapabilitiesResponseDto } from './common/models/CapabilitiesResponseDto';
@@ -28,6 +32,7 @@ export type { FullOrganizationResponseDto } from './common/models/FullOrganizati
 export type { InvalidParamDto } from './common/models/InvalidParamDto';
 export type { InvitationResponseDto } from './common/models/InvitationResponseDto';
 export type { InviteMemberRequest } from './common/models/InviteMemberRequest';
+export type { LeadResponseDto } from './common/models/LeadResponseDto';
 export type { MemberResponseDto } from './common/models/MemberResponseDto';
 export type { OrganizationResponseDto } from './common/models/OrganizationResponseDto';
 export type { PaginatedUsersResponseDto } from './common/models/PaginatedUsersResponseDto';
@@ -35,6 +40,7 @@ export type { PaginationMetaDto } from './common/models/PaginationMetaDto';
 export type { PermissionCatalogResponseDto } from './common/models/PermissionCatalogResponseDto';
 export type { PermissionGroupDto } from './common/models/PermissionGroupDto';
 export type { ProblemDetailsDto } from './common/models/ProblemDetailsDto';
+export type { ResourceActionDto } from './common/models/ResourceActionDto';
 export type { RevenueMetricsResponseDto } from './common/models/RevenueMetricsResponseDto';
 export type { RoleResponseDto } from './common/models/RoleResponseDto';
 export type { ScopeLevelDto } from './common/models/ScopeLevelDto';
@@ -61,9 +67,11 @@ export { OpenAPI } from './data-access/api/openapi/core/OpenAPI';
 // Services
 export { AdminApi } from './data-access/api/openapi/services/AdminApi';
 export { ApiTokensApi } from './data-access/api/openapi/services/ApiTokensApi';
+export { AuthorizationApi } from './data-access/api/openapi/services/AuthorizationApi';
 export { BillingApi } from './data-access/api/openapi/services/BillingApi';
 export { HealthApi } from './data-access/api/openapi/services/HealthApi';
 export { InvitationsApi } from './data-access/api/openapi/services/InvitationsApi';
+export { LeadsApi } from './data-access/api/openapi/services/LeadsApi';
 export { OrganizationInvitationsApi } from './data-access/api/openapi/services/OrganizationInvitationsApi';
 export { OrganizationMembersApi } from './data-access/api/openapi/services/OrganizationMembersApi';
 export { OrganizationsApi } from './data-access/api/openapi/services/OrganizationsApi';

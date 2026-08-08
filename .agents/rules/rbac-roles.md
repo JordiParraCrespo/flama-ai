@@ -6,6 +6,26 @@ paths:
 
 # Roles & Authorization (RBAC) Rules
 
+> **The kernel.** Row-level authorization lives in `@flama/backend-authz`
+> (`packages/backend/authz`) — the resource registry, `AccessScope`, the SQL
+> predicate generator, the scoped repository base and the containment checks.
+> Read its README before adding a resource; the two-step recipe there
+> (`defineResource` + `ScopedRepositoryBase`) is the whole interface, and
+> `apps/api/src/leads/` is the worked example.
+>
+> Three rules that are easy to break and hard to notice:
+>
+> - **Every route declares its intent.** `@CheckPolicies` for a capability, or
+>   `@NoPolicy('reason')` for a deliberate exemption. `PoliciesGuard` rejects a
+>   route that declares neither, and `route-policy-coverage.spec.ts` fails the
+>   build.
+> - **Never cache structural scope.** Team membership is written by Better Auth
+>   outside any application transaction, so nothing invalidates it. Role *rules*
+>   are cached on `organization.roleVersion`, bumped in the same transaction as
+>   the write.
+> - **Nobody grants what they do not hold.** `RoleGrantPolicy` enforces it on
+>   role writes; `canGrantScope` on access grants.
+
 Authorization is **database-backed and admin-managed** (dynamic RBAC). Roles and
 their permissions live in the `role` table (not in code); a user's effective
 permissions are the **union of every role assigned to them** via the `user_role`

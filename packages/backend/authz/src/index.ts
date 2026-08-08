@@ -40,3 +40,9 @@ export {
   SCOPE_RESOLVER,
   type ScopeResolverPort,
 } from './scope/scope-resolver.port';
+export { ScopedRepositoryBase } from './scope/scoped-repository.base';
+export {
+  AbilityAssertions,
+  type ExpectAbilityContext,
+  expectAbility,
+} from './testing/expect-ability';

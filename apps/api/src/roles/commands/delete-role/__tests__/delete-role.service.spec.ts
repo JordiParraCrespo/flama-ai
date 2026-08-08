@@ -9,7 +9,13 @@ import { DeleteRoleService } from '../delete-role.service';
 function makeRole(isSystem: boolean): RoleEntity {
   return RoleEntity.create({
     id: 'role-1',
-    props: { name: 'editor', description: null, isSystem, permissions: [] },
+    props: {
+      name: 'editor',
+      description: null,
+      isSystem,
+      organizationId: null,
+      permissions: [],
+    },
   });
 }
 

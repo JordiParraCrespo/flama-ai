@@ -12,8 +12,17 @@ export class RoleOrmEntity {
   @PrimaryColumn({ type: 'uuid' })
   id!: string;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar' })
   name!: string;
+
+  /**
+   * Owning organization, or `null` for a global/system role template.
+   * Uniqueness is per tenant plus a separate uniqueness among globals; both
+   * are partial indexes declared in the migration, because Postgres treats
+   * NULLs as distinct and a single unique constraint cannot express it.
+   */
+  @Column({ type: 'uuid', nullable: true })
+  organizationId!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   description!: string | null;

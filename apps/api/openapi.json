@@ -219,6 +219,32 @@
         "tags": ["Users"]
       }
     },
+    "/api/v1/authz/catalog": {
+      "get": {
+        "description": "Drives the role builder. Resources are contributed by the modules that own them, so a new module appears here without editing a central catalog.",
+        "operationId": "catalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthzCatalogResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List every declared resource and what the caller may grant",
+        "tags": ["Authorization"]
+      }
+    },
     "/api/v1/me/credential": {
       "get": {
         "description": "Returns the credential kind, its granted scopes and what those scopes actually amount to once the owner’s roles are applied. The MCP server filters its tool list by `effectiveScopes`.",
@@ -1796,6 +1822,78 @@
         "tags": ["Workspaces"]
       }
     },
+    "/api/v1/leads": {
+      "get": {
+        "operationId": "list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeadResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the leads the caller can reach",
+        "tags": ["Leads"]
+      }
+    },
+    "/api/v1/leads/{id}": {
+      "get": {
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LEAD_001 — Lead not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one lead",
+        "tags": ["Leads"]
+      }
+    },
     "/api/v1/admin/users": {
       "get": {
         "operationId": "listUsers",
@@ -3049,6 +3147,119 @@
           }
         }
       },
+      "ResourceActionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "read"
+          },
+          "label": {
+            "type": "string",
+            "example": "View leads"
+          },
+          "sensitive": {
+            "type": "boolean",
+            "description": "Flagged in the role builder. Not treated differently at request time.",
+            "example": false
+          }
+        },
+        "required": ["name"]
+      },
+      "AuthzResourceDto": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "example": "Lead"
+          },
+          "label": {
+            "type": "string",
+            "example": "Leads"
+          },
+          "group": {
+            "type": "string",
+            "example": "crm"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceActionDto"
+            }
+          },
+          "fields": {
+            "description": "Attributes that may be granted or denied individually.",
+            "example": ["value", "notes"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scopes": {
+            "description": "Scope dimensions this resource can be narrowed by.",
+            "example": ["organization", "team"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "credentialScope": {
+            "type": "string",
+            "description": "Credential-scope group, when the resource is reachable by API tokens.",
+            "example": "leads"
+          }
+        },
+        "required": ["subject", "label", "group", "actions", "scopes"]
+      },
+      "AuthzResourceGroupDto": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "string",
+            "example": "crm"
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthzResourceDto"
+            }
+          }
+        },
+        "required": ["group", "resources"]
+      },
+      "AuthzRuleDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "example": "read"
+          },
+          "subject": {
+            "type": "string",
+            "example": "Lead"
+          }
+        },
+        "required": ["action", "subject"]
+      },
+      "AuthzCatalogResponseDto": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthzResourceGroupDto"
+            }
+          },
+          "grantable": {
+            "description": "Rules the caller may put on a role. Anything outside this list is rejected, so the role builder can disable it up front.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthzRuleDto"
+            }
+          }
+        },
+        "required": ["groups", "grantable"]
+      },
       "CurrentCredentialResponseDto": {
         "type": "object",
         "properties": {
@@ -3089,7 +3300,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -3118,7 +3331,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -3186,7 +3401,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -3278,7 +3495,9 @@
               "tokens:read",
               "tokens:write",
               "billing:read",
-              "billing:write"
+              "billing:write",
+              "leads:read",
+              "leads:write"
             ],
             "example": "users:read"
           },
@@ -3327,7 +3546,8 @@
               "invitations",
               "workspaces",
               "tokens",
-              "billing"
+              "billing",
+              "leads"
             ],
             "example": "users"
           },
@@ -3385,7 +3605,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           }
@@ -3425,7 +3647,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -3497,7 +3721,9 @@
                 "tokens:read",
                 "tokens:write",
                 "billing:read",
-                "billing:write"
+                "billing:write",
+                "leads:read",
+                "leads:write"
               ]
             }
           },
@@ -3623,6 +3849,11 @@
           "isSystem": {
             "type": "boolean",
             "description": "System roles cannot be deleted or renamed."
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization, or null for a global role template shared by every tenant.",
+            "nullable": true
           },
           "permissions": {
             "type": "array",
@@ -4095,6 +4326,55 @@
           }
         },
         "required": ["userId"]
+      },
+      "LeadResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "Acme Corp"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "number",
+            "description": "Deal value in minor units.",
+            "example": 250000
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "organizationId", "name", "value", "createdAt", "updatedAt"]
       },
       "AdminUserResponseDto": {
         "type": "object",

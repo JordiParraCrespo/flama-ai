@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RoleRepositoryPort } from '../../../database/role.repository.port';
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
+import type { RoleGrantPolicy } from '../../../services/role-grant.policy';
 import { CreateRoleCommand } from '../create-role.command';
 import { CreateRoleService } from '../create-role.service';
 
@@ -15,7 +16,10 @@ describe('CreateRoleService', () => {
       findOneByName: vi.fn().mockResolvedValue(None),
       insert: vi.fn().mockResolvedValue(undefined),
     };
-    service = new CreateRoleService(repo as RoleRepositoryPort);
+    service = new CreateRoleService(
+      repo as RoleRepositoryPort,
+      { assertGrantable: vi.fn().mockResolvedValue(undefined) } as unknown as RoleGrantPolicy,
+    );
   });
 
   it('creates a non-system role with its permissions', async () => {
@@ -43,6 +47,7 @@ describe('CreateRoleService', () => {
             name: 'editor',
             description: null,
             isSystem: false,
+            organizationId: null,
             permissions: [],
           },
         }),

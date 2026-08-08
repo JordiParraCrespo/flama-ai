@@ -9,6 +9,10 @@ export type { AdminUserListResponseDto } from "./models/AdminUserListResponseDto
 export type { AdminUserResponseDto } from "./models/AdminUserResponseDto";
 export type { ApiTokenResponseDto } from "./models/ApiTokenResponseDto";
 export type { AssignUserRolesRequest } from "./models/AssignUserRolesRequest";
+export type { AuthzCatalogResponseDto } from "./models/AuthzCatalogResponseDto";
+export type { AuthzResourceDto } from "./models/AuthzResourceDto";
+export type { AuthzResourceGroupDto } from "./models/AuthzResourceGroupDto";
+export type { AuthzRuleDto } from "./models/AuthzRuleDto";
 export type { BanUserRequest } from "./models/BanUserRequest";
 export type { BillingSessionResponseDto } from "./models/BillingSessionResponseDto";
 export type { CapabilitiesResponseDto } from "./models/CapabilitiesResponseDto";
@@ -26,6 +30,7 @@ export type { FullOrganizationResponseDto } from "./models/FullOrganizationRespo
 export type { InvalidParamDto } from "./models/InvalidParamDto";
 export type { InvitationResponseDto } from "./models/InvitationResponseDto";
 export type { InviteMemberRequest } from "./models/InviteMemberRequest";
+export type { LeadResponseDto } from "./models/LeadResponseDto";
 export type { MemberResponseDto } from "./models/MemberResponseDto";
 export type { OrganizationResponseDto } from "./models/OrganizationResponseDto";
 export type { PaginatedUsersResponseDto } from "./models/PaginatedUsersResponseDto";
@@ -33,6 +38,7 @@ export type { PaginationMetaDto } from "./models/PaginationMetaDto";
 export type { PermissionCatalogResponseDto } from "./models/PermissionCatalogResponseDto";
 export type { PermissionGroupDto } from "./models/PermissionGroupDto";
 export type { ProblemDetailsDto } from "./models/ProblemDetailsDto";
+export type { ResourceActionDto } from "./models/ResourceActionDto";
 export type { RevenueMetricsResponseDto } from "./models/RevenueMetricsResponseDto";
 export type { RoleResponseDto } from "./models/RoleResponseDto";
 export type { ScopeLevelDto } from "./models/ScopeLevelDto";

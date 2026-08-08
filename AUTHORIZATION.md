@@ -1,11 +1,28 @@
-# Flama — Authorization Kernel: Implementation Handoff
+# Flama — Authorization Kernel
 
-> **Status:** design + build spec. Nothing in Part 3 onward exists yet; Part 2 is
-> an audit of what is already in the repo today.
+> **Status:** the kernel is built. Phases 0–2 and the grant-safety half of
+> Phase 3 are implemented, tested and on `main`'s branch; the audit log and the
+> web/CLI/MCP surfaces are not. Part 5 marks what is done and what is left.
 >
-> **Audience:** whoever picks this up next. It is written to be executed
-> top-to-bottom without needing the conversation that produced it. Every file
-> path is real, every code sample follows the conventions in `.agents/rules/`.
+> The build recipe lives in
+> [`packages/backend/authz/README.md`](packages/backend/authz/README.md) —
+> read that to add a resource. This document is the design and the plan behind
+> it.
+
+## What shipped
+
+| Piece | Where |
+| --- | --- |
+| Resource registry (`defineResource`, `ResourceRegistry`) | `packages/backend/authz/src/registry/` |
+| `AccessScope`, `ScopeResolverPort`, the default resolver | `packages/backend/authz/src/scope/`, `apps/api/src/authz/services/scope.resolver.ts` |
+| SQL predicate generation + `ScopedRepositoryBase` | `packages/backend/authz/src/scope/` |
+| `${scope.*}` placeholders, deny precedence | `packages/shared/src/permissions/index.ts` |
+| Fail-closed `PoliciesGuard`, `@NoPolicy`, coverage test | `apps/api/src/auth/guards/`, `apps/api/src/__tests__/` |
+| Org-scoped roles + `X-Active-Organization` validation | `apps/api/src/migrations/1781400000000-AddOrgScopedRoles.ts`, `apps/api/src/authz/services/` |
+| Generic `access_grant` table | `apps/api/src/migrations/1781500000000-AddAccessGrants.ts` |
+| `canGrant` / `canGrantScope` containment | `packages/backend/authz/src/grants/`, `apps/api/src/roles/services/role-grant.policy.ts` |
+| `GET /v1/authz/catalog` | `apps/api/src/authz/queries/find-catalog/` |
+| `leads` reference module | `apps/api/src/leads/` |
 
 ---
 

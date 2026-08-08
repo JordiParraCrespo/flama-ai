@@ -81,7 +81,7 @@ export class AbilityFactory {
   }
 
   async createForUser(user: AuthenticatedUser, scope: AbilityScope = {}): Promise<AppAbility> {
-    const permissions = await this.resolvePermissions(user);
+    const permissions = await this.resolvePermissions(user, scope.activeOrganizationId ?? null);
     // Pass the principal and active-org scope so resource-scoping conditions
     // (e.g. `${user.id}`, `${activeOrganizationId}`) can be interpolated when
     // the ability is built.
@@ -92,12 +92,18 @@ export class AbilityFactory {
     });
   }
 
-  private async resolvePermissions(user: AuthenticatedUser): Promise<PermissionDefinition[]> {
+  private async resolvePermissions(
+    user: AuthenticatedUser,
+    activeOrganizationId: string | null,
+  ): Promise<PermissionDefinition[]> {
     const permissions: PermissionDefinition[] = [];
 
-    // 1. Roles assigned through the `user_role` join (dynamic RBAC).
+    // 1. Roles assigned through the `user_role` join (dynamic RBAC), narrowed
+    //    to the active organization. The repository unions the caller's global
+    //    assignments with the ones scoped to that organization, so a role
+    //    granted in one tenant has no effect in another.
     if (user.id) {
-      const roles = await this.userRoleRepository.findRolesForUser(user.id);
+      const roles = await this.userRoleRepository.findRolesForUser(user.id, activeOrganizationId);
       for (const role of roles) {
         permissions.push(...role.permissions.map((permission) => permission.toDefinition()));
       }

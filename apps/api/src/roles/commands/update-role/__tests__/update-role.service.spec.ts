@@ -4,6 +4,7 @@ import type { RoleRepositoryPort } from '../../../database/role.repository.port'
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
 import { Permission } from '../../../domain/value-objects/permission.value-object';
+import type { RoleGrantPolicy } from '../../../services/role-grant.policy';
 import { UpdateRoleCommand } from '../update-role.command';
 import { UpdateRoleService } from '../update-role.service';
 
@@ -22,6 +23,7 @@ function makeRole({
       name: 'admin',
       description: 'Full access',
       isSystem,
+      organizationId: null,
       permissions,
     },
   });
@@ -36,7 +38,10 @@ describe('UpdateRoleService', () => {
       findOneById: vi.fn().mockResolvedValue(Some(makeRole())),
       save: vi.fn().mockResolvedValue(undefined),
     };
-    service = new UpdateRoleService(repo as RoleRepositoryPort);
+    service = new UpdateRoleService(
+      repo as RoleRepositoryPort,
+      { assertGrantable: vi.fn().mockResolvedValue(undefined) } as unknown as RoleGrantPolicy,
+    );
   });
 
   it('updates the description and persists the role', async () => {

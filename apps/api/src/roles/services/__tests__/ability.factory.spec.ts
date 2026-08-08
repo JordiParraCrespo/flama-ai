@@ -9,7 +9,13 @@ import { AbilityFactory } from '../ability.factory';
 function makeRole(name: string, permissions: Permission[], isSystem = false): RoleEntity {
   return RoleEntity.create({
     id: `role-${name}`,
-    props: { name, description: null, isSystem, permissions },
+    props: {
+      name,
+      description: null,
+      isSystem,
+      organizationId: null,
+      permissions,
+    },
   });
 }
 

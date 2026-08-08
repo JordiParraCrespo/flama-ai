@@ -4,6 +4,7 @@ import type { RoleRepositoryPort } from '../../../database/role.repository.port'
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
 import { Permission } from '../../../domain/value-objects/permission.value-object';
+import type { RoleGrantPolicy } from '../../../services/role-grant.policy';
 import { UpdateRolePermissionsCommand } from '../update-role-permissions.command';
 import { UpdateRolePermissionsService } from '../update-role-permissions.service';
 
@@ -22,6 +23,7 @@ function makeRole({
       name: 'admin',
       description: null,
       isSystem,
+      organizationId: null,
       permissions,
     },
   });
@@ -36,7 +38,10 @@ describe('UpdateRolePermissionsService', () => {
       findOneById: vi.fn().mockResolvedValue(Some(makeRole())),
       save: vi.fn().mockResolvedValue(undefined),
     };
-    service = new UpdateRolePermissionsService(repo as RoleRepositoryPort);
+    service = new UpdateRolePermissionsService(
+      repo as RoleRepositoryPort,
+      { assertGrantable: vi.fn().mockResolvedValue(undefined) } as unknown as RoleGrantPolicy,
+    );
   });
 
   it('replaces the permission set on a custom role and returns its id', async () => {

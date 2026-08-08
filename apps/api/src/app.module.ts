@@ -35,6 +35,7 @@ import {
 } from './config';
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
 import { HealthModule } from './health/health.module';
+import { LeadsModule } from './leads/leads.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { OutboxModule } from './outbox/outbox.module';
 import { QueueModule } from './queue/queue.module';
@@ -147,6 +148,7 @@ import { UsersModule } from './users/user.module';
     UsersModule,
     RolesModule,
     OrganizationsModule,
+    LeadsModule,
     AdminModule,
     HealthModule,
     QueueModule,

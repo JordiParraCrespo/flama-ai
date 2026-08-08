@@ -7,6 +7,7 @@ import { RoleEntity } from '../../domain/role.entity';
 import { RoleErrors } from '../../domain/role.errors';
 import { Permission } from '../../domain/value-objects/permission.value-object';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
+import { RoleGrantPolicy } from '../../services/role-grant.policy';
 import { CreateRoleCommand } from './create-role.command';
 
 /** Creates a new custom role with its initial permission set. */
@@ -15,15 +16,32 @@ export class CreateRoleService implements ICommandHandler<CreateRoleCommand, Agg
   constructor(
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepositoryPort,
+    private readonly grantPolicy: RoleGrantPolicy,
   ) {}
 
   async execute(command: CreateRoleCommand): Promise<AggregateID> {
+    // No privilege escalation: the author must already hold everything they
+    // are putting on the role.
+    await this.grantPolicy.assertGrantable(
+      command.actorId
+        ? {
+            id: command.actorId,
+            role: command.actorRole,
+            activeOrganizationId: command.activeOrganizationId,
+          }
+        : undefined,
+      command.permissions,
+    );
+
     const existing = await this.roleRepository.findOneByName(command.name);
     if (existing.isSome()) throw new AppError(RoleErrors.NAME_TAKEN);
 
     const role = RoleEntity.createNew({
       name: command.name,
       description: command.description,
+      // A role created inside an organization belongs to it. Global roles are
+      // seeded, not created through the API.
+      organizationId: command.activeOrganizationId ?? null,
       permissions: command.permissions.map((permission) => Permission.fromDefinition(permission)),
     });
 

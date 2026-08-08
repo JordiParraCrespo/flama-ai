@@ -7,6 +7,7 @@ import { RoleEntity } from '../../domain/role.entity';
 import { RoleErrors } from '../../domain/role.errors';
 import { Permission } from '../../domain/value-objects/permission.value-object';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
+import { RoleGrantPolicy } from '../../services/role-grant.policy';
 import { UpdateRoleCommand } from './update-role.command';
 
 /** Updates a role's description and/or its full permission set. */
@@ -15,9 +16,25 @@ export class UpdateRoleService implements ICommandHandler<UpdateRoleCommand, Agg
   constructor(
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepositoryPort,
+    private readonly grantPolicy: RoleGrantPolicy,
   ) {}
 
   async execute(command: UpdateRoleCommand): Promise<AggregateID> {
+    if (command.permissions !== undefined) {
+      // No privilege escalation: the author must already hold everything they
+      // are putting on the role.
+      await this.grantPolicy.assertGrantable(
+        command.actorId
+          ? {
+              id: command.actorId,
+              role: command.actorRole,
+              activeOrganizationId: command.activeOrganizationId,
+            }
+          : undefined,
+        command.permissions,
+      );
+    }
+
     const found = await this.roleRepository.findOneById(command.roleId);
     if (found.isNone()) throw new AppError(RoleErrors.NOT_FOUND);
 
