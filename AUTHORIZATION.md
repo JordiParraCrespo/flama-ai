@@ -1,425 +1,781 @@
-# Flama — Authorization Model & Plan
+# Flama — Authorization Kernel: Implementation Handoff
 
-> **Status:** design proposal. Nothing here is built yet beyond what the
-> "Where Flama is today" section credits. This document rates the source model
-> it is adapted from, then specifies the reusable engine and a phased plan.
-
-Flama is a boilerplate. Whatever authorization it ships has to be **generic** —
-the next project on top of it might be a CRM with leads, a WMS with warehouses,
-or a support desk with queues. So the goal is not "add leads permissions"; it is
-an **authorization kernel** that a new module plugs into by declaring metadata,
-and gets tenant isolation, team scoping, row filtering, a role-builder UI entry,
-an API-token scope, and a policy test harness for free.
+> **Status:** design + build spec. Nothing in Part 3 onward exists yet; Part 2 is
+> an audit of what is already in the repo today.
+>
+> **Audience:** whoever picks this up next. It is written to be executed
+> top-to-bottom without needing the conversation that produced it. Every file
+> path is real, every code sample follows the conventions in `.agents/rules/`.
 
 ---
 
-## Part 1 — Rating the source model
+## Part 1 — What we are building, and why
 
-The input (`AUTHORIZATION.md` from the Kalista project) is a good product
-document and a weak framework spec. Scored as each:
+Flama is a boilerplate. The next product built on it might be a CRM with leads,
+a WMS with warehouses, a support desk with queues, or a billing console with
+invoices. Authorization is the part of a boilerplate that is most expensive to
+retrofit and most damaging to get wrong, so it has to be **generic on the way
+in**.
 
-| As…                                           | Score      | Why                                                                                                  |
-| --------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
-| A product authorization design for one app    | **8 / 10** | Right decomposition, right call on the engine, honest about privacy/audit                            |
-| A reusable, multi-module authorization kernel | **4 / 10** | The scoping dimension is hardcoded to one domain; no registry, no escalation control, no cache story |
+The goal is an **authorization kernel**: a module declares one metadata object
+about its resource and gets, without writing authorization code —
 
-### What it gets right — keep all of this
+- tenant isolation (its rows cannot leak across organizations),
+- team scoping (a team sees only its own rows),
+- row-level SQL filtering that cannot be forgotten,
+- an entry in the role-builder UI,
+- an API-token / MCP scope,
+- and a policy test harness.
 
-1. **The four-question decomposition (Q0–Q3) is the correct mental model.** It is
-   the same split every serious system converges on: principal tier → tenant →
-   resource set → capability. Naming them and asserting orthogonality is the
-   single most valuable thing in the document.
-2. **Demoting `member.role` from feature access to org administration.** This is
-   the mistake most teams ship and never recover from — a three-tier enum
-   metastasizing into `if (role === 'admin' || role === 'manager')` across the
-   codebase. Confining it to "may you administer the org?" is right.
-3. **The three-way `user.role` / `member.role` / `user_role` naming
-   reconciliation.** A genuine trap, well caught. Better Auth's admin plugin
-   claims `user.role` for the _platform_ tier; the legacy RBAC reading of the
-   same column means something else entirely. Documenting this prevents a real
-   incident.
-4. **"The engine already supports this; the work is catalog + scoping."** True,
-   and it keeps the change additive.
-5. **Non-negotiable audit + deliberate (not ambient) cross-tenant access.** The
-   right posture for the platform tier, and cheap to keep possible if you funnel
-   all cross-tenant reads through the scoping layer from day one.
-6. **Presets as editable seed rows, not hardcoded roles.** Correct.
+### The motivating scenario
 
-### What I would change — the six substantive gaps
+A `leads` module. Leads belong to an organization and to a team within it. The
+requirements, in increasing difficulty:
 
-**1. Q2 is hardcoded to one domain. This is the big one.**
+1. Org A never sees org B's leads. _(tenant isolation)_
+2. The Madrid team sees only Madrid's leads; the Barcelona team sees only
+   Barcelona's. _(team scoping)_
+3. A named auditor is granted read access to three specific leads outside their
+   team, expiring in 30 days. _(explicit, time-boxed grants)_
+4. A junior rep can read a lead but not its `value` field. _(field-level)_
+5. A rep can edit only leads they own. _(own-resource)_
+6. None of the above requires a code change to grant — an admin composes it in
+   the UI. _(dynamic RBAC)_
 
-`creator_assignment(organization_id, user_id, account_id)` solves exactly one
-scoping axis. The second time you need it — leads by team, tickets by queue,
-inventory by warehouse — you copy the table and the resolver, and now you have
-two half-tested scoping systems. Q2 must be a **polymorphic grant plus a
-resolver interface**, not a table named after a domain noun.
+Every one of these must hold on **every** access path: REST, the generated API
+client, an API token, an MCP tool, and the CLI. "The list endpoint filters
+correctly but the detail endpoint doesn't" is the failure mode this design
+exists to make structurally impossible.
 
-**2. "Q2 is a query filter, not a CASL condition" is half right, and the wrong
-half is the dangerous one.**
-
-The doc is correct that set-membership over ids is awkward as a CASL condition.
-But making it _only_ a query filter means enforcement lives in every query the
-team ever writes. That is opt-in security: one forgotten `WHERE` is a
-cross-team data leak, and nothing fails loudly. It also makes `ability.can()`
-lie — the UI thinks the user can read a lead they cannot actually fetch.
-
-The fix is not to pick one. It is to declare the scope **once** and derive
-both: a CASL condition (so `can()` is truthful) and a SQL predicate applied by
-a scoped repository base (so forgetting is impossible, and a scoped repository
-queried without a scope throws in dev).
-
-**3. No permission-catalog registry.**
-
-The doc puts a fat `KNOWN_SUBJECTS` / `KNOWN_ACTIONS` literal in the shared
-package. That does not scale across modules: every new feature edits one central
-file, module boundaries leak into shared, and in Flama's case it also grows the
-web bundle (the root CLAUDE.md already bans runtime imports from the
-`@flama/shared` root for exactly this reason). The catalog should be
-**contributed by modules at boot** and served over HTTP.
-
-**4. Nothing about who may grant what.**
-
-An org admin handed a role-builder can mint themselves `manage all`. Every
-enterprise system needs the "no privilege escalation" invariant. Flama already
-solves the analogous problem for credentials (`grantableScopes` — a token can
-never exceed its creator); roles need the identical rule and the doc does not
-mention it.
-
-**5. No caching or invalidation story.**
-
-Resolving an ability is already two DB round-trips per request. Add org-scoped
-roles and assignment resolution and it is four, on every request, forever. Needs
-a per-request memo plus a version-keyed cache invalidated on role writes.
-
-**6. No hierarchy seam.**
-
-Flat assignment cannot express "a manager sees their reports' leads" or
-"region → territory → team". You do not have to build it, but you should leave
-the seam — a scope resolver that returns a _set_ of team ids can be swapped for
-one that walks a tree without touching a single call site.
-
-### Smaller notes
-
-- **Deny precedence is unspecified.** CASL is last-rule-wins. Union several roles
-  and an `inverted` deny in role A can be silently overridden by role B depending
-  on iteration order. Sort denies last, and pin it with a test.
-- **The open question on "creator scope inside a role"** — the doc recommends
-  keeping it separate. I would say: expressible in a role _condition_, but
-  **populated from the assignment table**, never hand-authored. One source of
-  truth, and `can()` stays truthful (see gap 2).
-- **Field-level depth for MVP** — agree with the doc: start at subject+action,
-  add `fields` where a real need exists. The engine already supports it.
-- **Adopting the Better Auth `admin` plugin for the platform tier** — for Flama
-  this is already done; see below.
+`leads` is the reference module we build in Phase 4 to prove the kernel. It is
+not a product feature; it is the executable specification.
 
 ---
 
-## Part 2 — Where Flama is today
+## Part 2 — Current state audit
 
-Credit where due: a good half of Q1 and Q3 already exists.
+### What already exists and is good
 
-| Piece                                                                                 | State                      | Location                                                     |
-| ------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------ |
-| CASL rule shape (`action`/`subject`/`conditions`/`fields`/`inverted`)                 | **Done**                   | `packages/shared/src/permissions/index.ts`                   |
-| `${...}` placeholder interpolation (`user.*`, `activeOrganizationId`, `activeTeamId`) | **Done**                   | same                                                         |
-| DB-backed roles + `user_role` join, admin-managed CRUD                                | **Done**                   | `apps/api/src/roles/`                                        |
-| `PoliciesGuard` + `@CheckPolicies`, ability on `request.ability`                      | **Done**                   | `apps/api/src/auth/guards/policies.guard.ts`                 |
-| Credential scopes (`@RequireScopes`, catalog, `grantableScopes`)                      | **Done, and fails closed** | `packages/shared/src/scopes/`, `auth/guards/scopes.guard.ts` |
-| Platform tier (Better Auth `admin` plugin, `superadmin`, impersonation)               | **Done**                   | `apps/api/src/auth/auth.ts`, `apps/api/src/admin/`           |
-| Orgs, members, teams(=workspaces), `session.activeOrganizationId` / `activeTeamId`    | **Done**                   | `apps/api/src/organizations/`                                |
-| Admin-lockout protection on `manage all`                                              | **Done**                   | `RoleEntity.grantsFullAccess`                                |
+| Piece                                                                                             | Location                                                                      |
+| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| CASL rule shape (`action` / `subject` / `conditions` / `fields` / `inverted`)                     | `packages/shared/src/permissions/index.ts`                                    |
+| `${...}` placeholder interpolation (`user.*`, `activeOrganizationId`, `activeTeamId`)             | same file, `interpolateConditions`                                            |
+| DB-backed roles + `user_role` join, full admin CRUD, CQRS slices                                  | `apps/api/src/roles/`                                                         |
+| `RoleEntity` aggregate with `Permission` value objects, `grantsFullAccess` lockout guard          | `apps/api/src/roles/domain/`                                                  |
+| `PoliciesGuard` + `@CheckPolicies`, ability attached to `request.ability`                         | `apps/api/src/auth/guards/policies.guard.ts`                                  |
+| Credential scopes: catalog, `@RequireScopes`, `ScopesGuard` (**fails closed**), `grantableScopes` | `packages/shared/src/scopes/`, `apps/api/src/auth/guards/scopes.guard.ts`     |
+| Organization-restricted credentials (`ResourceScope`, `@OrganizationScoped`)                      | `packages/shared/src/scopes/resource-scope.ts`                                |
+| Platform tier: Better Auth `admin` plugin, `superadmin` role, impersonation                       | `apps/api/src/auth/auth.ts`, `apps/api/src/admin/`                            |
+| Orgs, members, teams (= workspaces), `session.activeOrganizationId` / `activeTeamId`              | `apps/api/src/organizations/`, `apps/api/src/auth/entities/session.entity.ts` |
+| Transactional outbox for domain events                                                            | `packages/backend/ddd/src/outbox/`                                            |
+| Permission picker UI + `GET /v1/tokens/permissions` serving `{ groups, grantable }`               | `apps/web/src/components/permission-picker.tsx`                               |
 
-### And the gaps, precisely
+The CASL engine needs no replacement. What is missing is everything **around**
+it: scoping, a registry, enforcement below the route, and governance.
 
-| Gap                                                   | Detail                                                                                                                                                                                                                                  |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Roles are global, not org-scoped**                  | `role.name` is `unique` across the whole table and `user_role` has no `organizationId`. Two tenants cannot both have a "manager" role, and a role granted in org A applies in org B. **This is the blocking defect for multi-tenancy.** |
-| **`PoliciesGuard` fails open**                        | `if (!rules) return true` — a route with no `@CheckPolicies` is reachable by any authenticated session. `ScopesGuard` fails closed; the two layers disagree, and the safe-by-default one is not the policy layer.                       |
-| **No row-level enforcement**                          | `conditions` are interpolated and attached to the ability, but nothing applies them to a query. Every handler must remember `ability.can('read', subject('Lead', row))` by hand.                                                        |
-| **No scope dimension beyond org/team-on-the-session** | There is no way to say "this user, these specific leads".                                                                                                                                                                               |
-| **`KNOWN_SUBJECTS` is a hardcoded 11-entry literal**  | Adding a module means editing shared.                                                                                                                                                                                                   |
-| **Two disconnected catalogs**                         | `SCOPE_RESOURCES` (credential scopes) and `KNOWN_SUBJECTS` (CASL subjects) are maintained by hand, side by side, and must be kept consistent or a new endpoint is invisible to API tokens.                                              |
-| **No grant-safety on roles**                          | `grantableScopes` protects token minting; nothing stops a user with `update Role` from writing `manage all` onto a role and assigning it to themselves.                                                                                 |
-| **Ability rebuilt per request, uncached**             | Two queries minimum, four callers of `AbilityFactory` in the request path.                                                                                                                                                              |
+### Gaps, precisely
+
+| #   | Gap                                                                                                                                                                                                                                                             | Evidence                                                       | Severity                       |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------ |
+| G1  | **Roles are global.** `role.name` is `UNIQUE` across the whole table; `user_role` has no `organizationId`. Two tenants cannot both have a `manager` role, and a role granted in org A applies in org B.                                                         | `1780900000000-AddRolesRbac.ts`, `user-role.orm-entity.ts`     | **Blocking for multi-tenancy** |
+| G2  | **`PoliciesGuard` fails open.** `if (!rules \|\| rules.length === 0) return true` — a route with no `@CheckPolicies` is reachable by any authenticated session. `ScopesGuard` fails closed; the two layers disagree and the permissive one is the policy layer. | `policies.guard.ts:31`                                         | **High**                       |
+| G3  | **No row-level enforcement.** `conditions` are interpolated onto the ability but nothing applies them to a query. Every handler must remember `ability.can('read', subject('Lead', row))` by hand.                                                              | no `applyAccessScope` equivalent exists                        | **High**                       |
+| G4  | **No scope dimension below the organization.** `activeTeamId` is interpolatable but there is no resolution of _which_ teams a user belongs to, and no way to express "these specific rows".                                                                     | —                                                              | **High**                       |
+| G5  | **`KNOWN_SUBJECTS` is a hardcoded 11-entry literal.** Adding a module means editing `@flama/shared`.                                                                                                                                                            | `permissions/index.ts:21`                                      | Medium                         |
+| G6  | **Two hand-maintained catalogs.** `SCOPE_RESOURCES` (credential scopes) and `KNOWN_SUBJECTS` (CASL subjects) must be kept consistent by hand or a new endpoint is invisible to API tokens.                                                                      | `scopes/catalog.ts`, `permissions/index.ts`                    | Medium                         |
+| G7  | **No grant safety on roles.** `grantableScopes` stops a token exceeding its creator, but nothing stops a user with `update Role` writing `manage all` onto a role and assigning it to themselves.                                                               | `create-role.service.ts`, `update-role-permissions.service.ts` | **High**                       |
+| G8  | **Ability rebuilt per request, uncached.** Two queries minimum; four call sites of `AbilityFactory` in the request path.                                                                                                                                        | `ability.factory.ts`, 4 callers                                | Medium                         |
+| G9  | **Deny precedence unspecified.** CASL is last-rule-wins; unioning roles means an `inverted` rule in one role can be silently overridden by another depending on iteration order.                                                                                | `defineAbilitiesFromPermissions`                               | Medium                         |
 
 ---
 
-## Part 3 — The target model
+## Part 3 — The model
 
-Same four questions, but every dimension is a **declared interface**, not a
-domain table.
+Four questions on every request. All must pass; **Q0 short-circuits above the
+rest**.
 
-| #      | Question               | Mechanism                                                                     | Generic?                     |
-| ------ | ---------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
-| **Q0** | Platform operator?     | Better Auth `admin` plugin + `@PlatformAdmin()` short-circuit, always audited | yes                          |
-| **Q1** | Which tenant's data?   | `organizationId` on every row + active-org context                            | yes                          |
-| **Q2** | Which slice within it? | **`AccessScope`** = structural (team membership) ∪ explicit (`access_grant`)  | **yes — this is the change** |
-| **Q3** | What may you do to it? | dynamic CASL RBAC, org-scoped roles                                           | yes                          |
+| #      | Question                       | Mechanism                                            | Where enforced                                                       |
+| ------ | ------------------------------ | ---------------------------------------------------- | -------------------------------------------------------------------- |
+| **Q0** | Is this a platform operator?   | Better Auth `admin` plugin role + `@PlatformAdmin()` | Guard, short-circuit, always audited                                 |
+| **Q1** | Which tenant's data?           | `organizationId` on every row + active-org context   | Ability conditions **and** SQL predicate                             |
+| **Q2** | Which slice within the tenant? | `AccessScope`: team membership ∪ explicit grants     | Ability conditions **and** SQL predicate                             |
+| **Q3** | What may you do to it?         | Dynamic CASL RBAC, org-scoped roles                  | `PoliciesGuard` (type level) + `@AuthorizeResource` (instance level) |
 
-All four must pass. Q0 short-circuits above the rest.
+Two role concepts stay in distinct lanes and must not be conflated:
 
-### 3.1 The resource registry — modules declare, the kernel derives
+|                     | `member.role` (Better Auth org plugin)                                                         | Dynamic RBAC (`role` / `user_role` + CASL) |
+| ------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Values              | fixed: `owner` / `admin` / `member`                                                            | unlimited, admin-authored                  |
+| Granularity         | coarse tier                                                                                    | action × subject × field × condition       |
+| Governs             | **organization administration only** — invite/remove members, org settings, ownership transfer | **all feature capabilities**               |
+| Editable at runtime | no                                                                                             | yes                                        |
 
-One declaration per resource, colocated with the module that owns it:
+`member.role` never gates a feature. It answers only "may you administer this
+organization?" — which is exactly what the Better Auth organization plugin uses
+it for, so removing it would mean rebuilding member management for no gain.
+
+A third thing shares the word "role" and means something else again:
+`user.role` is the **platform** tier, owned by the Better Auth admin plugin
+(`superadmin` / `admin` / `user`). Three separate concepts, three separate
+columns:
+
+```
+user.role     → platform tier      (Q0)  — Better Auth admin plugin
+member.role   → org administration       — Better Auth organization plugin
+user_role     → capability grants  (Q3)  — this kernel
+```
+
+---
+
+## Part 4 — Architecture
+
+### 4.1 The package
+
+A new library package, following the repo rule that reusable backend
+infrastructure lives in `packages/backend/*`:
+
+```
+packages/backend/authz/                    # @flama/backend-authz
+├── package.json
+├── tsconfig.json
+├── README.md
+└── src/
+    ├── index.ts
+    ├── registry/
+    │   ├── resource-definition.ts         # ResourceDefinition type + defineResource()
+    │   ├── resource-registry.ts           # @Injectable registry, boot-time collection
+    │   └── catalog.ts                     # registry → catalog DTO projection
+    ├── scope/
+    │   ├── access-scope.ts                # AccessScope type + helpers
+    │   ├── scope-resolver.port.ts         # ScopeResolver interface + DI token
+    │   ├── scope-context.ts               # request-scoped holder
+    │   └── apply-access-scope.ts          # AccessScope + ResourceDefinition → SQL predicate
+    ├── ability/
+    │   ├── build-ability.ts               # deny-ordered CASL build
+    │   └── interpolate.ts                 # ${user.*} / ${scope.*} placeholders
+    ├── guards/
+    │   ├── policies.guard.ts
+    │   ├── platform-admin.guard.ts
+    │   ├── authorize-resource.interceptor.ts
+    │   └── decorators.ts                  # @CheckPolicies @NoPolicy @PlatformAdmin @AuthorizeResource
+    ├── grants/
+    │   ├── can-grant.ts                   # role-rule containment
+    │   └── can-grant-scope.ts             # access-grant containment
+    ├── authz.module.ts                    # forRoot() + forFeature()
+    └── testing/
+        └── expect-ability.ts              # fluent assertion harness
+```
+
+`package.json` mirrors `packages/backend/cache` exactly (that is the established
+template — `tsc -p tsconfig.json`, `main: ./dist/index.js`, tsconfig extending
+`@flama/config/tsconfig.nestjs.json`). The `pnpm-workspace.yaml` glob
+`packages/backend/*` already covers the directory, so no workspace edit is
+needed.
+
+Dependencies: `@casl/ability`, `@nestjs/common`, `@nestjs/core`, `typeorm`
+(peer, for the query-builder types), `@flama/shared` (wire contracts),
+`@flama/backend-core` (`AppError`).
+
+### 4.2 Boundaries — what goes where
+
+| Layer                  | Owns                                                                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@flama/shared`        | **Wire contracts only**: `PermissionDefinition`, the Zod schemas, the catalog response types, the generated scope catalog. Nothing that drags CASL into the web bundle.                        |
+| `@flama/backend-authz` | The engine: registry, scope resolution, ability building, guards, containment checks, test harness. Framework-aware (Nest), persistence-agnostic except for one TypeORM query-builder adapter. |
+| `apps/api`             | App-specific wiring only: the Better Auth integration, the `roles` module, the `access-grants` module, the concrete `ScopeResolver`, resource declarations per feature module.                 |
+| `@flama/backend-ddd`   | Gains `ScopedRepositoryBase` (it already owns `RepositoryPort`).                                                                                                                               |
+
+**Dependency-cruiser change required.** The `domain-stays-pure` rule in
+`apps/api/.dependency-cruiser.cjs` currently allows domain files to import only
+`packages/(backend/ddd|shared)/`. `AccessScope` is a pure contract that domain
+code legitimately needs, so extend the allow-list:
+
+```js
+pathNot: ['^src/[^/]+/domain/', 'packages/(backend/ddd|backend/authz|shared)/'],
+```
+
+Do this in Phase 0, in the same commit that creates the package, so `pnpm arch`
+never goes red.
+
+---
+
+## Part 5 — Core contracts
+
+### 5.1 The resource declaration
+
+One object per resource, colocated with the module that owns it. This is the
+**only** thing a feature module author writes to get authorization.
 
 ```ts
 // apps/api/src/leads/leads.resource.ts
+import { defineResource } from "@flama/backend-authz";
+
 export const LeadResource = defineResource({
+  /** The CASL subject string. Must be unique across the app. */
   subject: "Lead",
   label: "Leads",
+  /** Groups resources in the role-builder UI. */
   group: "crm",
+
   actions: [
     { name: "read", label: "View leads" },
     { name: "create", label: "Create leads" },
     { name: "update", label: "Edit leads" },
+    { name: "delete", label: "Delete leads" },
     { name: "assign", label: "Reassign owner" },
     { name: "export", label: "Export to CSV", sensitive: true },
   ],
-  // Field-level grants the role-builder can offer (CASL `fields`).
+
+  /** Fields the role-builder may offer for field-level grants (CASL `fields`). */
   fields: ["value", "ownerId", "notes"],
-  // How this resource carries the scope keys. THIS is what makes both the CASL
-  // condition and the SQL predicate derivable from one place.
+
+  /**
+   * Which columns carry the scope keys. This is the load-bearing part: it is
+   * what lets the kernel derive BOTH the CASL condition and the SQL predicate
+   * from one declaration.
+   */
   keys: {
     organization: "organizationId",
     team: "teamId",
     owner: "ownerId",
+    id: "id",
   },
-  // Which scope dimensions are meaningful here.
+
+  /** Which scope dimensions are meaningful for this resource. */
   scopes: ["organization", "team", "own", "grant"],
-  // Optional: the credential-scope group this resource belongs to, so the
-  // API-token catalog is generated rather than hand-maintained.
+
+  /** The credential-scope group, so API tokens and MCP can reach it. */
   credentialScope: "leads",
 });
 ```
 
-Registered with `AuthzModule.forFeature([LeadResource])`. A `ResourceRegistry`
-collects them at boot and that single collection feeds:
+```ts
+// packages/backend/authz/src/registry/resource-definition.ts
+export type ScopeDimension = "organization" | "team" | "own" | "grant";
 
-- `GET /v1/authz/catalog` → the role-builder UI (no shared-package bundle cost);
-- validation of submitted permissions (unknown subject ⇒ a **warning** on the
-  response, never a hard rejection — the catalog stays advisory, admins may
-  still store any string, exactly as today);
-- the credential-scope catalog, **generated at build time** into `@flama/shared`
-  rather than shared at runtime — `apps/mcp` is deployed separately and `Scope`
-  is a compile-time union, so codegen is the only mechanism that reaches them
-  (§4.1);
-- seeding of preset roles;
-- the scope engine's key mapping (below);
+export interface ResourceActionDefinition {
+  name: string;
+  label?: string;
+  /** Surfaced with a warning in the role-builder. Not treated specially at runtime. */
+  sensitive?: boolean;
+}
+
+export interface ResourceKeys {
+  /** Column holding the tenant id. Required when `scopes` includes 'organization'. */
+  organization?: string;
+  /** Column holding the owning team id. Required when `scopes` includes 'team'. */
+  team?: string;
+  /** Column holding the owning user id. Required when `scopes` includes 'own'. */
+  owner?: string;
+  /** Primary-key column. Required when `scopes` includes 'grant'. Defaults to 'id'. */
+  id?: string;
+}
+
+export interface ResourceDefinition {
+  subject: string;
+  label: string;
+  group: string;
+  actions: readonly ResourceActionDefinition[];
+  fields?: readonly string[];
+  keys: ResourceKeys;
+  scopes: readonly ScopeDimension[];
+  credentialScope?: string;
+}
+
+/**
+ * Validates a resource declaration at module-load time and returns it frozen.
+ * Throwing here means a misdeclared resource fails at boot, not at the first
+ * request that happens to exercise the missing key.
+ */
+export function defineResource(
+  definition: ResourceDefinition,
+): ResourceDefinition {
+  for (const dimension of definition.scopes) {
+    const required = {
+      organization: "organization",
+      team: "team",
+      own: "owner",
+      grant: "id",
+    } as const;
+    const key = required[dimension];
+    if (!definition.keys[key] && !(dimension === "grant")) {
+      throw new Error(
+        `Resource "${definition.subject}" declares scope "${dimension}" but no keys.${key} column`,
+      );
+    }
+  }
+  return Object.freeze({
+    ...definition,
+    keys: { id: "id", ...definition.keys },
+  });
+}
+```
+
+`ResourceRegistry` is an `@Injectable` that collects every definition passed to
+`AuthzModule.forFeature([...])` and exposes `get(subject)`, `all()`, and
+`byGroup()`. It is the single source for:
+
+- `GET /v1/authz/catalog` (role-builder UI),
+- permission validation on role writes (unknown subject ⇒ a **warning** in the
+  response body, never a rejection — the catalog stays advisory and admins may
+  still store any string, exactly as today),
+- the scope engine's key mapping,
+- the generated credential-scope catalog (§9),
 - the policy-coverage test.
 
-`KNOWN_SUBJECTS`/`KNOWN_ACTIONS` in `@flama/shared` shrink to the kernel's own
-subjects (`User`, `Role`, `Organization`, …) and stop being the extension point.
+`KNOWN_SUBJECTS` / `KNOWN_ACTIONS` in `@flama/shared` shrink to the kernel's own
+subjects and stop being the extension point.
 
-### 3.2 `AccessScope` — Q2, generalized
+### 5.2 `AccessScope` — Q1 + Q2 resolved
 
 ```ts
-interface AccessScope {
+// packages/backend/authz/src/scope/access-scope.ts
+
+/** Everything the caller may reach, before capabilities are considered. */
+export interface AccessScope {
   userId: string;
+  /** Active organization. `null` only for platform-tier callers acting globally. */
   organizationId: string | null;
-  /** Teams (workspaces) the caller belongs to in the active org. */
-  teamIds: string[];
-  /** Explicit grants, per resource type: a set of ids, or 'all'. */
+  /** Teams the caller belongs to within the active organization. */
+  teamIds: readonly string[];
+  /**
+   * Explicit grants keyed by resource subject. `'all'` means every row of that
+   * type within the organization; a Set means exactly those ids.
+   */
   grants: ReadonlyMap<string, ReadonlySet<string> | "all">;
-  /** Q0 / `manage all` — skip scoping entirely. Audited when true. */
+  /**
+   * Q0 or `manage all`: skip scoping entirely. Always audited when true, and
+   * never set for an impersonated session.
+   */
   bypass: boolean;
 }
 ```
 
-Two sources, composed by a `ScopeResolver`:
-
-1. **Structural** — free, no new tables: the caller's `member` row gives the
-   active org, `teamMember` gives `teamIds`. This alone answers the motivating
-   case ("this team only sees its own leads") with zero new schema.
-2. **Explicit** — one generic table, for when membership is not the right axis:
-
-   ```sql
-   access_grant (
-     id              uuid primary key,
-     organization_id uuid not null,
-     principal_type  varchar not null,   -- 'user' | 'team' | 'role'
-     principal_id    uuid    not null,
-     resource_type   varchar not null,   -- 'Lead' | 'Warehouse' | …
-     resource_id     uuid,               -- null = every resource of that type
-     granted_by      uuid not null,
-     expires_at      timestamptz,
-     created_at      timestamptz not null
-   )
-   ```
-
-   This is the polymorphic generalization of `creator_assignment`. One table
-   covers "chatter → assigned creators", "rep → named accounts", "auditor → one
-   warehouse", with `expires_at` for time-boxed access — a requirement that
-   shows up in every enterprise deal and is nearly free here.
-
-`ScopeResolver` is an interface with a default implementation. Swapping in one
-that walks a manager/territory tree is a provider override — no call site
-changes. That is the hierarchy seam.
-
-### 3.3 One declaration, two enforcement points
-
-**a) CASL conditions** gain scope placeholders, interpolated from `AccessScope`:
-
 ```ts
-{ action: 'read', subject: 'Lead',
-  conditions: { teamId: { $in: '${scope.teamIds}' } } }
+// packages/backend/authz/src/scope/scope-resolver.port.ts
+export const SCOPE_RESOLVER = Symbol("SCOPE_RESOLVER");
 
-{ action: 'update', subject: 'Lead',
-  conditions: { ownerId: '${user.id}' } }
-
-{ action: 'read', subject: 'Lead',
-  conditions: { id: { $in: '${scope.grants.Lead}' } } }
+export interface ScopeResolverPort {
+  resolve(input: {
+    userId: string;
+    organizationId: string | null;
+    isPlatformAdmin: boolean;
+    hasFullAccess: boolean;
+  }): Promise<AccessScope>;
+}
 ```
 
-An array-valued placeholder inside `$in` is a small extension to the existing
-`interpolateConditions` walker. `can()` now tells the truth, so the UI can hide
-what the user cannot reach.
+The default implementation in `apps/api` composes two sources:
 
-**b) A SQL predicate**, generated from the _same_ registry `keys` metadata:
+1. **Structural** — no new tables. The caller's `member` row gives the active
+   organization; `teamMember` gives `teamIds`. This alone satisfies requirements
+   1 and 2 of the motivating scenario.
+2. **Explicit** — the `access_grant` table (§6.2), for the cases where team
+   membership is the wrong axis (requirement 3).
+
+Because `ScopeResolverPort` is an interface behind a DI token, swapping in an
+implementation that walks a manager/territory tree instead of a flat team list
+is a provider override — no call site changes. That is the hierarchy seam, left
+open deliberately without being built.
+
+### 5.3 One declaration, three enforcement points
+
+**(a) CASL conditions** — placeholders extend to the scope:
 
 ```ts
-// in a query handler
-const qb = this.repo.createQueryBuilder("lead");
-applyAccessScope(qb, LeadResource, scope); // appends the WHERE
+// team-scoped read
+{ action: 'read', subject: 'Lead', conditions: { teamId: { $in: '${scope.teamIds}' } } }
+
+// own-resource edit
+{ action: 'update', subject: 'Lead', conditions: { ownerId: '${user.id}' } }
+
+// explicit grants
+{ action: 'read', subject: 'Lead', conditions: { id: { $in: '${scope.grants.Lead}' } } }
+
+// field-level deny
+{ action: 'read', subject: 'Lead', fields: ['value'], inverted: true }
 ```
 
-and, better, folded into a `ScopedRepositoryBase` in `@flama/backend-ddd` so a
-module gets it by default. **A repository declared scoped that is queried
-without a scope throws** — in dev and test loudly, in production it fails
-closed. That is the answer to "one forgotten `WHERE`".
+This requires one change to the existing `interpolateConditions` walker in
+`packages/shared/src/permissions/index.ts`: a placeholder currently resolves to
+whatever `resolvePath` returns, which already handles arrays fine — but
+`scope.grants.Lead` is a `Map` lookup, not a property path. Extend
+`AbilityContext` with a `scope` member and special-case the `grants.<Subject>`
+segment to read from the map, normalizing `'all'` to _omit the condition
+entirely_ (an `$in` against "everything" must not become an empty array, which
+would deny everything — this is the single easiest way to get this wrong).
 
-**c) Instance-level checks** stop being hand-written:
+**(b) A SQL predicate** from the _same_ registry metadata:
+
+```ts
+// packages/backend/authz/src/scope/apply-access-scope.ts
+export function applyAccessScope<T extends ObjectLiteral>(
+  qb: SelectQueryBuilder<T>,
+  resource: ResourceDefinition,
+  scope: AccessScope,
+): SelectQueryBuilder<T> {
+  if (scope.bypass) return qb;
+
+  const alias = qb.alias;
+  const { keys, scopes } = resource;
+
+  if (scopes.includes("organization") && keys.organization) {
+    qb.andWhere(`${alias}.${keys.organization} = :authzOrgId`, {
+      authzOrgId: scope.organizationId,
+    });
+  }
+
+  // Team / own / grant are alternatives, not conjunctions: any one of them
+  // being satisfied makes the row visible.
+  const clauses: string[] = [];
+  const params: Record<string, unknown> = {};
+
+  if (scopes.includes("team") && keys.team && scope.teamIds.length > 0) {
+    clauses.push(`${alias}.${keys.team} IN (:...authzTeamIds)`);
+    params.authzTeamIds = scope.teamIds;
+  }
+  if (scopes.includes("own") && keys.owner) {
+    clauses.push(`${alias}.${keys.owner} = :authzUserId`);
+    params.authzUserId = scope.userId;
+  }
+  if (scopes.includes("grant")) {
+    const granted = scope.grants.get(resource.subject);
+    if (granted === "all") return qb; // no narrowing
+    if (granted && granted.size > 0) {
+      clauses.push(`${alias}.${keys.id} IN (:...authzGrantIds)`);
+      params.authzGrantIds = [...granted];
+    }
+  }
+
+  // No clause matched ⇒ the caller can see nothing of this type. Fail closed
+  // with an unsatisfiable predicate rather than returning an unfiltered query.
+  if (clauses.length === 0) return qb.andWhere("1 = 0");
+
+  return qb.andWhere(`(${clauses.join(" OR ")})`, params);
+}
+```
+
+The `clauses.length === 0 ⇒ 1 = 0` branch is the whole point. The naive
+implementation returns `qb` unchanged when nothing applies, which turns "you
+have no access" into "you see everything".
+
+**(c) `ScopedRepositoryBase`** in `@flama/backend-ddd` folds (b) in by default,
+so a module gets filtering without calling anything:
+
+```ts
+export abstract class ScopedRepositoryBase<
+  Domain,
+  Orm extends ObjectLiteral,
+> implements RepositoryPort<Domain> {
+  protected abstract readonly resource: ResourceDefinition;
+
+  protected scopedQuery(
+    scope: AccessScope | undefined,
+  ): SelectQueryBuilder<Orm> {
+    if (!scope) {
+      throw new Error(
+        `${this.constructor.name} is scope-enforced but was queried without an AccessScope. ` +
+          `Pass the scope from ScopeContext, or use unscopedQuery() with an explicit reason.`,
+      );
+    }
+    return applyAccessScope(
+      this.repo.createQueryBuilder(this.alias),
+      this.resource,
+      scope,
+    );
+  }
+
+  /** Deliberate bypass. Requires a reason; logged at warn level. */
+  protected unscopedQuery(reason: string): SelectQueryBuilder<Orm> {
+    /* … */
+  }
+}
+```
+
+The throw is not a dev-only assertion — it throws in production too, because a
+scoped repository reached without a scope has no safe default behaviour. The
+escape hatch is explicit and named.
+
+**(d) Instance-level authorization** stops being hand-written:
 
 ```ts
 @Patch(':id')
-@CheckPolicies({ action: 'update', subject: 'Lead' })   // type level
-@AuthorizeResource({ subject: 'Lead', param: 'id' })    // instance level
-update() {}
+@Version('1')
+@CheckPolicies({ action: 'update', subject: 'Lead' })   // type level  — the guard
+@AuthorizeResource({ subject: 'Lead', param: 'id' })    // instance level — the interceptor
+async update(/* … */) {}
 ```
 
-An interceptor loads the row through a registered loader and runs
-`ability.can(action, subject('Lead', row))`. **A row outside scope returns 404,
-not 403** — consistent with the existing api-token convention, so ids cannot be
-probed.
-
-### 3.4 Org-scoped roles (Q1) — the blocking change
-
-- `role.organization_id` nullable; `null` = global system template.
-- Drop the global unique on `name`; unique on `(organization_id, name)`, plus a
-  partial unique index on `name where organization_id is null`.
-- `user_role.organization_id` — a user's roles differ per org.
-- `AbilityFactory.createForUser(user, { organizationId })` unions global roles
-  with roles scoped to the active org.
-- Active org comes from `session.activeOrganizationId`, overridable by an
-  `X-Active-Organization` header **validated against the caller's memberships**
-  (a header the server trusts blindly is a tenant-isolation hole).
-- Migration backfills existing rows with `organization_id = null`, so today's
-  behaviour is unchanged until roles are explicitly scoped.
-
-### 3.5 Grant safety — no privilege escalation
-
-`canGrant(actorAbility, permission)`: an actor may only place a rule on a role
-if their own ability already satisfies it. Applied in `CreateRole`,
-`UpdateRole`, `UpdateRolePermissions` and `AssignUserRoles`. Mirrors
-`grantableScopes` exactly, so the invariant is stated once conceptually and
-enforced in both places. Existing `ADMIN_LOCKOUT` protection stays. Org-scoped
-role editors can never touch `organization_id IS NULL` roles.
-
-**The same containment applies to `access_grant`, and ships with it — not
-later.** A grant is a privilege transfer just as much as a role rule is, and
-`resource_id = null` ("every resource of this type") is the most powerful thing
-the table can express. So `canGrantScope(actorScope, grant)`: an actor may only
-create or extend a grant whose reach is a **subset of their own `AccessScope`**
-for that resource type — a team-scoped actor cannot mint a `resource_id = null`
-grant, cannot grant ids outside their own visible set, and cannot name a
-principal (`user` / `team` / `role`) outside the active organization. Without
-this, Phase 2's grant endpoints are a self-service escalation path, so
-`canGrantScope` is a Phase 2 deliverable and the two containment checks live
-side by side in `grants/`.
-
-### 3.6 Deny precedence
-
-Denies (`inverted: true`) are sorted last when building the ability, across the
-union of all roles, so a `cannot` in one role is never silently overridden by a
-`can` in another. Pinned by a test. Documented in `rbac-roles.md`.
-
-### 3.7 Audit
-
-An `audit_log` table + an interceptor recording: actor, tenant, action, subject,
-resource id, decision, and **whether a bypass was used**. Written for every
-platform-admin action, every impersonated request, and every role/grant
-mutation. Authorization _denials_ are logged at a sampled rate — useful signal,
-but not at the cost of a write per probe.
-
-### 3.8 Performance
-
-- **Per-request memo.** `AbilityFactory` is called from `PoliciesGuard` and three
-  api-token handlers; memoize on the request so one request builds one ability.
-- **Cache the role rules; resolve the structural scope every request.** These
-  two halves have different invalidation properties and must not share a cache
-  entry:
-  - **Role rules** are app-owned, written through the app's own aggregates, and
-    safe to cache at `authz:v{orgRoleVersion}:{userId}:{orgId}` in Redis, with
-    any role/assignment write bumping the org's `roleVersion`.
-  - **Structural scope** (`organizationId`, `teamIds`) is **not cached.** Team
-    membership is owned by Better Auth — `WorkspacesService.addMember` /
-    `removeMember` call `auth.api.addTeamMember` / `removeTeamMember`, which
-    write the `teamMember` table outside any app transaction and therefore stage
-    nothing on the outbox. A cached `teamIds` would keep granting a removed
-    member that team's rows until some unrelated authorization write happened to
-    bump the version. Resolving it per request is two indexed lookups
-    (`member`, `teamMember`) against data already in the connection pool's hot
-    set — cheaper than the bug.
-
-  Explicit grants sit in the middle: app-owned, so version-bumpable, but they
-  are the Q2 dimension and revocation there is security-sensitive, so they are
-  resolved per request alongside the structural scope until a measurement says
-  otherwise.
-
-  One caveat that rules out the tempting shortcut: `OutboxService.wake()`
-  **swallows delivery failures by design** ("rows stay pending for the next
-  poll"). An outbox-driven version bump is therefore eventually consistent, not
-  next-request guaranteed — fine for role rules, not a mechanism to rely on for
-  revoking scope. Version bumps on role writes are written in the same
-  transaction as the role change, not delivered as an event, for the same
-  reason.
+`AuthorizeResourceInterceptor` looks up a registered loader for the subject,
+fetches the row **through the scoped repository**, and runs
+`ability.can(action, subject('Lead', row))`. A row that does not exist and a row
+outside the caller's scope both produce **404, not 403** — consistent with the
+existing api-token convention (`.agents/rules/scopes-and-credentials.md`: "someone
+else's token is reported as not found, not forbidden, so ids cannot be probed").
 
 ---
 
-## Part 4 — Where the code lives
+## Part 6 — Data model and migrations
 
-A new package, following the repo's own rule that reusable backend
-infrastructure belongs in `packages/backend/*`:
+Three migrations, one per phase. Follow the existing convention: hand-written
+SQL through `queryRunner.query`, file named `<timestamp>-<Name>.ts`, class named
+`<Name><timestamp>`. Register every new ORM entity in **three** places —
+`src/config/data-source.ts`, `src/database/seed.ts`, and the module's
+`TypeOrmModule.forFeature`.
+
+### 6.1 `1781400000000-AddOrgScopedRoles.ts` (Phase 1)
+
+```sql
+-- Roles become org-ownable. NULL = a global/system template.
+ALTER TABLE "role" ADD COLUMN "organizationId" uuid;
+ALTER TABLE "role" ADD CONSTRAINT "FK_role_organization"
+  FOREIGN KEY ("organizationId") REFERENCES "organization"("id") ON DELETE CASCADE;
+
+-- Replace the global unique with a per-tenant one, plus a partial index that
+-- keeps global role names unique among themselves.
+ALTER TABLE "role" DROP CONSTRAINT "UQ_role_name";
+CREATE UNIQUE INDEX "UQ_role_org_name" ON "role" ("organizationId", "name")
+  WHERE "organizationId" IS NOT NULL;
+CREATE UNIQUE INDEX "UQ_role_global_name" ON "role" ("name")
+  WHERE "organizationId" IS NULL;
+
+-- Assignments become org-scoped. NULL = the assignment applies globally
+-- (system roles, platform admins).
+ALTER TABLE "user_role" ADD COLUMN "organizationId" uuid;
+ALTER TABLE "user_role" DROP CONSTRAINT "PK_user_role";
+-- Postgres treats NULLs as distinct in a PK, so use a generated surrogate and
+-- a partial unique index for the two shapes.
+ALTER TABLE "user_role" ADD COLUMN "id" uuid NOT NULL DEFAULT gen_random_uuid();
+ALTER TABLE "user_role" ADD CONSTRAINT "PK_user_role" PRIMARY KEY ("id");
+CREATE UNIQUE INDEX "UQ_user_role_scoped" ON "user_role" ("userId", "roleId", "organizationId")
+  WHERE "organizationId" IS NOT NULL;
+CREATE UNIQUE INDEX "UQ_user_role_global" ON "user_role" ("userId", "roleId")
+  WHERE "organizationId" IS NULL;
+CREATE INDEX "IDX_user_role_user_org" ON "user_role" ("userId", "organizationId");
+
+-- Cache invalidation key, bumped in the same transaction as any role write.
+ALTER TABLE "organization" ADD COLUMN "roleVersion" integer NOT NULL DEFAULT 1;
+```
+
+Existing rows backfill to `organizationId = NULL`, so behaviour is identical
+until roles are deliberately scoped. That is what makes this migration safe to
+ship ahead of the rest.
+
+### 6.2 `1781500000000-AddAccessGrants.ts` (Phase 2)
+
+```sql
+CREATE TABLE "access_grant" (
+  "id"             uuid NOT NULL DEFAULT gen_random_uuid(),
+  "organizationId" uuid NOT NULL,
+  "principalType"  varchar NOT NULL,   -- 'user' | 'team' | 'role'
+  "principalId"    uuid NOT NULL,
+  "resourceType"   varchar NOT NULL,   -- a registry subject, e.g. 'Lead'
+  "resourceId"     uuid,               -- NULL = every resource of that type
+  "grantedBy"      uuid NOT NULL,
+  "expiresAt"      TIMESTAMP WITH TIME ZONE,
+  "createdAt"      TIMESTAMP NOT NULL DEFAULT now(),
+  CONSTRAINT "PK_access_grant" PRIMARY KEY ("id"),
+  CONSTRAINT "CHK_access_grant_principal"
+    CHECK ("principalType" IN ('user','team','role')),
+  CONSTRAINT "FK_access_grant_organization"
+    FOREIGN KEY ("organizationId") REFERENCES "organization"("id") ON DELETE CASCADE
+);
+
+-- The resolver's hot path: "every grant reaching this principal set, in this org".
+CREATE INDEX "IDX_access_grant_lookup"
+  ON "access_grant" ("organizationId", "principalType", "principalId", "resourceType");
+CREATE INDEX "IDX_access_grant_expiry" ON "access_grant" ("expiresAt")
+  WHERE "expiresAt" IS NOT NULL;
+```
+
+`resourceId` has **no foreign key** deliberately — it is polymorphic, and a
+grant must be able to name a row in any module's table.
+
+Expiry is enforced in the resolver's `WHERE` (`expiresAt IS NULL OR expiresAt > now()`),
+not by a cleanup job. A sweeper that deletes expired rows is a nice-to-have for
+table size; it must never be the thing that makes expiry correct.
+
+### 6.3 `1781600000000-AddAuditLog.ts` (Phase 3)
+
+```sql
+CREATE TABLE "audit_log" (
+  "id"             uuid NOT NULL DEFAULT gen_random_uuid(),
+  "actorId"        uuid,
+  "impersonatedBy" uuid,
+  "organizationId" uuid,
+  "action"         varchar NOT NULL,
+  "subject"        varchar NOT NULL,
+  "resourceId"     varchar,
+  "decision"       varchar NOT NULL,   -- 'allow' | 'deny'
+  "usedBypass"     boolean NOT NULL DEFAULT false,
+  "correlationId"  varchar,
+  "metadata"       jsonb NOT NULL DEFAULT '{}',
+  "createdAt"      TIMESTAMP NOT NULL DEFAULT now(),
+  CONSTRAINT "PK_audit_log" PRIMARY KEY ("id")
+);
+CREATE INDEX "IDX_audit_log_org_time" ON "audit_log" ("organizationId", "createdAt" DESC);
+CREATE INDEX "IDX_audit_log_actor_time" ON "audit_log" ("actorId", "createdAt" DESC);
+```
+
+No foreign keys on `actorId` / `organizationId`: an audit row must outlive the
+user or tenant it describes. Same reasoning as the outbox's `aggregateId`.
+
+---
+
+## Part 7 — The request pipeline
+
+End to end, in order, with the responsible component:
 
 ```
-packages/backend/authz/          # @flama/backend-authz  (library package)
-├── registry/       defineResource, ResourceRegistry
-├── scope/          AccessScope, ScopeResolver (interface + default), applyAccessScope
-├── ability/        buildAbility, placeholder interpolation, deny ordering
-├── guards/         PoliciesGuard, PlatformAdminGuard, AuthorizeResource interceptor
-├── grants/         canGrant, canGrantScope
-└── testing/        expectAbility(...) harness
+1. ApiAuthGuard          authenticates (session, API token, or OAuth grant)
+                         → request.user, request.session, request.credentialScopes
+
+2. PlatformAdminGuard    Q0: if the route is @PlatformAdmin and user.role is a
+                         platform role → allow, set scope.bypass, force an audit
+                         row. Otherwise fall through.
+
+3. ActiveOrgInterceptor  Q1: resolve the active organization from
+                         session.activeOrganizationId, overridable by the
+                         X-Active-Organization header — VALIDATED against the
+                         caller's `member` rows. An unvalidated header here is a
+                         tenant-isolation hole.
+
+4. ScopeContext          Q2: ScopeResolver.resolve(...) → AccessScope, stored
+                         request-scoped. One resolution per request.
+
+5. PoliciesGuard         Q3 type level: build the ability (role rules ∪ platform
+                         role), check every @CheckPolicies rule. Attach to
+                         request.ability. FAILS CLOSED — a route with neither
+                         @CheckPolicies nor @NoPolicy is rejected.
+
+6. ScopesGuard           credential layer: @RequireScopes ∩ the credential's
+                         effective scopes. Already exists, already fails closed.
+
+7. Handler               queries through the scoped repository, which applies
+                         the SQL predicate from AccessScope automatically.
+
+8. AuthorizeResource     Q3 instance level, for single-row routes: load through
+   (interceptor)         the scoped repo, ability.can(action, subject(...)),
+                         404 on miss.
+
+9. AuditInterceptor      writes an audit_log row for platform actions,
+                         impersonated requests, and role/grant mutations.
 ```
 
-`@flama/shared` keeps only the **wire contracts** (`PermissionDefinition`, the
-Zod schemas, the catalog response type) — nothing that drags CASL into the web
-bundle. `apps/api` keeps only the app-specific wiring: the Better Auth
-integration, the `roles` module, and the `access_grant` persistence.
+Steps 2–4 are new. Steps 1, 5, 6 exist and are modified. Steps 7–9 are new.
 
-### 4.1 The registry is a boot-time API concern — the scope catalog is not
+### Closing the fail-open hole (G2), safely
+
+Flipping `PoliciesGuard` to fail closed will break every route that currently
+relies on the permissive default (e.g. `GET /users/me`). Sequence it:
+
+1. Add a `@NoPolicy('reason')` decorator — it takes a mandatory string so the
+   exemption is self-documenting in the code and greppable in review.
+2. Add a test that enumerates every registered route via Nest's
+   `DiscoveryService` and asserts each declares `@CheckPolicies` or `@NoPolicy`.
+   Run it **reporting only** at first; it prints the list of offenders.
+3. Annotate the offenders — most want `@NoPolicy('returns only the caller\'s own identity')`.
+4. Flip the guard's default to `throw new ForbiddenException()` and make the
+   test fail the build.
+
+Steps 1–3 are behaviour-preserving; only step 4 changes behaviour, and by then
+the list is empty.
+
+---
+
+## Part 8 — Grant safety
+
+Two containment checks, same invariant, living side by side in `grants/`.
+
+### 8.1 `canGrant` — role rules
+
+An actor may only place a rule on a role if their own ability already satisfies
+it. This is the direct analogue of `grantableScopes` in
+`packages/shared/src/scopes/scope.ts:161`, which already protects token minting.
+
+```ts
+export function ungrantablePermissions(
+  actorAbility: AppAbility,
+  requested: readonly PermissionDefinition[],
+): PermissionDefinition[] {
+  return requested.filter((p) => {
+    // A deny is always grantable — narrowing your own reach is safe.
+    if (p.inverted) return false;
+    // Field-level: the actor must hold the action on every field named.
+    if (p.fields?.length) {
+      return !p.fields.every((f) => actorAbility.can(p.action, p.subject, f));
+    }
+    return !actorAbility.can(p.action, p.subject);
+  });
+}
+```
+
+Applied in all four role-mutating use cases: `CreateRoleService`,
+`UpdateRoleService`, `UpdateRolePermissionsService`, `AssignUserRolesService`
+(for assignment, the check is against the _target role's_ full rule set).
+Existing `ADMIN_LOCKOUT` protection stays. An org-scoped role editor can never
+touch a row with `organizationId IS NULL`.
+
+### 8.2 `canGrantScope` — access grants
+
+A grant is a privilege transfer exactly as a role rule is, and
+`resourceId = NULL` ("every resource of this type") is the strongest thing the
+table can express. So the grant endpoints ship **with** their containment check,
+in the same phase — not a phase later.
+
+```ts
+export function canGrantScope(
+  actorScope: AccessScope,
+  grant: AccessGrantInput,
+): boolean {
+  if (actorScope.bypass) return true;
+  if (grant.organizationId !== actorScope.organizationId) return false;
+
+  const held = actorScope.grants.get(grant.resourceType);
+  if (grant.resourceId === null) return held === "all"; // only an 'all' holder may mint 'all'
+  if (held === "all") return true;
+  return held?.has(grant.resourceId) ?? false;
+}
+```
+
+Plus: the named principal (`user` / `team` / `role`) must belong to the active
+organization, checked against `member` / `team` / `role` respectively.
+
+### 8.3 New error codes
+
+Following the per-module catalog convention. Add rows to
+`apps/docs/docs/errors.md` — that is required, not optional.
+
+| Code        | Message                                                       | Status |
+| ----------- | ------------------------------------------------------------- | ------ |
+| `ROLE_005`  | A role cannot be granted permissions its author does not hold | 403    |
+| `ROLE_006`  | A role belonging to another organization cannot be modified   | 403    |
+| `GRANT_001` | Access grant not found                                        | 404    |
+| `GRANT_002` | An access grant cannot exceed the granter's own access        | 403    |
+| `GRANT_003` | The named principal does not belong to this organization      | 400    |
+| `AUTHZ_001` | The active organization is not one of your memberships        | 403    |
+| `AUTHZ_002` | This route declares no authorization policy                   | 500    |
+
+`AUTHZ_002` is a 500 on purpose: a route reaching production without a policy
+declaration is a programming error, not a client error, and it should page
+someone rather than look like a permissions problem.
+
+---
+
+## Part 9 — `@flama/shared` and the generated catalog
 
 The registry lives in the API process. Two consumers cannot see it, and
-pretending otherwise would ship a resource that is invisible to exactly the
-credentials meant to reach it:
+pretending otherwise would ship resources that are invisible to exactly the
+credentials meant to reach them:
 
 - **`apps/mcp` is a separately deployed server** with a static `ToolDefinition`
-  registry whose `requiredScopes` are hand-written, and it filters its tool list
+  registry whose `requiredScopes` are hand-written, filtering its tool list
   against them. It never talks to the API's boot registry.
-- **`Scope` in `@flama/shared` is a static union type** (`SCOPE_RESOURCES` ×
-  access level) that the CLI, the web permission picker and the MCP tools all
-  type-check against. A runtime-only catalog cannot produce a compile-time type.
+- **`Scope` in `@flama/shared` is a compile-time union** (`SCOPE_RESOURCES` ×
+  access level) that the CLI, the web picker and the MCP tools type-check
+  against. A runtime-only registry cannot produce a compile-time type.
 
-So the flow is **codegen, one direction, checked in**:
+So the mechanism is **codegen, one direction, checked in**:
 
 ```
 defineResource(...)  ──build step──▶  packages/shared/src/scopes/catalog.generated.ts
@@ -431,109 +787,339 @@ defineResource(...)  ──build step──▶  packages/shared/src/scopes/catal
                    (explicit)            (explicit)              (derived)
 ```
 
-Both enforcement declarations stay **explicit and hand-written** — the generated
-catalog is what they are _validated against_, not a substitute for them. That
-keeps `ScopesGuard`'s fail-closed property intact (a route with no
-`@RequireScopes` is still unreachable by a scoped credential — the one failure
-mode that is safe) and keeps the MCP mismatch that
-`scopes-and-credentials.md` warns about a **build failure** rather than a
-runtime surprise:
+- A `pnpm generate:scope-catalog` script boots the Nest app in a no-listen mode,
+  reads the registry, and emits the file. Same shape of contract as
+  `pnpm generate:api-client`; CI regenerates and fails on drift.
+- `@RequireScopes` on routes and `requiredScopes` on MCP tools stay **explicit,
+  hand-written declarations** — validated against the generated catalog, never
+  inferred from it. That preserves `ScopesGuard`'s fail-closed property (a route
+  with no decorator stays unreachable by scoped credentials, which is the safe
+  failure) and turns the endpoint/tool scope mismatch that
+  `scopes-and-credentials.md` warns about into a build failure.
+- A test asserts: every registry resource with a `credentialScope` has a
+  matching group; every route's `@RequireScopes` names a real scope; every MCP
+  tool's `requiredScopes` matches the `@RequireScopes` of the endpoint it calls.
 
-- CI regenerates the catalog and fails if the checked-in file differs — the same
-  contract as `pnpm generate:api-client`.
-- A test asserts every registry resource with a `credentialScope` has a matching
-  group, every route's `@RequireScopes` names a real scope, and every MCP tool's
-  `requiredScopes` matches the `@RequireScopes` of the endpoint it calls.
+What the registry buys is that the **source** of the catalog moves from a
+hand-maintained literal in `@flama/shared` to the module that owns the resource.
+The declarations stay; the drift between two hand-written lists goes away.
 
-What the registry genuinely buys is that the _source_ of the catalog moves from
-a hand-maintained literal in shared to the module that owns the resource. The
-declarations stay; the drift between two hand-written lists goes away.
+Also in `@flama/shared`:
+
+- `packages/shared/src/schemas/authz.schema.ts` — Zod schemas for the catalog
+  response, grant CRUD, and the org-scoped role payloads. **No message strings**
+  (`.agents/rules/forms.md`); any new `validation.*` key needs a case in
+  `createZodErrorMap`, a `ValidationMessageKey` entry, and every locale.
+- A narrow export subpath (`@flama/shared/authz`) so `apps/web` can import the
+  types without pulling CASL into the bundle, and an `optimizeDeps.include`
+  entry in `apps/web/vite.config.ts` for dev.
 
 ---
 
-## Part 5 — Phased plan
+## Part 10 — Caching and performance
 
-Each phase ships independently, is behaviour-preserving unless noted, and ends
-green.
+Two halves with different invalidation properties. **They must not share a cache
+entry.**
 
-### Phase 0 — Foundations (no behaviour change)
+**Role rules — cached.** App-owned, written through our own aggregates. Key:
+`authz:v{org.roleVersion}:{userId}:{orgId}`. Any role or assignment write bumps
+`organization.roleVersion` **in the same transaction as the write**.
 
-- [ ] Create `@flama/backend-authz`; move the ability builder, `PoliciesGuard`
-      and `@CheckPolicies` into it, re-exported from their current paths.
-- [ ] `defineResource` + `ResourceRegistry` + `AuthzModule.forFeature`.
-- [ ] Register the kernel's existing subjects (`User`, `Role`, `Organization`,
-      `Workspace`, `Member`, `Invitation`, `ApiToken`, `Billing`, `AuditLog`).
-- [ ] `GET /v1/authz/catalog`.
-- [ ] Per-request ability memo.
-- [ ] Deny-ordering + its test.
-- [ ] **Close the fail-open hole:** a test that enumerates every route and
-      asserts each declares `@CheckPolicies` or an explicit `@NoPolicy()`.
-      Convert the guard to fail closed once the list is clean.
+Not via the outbox: `OutboxService.wake()` swallows delivery failures by design
+("rows stay pending for the next poll",
+`packages/backend/ddd/src/outbox/outbox.service.ts:247`), which makes
+outbox-driven invalidation eventually consistent. Fine for notifying listeners;
+not a mechanism to hang permission revocation on.
+
+**Structural scope — never cached.** Team membership is owned by Better Auth:
+`WorkspacesService.addMember` / `removeMember` call `auth.api.addTeamMember` /
+`removeTeamMember` (`apps/api/src/organizations/workspaces.service.ts:106-127`),
+writing the `teamMember` table outside any app transaction and staging nothing
+on the outbox. A cached `teamIds` would keep granting a removed member that
+team's rows until some unrelated authorization write happened to bump the
+version. Resolving per request is two indexed lookups (`member`, `teamMember`)
+against rows already hot in the pool — cheaper than the bug.
+
+**Explicit grants — not cached initially.** App-owned and therefore
+version-bumpable, but they are the Q2 dimension where revocation is most
+security-sensitive. Resolve per request until a measurement says otherwise.
+
+**Per-request memo regardless.** `AbilityFactory` has four call sites in the
+request path (`PoliciesGuard` plus three api-token handlers). Memoize on the
+request object so one request builds one ability and resolves one scope.
+
+Budget: the target is **≤ 3 queries per authorized request** (roles cached →
+member + teamMember + grants). Add a test asserting the query count on a
+representative route; it is the only way this stays true.
+
+---
+
+## Part 11 — Web (`apps/web`)
+
+### 11.1 Role builder
+
+New route `apps/web/src/routes/_authenticated/settings/roles.tsx`, plus a
+`RoleBuilder` component modelled directly on the existing
+`apps/web/src/components/permission-picker.tsx` — it already solves the same
+problem for credential scopes (grouped resources, mutually exclusive levels,
+disabled what you cannot grant).
+
+Driven entirely by `GET /v1/authz/catalog`, which returns the same shape the
+token screen already consumes:
+
+```jsonc
+{
+  "groups": [
+    {
+      "group": "crm",
+      "label": "CRM",
+      "resources": [
+        /* ResourceDefinition[] */
+      ],
+    },
+  ],
+  "grantable": [
+    /* the rules this caller may grant, from canGrant */
+  ],
+}
+```
+
+Three levels of progressive disclosure, so the common case stays a grid of
+checkboxes:
+
+1. **Matrix** — resources × actions, checkbox per cell.
+2. **Scope** per row — a select: Everyone in org / My teams / Only mine /
+   Specific records.
+3. **Fields** — an expander per row, only for resources declaring `fields`.
+
+Anything the caller cannot grant renders disabled with the reason, mirroring the
+API rule exactly as the token picker already does.
+
+### 11.2 Org switcher and the active-org header
+
+`X-Active-Organization` must be attached by the shared HTTP layer in
+`@flama/api-client`, not per call site. Wire it from the org-switcher store so
+the header and `session.activeOrganizationId` cannot drift.
+
+### 11.3 Frontend business logic
+
+Per the repo rule, logic goes in `packages/frontend/src/modules/` — add an
+`authz` module beside the existing `api-tokens` and `organizations`, exposing
+the catalog query, role mutations, and grant management. App components stay
+presentational. TanStack Query keys follow `apps/docs/docs/architecture/query-keys.md`.
+
+### 11.4 Mobile
+
+No mobile work. `apps/mobile` consumes the API and is unaffected; the role
+builder is an admin surface and stays web-only.
+
+---
+
+## Part 12 — CLI and MCP
+
+**CLI (`apps/cli`).** New `flama roles` command group: `list`, `show`, `create`,
+`edit-permissions`, `assign`. New `flama grants` group: `list`, `create`,
+`revoke`. Exit codes are a public contract (`apps/cli/src/lib/errors.ts`) —
+reuse them, do not invent: 4 for forbidden, 5 for not found. Commands resolve
+the profile through `contextFor()`; never read config or env directly.
+
+**MCP (`apps/mcp`).** New tools in `src/tools/authz.tools.ts` mirroring the
+read-only surface: `list_roles`, `get_role`, `list_grants`. Each declares
+`requiredScopes` matching its endpoint's `@RequireScopes`. Annotate honestly —
+`readOnlyHint` only when every scope is `:read`. Remember `apps/mcp` is on Zod 4
+with `inputSchema` as a `z.object({...})`, and must not import Zod schemas from
+`@flama/shared`.
+
+Write tools for roles and grants are deliberately **out of scope** for the first
+pass: an MCP client editing permissions is a large blast radius for a small
+convenience. Reads first; revisit with the audit log in place.
+
+---
+
+## Part 13 — Testing
+
+Five layers. The kernel is not done until all five exist.
+
+**1. Unit — the ability builder.** Deny ordering (§G9): denies sort last across
+the union of all roles, so a `cannot` in one role is never overridden by a `can`
+in another. Placeholder interpolation, including the `'all'` grant case that
+must _omit_ the condition rather than emit an empty `$in`.
+
+**2. Unit — `applyAccessScope`.** Table-driven over the cross product of
+declared scopes × scope contents. The critical case: no clause matched ⇒
+`1 = 0`, never an unfiltered query.
+
+**3. The `expectAbility` harness.** A fluent, readable assertion API so policy
+tests are cheap enough that people write them:
+
+```ts
+expectAbility(role, { user, scope })
+  .can("read", "Lead")
+  .cannot("export", "Lead")
+  .cannot("read", "Lead", "value")
+  .canOn("update", lead({ ownerId: user.id }))
+  .cannotOn("update", lead({ ownerId: "someone-else" }));
+```
+
+**4. Route coverage tests.** Two enumerations over `DiscoveryService`: every
+route declares `@CheckPolicies` or `@NoPolicy`; every route declares
+`@RequireScopes` or `@AllowAnyScope`. Both fail the build.
+
+**5. Integration (needs Docker).** The `leads` module end to end:
+
+- a member of team A cannot read team B's leads through the list endpoint,
+  the detail endpoint, the export endpoint, an API token, or an MCP tool —
+  **each path asserted separately**, because "the list filters but the detail
+  doesn't" is the exact bug class this design targets;
+- an expired grant stops working without any cleanup job running;
+- removing someone from a team revokes their access on the **next request**
+  (this is the regression test for §10 — it fails if anyone caches `teamIds`);
+- an org admin cannot escalate: creating a role with `manage all` is rejected
+  with `ROLE_005`;
+- a platform-admin action writes an `audit_log` row with `usedBypass = true`.
+
+---
+
+## Part 14 — Delivery phases
+
+Five phases. Each ends green (`pnpm check`, `pnpm test`, `pnpm arch`), ships
+independently, and is behaviour-preserving unless the phase says otherwise.
+Every phase that touches the API surface ends with `pnpm generate:api-client`
+and a changeset.
+
+### Phase 0 — Kernel foundations _(no behaviour change)_
+
+| #    | Task                                                                                                                                       | Files                                                                             |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| 0.1  | Create `@flama/backend-authz` from the `backend/cache` template                                                                            | `packages/backend/authz/{package.json,tsconfig.json,README.md}`                   |
+| 0.2  | Extend the `domain-stays-pure` allow-list                                                                                                  | `apps/api/.dependency-cruiser.cjs`                                                |
+| 0.3  | Move the ability builder + interpolation in, re-export from the old paths                                                                  | `packages/backend/authz/src/ability/`, `packages/shared/src/permissions/index.ts` |
+| 0.4  | Deny ordering + test                                                                                                                       | `build-ability.ts`                                                                |
+| 0.5  | `defineResource`, `ResourceRegistry`, `AuthzModule.forRoot/forFeature`                                                                     | `src/registry/`                                                                   |
+| 0.6  | Declare the kernel's own subjects (`User`, `Role`, `Organization`, `Workspace`, `Member`, `Invitation`, `ApiToken`, `Billing`, `AuditLog`) | `apps/api/src/*/[module].resource.ts`                                             |
+| 0.7  | `GET /v1/authz/catalog` + response DTO + Swagger                                                                                           | `apps/api/src/authz/queries/find-catalog/`                                        |
+| 0.8  | Per-request ability memo                                                                                                                   | `ability.factory.ts`                                                              |
+| 0.9  | `@NoPolicy('reason')` + route-coverage test in **report-only** mode                                                                        | `guards/decorators.ts`, `apps/api/src/__tests__/route-coverage.spec.ts`           |
+| 0.10 | Annotate the offenders the test lists                                                                                                      | various controllers                                                               |
+| 0.11 | Flip `PoliciesGuard` to fail closed; test now fails the build                                                                              | `policies.guard.ts`                                                               |
+| 0.12 | `expectAbility` harness                                                                                                                    | `src/testing/`                                                                    |
+
+**Done when:** the catalog endpoint returns the kernel's subjects, no route is
+unannotated, and the guard rejects an unannotated route.
 
 ### Phase 1 — Tenancy (Q1)
 
-- [ ] Migration: `role.organization_id`, `user_role.organization_id`, index
-      changes, backfill to `null`.
-- [ ] `AbilityFactory` resolves per active org.
-- [ ] `X-Active-Organization` header, validated against memberships.
-- [ ] Version-keyed cache for **role rules only**; the version column is bumped
-      in the same transaction as the role write (§3.8).
-- [ ] Role endpoints become org-aware; global roles editable by platform admins
-      only.
+| #   | Task                                                                                                     |
+| --- | -------------------------------------------------------------------------------------------------------- |
+| 1.1 | Migration `1781400000000-AddOrgScopedRoles.ts`; entities registered in all three places                  |
+| 1.2 | `RoleEntity` / `RoleOrmEntity` / mapper gain `organizationId`                                            |
+| 1.3 | `AbilityFactory.createForUser(user, { organizationId })` unions global + org-scoped roles                |
+| 1.4 | `ActiveOrgInterceptor`: `X-Active-Organization` validated against `member` rows; `AUTHZ_001` on mismatch |
+| 1.5 | Role endpoints become org-aware; `ROLE_006` for cross-org edits; global roles are platform-admin only    |
+| 1.6 | Role-rule cache keyed on `organization.roleVersion`, bumped in the write transaction                     |
+| 1.7 | `@flama/api-client` header wiring + web org switcher                                                     |
+
+**Done when:** two organizations can each hold a distinct `manager` role, and a
+role granted in one has no effect in the other.
 
 ### Phase 2 — The scoping engine (Q2) — _the reusable core_
 
-- [ ] `AccessScope` + `ScopeResolver` (structural: org + teams), resolved per
-      request, not cached.
-- [ ] `access_grant` table + resolver contribution + admin endpoints,
-      **shipping with `canGrantScope` containment in the same phase** (§3.5) —
-      the endpoints are an escalation path without it.
-- [ ] `${scope.*}` placeholders, including array `$in`.
-- [ ] `applyAccessScope` + `ScopedRepositoryBase`; unscoped-query guard rail.
-- [ ] `@AuthorizeResource` interceptor, 404-on-out-of-scope.
-- [ ] `expectAbility` test harness.
+| #    | Task                                                                                   |
+| ---- | -------------------------------------------------------------------------------------- |
+| 2.1  | `AccessScope`, `ScopeResolverPort` + DI token, `ScopeContext` (request-scoped)         |
+| 2.2  | Default resolver in `apps/api`: `member` + `teamMember` lookups, per request, uncached |
+| 2.3  | Migration `1781500000000-AddAccessGrants.ts` + `access-grants` module (DDD slice)      |
+| 2.4  | `canGrantScope` **in this phase**, wired into grant create/update                      |
+| 2.5  | Grant endpoints: `GET/POST /v1/access-grants`, `DELETE /v1/access-grants/:id`          |
+| 2.6  | Resolver reads grants (with the expiry predicate) into `AccessScope.grants`            |
+| 2.7  | `${scope.*}` placeholders, including array `$in` and the `'all'` omission case         |
+| 2.8  | `applyAccessScope` + tests                                                             |
+| 2.9  | `ScopedRepositoryBase` in `@flama/backend-ddd` + the unscoped-query throw              |
+| 2.10 | `@AuthorizeResource` interceptor + loader registry, 404 on out-of-scope                |
+
+**Done when:** a resource declaring `scopes: ['organization','team']` is filtered
+correctly with zero authorization code in its handlers, and a scoped repository
+queried without a scope throws.
 
 ### Phase 3 — Governance (Q0 + safety)
 
-- [ ] `canGrant` across all four role-mutating use cases (the grant-side
-      `canGrantScope` already landed in Phase 2).
-- [ ] `audit_log` + interceptor; impersonated requests inherit the target's
-      scope (never `bypass`) and are always audited.
-- [ ] `@PlatformAdmin()` guard formalized as the Q0 short-circuit.
+| #   | Task                                                                                               |
+| --- | -------------------------------------------------------------------------------------------------- |
+| 3.1 | `canGrant` across all four role-mutating use cases; `ROLE_005`                                     |
+| 3.2 | Migration `1781600000000-AddAuditLog.ts` + `audit` module                                          |
+| 3.3 | `AuditInterceptor`: platform actions, impersonated requests, role/grant mutations; denials sampled |
+| 3.4 | `@PlatformAdmin()` guard formalized as the Q0 short-circuit                                        |
+| 3.5 | Impersonated sessions inherit the target's scope, **never** `bypass`, and always audit             |
+| 3.6 | `GET /v1/audit-logs` (org-scoped, read-only, `AuditLog` subject)                                   |
 
-### Phase 4 — Surfaces
+**Done when:** no user can grant a permission they lack, and every bypass leaves
+a row.
 
-- [ ] Role-builder UI in `apps/web`: permission matrix by group, field-level
-      toggles, scope selector — driven entirely by `/v1/authz/catalog`.
-- [ ] **Credential-scope catalog generated, not runtime-shared** (see §4.1 —
-      an API-local boot registry cannot reach a separately deployed MCP server):
-      a build step emits `SCOPE_RESOURCES` / the `Scope` union into
-      `@flama/shared` from the registry, checked in and verified by CI.
-- [ ] `@RequireScopes` on routes and `requiredScopes` on MCP tools **stay
-      explicit declarations** — validated against the generated catalog, never
-      inferred from it.
-- [ ] Docs: rewrite `.agents/rules/rbac-roles.md`, add
-      `apps/docs/docs/architecture/authorization.md`.
-- [ ] **A worked reference module (`leads`)** — team-scoped rows, an explicit
-      grant case, field-level hiding, and an end-to-end test proving a member of
-      team A cannot read team B's leads through _any_ route. This is both the
-      proof the kernel is reusable and the copy-paste template for the next
-      module.
+### Phase 4 — Surfaces and the reference module
+
+| #   | Task                                                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.1 | `pnpm generate:scope-catalog` + `catalog.generated.ts` + CI drift check                                                                                 |
+| 4.2 | Consistency test: registry ↔ `@RequireScopes` ↔ MCP `requiredScopes`                                                                                    |
+| 4.3 | Role builder UI + `packages/frontend/src/modules/authz`                                                                                                 |
+| 4.4 | Grants management UI                                                                                                                                    |
+| 4.5 | CLI `roles` + `grants` command groups                                                                                                                   |
+| 4.6 | MCP read-only authz tools                                                                                                                               |
+| 4.7 | **The `leads` reference module**, end to end                                                                                                            |
+| 4.8 | Docs: rewrite `.agents/rules/rbac-roles.md`; add `apps/docs/docs/architecture/authorization.md`; add every new error code to `apps/docs/docs/errors.md` |
+
+#### 4.7 in detail — the reference module
+
+`apps/api/src/leads/`, scaffolded with the `/scaffold-module` skill so it is
+DDD-compliant from the start, then:
+
+- `leads.resource.ts` — the declaration from §5.1;
+- `LeadOrmEntity` with `organizationId`, `teamId`, `ownerId`, `value`, `notes`;
+- `LeadRepository extends ScopedRepositoryBase`;
+- controllers with `@CheckPolicies` + `@RequireScopes` + `@AuthorizeResource`;
+- a seed adding two orgs × two teams × leads in each;
+- the integration suite from §13.5.
+
+This is simultaneously the proof the kernel is reusable, the copy-paste template
+for the next module, and the regression suite for the whole design. It is not
+optional, and it is not last-if-there-is-time.
 
 ### Deliberately out of scope
 
-ReBAC / Zanzibar-style relation tuples, an external policy engine (OPA/Cedar),
-and per-request policy compilation. Flama's tenant counts do not justify them,
-and the registry keeps the door open: `ScopeResolver` and the ability builder
-are the two seams an external engine would replace.
+ReBAC / Zanzibar-style relation tuples, an external policy engine (OPA, Cedar),
+per-request policy compilation, and role inheritance hierarchies. Flama's scale
+does not justify them. The kernel keeps the door open: `ScopeResolverPort` and
+the ability builder are the two seams an external engine would replace.
 
 ---
 
-## Part 6 — Answers to the source doc's open questions
+## Part 15 — Risks and rollback
 
-| Question                                             | Answer for Flama                                                                                                                                                                                        |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Scope inside a role, or a separate assignment table? | **Both, one source of truth.** Expressed as a role condition via `${scope.*}`, populated from `AccessScope` — never hand-authored. Keeps `can()` truthful without duplicating the data.                 |
-| Field-level depth for MVP?                           | Subject + action first. `fields` is already supported end-to-end; the registry declares which fields the UI may offer, so adding it later is a data change.                                             |
-| Platform tier?                                       | Already adopted in Flama (Better Auth `admin` plugin, `superadmin`, impersonation). Phase 3 adds the `audit_log` and formalizes the guard. `user.role` stays the platform role only.                    |
-| Action naming — domain verbs?                        | Agreed, with one rule: `manage` stays reserved as CASL's wildcard, and every custom verb is declared in the registry so it appears in the role-builder instead of being a string only its author knows. |
+| Risk                                                                        | Mitigation                                                                                                             |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Flipping `PoliciesGuard` to fail closed locks out a route nobody remembered | The report-only test enumerates every offender _before_ the flip. Phase 0 ordering exists for this.                    |
+| The org-scoped role migration breaks existing installs                      | Backfills to `NULL` = today's global behaviour. Reversible `down()`. No app code reads the column until 1.3.           |
+| A scoped repository throwing in production takes down a working endpoint    | Ships in Phase 2 with only `leads` using it. Existing repositories are untouched until deliberately migrated.          |
+| Query-count regression from per-request scope resolution                    | The ≤3-query budget test in §10. If it regresses, the fix is a grant cache — not caching `teamIds`.                    |
+| Codegen drift between the registry and the checked-in catalog               | CI regenerates and fails on diff, same contract as `generate:api-client`.                                              |
+| `X-Active-Organization` trusted without validation                          | 1.4 validates against `member` rows and returns `AUTHZ_001`. Cover it with an integration test that forges the header. |
+
+**Rollback.** Phases 0–1 are additive and revertible by migration `down()`.
+Phase 2's guard rail is opt-in per repository. Phase 3's audit writes are
+append-only and safe to leave. The only one-way door is the fail-closed guard
+flip (0.11) — and by then the route list is provably complete.
+
+---
+
+## Part 16 — Definition of done
+
+- [ ] A new module gets tenant isolation, team scoping, row filtering, a
+      role-builder entry, and an API-token scope by writing **one**
+      `defineResource` call and extending `ScopedRepositoryBase`.
+- [ ] No route reaches production without an explicit policy declaration.
+- [ ] No user can grant a capability or a grant they do not themselves hold.
+- [ ] Removing someone from a team revokes their access on the next request.
+- [ ] Every cross-tenant access leaves an audit row.
+- [ ] All six requirements from §1 hold for `leads`, asserted on every access
+      path — REST, generated client, API token, MCP tool, CLI.
+- [ ] `.agents/rules/rbac-roles.md` describes the built system, not this plan.
