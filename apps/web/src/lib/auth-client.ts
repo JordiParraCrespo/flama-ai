@@ -11,8 +11,18 @@ import { createAuthClient } from 'better-auth/react';
  */
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? '';
 
+/**
+ * Better Auth rejects a relative `baseURL`, but same-origin is this app's
+ * intended default — with no `VITE_API_URL` the path is just `/api/auth`,
+ * which threw `Invalid base URL` and left the page blank before any UI
+ * mounted. Resolving against the current origin keeps the zero-config path
+ * working and still lets an absolute `VITE_API_URL` win, since `new URL()`
+ * ignores the base when the input is already absolute.
+ */
+const authBaseUrl = new URL(`${apiBaseUrl}/api/auth`, window.location.origin).toString();
+
 export const authClient = createAuthClient({
-  baseURL: `${apiBaseUrl}/api/auth`,
+  baseURL: authBaseUrl,
   // The shared plugin set (additional user fields, admin, organizations) comes
   // from @flama/auth so the client types stay in lockstep with the server.
   plugins: [...sharedClientPlugins()],

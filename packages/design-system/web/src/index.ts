@@ -5,6 +5,17 @@ export { AppIcon, AppTile } from './components/app-icon';
 export type { AsyncOption } from './components/async-multi-select';
 export { AsyncMultiSelect } from './components/async-multi-select';
 export {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+  AttachmentTrigger,
+} from './components/attachment';
+export {
   Avatar,
   AvatarBadge,
   AvatarFallback,
@@ -15,6 +26,7 @@ export {
 export { Badge, badgeVariants } from './components/badge';
 export { BrandMark } from './components/brand-mark';
 export { BreakdownRow, TopItemRow } from './components/breakdown-row';
+export { Bubble, BubbleContent, BubbleGroup, BubbleReactions } from './components/bubble';
 export { Button, buttonVariants } from './components/button';
 export {
   Card,
@@ -113,8 +125,28 @@ export {
   InputGroupText,
   InputGroupTextarea,
 } from './components/input-group';
+export { Kbd } from './components/kbd';
 export { Kpi, KpiCard } from './components/kpi';
 export { Label } from './components/label';
+export {
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageFooter,
+  MessageGroup,
+  MessageHeader,
+} from './components/message';
+export {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+  useMessageScroller,
+  useMessageScrollerScrollable,
+  useMessageScrollerVisibility,
+} from './components/message-scroller';
 export {
   Pagination,
   PaginationContent,
@@ -134,6 +166,23 @@ export {
 } from './components/popover';
 export { Progress } from './components/progress';
 export { PromptCard } from './components/prompt-card';
+export {
+  Questionnaire,
+  QuestionnaireActions,
+  QuestionnaireChoice,
+  QuestionnaireChoiceDescription,
+  QuestionnaireChoices,
+  QuestionnaireDescription,
+  QuestionnaireError,
+  QuestionnaireInput,
+  QuestionnaireItem,
+  QuestionnaireNext,
+  QuestionnairePrevious,
+  QuestionnaireProgress,
+  QuestionnaireSkip,
+  QuestionnaireSubmit,
+  QuestionnaireTitle,
+} from './components/questionnaire';
 export { RadioGroup, RadioGroupItem } from './components/radio-group';
 export { RecentItem } from './components/recent-item';
 export { SearchInput } from './components/search-input';
@@ -149,12 +198,6 @@ export {
   SelectTrigger,
   SelectValue,
 } from './components/select';
-export { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentGroup, AttachmentMedia, AttachmentTitle, AttachmentTrigger } from './components/attachment';
-export { Bubble, BubbleContent, BubbleGroup, BubbleReactions } from './components/bubble';
-export { Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader } from './components/message';
-export { MessageScroller, MessageScrollerButton, MessageScrollerContent, MessageScrollerItem, MessageScrollerProvider, MessageScrollerViewport, useMessageScroller, useMessageScrollerScrollable, useMessageScrollerVisibility } from './components/message-scroller';
-export { Questionnaire, QuestionnaireActions, QuestionnaireChoice, QuestionnaireChoiceDescription, QuestionnaireChoices, QuestionnaireDescription, QuestionnaireError, QuestionnaireInput, QuestionnaireItem, QuestionnaireNext, QuestionnairePrevious, QuestionnaireProgress, QuestionnaireSkip, QuestionnaireSubmit, QuestionnaireTitle } from './components/questionnaire';
-export { Kbd } from './components/kbd';
 export { SelectMenu } from './components/select-menu';
 export { Separator } from './components/separator';
 export {
