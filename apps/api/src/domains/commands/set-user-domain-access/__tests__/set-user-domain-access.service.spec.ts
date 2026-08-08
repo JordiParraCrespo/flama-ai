@@ -1,8 +1,9 @@
 import { AppError } from '@flama/backend-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { OrganizationMembershipRepositoryPort } from '../../../../access-control/database/organization-membership.repository.port';
+import type { ResourceAccessRepositoryPort } from '../../../../access-control/database/resource-access.repository.port';
+import { ResourceAccessService } from '../../../../access-control/services/resource-access.service';
 import type { DomainRepositoryPort } from '../../../database/domain.repository.port';
-import type { OrganizationMembershipRepositoryPort } from '../../../database/organization-membership.repository.port';
-import type { UserDomainAccessRepositoryPort } from '../../../database/user-domain-access.repository.port';
 import { DomainEntity } from '../../../domain/domain.entity';
 import { Hostname } from '../../../domain/value-objects/hostname.value-object';
 import { SetUserDomainAccessCommand } from '../set-user-domain-access.command';
@@ -29,21 +30,27 @@ function domainWithId(id: string): DomainEntity {
 }
 
 describe('SetUserDomainAccessService', () => {
-  let access: UserDomainAccessRepositoryPort;
+  let accessRepository: ResourceAccessRepositoryPort;
+  let resourceAccess: ResourceAccessService;
   let domains: Pick<DomainRepositoryPort, 'findByIds'>;
   let membership: OrganizationMembershipRepositoryPort;
   let service: SetUserDomainAccessService;
 
   beforeEach(() => {
-    access = {
-      findDomainIdsForUser: vi.fn().mockResolvedValue([]),
+    accessRepository = {
+      findAllowedIds: vi.fn().mockResolvedValue([]),
       findRestrictionsForUser: vi.fn().mockResolvedValue([]),
       replaceForUser: vi.fn(),
-      deleteForDomain: vi.fn(),
+      deleteForResource: vi.fn(),
     };
+    resourceAccess = new ResourceAccessService(accessRepository);
     domains = { findByIds: vi.fn().mockResolvedValue([]) };
     membership = { isMember: vi.fn().mockResolvedValue(true) };
-    service = new SetUserDomainAccessService(access, domains as DomainRepositoryPort, membership);
+    service = new SetUserDomainAccessService(
+      resourceAccess,
+      domains as DomainRepositoryPort,
+      membership,
+    );
   });
 
   function run(domainIds: string[] = []) {
@@ -60,21 +67,21 @@ describe('SetUserDomainAccessService', () => {
     vi.mocked(membership.isMember).mockResolvedValue(false);
 
     await expect(run(['d1'])).rejects.toBeInstanceOf(AppError);
-    expect(access.replaceForUser).not.toHaveBeenCalled();
+    expect(accessRepository.replaceForUser).not.toHaveBeenCalled();
   });
 
   it('checks membership before touching the join, even when clearing access', async () => {
     vi.mocked(membership.isMember).mockResolvedValue(false);
 
     await expect(run([])).rejects.toBeInstanceOf(AppError);
-    expect(access.replaceForUser).not.toHaveBeenCalled();
+    expect(accessRepository.replaceForUser).not.toHaveBeenCalled();
   });
 
   it('refuses domain ids that do not belong to the organization', async () => {
     vi.mocked(domains.findByIds).mockResolvedValue([domainWithId('d1')]);
 
     await expect(run(['d1', 'd-other-tenant'])).rejects.toBeInstanceOf(AppError);
-    expect(access.replaceForUser).not.toHaveBeenCalled();
+    expect(accessRepository.replaceForUser).not.toHaveBeenCalled();
   });
 
   it('replaces the set scoped to the organization', async () => {
@@ -84,13 +91,13 @@ describe('SetUserDomainAccessService', () => {
 
     // Deduplicated, and the organization is passed so other organizations'
     // restrictions survive.
-    expect(access.replaceForUser).toHaveBeenCalledWith(USER, ORG, ['d1', 'd2']);
+    expect(accessRepository.replaceForUser).toHaveBeenCalledWith(USER, ORG, 'domain', ['d1', 'd2']);
   });
 
   it('clears the restriction with an empty list', async () => {
     await run([]);
 
-    expect(access.replaceForUser).toHaveBeenCalledWith(USER, ORG, []);
+    expect(accessRepository.replaceForUser).toHaveBeenCalledWith(USER, ORG, 'domain', []);
     expect(domains.findByIds).not.toHaveBeenCalled();
   });
 });

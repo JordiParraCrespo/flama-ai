@@ -1,40 +1,34 @@
 import { AppError } from '@flama/backend-core';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
+import { ORGANIZATION_MEMBERSHIP_REPOSITORY } from '../../../access-control/access-control.di-tokens';
+import type { OrganizationMembershipRepositoryPort } from '../../../access-control/database/organization-membership.repository.port';
+import { ResourceAccessService } from '../../../access-control/services/resource-access.service';
 import type { DomainRepositoryPort } from '../../database/domain.repository.port';
-import type { OrganizationMembershipRepositoryPort } from '../../database/organization-membership.repository.port';
-import type { UserDomainAccessRepositoryPort } from '../../database/user-domain-access.repository.port';
 import { DomainErrors } from '../../domain/domain.errors';
-import {
-  DOMAIN_REPOSITORY,
-  ORGANIZATION_MEMBERSHIP_REPOSITORY,
-  USER_DOMAIN_ACCESS_REPOSITORY,
-} from '../../domain.di-tokens';
+import { DOMAIN_REPOSITORY } from '../../domain.di-tokens';
+import { DOMAIN_RESOURCE_TYPE } from '../../services/domain-restrictable-resource';
 import { SetUserDomainAccessCommand } from './set-user-domain-access.command';
 
 /**
  * Replaces the set of domains a user may reach, within one organization.
  *
- * Two checks stand between the caller and the write, and both are tenant
- * boundaries rather than mere validation:
+ * The storage is generic (`ResourceAccessService`); what stays here are the two
+ * tenant boundaries, because only this module can check them:
  *
- * 1. **The target user must belong to the organization.** `userId` arrives
- *    from the path and is otherwise unconstrained, so without this an admin of
- *    organization A could restrict — or silently clear — the domain access of
- *    a user who only belongs to organization B.
+ * 1. **The target user must belong to the organization.** `userId` arrives from
+ *    the path and is otherwise unconstrained, so without this an admin of
+ *    organization A could restrict — or silently clear — the domain access of a
+ *    user who only belongs to organization B.
  * 2. **Every domain id must exist in the organization.** Otherwise a caller
  *    could grant reach into another tenant's domain by id.
- *
- * The replacement itself is scoped to `organizationId` by the repository, so a
- * user restricted in several organizations keeps the others intact.
  */
 @CommandHandler(SetUserDomainAccessCommand)
 export class SetUserDomainAccessService
   implements ICommandHandler<SetUserDomainAccessCommand, void>
 {
   constructor(
-    @Inject(USER_DOMAIN_ACCESS_REPOSITORY)
-    private readonly userDomainAccessRepository: UserDomainAccessRepositoryPort,
+    private readonly resourceAccess: ResourceAccessService,
     @Inject(DOMAIN_REPOSITORY)
     private readonly domainRepository: DomainRepositoryPort,
     @Inject(ORGANIZATION_MEMBERSHIP_REPOSITORY)
@@ -72,9 +66,10 @@ export class SetUserDomainAccessService
       }
     }
 
-    await this.userDomainAccessRepository.replaceForUser(
+    await this.resourceAccess.replace(
       command.userId,
       command.organizationId,
+      DOMAIN_RESOURCE_TYPE,
       requested,
     );
   }

@@ -99,17 +99,61 @@ if (!request.ability.can('update', subject('Article', article))) {
 `${user.id}` (any `user.*` path) is interpolated from the authenticated principal
 when the ability is built.
 
+### Per-instance access ("only these three domains")
+
+Some restrictions cannot be a static role permission because they name concrete
+rows. That is **`access-control/`**, and it is generic over the resource type —
+a feature module registers, it does not build its own table or contributor:
+
+```ts
+// domains/services/domain-restrictable-resource.ts
+export const DOMAIN_RESOURCE_TYPE = 'domain';
+
+registry.register({
+  type: DOMAIN_RESOURCE_TYPE,
+  // Restricting someone to three domains must also keep them out of every
+  // other domain's leads, so child subjects list the field that points back.
+  scopedSubjects: [
+    { subject: 'Domain', field: 'id' },
+    { subject: 'Lead', field: 'domainId' },
+  ],
+});
+```
+
+That registration buys the module all of:
+
+- **Storage** — `user_resource_access (userId, resourceType, resourceId, organizationId)`.
+  `resourceId` is polymorphic so it has **no foreign key**; the owning module
+  revokes grants from its removal event handler (`ResourceAccessService.revokeResource`),
+  or an orphaned row can hand a recycled id an old grant.
+- **CASL narrowing** — one `ResourceAccessContributor` turns stored rows into
+  `cannot` rules on the ability `PoliciesGuard` already builds, so every
+  instance-level `ability.can(...)` picks them up.
+- **The listing filter** — `ResourceAccessService.allowedIds(...)` returns
+  `undefined` when unrestricted and an id list otherwise. Filter the query with
+  it (`WHERE id IN (...)`); do not post-filter a page, or `total` and page sizes
+  start lying.
+- **The instance check** — `canReachResource(ability, action, subject, row)`.
+  Wrap it to raise your module's own error code.
+
+Two invariants worth not breaking:
+
+- **No rows means unrestricted**, per organization and resource type. An empty
+  array means "allowed nothing" — the opposite. `ResourceAccessService` holds
+  that distinction so call sites cannot get it backwards.
+- **Rules are qualified by `organizationId`**, and the tagged subject must carry
+  it. A user narrowed in one organization is unrestricted in another; an
+  unqualified rule would deny them everything everywhere.
+
 ### Narrowing an ability from a feature module (`AbilityContributor`)
 
-Some restrictions are not expressible as a static role permission because they
-depend on a feature module's own data — per-member domain access, for instance,
-lives in the `domains` module's `user_domain_access` join. `roles/` cannot
-import that module (every feature module already depends on the global roles
-module, so it would be a cycle).
+`access-control/` is itself built on a lower-level extension point, which you
+only need directly for a restriction that per-instance access does not model.
 
-The extension point is `AbilityContributor` in
-`roles/services/ability-contributor.ts`. A feature module implements it and
-registers itself with the global `AbilityContributorRegistry` from its own
+`AbilityContributor` (`roles/services/ability-contributor.ts`) lets a module add
+rules to the caller's ability without `roles/` importing it — that would be a
+cycle, since every feature module already depends on the global roles module. A
+contributor registers itself with the `AbilityContributorRegistry` from its own
 `onModuleInit`; `AbilityFactory` calls every contributor when it builds an
 ability, appending their rules after the role-derived ones so a `cannot` wins.
 
@@ -118,19 +162,6 @@ restriction as "cannot touch anything outside my list"
 (`conditions: { id: { $nin: allowed } }, inverted: true`), never as a permissive
 `$in`. `AbilityFactory` drops any non-inverted rule a contributor returns: a
 feature module must not be able to hand out access no role granted.
-
-`DomainAccessContributor` (`apps/api/src/domains/services/`) is the reference
-implementation. Note that a restriction also needs applying at the **query**
-level — see `FindDomainsQueryHandler`, which filters with `WHERE id IN (...)`
-rather than post-filtering a page, so `total` and page sizes stay honest.
-
-## Adding a new protected resource
-
-1. Pick a `subject` string (e.g. `'Invoice'`) and annotate the endpoints with
-   `@CheckPolicies({ action, subject })`.
-2. Optionally add it to `KNOWN_SUBJECTS` in `@flama/shared` for discoverability.
-3. Grant access by adding permissions to a role through the API — **no code
-   change is needed to authorize a role**. Admins (`manage all`) pass by default.
 
 ## Managing roles & assignments (admin-only API)
 

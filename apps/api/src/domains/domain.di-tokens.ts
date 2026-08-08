@@ -1,7 +1,9 @@
 /**
- * DI tokens for the domains module. Repositories are injected through tokens so
- * application code depends on the port abstractions, not the TypeORM adapters.
+ * DI tokens for the domains module. The repository is injected through a token
+ * so application code depends on the `DomainRepositoryPort` abstraction, not
+ * the concrete TypeORM adapter.
+ *
+ * Per-instance domain access has no token here: it is generic and served by
+ * `access-control/` (`ResourceAccessService`).
  */
 export const DOMAIN_REPOSITORY = Symbol('DOMAIN_REPOSITORY');
-export const USER_DOMAIN_ACCESS_REPOSITORY = Symbol('USER_DOMAIN_ACCESS_REPOSITORY');
-export const ORGANIZATION_MEMBERSHIP_REPOSITORY = Symbol('ORGANIZATION_MEMBERSHIP_REPOSITORY');

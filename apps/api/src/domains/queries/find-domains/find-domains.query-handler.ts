@@ -1,10 +1,11 @@
 import type { Paginated } from '@flama/backend-ddd';
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { ResourceAccessService } from '../../../access-control/services/resource-access.service';
 import type { DomainRepositoryPort } from '../../database/domain.repository.port';
-import type { UserDomainAccessRepositoryPort } from '../../database/user-domain-access.repository.port';
 import type { DomainEntity } from '../../domain/domain.entity';
-import { DOMAIN_REPOSITORY, USER_DOMAIN_ACCESS_REPOSITORY } from '../../domain.di-tokens';
+import { DOMAIN_REPOSITORY } from '../../domain.di-tokens';
+import { DOMAIN_RESOURCE_TYPE } from '../../services/domain-restrictable-resource';
 import { FindDomainsQuery } from './find-domains.query';
 
 /**
@@ -22,14 +23,16 @@ export class FindDomainsQueryHandler
   constructor(
     @Inject(DOMAIN_REPOSITORY)
     private readonly domainRepository: DomainRepositoryPort,
-    @Inject(USER_DOMAIN_ACCESS_REPOSITORY)
-    private readonly userDomainAccessRepository: UserDomainAccessRepositoryPort,
+    private readonly resourceAccess: ResourceAccessService,
   ) {}
 
   async execute(query: FindDomainsQuery): Promise<Paginated<DomainEntity>> {
-    const restrictedTo = await this.userDomainAccessRepository.findDomainIdsForUser(
+    // `undefined` when unrestricted in this organization; the service owns that
+    // distinction so an empty list is never mistaken for "allowed nothing".
+    const allowedDomainIds = await this.resourceAccess.allowedIds(
       query.requesterId,
       query.organizationId,
+      DOMAIN_RESOURCE_TYPE,
     );
 
     return this.domainRepository.findDomains({
@@ -39,10 +42,7 @@ export class FindDomainsQueryHandler
       status: query.status,
       ownerId: query.ownerId,
       search: query.search,
-      // No rows recorded *in this organization* means unrestricted here, which
-      // the port expresses as `undefined` — an empty array would mean
-      // "restricted to nothing".
-      allowedDomainIds: restrictedTo.length === 0 ? undefined : restrictedTo,
+      allowedDomainIds,
     });
   }
 }

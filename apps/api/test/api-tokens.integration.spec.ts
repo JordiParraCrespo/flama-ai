@@ -104,6 +104,9 @@ describe('API tokens & scopes (integration)', () => {
       '../src/migrations/1781100000000-AddApiTokensAndOAuth'
     );
     const { AddOutbox1781300000000 } = await import('../src/migrations/1781300000000-AddOutbox');
+    const { AddResourceAccess1781350000000 } = await import(
+      '../src/migrations/1781350000000-AddResourceAccess'
+    );
     const { AddDomains1781400000000 } = await import('../src/migrations/1781400000000-AddDomains');
 
     const migrationRunner = new DataSource({
@@ -119,8 +122,9 @@ describe('API tokens & scopes (integration)', () => {
         AddAdminAndOrganizations1781000000000,
         AddApiTokensAndOAuth1781100000000,
         AddOutbox1781300000000,
-        // Required by every authenticated request: `DomainAccessContributor`
-        // reads `user_domain_access` whenever an ability is built.
+        // Required by every authenticated request: `ResourceAccessContributor`
+        // reads `user_resource_access` whenever an ability is built.
+        AddResourceAccess1781350000000,
         AddDomains1781400000000,
       ],
     });

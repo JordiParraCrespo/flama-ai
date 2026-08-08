@@ -1,7 +1,6 @@
 import { Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { DomainRemovedDomainEventHandler } from './application/event-handlers/domain-removed.domain-event-handler';
 import { ConnectDomainHttpController } from './commands/connect-domain/connect-domain.http.controller';
 import { ConnectDomainService } from './commands/connect-domain/connect-domain.service';
@@ -13,14 +12,7 @@ import { UpdateDomainHttpController } from './commands/update-domain/update-doma
 import { UpdateDomainService } from './commands/update-domain/update-domain.service';
 import { DomainOrmEntity } from './database/domain.orm-entity';
 import { DomainRepository } from './database/domain.repository';
-import { OrganizationMembershipRepository } from './database/organization-membership.repository';
-import { UserDomainAccessOrmEntity } from './database/user-domain-access.orm-entity';
-import { UserDomainAccessRepository } from './database/user-domain-access.repository';
-import {
-  DOMAIN_REPOSITORY,
-  ORGANIZATION_MEMBERSHIP_REPOSITORY,
-  USER_DOMAIN_ACCESS_REPOSITORY,
-} from './domain.di-tokens';
+import { DOMAIN_REPOSITORY } from './domain.di-tokens';
 import { DomainMapper } from './domain.mapper';
 import { FindDomainByIdHttpController } from './queries/find-domain-by-id/find-domain-by-id.http.controller';
 import { FindDomainByIdQueryHandler } from './queries/find-domain-by-id/find-domain-by-id.query-handler';
@@ -28,7 +20,7 @@ import { FindDomainsHttpController } from './queries/find-domains/find-domains.h
 import { FindDomainsQueryHandler } from './queries/find-domains/find-domains.query-handler';
 import { FindUserDomainAccessHttpController } from './queries/find-user-domain-access/find-user-domain-access.http.controller';
 import { FindUserDomainAccessQueryHandler } from './queries/find-user-domain-access/find-user-domain-access.query-handler';
-import { DomainAccessContributor } from './services/domain-access.contributor';
+import { DomainRestrictableResourceRegistrar } from './services/domain-restrictable-resource';
 
 // Controller registration order matters: the collection route must be matched
 // before `:id`. The two `users/:userId/domains` controllers live here rather
@@ -60,29 +52,15 @@ const eventHandlers: Provider[] = [DomainRemovedDomainEventHandler];
 
 const mappers: Provider[] = [DomainMapper];
 
-const repositories: Provider[] = [
-  { provide: DOMAIN_REPOSITORY, useClass: DomainRepository },
-  {
-    provide: USER_DOMAIN_ACCESS_REPOSITORY,
-    useClass: UserDomainAccessRepository,
-  },
-  {
-    provide: ORGANIZATION_MEMBERSHIP_REPOSITORY,
-    useClass: OrganizationMembershipRepository,
-  },
-];
+const repositories: Provider[] = [{ provide: DOMAIN_REPOSITORY, useClass: DomainRepository }];
 
-// Contributes the per-domain narrowing rules to every ability the
-// `PoliciesGuard` builds. It registers itself with the global
-// `AbilityContributorRegistry` on init — see
-// `roles/services/ability-contributor.ts`.
-const abilityContributors: Provider[] = [DomainAccessContributor];
+// Declares domains as a resource users can be restricted to a subset of. The
+// storage, the CASL narrowing and the listing filter are generic — see
+// `access-control/`.
+const accessControl: Provider[] = [DomainRestrictableResourceRegistrar];
 
 @Module({
-  imports: [
-    CqrsModule,
-    TypeOrmModule.forFeature([DomainOrmEntity, UserDomainAccessOrmEntity, MemberOrmEntity]),
-  ],
+  imports: [CqrsModule, TypeOrmModule.forFeature([DomainOrmEntity])],
   controllers: [...httpControllers],
   providers: [
     ...commandHandlers,
@@ -90,8 +68,8 @@ const abilityContributors: Provider[] = [DomainAccessContributor];
     ...eventHandlers,
     ...mappers,
     ...repositories,
-    ...abilityContributors,
+    ...accessControl,
   ],
-  exports: [DOMAIN_REPOSITORY, USER_DOMAIN_ACCESS_REPOSITORY, DomainMapper, TypeOrmModule],
+  exports: [DOMAIN_REPOSITORY, DomainMapper, TypeOrmModule],
 })
 export class DomainsModule {}

@@ -2,6 +2,7 @@ import '@flama/env/load';
 import { OutboxMessageSchema } from '@flama/backend-ddd';
 import type { Role } from '@flama/shared';
 import { DataSource } from 'typeorm';
+import { UserResourceAccessOrmEntity } from '../access-control/database/user-resource-access.orm-entity';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
 import { auth } from '../auth/auth';
 import { Account } from '../auth/entities/account.entity';
@@ -11,7 +12,6 @@ import { OAuthConsentOrmEntity } from '../auth/entities/oauth-consent.entity';
 import { Session } from '../auth/entities/session.entity';
 import { Verification } from '../auth/entities/verification.entity';
 import { DomainOrmEntity } from '../domains/database/domain.orm-entity';
-import { UserDomainAccessOrmEntity } from '../domains/database/user-domain-access.orm-entity';
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
@@ -45,7 +45,7 @@ const dataSource = new DataSource({
     TeamOrmEntity,
     TeamMemberOrmEntity,
     DomainOrmEntity,
-    UserDomainAccessOrmEntity,
+    UserResourceAccessOrmEntity,
     OutboxMessageSchema,
   ],
 });

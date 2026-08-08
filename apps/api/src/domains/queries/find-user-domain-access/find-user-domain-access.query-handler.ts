@@ -1,29 +1,22 @@
-import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { UserDomainAccessRepositoryPort } from '../../database/user-domain-access.repository.port';
-import { USER_DOMAIN_ACCESS_REPOSITORY } from '../../domain.di-tokens';
+import { ResourceAccessService } from '../../../access-control/services/resource-access.service';
 import { UserDomainAccessResponseDto } from '../../dtos/user-domain-access.response.dto';
+import { DOMAIN_RESOURCE_TYPE } from '../../services/domain-restrictable-resource';
 import { FindUserDomainAccessQuery } from './find-user-domain-access.query';
 
 @QueryHandler(FindUserDomainAccessQuery)
 export class FindUserDomainAccessQueryHandler
   implements IQueryHandler<FindUserDomainAccessQuery, UserDomainAccessResponseDto>
 {
-  constructor(
-    @Inject(USER_DOMAIN_ACCESS_REPOSITORY)
-    private readonly userDomainAccessRepository: UserDomainAccessRepositoryPort,
-  ) {}
+  constructor(private readonly resourceAccess: ResourceAccessService) {}
 
   async execute(query: FindUserDomainAccessQuery): Promise<UserDomainAccessResponseDto> {
-    const domainIds = await this.userDomainAccessRepository.findDomainIdsForUser(
+    const { resourceIds, unrestricted } = await this.resourceAccess.restrictedTo(
       query.userId,
       query.organizationId,
+      DOMAIN_RESOURCE_TYPE,
     );
 
-    return {
-      userId: query.userId,
-      domainIds,
-      unrestricted: domainIds.length === 0,
-    };
+    return { userId: query.userId, domainIds: resourceIds, unrestricted };
   }
 }

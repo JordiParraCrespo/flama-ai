@@ -18,9 +18,18 @@ a domain event, staged on the transactional outbox by the repository so the
 on-connect work (Search Console import, initial crawl) and the on-removal
 cleanup cannot be lost.
 
-Domain access is **per-organization**: a user may be narrowed to three domains
-in one organization and unrestricted in another, so both the join writes and the
-CASL rules are qualified by `organizationId`. Setting a user's access also
+**Per-instance access is a generic mechanism**, not a domains feature. The new
+`access-control/` module owns a polymorphic `user_resource_access` table, a
+single `ResourceAccessContributor` that turns stored rows into CASL `cannot`
+rules, a listing-filter service and an instance-check helper. A feature module
+opts in by registering a `RestrictableResource` — a resource type key and the
+subjects the restriction narrows — so leads or campaigns get the same behaviour
+without another table, contributor or helper. `domains` registers one and is
+otherwise an ordinary consumer.
+
+Access is **per-organization**: a user may be narrowed to three domains in one
+organization and unrestricted in another, so the writes, the reads and the CASL
+rules are all qualified by `organizationId`. Setting a user's access also
 requires them to be a member of that organization.
 
 Endpoints, all `@RequireScopes`-gated by the new `domains:read` / `domains:write`

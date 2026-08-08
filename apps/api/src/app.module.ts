@@ -15,6 +15,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
+import { AccessControlModule } from './access-control/access-control.module';
 import { AdminModule } from './admin/admin.module';
 import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { auth } from './auth/auth';
@@ -146,6 +147,7 @@ import { UsersModule } from './users/user.module';
     HealthModule,
     QueueModule,
     BillingModule,
+    AccessControlModule,
     DomainsModule,
   ],
   providers: [
