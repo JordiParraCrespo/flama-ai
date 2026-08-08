@@ -1,5 +1,7 @@
 import { canGrant, type ResourceDefinition, type ResourceRegistry } from '@flama/backend-authz';
 import type { AppAbility } from '@flama/shared';
+import type { AccessGrantOrmEntity } from './database/access-grant.orm-entity';
+import type { AccessGrantResponseDto } from './dtos/access-grant.response.dto';
 import type {
   AuthzCatalogResponseDto,
   AuthzResourceDto,
@@ -46,4 +48,19 @@ export function toCatalogResponse(
     .map((rule) => ({ action: rule.action, subject: rule.subject }));
 
   return { groups, grantable };
+}
+
+/** Persistence → wire shape for an access grant. */
+export function toAccessGrantResponse(record: AccessGrantOrmEntity): AccessGrantResponseDto {
+  return {
+    id: record.id,
+    organizationId: record.organizationId,
+    principalType: record.principalType,
+    principalId: record.principalId,
+    resourceType: record.resourceType,
+    resourceId: record.resourceId,
+    grantedBy: record.grantedBy,
+    expiresAt: record.expiresAt,
+    createdAt: record.createdAt,
+  };
 }

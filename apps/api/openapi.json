@@ -245,6 +245,125 @@
         "tags": ["Authorization"]
       }
     },
+    "/api/v1/access-grants": {
+      "get": {
+        "operationId": "list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccessGrantResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the access grants in the active organization",
+        "tags": ["Access grants"]
+      },
+      "post": {
+        "description": "The grant may not exceed the granter’s own access. Omitting resourceId grants every resource of that type, which requires already holding all of them.",
+        "operationId": "create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccessGrantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessGrantResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GRANT_003 — The named principal does not belong to this organization",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "GRANT_002 — An access grant cannot exceed the granter's own access",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Grant access to specific records",
+        "tags": ["Access grants"]
+      }
+    },
+    "/api/v1/access-grants/{id}": {
+      "delete": {
+        "operationId": "revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoked"
+          },
+          "404": {
+            "description": "GRANT_001 — Access grant not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke an access grant",
+        "tags": ["Access grants"]
+      }
+    },
     "/api/v1/me/credential": {
       "get": {
         "description": "Returns the credential kind, its granted scopes and what those scopes actually amount to once the owner’s roles are applied. The MCP server filters its tool list by `effectiveScopes`.",
@@ -3259,6 +3378,89 @@
           }
         },
         "required": ["groups", "grantable"]
+      },
+      "AccessGrantResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "principalType": {
+            "type": "string",
+            "enum": ["user", "team", "role"]
+          },
+          "principalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceType": {
+            "type": "string",
+            "example": "Lead",
+            "description": "A registry subject."
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Null grants every resource of that type within the organization."
+          },
+          "grantedBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "principalType",
+          "principalId",
+          "resourceType",
+          "grantedBy",
+          "createdAt"
+        ]
+      },
+      "CreateAccessGrantRequest": {
+        "type": "object",
+        "properties": {
+          "principalType": {
+            "type": "string",
+            "enum": ["user", "team", "role"]
+          },
+          "principalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": ["principalType", "principalId", "resourceType"]
       },
       "CurrentCredentialResponseDto": {
         "type": "object",

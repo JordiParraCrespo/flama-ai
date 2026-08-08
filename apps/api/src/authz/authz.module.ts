@@ -8,12 +8,15 @@ import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
 import { ORGANIZATION_RESOURCES } from '../organizations/organizations.resource';
+import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { RoleResource } from '../roles/roles.resource';
 import { UserResource } from '../users/users.resource';
+import { AccessGrantsController } from './access-grants.controller';
 import { AccessGrantOrmEntity } from './database/access-grant.orm-entity';
 import { AccessScopeInterceptor } from './interceptors/access-scope.interceptor';
 import { FindAuthzCatalogHttpController } from './queries/find-catalog/find-catalog.http.controller';
 import { FindAuthzCatalogQueryHandler } from './queries/find-catalog/find-catalog.query-handler';
+import { AccessGrantService } from './services/access-grant.service';
 import { ActiveOrganizationResolver } from './services/active-organization.resolver';
 import { ScopeResolver } from './services/scope.resolver';
 
@@ -35,6 +38,7 @@ import { ScopeResolver } from './services/scope.resolver';
       MemberOrmEntity,
       TeamOrmEntity,
       TeamMemberOrmEntity,
+      RoleOrmEntity,
     ]),
     AuthzKernelModule.forFeature([
       UserResource,
@@ -44,10 +48,11 @@ import { ScopeResolver } from './services/scope.resolver';
       ...ORGANIZATION_RESOURCES,
     ]),
   ],
-  controllers: [FindAuthzCatalogHttpController],
+  controllers: [FindAuthzCatalogHttpController, AccessGrantsController],
   providers: [
     FindAuthzCatalogQueryHandler,
     ActiveOrganizationResolver,
+    AccessGrantService,
     AccessScopeInterceptor,
     // Behind the port, so an application needing hierarchical scope resolution
     // (a manager seeing their reports' rows, a region → territory tree)

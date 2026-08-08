@@ -8,8 +8,6 @@ export interface PolicyRule {
 
 export const CHECK_POLICIES_KEY = 'check_policies';
 export const NO_POLICY_KEY = 'no_policy';
-export const PLATFORM_ADMIN_KEY = 'platform_admin';
-export const AUTHORIZE_RESOURCE_KEY = 'authorize_resource';
 
 /**
  * Declare the capability a route requires. Checked by `PoliciesGuard` against
@@ -29,29 +27,14 @@ export const CheckPolicies = (...rules: PolicyRule[]) => SetMetadata(CHECK_POLIC
 export const NoPolicy = (reason: string) => SetMetadata(NO_POLICY_KEY, reason);
 
 /**
- * Restrict a route to the platform tier (Q0). Short-circuits organization and
- * scope checks, and is always audited.
- */
-export const PlatformAdmin = () => SetMetadata(PLATFORM_ADMIN_KEY, true);
-
-export interface AuthorizeResourceOptions {
-  /** Registry subject of the resource being acted on. */
-  subject: string;
-  /** Route parameter carrying the resource id. Defaults to `id`. */
-  param?: string;
-  /**
-   * Action to check against the loaded row. Defaults to the action declared by
-   * the route's `@CheckPolicies` rule for the same subject.
-   */
-  action?: string;
-}
-
-/**
- * Authorize a single-row route against the loaded entity, not just its type.
+ * Instance-level authorization — "may you update **this** lead" — is not a
+ * decorator here.
  *
- * `@CheckPolicies` can only answer "may you update leads at all"; this answers
- * "may you update *this* lead". A row that does not exist and a row outside the
- * caller's scope both produce 404, so ids cannot be probed.
+ * It is enforced at the data layer instead: `ScopedRepositoryBase` filters
+ * every read by the caller's scope, so a row they cannot reach is simply not
+ * returned and the handler's existing not-found path covers it. A route
+ * decorator would be a second, opt-in mechanism that has to be remembered per
+ * route — strictly worse than one that cannot be forgotten.
+ *
+ * For a check against an already-loaded row, use `canAccessRow`.
  */
-export const AuthorizeResource = (options: AuthorizeResourceOptions) =>
-  SetMetadata(AUTHORIZE_RESOURCE_KEY, { param: 'id', ...options });

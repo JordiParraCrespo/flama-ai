@@ -118,6 +118,15 @@ production without declaring what it requires is a programming error, and
 reporting it as a permission problem would send whoever hits it looking in the
 wrong place.
 
+## Access grants
+
+| Code                             | Title                                                     | HTTP |
+| -------------------------------- | --------------------------------------------------------- | ---- |
+| `GRANT_001` <a id="grant_001" /> | Access grant not found                                    | 404  |
+| `GRANT_002` <a id="grant_002" /> | An access grant cannot exceed the granter's own access    | 403  |
+| `GRANT_003` <a id="grant_003" /> | The named principal does not belong to this organization  | 400  |
+| `GRANT_004` <a id="grant_004" /> | Access grants are written inside an organization          | 400  |
+
 ## Leads
 
 | Code                           | Title          | HTTP |

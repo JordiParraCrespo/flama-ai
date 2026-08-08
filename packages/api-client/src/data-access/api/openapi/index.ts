@@ -8,6 +8,7 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 
+export { $AccessGrantResponseDto } from './schemas/$AccessGrantResponseDto';
 export { $AddMemberRequest } from './schemas/$AddMemberRequest';
 export { $AddWorkspaceMemberRequest } from './schemas/$AddWorkspaceMemberRequest';
 export { $AdminCreateUserRequest } from './schemas/$AdminCreateUserRequest';
@@ -26,6 +27,7 @@ export { $BanUserRequest } from './schemas/$BanUserRequest';
 export { $BillingSessionResponseDto } from './schemas/$BillingSessionResponseDto';
 export { $CapabilitiesResponseDto } from './schemas/$CapabilitiesResponseDto';
 export { $CheckSlugRequest } from './schemas/$CheckSlugRequest';
+export { $CreateAccessGrantRequest } from './schemas/$CreateAccessGrantRequest';
 export { $CreateApiTokenRequest } from './schemas/$CreateApiTokenRequest';
 export { $CreateCheckoutRequest } from './schemas/$CreateCheckoutRequest';
 export { $CreatedApiTokenResponseDto } from './schemas/$CreatedApiTokenResponseDto';
@@ -67,6 +69,7 @@ export { $UserResponseDto } from './schemas/$UserResponseDto';
 export { $WorkspaceMemberResponseDto } from './schemas/$WorkspaceMemberResponseDto';
 export { $WorkspaceResponseDto } from './schemas/$WorkspaceResponseDto';
 
+export { AccessGrantsApi } from './services/AccessGrantsApi';
 export { AdminApi } from './services/AdminApi';
 export { ApiTokensApi } from './services/ApiTokensApi';
 export { AuthorizationApi } from './services/AuthorizationApi';
