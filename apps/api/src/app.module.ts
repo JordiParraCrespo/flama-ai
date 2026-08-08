@@ -1,3 +1,4 @@
+import { AuthzModule as AuthzKernelModule } from '@flama/backend-authz';
 import { CacheModule } from '@flama/backend-cache';
 import {
   AllExceptionsFilter,
@@ -20,6 +21,7 @@ import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { auth } from './auth/auth';
 import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
+import { AuthzModule } from './authz/authz.module';
 import { BillingModule } from './billing/billing.module';
 import { CapabilitiesModule } from './capabilities/capabilities.module';
 import {
@@ -136,7 +138,11 @@ import { UsersModule } from './users/user.module';
       }),
     }),
     OutboxModule,
+    // The kernel's registry is global; feature modules contribute their
+    // resource declarations via AuthzModule.forFeature().
+    AuthzKernelModule.forRoot(),
     AuthModule,
+    AuthzModule,
     ApiTokensModule,
     UsersModule,
     RolesModule,

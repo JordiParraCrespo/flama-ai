@@ -42,6 +42,9 @@ importers:
       '@flama/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@flama/backend-authz':
+        specifier: workspace:*
+        version: link:../../packages/backend/authz
       '@flama/backend-cache':
         specifier: workspace:*
         version: link:../../packages/backend/cache

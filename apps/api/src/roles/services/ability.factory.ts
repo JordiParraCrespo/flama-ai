@@ -17,6 +17,20 @@ export interface AuthenticatedUser {
   [key: string]: unknown;
 }
 
+/** Where the per-request ability is memoized. */
+const ABILITY_CACHE = Symbol('authz.ability');
+
+/** The subset of the request object the factory reads and writes. */
+export interface AbilityRequest {
+  user?: AuthenticatedUser;
+  session?: {
+    activeOrganizationId?: string | null;
+    activeTeamId?: string | null;
+  } | null;
+  ability?: AppAbility;
+  [ABILITY_CACHE]?: AppAbility;
+}
+
 /** Request-scoped context used to interpolate resource-scoping conditions. */
 export interface AbilityScope {
   /** The caller's active organization (from `session.activeOrganizationId`). */
@@ -44,6 +58,27 @@ export class AbilityFactory {
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepositoryPort,
   ) {}
+
+  /**
+   * The caller's ability for this request, built once and memoized on the
+   * request object.
+   *
+   * Four call sites resolve the ability during a single request (the guard plus
+   * three api-token handlers). Without the memo each one re-reads the role
+   * tables, so the same answer is computed up to four times per request.
+   */
+  async forRequest(request: AbilityRequest): Promise<AppAbility> {
+    if (request[ABILITY_CACHE]) return request[ABILITY_CACHE];
+
+    const ability = await this.createForUser(request.user ?? {}, {
+      activeOrganizationId: request.session?.activeOrganizationId ?? null,
+      activeTeamId: request.session?.activeTeamId ?? null,
+    });
+
+    request[ABILITY_CACHE] = ability;
+    request.ability = ability;
+    return ability;
+  }
 
   async createForUser(user: AuthenticatedUser, scope: AbilityScope = {}): Promise<AppAbility> {
     const permissions = await this.resolvePermissions(user);

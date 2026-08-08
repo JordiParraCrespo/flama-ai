@@ -9,6 +9,7 @@ import {
   MemoryHealthIndicator,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { NoPolicy } from '../auth/decorators/check-policies.decorator';
 import { AllowAnyScope } from '../auth/decorators/require-scopes.decorator';
 import { CapabilitiesResponseDto } from './dtos/capabilities.response.dto';
 import { RedisHealthIndicator } from './redis-health.indicator';
@@ -26,6 +27,7 @@ export class HealthController {
   ) {}
 
   @Get('health')
+  @NoPolicy('public liveness probe')
   @HealthCheck()
   @ApiOperation({ summary: 'Liveness check' })
   @ApiResponse({ status: 200, description: 'App is alive' })
@@ -34,6 +36,7 @@ export class HealthController {
   }
 
   @Get('health/capabilities')
+  @NoPolicy('public capability probe; already unauthenticated')
   // Anonymous callers already get this response (the login page reads it
   // before any session exists), so a scoped credential may too — without this
   // the global ScopesGuard fails closed and 403s API-token/OAuth callers.
@@ -54,6 +57,7 @@ export class HealthController {
   }
 
   @Get('ready')
+  @NoPolicy('public readiness probe')
   @HealthCheck()
   @ApiOperation({ summary: 'Readiness check' })
   @ApiResponse({ status: 200, description: 'App is ready to receive traffic' })

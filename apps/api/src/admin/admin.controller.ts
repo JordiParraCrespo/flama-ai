@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { CheckPolicies, NoPolicy } from '../auth/decorators/check-policies.decorator';
 import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
@@ -97,6 +97,7 @@ export class AdminController {
   }
 
   @Post('stop-impersonating')
+  @NoPolicy('ends the caller’s own impersonation session; holding no admin power is the point')
   @Version('1')
   @RequireScopes('admin:write')
   @ApiOperation({ summary: 'Stop impersonating and restore the admin session' })
