@@ -1,4 +1,4 @@
-import { subject } from '@casl/ability';
+import { subject } from '@flama/shared';
 import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';

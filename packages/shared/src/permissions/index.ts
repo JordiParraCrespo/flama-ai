@@ -4,8 +4,21 @@ import {
   type MongoAbility,
   type MongoQuery,
   type Subject,
+  subject,
 } from '@casl/ability';
 import type { Role } from '../types';
+
+/**
+ * CASL's subject tagger, re-exported so consumers never import `@casl/ability`
+ * directly.
+ *
+ * Instance-level checks (`ability.can('read', subject('Domain', row))`) only
+ * work when the tag CASL reads was written by the same CASL that built the
+ * ability. Funnelling both through this package keeps that a single version by
+ * construction, rather than something every consumer has to remember to align
+ * in its own `package.json`.
+ */
+export { subject };
 
 /**
  * Actions and subjects are free-form strings: admins define roles and their

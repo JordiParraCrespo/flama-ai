@@ -1,5 +1,4 @@
-import { subject } from '@casl/ability';
-import { defineAbilitiesFromPermissions } from '@flama/shared';
+import { defineAbilitiesFromPermissions, subject } from '@flama/shared';
 import { describe, expect, it } from 'vitest';
 
 describe('defineAbilitiesFromPermissions', () => {

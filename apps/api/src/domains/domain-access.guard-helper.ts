@@ -1,6 +1,6 @@
-import { subject } from '@casl/ability';
 import { AppError } from '@flama/backend-core';
 import type { AppAbility } from '@flama/shared';
+import { subject } from '@flama/shared';
 import type { DomainEntity } from './domain/domain.entity';
 import { DomainErrors } from './domain/domain.errors';
 

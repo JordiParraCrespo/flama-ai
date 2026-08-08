@@ -1,5 +1,4 @@
-import { subject } from '@casl/ability';
-import { defineAbilitiesFromPermissions } from '@flama/shared';
+import { defineAbilitiesFromPermissions, subject } from '@flama/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbilityContributorRegistry } from '../../roles/services/ability-contributor';
 import type { UserDomainAccessRepositoryPort } from '../database/user-domain-access.repository.port';
