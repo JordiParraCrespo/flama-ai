@@ -7,6 +7,7 @@ const MESSAGES: Record<string, string> = {
   'errors.fallback': 'Something went wrong.',
   'errors.unreachable': 'Could not reach the server.',
   ORG_002: 'That organization address is already taken.',
+  INVALID_EMAIL_OR_PASSWORD: 'Incorrect email or password.',
   AUTH_002: 'You do not have permission to do that.',
 };
 
@@ -62,6 +63,30 @@ describe('createErrorMessageResolver', () => {
     const resolved = resolve(apiFailure({ status: 403, code: 'AUTH_002' }), 'Login failed.');
 
     expect(resolved.message).toBe('You do not have permission to do that.');
+  });
+
+  it('keeps the screen’s copy for a server failure carrying no problem document', () => {
+    // Better Auth's client rejects a wrong password through `AuthRequestError`:
+    // a real 401, but no problem document. Treating "no document" as "could not
+    // connect" told a user who mistyped their password to check their wifi.
+    const wrongPassword = Object.assign(new Error('Invalid email or password'), {
+      status: 401,
+    });
+
+    const resolved = resolve(wrongPassword, 'Incorrect email or password.');
+
+    expect(resolved.message).toBe('Incorrect email or password.');
+    expect(resolved.message).not.toBe('Could not reach the server.');
+  });
+
+  it('translates a Better Auth code carried on the error itself', () => {
+    const wrongPassword = Object.assign(new Error('Invalid email or password'), {
+      status: 401,
+      code: 'INVALID_EMAIL_OR_PASSWORD',
+    });
+
+    // Beats even the screen's own copy, and is translated.
+    expect(resolve(wrongPassword, 'Login failed.').message).toBe('Incorrect email or password.');
   });
 
   it('reports a request that never reached the API as unreachable', () => {

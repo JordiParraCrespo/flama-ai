@@ -67,11 +67,21 @@ export class AppError extends Error {
  * The generated api-client throws its own `ApiError` with the parsed response
  * on `body`; when that body is a problem document the server's own explanation
  * wins over the caller's generic fallback.
+ *
+ * Not every failure arrives that way. Better Auth's client rejects through
+ * `@flama/auth`'s `AuthRequestError`, which carries a `status` and its own
+ * `code` but no problem document — so both are read off the error directly when
+ * there is none. `status` is what distinguishes a failure the server answered
+ * from one that never reached it.
  */
 export function toAppError(error: unknown, fallback: ErrorDefinition): AppError {
   if (error instanceof AppError) return error;
 
-  const candidate = error as { status?: number; body?: unknown } | null;
+  const candidate = error as {
+    status?: number;
+    code?: unknown;
+    body?: unknown;
+  } | null;
   const body = candidate?.body;
 
   if (isProblemDetails(body)) {
@@ -82,5 +92,10 @@ export function toAppError(error: unknown, fallback: ErrorDefinition): AppError 
     });
   }
 
-  return new AppError(fallback, { status: candidate?.status, cause: error });
+  const code = typeof candidate?.code === 'string' ? candidate.code : undefined;
+
+  return new AppError(code ? { ...fallback, code } : fallback, {
+    status: candidate?.status,
+    cause: error,
+  });
 }

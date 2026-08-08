@@ -78,7 +78,21 @@
       "ADMIN_005": "Ese rol no se puede asignar.",
       "ADMIN_006": "Ese usuario está baneado.",
       "ADMIN_007": "No se ha podido completar esa solicitud.",
-      "ADMIN_008": "La administración de usuarios no está disponible temporalmente. Inténtalo de nuevo."
+      "ADMIN_008": "La administración de usuarios no está disponible temporalmente. Inténtalo de nuevo.",
+      "INVALID_EMAIL_OR_PASSWORD": "Correo electrónico o contraseña incorrectos.",
+      "INVALID_EMAIL": "Esa dirección de correo electrónico no es válida.",
+      "INVALID_PASSWORD": "Esa contraseña no es correcta.",
+      "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "Ya existe una cuenta con ese correo electrónico.",
+      "USER_NOT_FOUND": "No se ha encontrado ninguna cuenta con ese correo electrónico.",
+      "USER_EMAIL_NOT_FOUND": "No se ha encontrado ninguna cuenta con ese correo electrónico.",
+      "EMAIL_NOT_VERIFIED": "Verifica tu dirección de correo electrónico antes de iniciar sesión.",
+      "PASSWORD_TOO_SHORT": "Esa contraseña es demasiado corta.",
+      "PASSWORD_TOO_LONG": "Esa contraseña es demasiado larga.",
+      "INVALID_TOKEN": "Ese enlace no es válido. Solicita uno nuevo.",
+      "TOKEN_EXPIRED": "Ese enlace ha caducado. Solicita uno nuevo.",
+      "SESSION_EXPIRED": "Tu sesión ha caducado. Inicia sesión de nuevo.",
+      "CREDENTIAL_ACCOUNT_NOT_FOUND": "Esa cuenta usa otro método de inicio de sesión.",
+      "FAILED_TO_CREATE_USER": "No se ha podido crear tu cuenta. Inténtalo de nuevo."
     }
   },
   "auth": {

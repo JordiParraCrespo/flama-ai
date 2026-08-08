@@ -67,21 +67,29 @@ export function createErrorMessageResolver({ t, translateCode }: ErrorMessageRes
    *   a generic translated sentence is used.
    */
   return function resolveErrorMessage(error: unknown, fallback?: string): ResolvedErrorMessage {
+    // An empty sentinel code: `toAppError` only overrides it when the error
+    // actually carried one, so `code` stays falsy for a failure that named no
+    // code at all rather than reporting a made-up one to the screen.
     const appError =
-      error instanceof AppError
-        ? error
-        : toAppError(error, { code: 'UNKNOWN', message: 'Unknown error' });
+      error instanceof AppError ? error : toAppError(error, { code: '', message: '' });
 
-    const { code, problem } = appError;
+    const { code, problem, status } = appError;
     const translated = code ? translateCode(code) : undefined;
 
-    // No problem document at all means the request never reached the API, which
-    // no screen-specific copy describes better than "we could not connect".
-    const generic = problem ? (fallback ?? t('errors.fallback')) : t('errors.unreachable');
+    // "Unreachable" is claimed only when there is no HTTP status at all — the
+    // request never got an answer. A failure that *has* a status was answered by
+    // the server and deserves the caller's own copy, even when it carried no
+    // problem document: Better Auth's client rejects a wrong password with a
+    // plain 401 and no document, and telling that user to check their
+    // connection would be actively misleading.
+    const reachedServer = status !== undefined;
+    const generic = reachedServer ? (fallback ?? t('errors.fallback')) : t('errors.unreachable');
 
     return {
       message: translated ?? generic,
-      code: problem?.code,
+      // The API's catalog code, or whatever code the failure named (Better
+      // Auth's, say) — undefined when it named none.
+      code: problem?.code ?? (code || undefined),
       correlationId: appError.correlationId,
       fieldErrors: appError.fieldErrors,
     };
