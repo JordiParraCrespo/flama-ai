@@ -200,7 +200,10 @@ collects them at boot and that single collection feeds:
 - validation of submitted permissions (unknown subject ⇒ a **warning** on the
   response, never a hard rejection — the catalog stays advisory, admins may
   still store any string, exactly as today);
-- the credential-scope catalog (`SCOPE_RESOURCES` becomes derived);
+- the credential-scope catalog, **generated at build time** into `@flama/shared`
+  rather than shared at runtime — `apps/mcp` is deployed separately and `Scope`
+  is a compile-time union, so codegen is the only mechanism that reaches them
+  (§4.1);
 - seeding of preset roles;
 - the scope engine's key mapping (below);
 - the policy-coverage test.
@@ -322,6 +325,18 @@ if their own ability already satisfies it. Applied in `CreateRole`,
 enforced in both places. Existing `ADMIN_LOCKOUT` protection stays. Org-scoped
 role editors can never touch `organization_id IS NULL` roles.
 
+**The same containment applies to `access_grant`, and ships with it — not
+later.** A grant is a privilege transfer just as much as a role rule is, and
+`resource_id = null` ("every resource of this type") is the most powerful thing
+the table can express. So `canGrantScope(actorScope, grant)`: an actor may only
+create or extend a grant whose reach is a **subset of their own `AccessScope`**
+for that resource type — a team-scoped actor cannot mint a `resource_id = null`
+grant, cannot grant ids outside their own visible set, and cannot name a
+principal (`user` / `team` / `role`) outside the active organization. Without
+this, Phase 2's grant endpoints are a self-service escalation path, so
+`canGrantScope` is a Phase 2 deliverable and the two containment checks live
+side by side in `grants/`.
+
 ### 3.6 Deny precedence
 
 Denies (`inverted: true`) are sorted last when building the ability, across the
@@ -340,11 +355,34 @@ but not at the cost of a write per probe.
 
 - **Per-request memo.** `AbilityFactory` is called from `PoliciesGuard` and three
   api-token handlers; memoize on the request so one request builds one ability.
-- **Version-keyed cache.** `authz:v{orgRoleVersion}:{userId}:{orgId}` in Redis.
-  Any role/assignment/grant write bumps the org's `roleVersion` through the
-  existing outbox → no explicit invalidation fan-out, no stale-permission window
-  worth worrying about. Revoking a role still takes effect on the next request,
-  which is the property the scopes rules already promise.
+- **Cache the role rules; resolve the structural scope every request.** These
+  two halves have different invalidation properties and must not share a cache
+  entry:
+  - **Role rules** are app-owned, written through the app's own aggregates, and
+    safe to cache at `authz:v{orgRoleVersion}:{userId}:{orgId}` in Redis, with
+    any role/assignment write bumping the org's `roleVersion`.
+  - **Structural scope** (`organizationId`, `teamIds`) is **not cached.** Team
+    membership is owned by Better Auth — `WorkspacesService.addMember` /
+    `removeMember` call `auth.api.addTeamMember` / `removeTeamMember`, which
+    write the `teamMember` table outside any app transaction and therefore stage
+    nothing on the outbox. A cached `teamIds` would keep granting a removed
+    member that team's rows until some unrelated authorization write happened to
+    bump the version. Resolving it per request is two indexed lookups
+    (`member`, `teamMember`) against data already in the connection pool's hot
+    set — cheaper than the bug.
+
+  Explicit grants sit in the middle: app-owned, so version-bumpable, but they
+  are the Q2 dimension and revocation there is security-sensitive, so they are
+  resolved per request alongside the structural scope until a measurement says
+  otherwise.
+
+  One caveat that rules out the tempting shortcut: `OutboxService.wake()`
+  **swallows delivery failures by design** ("rows stay pending for the next
+  poll"). An outbox-driven version bump is therefore eventually consistent, not
+  next-request guaranteed — fine for role rules, not a mechanism to rely on for
+  revoking scope. Version bumps on role writes are written in the same
+  transaction as the role change, not delivered as an event, for the same
+  reason.
 
 ---
 
@@ -359,7 +397,7 @@ packages/backend/authz/          # @flama/backend-authz  (library package)
 ├── scope/          AccessScope, ScopeResolver (interface + default), applyAccessScope
 ├── ability/        buildAbility, placeholder interpolation, deny ordering
 ├── guards/         PoliciesGuard, PlatformAdminGuard, AuthorizeResource interceptor
-├── grants/         canGrant
+├── grants/         canGrant, canGrantScope
 └── testing/        expectAbility(...) harness
 ```
 
@@ -367,6 +405,49 @@ packages/backend/authz/          # @flama/backend-authz  (library package)
 Zod schemas, the catalog response type) — nothing that drags CASL into the web
 bundle. `apps/api` keeps only the app-specific wiring: the Better Auth
 integration, the `roles` module, and the `access_grant` persistence.
+
+### 4.1 The registry is a boot-time API concern — the scope catalog is not
+
+The registry lives in the API process. Two consumers cannot see it, and
+pretending otherwise would ship a resource that is invisible to exactly the
+credentials meant to reach it:
+
+- **`apps/mcp` is a separately deployed server** with a static `ToolDefinition`
+  registry whose `requiredScopes` are hand-written, and it filters its tool list
+  against them. It never talks to the API's boot registry.
+- **`Scope` in `@flama/shared` is a static union type** (`SCOPE_RESOURCES` ×
+  access level) that the CLI, the web permission picker and the MCP tools all
+  type-check against. A runtime-only catalog cannot produce a compile-time type.
+
+So the flow is **codegen, one direction, checked in**:
+
+```
+defineResource(...)  ──build step──▶  packages/shared/src/scopes/catalog.generated.ts
+                                      (SCOPE_RESOURCES, PERMISSION_GROUPS, Scope)
+                                              │
+                        ┌─────────────────────┼─────────────────────┐
+                     apps/api              apps/mcp              apps/web
+                @RequireScopes(...)   requiredScopes: [...]    permission picker
+                   (explicit)            (explicit)              (derived)
+```
+
+Both enforcement declarations stay **explicit and hand-written** — the generated
+catalog is what they are _validated against_, not a substitute for them. That
+keeps `ScopesGuard`'s fail-closed property intact (a route with no
+`@RequireScopes` is still unreachable by a scoped credential — the one failure
+mode that is safe) and keeps the MCP mismatch that
+`scopes-and-credentials.md` warns about a **build failure** rather than a
+runtime surprise:
+
+- CI regenerates the catalog and fails if the checked-in file differs — the same
+  contract as `pnpm generate:api-client`.
+- A test asserts every registry resource with a `credentialScope` has a matching
+  group, every route's `@RequireScopes` names a real scope, and every MCP tool's
+  `requiredScopes` matches the `@RequireScopes` of the endpoint it calls.
+
+What the registry genuinely buys is that the _source_ of the catalog moves from
+a hand-maintained literal in shared to the module that owns the resource. The
+declarations stay; the drift between two hand-written lists goes away.
 
 ---
 
@@ -395,14 +476,18 @@ green.
       changes, backfill to `null`.
 - [ ] `AbilityFactory` resolves per active org.
 - [ ] `X-Active-Organization` header, validated against memberships.
-- [ ] Version-keyed ability cache, invalidated via the outbox.
+- [ ] Version-keyed cache for **role rules only**; the version column is bumped
+      in the same transaction as the role write (§3.8).
 - [ ] Role endpoints become org-aware; global roles editable by platform admins
       only.
 
 ### Phase 2 — The scoping engine (Q2) — _the reusable core_
 
-- [ ] `AccessScope` + `ScopeResolver` (structural: org + teams).
-- [ ] `access_grant` table + resolver contribution + admin endpoints.
+- [ ] `AccessScope` + `ScopeResolver` (structural: org + teams), resolved per
+      request, not cached.
+- [ ] `access_grant` table + resolver contribution + admin endpoints,
+      **shipping with `canGrantScope` containment in the same phase** (§3.5) —
+      the endpoints are an escalation path without it.
 - [ ] `${scope.*}` placeholders, including array `$in`.
 - [ ] `applyAccessScope` + `ScopedRepositoryBase`; unscoped-query guard rail.
 - [ ] `@AuthorizeResource` interceptor, 404-on-out-of-scope.
@@ -410,7 +495,8 @@ green.
 
 ### Phase 3 — Governance (Q0 + safety)
 
-- [ ] `canGrant` across all four role-mutating use cases.
+- [ ] `canGrant` across all four role-mutating use cases (the grant-side
+      `canGrantScope` already landed in Phase 2).
 - [ ] `audit_log` + interceptor; impersonated requests inherit the target's
       scope (never `bypass`) and are always audited.
 - [ ] `@PlatformAdmin()` guard formalized as the Q0 short-circuit.
@@ -419,10 +505,13 @@ green.
 
 - [ ] Role-builder UI in `apps/web`: permission matrix by group, field-level
       toggles, scope selector — driven entirely by `/v1/authz/catalog`.
-- [ ] Credential-scope catalog generated from the registry; `SCOPE_RESOURCES`
-      becomes derived, and a new resource is reachable by API tokens and MCP
-      without a second hand-edit.
-- [ ] `flama` CLI + MCP pick the generated catalog up for free.
+- [ ] **Credential-scope catalog generated, not runtime-shared** (see §4.1 —
+      an API-local boot registry cannot reach a separately deployed MCP server):
+      a build step emits `SCOPE_RESOURCES` / the `Scope` union into
+      `@flama/shared` from the registry, checked in and verified by CI.
+- [ ] `@RequireScopes` on routes and `requiredScopes` on MCP tools **stay
+      explicit declarations** — validated against the generated catalog, never
+      inferred from it.
 - [ ] Docs: rewrite `.agents/rules/rbac-roles.md`, add
       `apps/docs/docs/architecture/authorization.md`.
 - [ ] **A worked reference module (`leads`)** — team-scoped rows, an explicit
