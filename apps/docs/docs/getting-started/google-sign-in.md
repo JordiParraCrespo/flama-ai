@@ -114,6 +114,15 @@ Both variables are read by the API process only. Nothing about Google reaches
 the client bundles — the web and mobile apps just ask the API whether the
 provider exists.
 
+:::note Containers do not inherit the root `.env`
+The API image does not ship `.env`; the process only sees what its runtime
+environment forwards. `docker/docker-compose.prod.yml` passes both variables
+through to the `api` service, so a `.env` next to the compose file (or the same
+names exported in the shell) is enough there. The Helm chart renders the API's
+environment from `api.env` in `values.yaml`; add the pair there (or reference a
+Secret). On any other target, use that platform's own secret wiring.
+:::
+
 ## 5. Restart the API and verify
 
 Environment is read once at boot, so a running API will not pick up the new

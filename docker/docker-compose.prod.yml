@@ -46,6 +46,14 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       FRONTEND_URL: ${FRONTEND_URL}
+      # OAuth providers. The image does not ship the root `.env`, so anything
+      # the API must read has to be forwarded here. Empty is the "not
+      # configured" value — the provider simply stays off (see
+      # GET /api/v1/health/capabilities).
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
     ports:
       - "3001:3001"
 
