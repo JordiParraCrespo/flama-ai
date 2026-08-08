@@ -34,7 +34,7 @@ function AuthLayout() {
           <LanguageSwitcher />
         </div>
 
-        <div className="flex w-full max-w-[400px] flex-col gap-7">
+        <div className="flex w-full max-w-100 flex-col gap-7">
           <a href="/" className="flex items-center justify-center gap-2 self-center text-ink-900">
             <BrandMark size={22} />
             <span className="text-2xl font-medium tracking-tight">{t('common.appName')}</span>
@@ -45,7 +45,7 @@ function AuthLayout() {
 
       <div className="hidden w-1/2 flex-col justify-between bg-surface-inverse p-12 lg:flex">
         <BrandMark size={26} className="text-on-inverse" />
-        <div className="max-w-[420px]">
+        <div className="max-w-105">
           <p className="text-2xl leading-snug font-medium text-on-inverse">
             {t('auth.panelTitle')}
           </p>
