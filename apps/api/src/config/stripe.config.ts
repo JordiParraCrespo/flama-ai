@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
-import { orUndefined } from './env';
+import { parseEnv } from './env';
 
 /**
  * Stripe billing configuration. Every value is optional capability config so
@@ -18,12 +18,12 @@ const schema = z.object({
   portalReturnUrl: z.string().url().optional(),
 });
 
-export const stripeConfig = registerAs('stripe', () => {
-  return schema.parse({
-    secretKey: orUndefined(process.env.STRIPE_SECRET_KEY),
-    webhookSecret: orUndefined(process.env.STRIPE_WEBHOOK_SECRET),
-    successUrl: orUndefined(process.env.STRIPE_SUCCESS_URL),
-    cancelUrl: orUndefined(process.env.STRIPE_CANCEL_URL),
-    portalReturnUrl: orUndefined(process.env.STRIPE_PORTAL_RETURN_URL),
-  });
-});
+export const stripeConfig = registerAs('stripe', () =>
+  parseEnv('stripe', schema, {
+    secretKey: 'STRIPE_SECRET_KEY',
+    webhookSecret: 'STRIPE_WEBHOOK_SECRET',
+    successUrl: 'STRIPE_SUCCESS_URL',
+    cancelUrl: 'STRIPE_CANCEL_URL',
+    portalReturnUrl: 'STRIPE_PORTAL_RETURN_URL',
+  }),
+);

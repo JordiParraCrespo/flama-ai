@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
+import { parseEnv } from './env';
 
 const schema = z.object({
   host: z.string().default('localhost'),
@@ -17,18 +18,14 @@ const schema = z.object({
 });
 
 /** Treat unset OR blank ("DB_X=") env vars alike. */
-const orUndefined = (value: string | undefined): string | undefined => {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : undefined;
-};
 
-export const databaseConfig = registerAs('database', () => {
-  return schema.parse({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    logQueries: orUndefined(process.env.DB_LOG_QUERIES),
-  });
-});
+export const databaseConfig = registerAs('database', () =>
+  parseEnv('database', schema, {
+    host: 'DB_HOST',
+    port: 'DB_PORT',
+    username: 'DB_USERNAME',
+    password: 'DB_PASSWORD',
+    database: 'DB_DATABASE',
+    logQueries: 'DB_LOG_QUERIES',
+  }),
+);
