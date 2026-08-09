@@ -1,3 +1,4 @@
+import '@flama/env/load';
 import { Pool } from 'pg';
 
 /**
@@ -7,9 +8,23 @@ import { Pool } from 'pg';
  * than standing up a mail catcher, the suite reads them from where the API puts
  * them: reset tokens live in Better Auth's `verification` table, and everything
  * else is asserted against the rows sign-up is supposed to create.
+ *
+ * Connection settings come from the root `.env` through `@flama/env`, reading
+ * the same `DB_*` variables as `database.config.ts` and Better Auth's own pool.
+ * That is the whole point: a suite that asserted against a *different* database
+ * from the API under test would report passes that mean nothing. Blank is read
+ * as unset, matching `orUndefined` in `apps/api/src/config/env.ts`, so a
+ * commented-out `DB_PASSWORD=` behaves identically on both sides.
  */
+const orUndefined = (value: string | undefined): string | undefined =>
+  value?.trim() ? value : undefined;
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL ?? 'postgresql://flama:flama@localhost:5432/flama',
+  host: orUndefined(process.env.DB_HOST) ?? 'localhost',
+  port: Number.parseInt(orUndefined(process.env.DB_PORT) ?? '5432', 10),
+  user: orUndefined(process.env.DB_USERNAME) ?? 'flama',
+  password: orUndefined(process.env.DB_PASSWORD) ?? 'flama',
+  database: orUndefined(process.env.DB_DATABASE) ?? 'flama',
   max: 5,
   // Test files inside one worker share this module, so no single file may own
   // the pool's lifetime — an `end()` in one file's afterAll would break every

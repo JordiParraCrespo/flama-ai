@@ -730,6 +730,10 @@ importers:
         version: 5.9.3
 
   e2e:
+    dependencies:
+      '@flama/env':
+        specifier: workspace:*
+        version: link:../packages/env
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.5.5

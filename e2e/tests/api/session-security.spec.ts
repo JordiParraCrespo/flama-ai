@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { API_URL } from '../../playwright.config';
 import {
   newContext,
   newUser,
@@ -120,8 +121,11 @@ test.describe('session security', () => {
 
   test('CORS does not open the API to an arbitrary origin', async () => {
     const { request } = await import('@playwright/test');
+    // Its own context rather than `newContext()`, because the whole point is to
+    // present an untrusted `Origin` — but still the configured API, so an
+    // `API_URL` override tests the deployment the rest of the suite tests.
     const evil = await request.newContext({
-      baseURL: 'http://localhost:3001',
+      baseURL: API_URL,
       extraHTTPHeaders: { Origin: 'http://evil.example.com' },
     });
 

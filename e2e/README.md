@@ -31,7 +31,16 @@ pnpm --filter @flama/e2e e2e:ratelimit     # see "The rate-limit test" below
 ```
 
 Overridable via environment: `API_URL` (default `http://localhost:3001`),
-`WEB_URL` (`http://localhost:3000`), `DATABASE_URL`, `API_LOG` (`/tmp/api.log`).
+`WEB_URL` (`http://localhost:3000`), `API_LOG` (`/tmp/api.log`).
+
+Database settings are **not** a separate knob. `support/db.ts` imports
+`@flama/env/load` and reads the same `DB_HOST` / `DB_PORT` / `DB_USERNAME` /
+`DB_PASSWORD` / `DB_DATABASE` from the root `.env` that the API and the
+migrations use, so the suite cannot end up asserting against a different
+database from the one under test — which would turn every DB-backed assertion
+into a meaningless pass. To point at another database, change those variables
+(a real environment variable always wins over the file), exactly as you would
+for the API.
 
 ## No mail server needed
 
