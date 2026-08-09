@@ -14,6 +14,7 @@
     "check": "biome check --write --unsafe .",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
+    "test:e2e": "pnpm --filter @flama/e2e e2e",
     "clean": "turbo run clean && rm -rf node_modules",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
