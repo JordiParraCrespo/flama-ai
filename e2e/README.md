@@ -1,0 +1,99 @@
+# @flama/e2e
+
+End-to-end coverage for authentication, driven by Playwright against a running
+stack. Two projects share one runner:
+
+- **`api`** — drives the Better Auth endpoints and the REST routes behind them
+  with `request` only, so it needs no browser.
+- **`web`** — drives `apps/web` in Chromium, exercising the same journeys
+  through the UI a user actually sees.
+
+## Running it
+
+```bash
+# 1. infrastructure
+pnpm docker:up                       # Postgres + Redis
+cp .env.example .env                 # EMAIL_PROVIDER=console is what the suite reads
+
+# 2. build + migrate + start the API, capturing its log (see "Mailbox" below)
+pnpm build
+pnpm --filter @flama/api migration:run
+node apps/api/dist/main.js > /tmp/api.log 2>&1 &
+
+# 3. the web app (only needed for the `web` project)
+pnpm --filter @flama/web dev &
+
+# 4. the tests
+pnpm test:e2e                              # everything (from the repo root)
+pnpm --filter @flama/e2e e2e:api           # API only, no browser needed
+pnpm --filter @flama/e2e e2e:web           # browser only
+pnpm --filter @flama/e2e e2e:ratelimit     # see "The rate-limit test" below
+```
+
+Overridable via environment: `API_URL` (default `http://localhost:3001`),
+`WEB_URL` (`http://localhost:3000`), `DATABASE_URL`, `API_LOG` (`/tmp/api.log`).
+
+## No mail server needed
+
+Two flows depend on a link that normally arrives by email. The suite reads them
+from where the API already puts them, so there is nothing to install:
+
+- **Password reset** — the token lives in Better Auth's `verification` table,
+  as `reset-password:<token>` in the `identifier` column. `support/db.ts` reads
+  it.
+- **Email verification** — the token is a signed JWT that is never stored, so
+  `support/mail.ts` reads it out of the API log instead. With
+  `EMAIL_PROVIDER=console` the API's `ConsoleEmailService` logs every message it
+  would have sent, which makes the log the mailbox. That is why step 2 above
+  redirects the API's output to a file, and why `API_LOG` must point at it.
+
+## Two conventions worth knowing
+
+**`test.fail()` marks a known bug, not a broken test.** A handful of tests
+assert the behaviour the app _should_ have and carry a `test.fail()` annotation
+naming the issue they track. They report green while the bug is present and turn
+**red when it is fixed** — that is the signal to delete the annotation, not to
+re-open anything. Currently annotated:
+
+| Test                                                             | Tracks |
+| ---------------------------------------------------------------- | ------ |
+| `cannot escalate their own role to admin`                        | #68    |
+| `cannot modify another user's profile`                           | #68    |
+| `a token cannot exceed the scopes its owner is allowed to grant` | #68    |
+| `cannot list every user in the deployment`                       | #112   |
+| `a session opened before the reset no longer authenticates`      | #111   |
+
+**Requests carry an `Origin` header.** Better Auth refuses a cookie-bearing
+state change that arrives without one (`MISSING_OR_NULL_ORIGIN`) — its CSRF
+defence. Browsers always send one; a bare API client does not, so `newContext()`
+in `support/auth.ts` sends the web app's origin, which the API trusts. A new
+helper that builds its own request context needs the same header.
+
+## The rate-limit test
+
+`the API throttles a flood of requests @ratelimit` deliberately trips the global
+per-IP limiter (100/minute), which would then refuse every other test sharing
+that IP. It is excluded from the default run by `grepInvert` and has its own
+script:
+
+```bash
+pnpm --filter @flama/e2e e2e:ratelimit
+```
+
+Token minting is separately throttled to 10/minute, so `mintToken` waits out a
+429 rather than failing — the limiter has its own test and should not be
+re-tested by accident everywhere else.
+
+## Layout
+
+```
+e2e/
+├── support/
+│   ├── auth.ts     # request contexts, sign-up/in/out, reset helpers, problem-doc assertions
+│   ├── db.ts       # reset tokens, roles, orgs, sessions, password hashes
+│   └── mail.ts     # reads the console-provider "mailbox" out of the API log
+└── tests/
+    ├── api/        # sign-up, sign-in, password reset, verification, protected
+    │               # routes, authorization, API tokens, session security, OAuth
+    └── web/        # the same journeys through apps/web in Chromium
+```
