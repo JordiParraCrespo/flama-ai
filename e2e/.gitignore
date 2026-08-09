@@ -2,4 +2,4 @@
 test-results/
 playwright-report/
 blob-report/
-results.json
+# results.json now lands in test-results/

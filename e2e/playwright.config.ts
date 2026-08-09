@@ -25,7 +25,13 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : 4,
-  reporter: [['list'], ['html', { open: 'never' }], ['json', { outputFile: 'results.json' }]],
+  // Every artifact lands under a directory Biome and git already ignore, so a
+  // local run never leaves generated output for `pnpm check` to lint.
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+  ],
   timeout: 60_000,
   expect: { timeout: 10_000 },
   // The rate-limit test deliberately trips the per-IP throttle, which would
