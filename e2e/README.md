@@ -70,7 +70,6 @@ re-open anything. Currently annotated:
 | `cannot modify another user's profile`                           | #68    |
 | `a token cannot exceed the scopes its owner is allowed to grant` | #68    |
 | `cannot list every user in the deployment`                       | #112   |
-| `a session opened before the reset no longer authenticates`      | #111   |
 
 **Requests carry an `Origin` header.** Better Auth refuses a cookie-bearing
 state change that arrives without one (`MISSING_OR_NULL_ORIGIN`) — its CSRF

@@ -12,25 +12,19 @@ import {
 import { findResetToken, findSessionsForUser } from '../../support/db';
 
 test.describe('session security', () => {
-  test.describe('a password reset ends the sessions it was meant to protect', () => {
-    test.fail(
-      true,
-      'BUG #111: Better Auth `revokeSessionsOnPasswordReset` is left at its ' +
-        'default (false), so a session stolen before the reset survives it. The ' +
-        'reset is the standard remedy for exactly that, so it must revoke.',
-    );
-    test('a session opened before the reset no longer authenticates', async () => {
-      const { api, user, userId } = await signedUpContext('stolensession');
-      expect((await api.get('/api/v1/users/me', { failOnStatusCode: false })).status()).toBe(200);
+  // The reset is the remedy for a session someone else is holding, so it has to
+  // end that session — `revokeSessionsOnPasswordReset` in `auth.ts`.
+  test('a session opened before the reset no longer authenticates', async () => {
+    const { api, user, userId } = await signedUpContext('stolensession');
+    expect((await api.get('/api/v1/users/me', { failOnStatusCode: false })).status()).toBe(200);
 
-      const elsewhere = await newContext();
-      await requestPasswordReset(elsewhere, user.email);
-      const token = (await findResetToken(user.email)) as string;
-      expect((await resetPassword(elsewhere, token, 'Rotated!Password9')).status()).toBe(200);
+    const elsewhere = await newContext();
+    await requestPasswordReset(elsewhere, user.email);
+    const token = (await findResetToken(user.email)) as string;
+    expect((await resetPassword(elsewhere, token, 'Rotated!Password9')).status()).toBe(200);
 
-      expect(await findSessionsForUser(userId)).toHaveLength(0);
-      expect((await api.get('/api/v1/users/me', { failOnStatusCode: false })).status()).toBe(401);
-    });
+    expect(await findSessionsForUser(userId)).toHaveLength(0);
+    expect((await api.get('/api/v1/users/me', { failOnStatusCode: false })).status()).toBe(401);
   });
 
   test('a tampered session cookie is refused', async () => {
