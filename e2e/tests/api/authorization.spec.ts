@@ -5,37 +5,39 @@ import { findUserByEmail } from '../../support/db';
 /**
  * What a plain, self-registered user may do to *other* people's records.
  *
- * The tests marked `test.fail()` describe the behaviour the app should have;
- * they pass while the bug is present and turn red the moment it is fixed, which
- * is the signal to delete the annotation. Each one names the issue it tracks.
+ * The default `user` role scopes `read`/`update User` to `{ id: '${user.id}' }`
+ * and the handlers enforce that per row, so everything here is a real boundary
+ * rather than an aspiration.
  */
 test.describe('authorization boundaries for a default user', () => {
-  test.fail(
-    true,
-    'BUG #68: the seeded `user` role holds an unconditional `update User`, so ' +
-      'any signed-in user can PATCH anyone — including setting `role`, which ' +
-      'the Better Auth admin plugin then honours.',
-  );
   test('cannot escalate their own role to admin', async () => {
-    const { api, userId } = await signedUpContext('escalate');
+    const { api, user, userId } = await signedUpContext('escalate');
 
+    // Updating your own name is allowed, so this request is authorized — the
+    // point is that the privilege field riding along with it must not take.
+    // `updateUserSchema` no longer declares `role`, so Zod drops it.
     const response = await api.patch(`/api/v1/users/${userId}`, {
-      data: { role: 'admin' },
+      data: { firstName: 'Renamed', role: 'admin' },
       failOnStatusCode: false,
     });
 
+    expect(response.status()).toBe(200);
+    expect((await response.json()).firstName, 'the legitimate part still applies').toBe('Renamed');
     expect(
-      response.status(),
-      'a self-service profile update must never accept a privilege field',
-    ).toBe(403);
+      (await findUserByEmail(user.email))?.role,
+      'a self-service profile update must never confer a privilege',
+    ).toBe('user');
+
+    // And the escalation is not merely cosmetic in the response: the admin
+    // plugin gates on this exact column, so it must still refuse them.
+    const adminPlugin = await api.get('/api/auth/admin/list-users?limit=1', {
+      failOnStatusCode: false,
+    });
+    expect(adminPlugin.status()).toBeGreaterThanOrEqual(400);
   });
 });
 
 test.describe('cross-user writes', () => {
-  test.fail(
-    true,
-    'BUG #68: same unconditional `update User` permission — no check ties `:id` to the caller.',
-  );
   test("cannot modify another user's profile", async () => {
     const { user: victim, userId: victimId } = await signedUpContext('crossvictim');
     const { api } = await signedUpContext('crossattacker');
@@ -51,11 +53,6 @@ test.describe('cross-user writes', () => {
 });
 
 test.describe('user directory exposure', () => {
-  test.fail(
-    true,
-    'BUG #112: the `user` role holds an unconditional `read User`, so the whole ' +
-      'user directory (every email address) is readable by any account.',
-  );
   test('cannot list every user in the deployment', async () => {
     const { api } = await signedUpContext('directory');
 

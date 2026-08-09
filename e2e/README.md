@@ -58,19 +58,11 @@ from where the API already puts them, so there is nothing to install:
 
 ## Two conventions worth knowing
 
-**`test.fail()` marks a known bug, not a broken test.** A handful of tests
-assert the behaviour the app _should_ have and carry a `test.fail()` annotation
-naming the issue they track. They report green while the bug is present and turn
-**red when it is fixed** — that is the signal to delete the annotation, not to
-re-open anything. Currently annotated:
-
-| Test                                                             | Tracks |
-| ---------------------------------------------------------------- | ------ |
-| `cannot escalate their own role to admin`                        | #68    |
-| `cannot modify another user's profile`                           | #68    |
-| `a token cannot exceed the scopes its owner is allowed to grant` | #68    |
-| `cannot list every user in the deployment`                       | #112   |
-| `a session opened before the reset no longer authenticates`      | #111   |
+**Every test here asserts behaviour the app actually has.** Earlier revisions
+carried `test.fail()` annotations naming open security issues (#68, #111, #112);
+those are fixed and the annotations are gone. If you add one for a new bug, name
+the issue in it — the test then reports green while the bug is present and turns
+**red when it is fixed**, which is the signal to delete the annotation.
 
 **Requests carry an `Origin` header.** Better Auth refuses a cookie-bearing
 state change that arrives without one (`MISSING_OR_NULL_ORIGIN`) — its CSRF

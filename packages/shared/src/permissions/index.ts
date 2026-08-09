@@ -1,10 +1,36 @@
 import {
   AbilityBuilder,
+  type AnyMongoAbility,
   createMongoAbility,
   type MongoAbility,
   type MongoQuery,
+  subject as tagSubject,
 } from '@casl/ability';
 import type { Role } from '../types';
+
+/**
+ * Instance-level permission check: does `ability` allow `action` on this
+ * concrete row?
+ *
+ * `ability.can('read', 'User')` only answers the type-level question a route
+ * guard asks. A rule scoped with `conditions` — `{ id: '${user.id}' }` — can
+ * only be decided against a loaded record, which is what this evaluates.
+ *
+ * It lives here, beside the builder, for two reasons: consumers get a typed
+ * call instead of importing `@casl/ability` themselves (a second copy of CASL
+ * would silently break `instanceof` checks), and the one cast this needs stays
+ * in the package that owns the ability's typing. The cast is required because
+ * `Subjects` is a free-form `string` — rules are declared against a type name —
+ * while a check may also pass a tagged row.
+ */
+export function canAccess(
+  ability: AppAbility,
+  action: Actions,
+  subjectType: string,
+  instance: Record<string, unknown>,
+): boolean {
+  return (ability as AnyMongoAbility).can(action, tagSubject(subjectType, instance));
+}
 
 /**
  * Actions and subjects are free-form strings: admins define roles and their
@@ -244,8 +270,12 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
   superadmin: [{ action: 'manage', subject: 'all' }],
   admin: [{ action: 'manage', subject: 'all' }],
   user: [
-    { action: 'read', subject: 'User' },
-    { action: 'update', subject: 'User' },
+    // Scoped to the caller's own record, the same way the ApiToken rules below
+    // are. Unconditional `read`/`update User` made every account readable and
+    // writable by every other account — the handlers enforce these conditions
+    // per row via `request.ability.can(action, subject('User', loaded))`.
+    { action: 'read', subject: 'User', conditions: { id: OWN_USER_ID } },
+    { action: 'update', subject: 'User', conditions: { id: OWN_USER_ID } },
     { action: 'read', subject: 'Article' },
     { action: 'create', subject: 'Article' },
     // Every user manages their own API tokens; the condition keeps them off
