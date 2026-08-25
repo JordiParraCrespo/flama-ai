@@ -1,5 +1,97 @@
 # @flama/translations
 
+## 0.3.0
+
+### Minor Changes
+
+- af46e89: Bring every user-facing error into the RFC 7807 catalog.
+
+  The organization and admin façades threw bare `HttpException`s carrying Better
+  Auth's `{ message, code }` body, expecting the code to survive. It did not:
+  `AllExceptionsFilter` reads a `code` from `AppError` alone, so ~46 call sites
+  answered with a codeless problem document whose `title` was only the status
+  phrase ("Conflict"). The auth guards had the same gap.
+
+  - **`@flama/backend-core`** — new `ApiAuthProblemResponses()` documents the
+    401/403 every guarded route can produce, applied once per controller class.
+    A test now pins the deliberate rule that a bare `HttpException` carries no
+    `code`.
+  - **`apps/api`** — new `AuthErrors` (`AUTH_001`/`AUTH_002`), `OrganizationErrors`
+    (`ORG_001`–`ORG_016`) and `AdminErrors` (`ADMIN_001`–`ADMIN_008`) catalogs.
+    `betterAuthInvoker` folds Better Auth's ~85 upstream codes onto them, keeping
+    the original as an `upstreamCode` extension member. Guards throw catalog
+    errors instead of Nest's codeless ones; `PoliciesGuard` now reports a missing
+    principal as 401 rather than 403.
+  - **`@flama/translations`** — new `errors` namespace with a message per code in
+    both locales, so clients stop rendering the server's English `detail`.
+  - **`@flama/frontend`** — new `createErrorMessageResolver` translating a failure
+    from its problem `code`; the organizations repository no longer swallows a
+    failed read into an empty list.
+  - **`@flama/api-client`** — regenerated; the documented failures now reach the
+    OpenAPI document.
+
+- 6bf67a5: Adopt React Hook Form across `apps/web` and `apps/mobile`.
+
+  Every auth form on both platforms now runs through `useForm`, validated against
+  the Zod schemas in `@flama/shared` via `@hookform/resolvers`. Web forms were
+  uncontrolled `FormData` reads leaning on native browser validation, and mobile
+  screens held one `useState` per field and reported the first Zod failure in an
+  `Alert`. Both now surface per-field errors inline, next to the input that caused
+  them, and no longer submit until the whole form parses.
+
+  `@flama/frontend` gains a `/validation` entrypoint exporting `createZodErrorMap`.
+  The shared schemas carry English messages because the API validates against the
+  same objects, so the map re-derives the message from the Zod issue code and
+  resolves it against a `validation.*` translation key. Each app passes its own
+  `t`, which keeps the messages localised without duplicating the schemas.
+  `TranslateFn` is deliberately narrow — a `t` typed over the full catalog is
+  assignable to it, so a missing key is a compile error rather than a raw key
+  rendered to the user.
+
+  The auth schemas in `@flama/shared` no longer hardcode their failure messages.
+  Zod short-circuits any error map when a check states its own message, so
+  `z.string().email('Invalid email address')` pinned every consumer to English. The
+  shapes are unchanged, and nothing outside the two frontends read those strings —
+  the API authenticates through Better Auth rather than these schemas.
+
+  `@flama/shared` also adds a `./schemas/auth` export. `apps/web` could not import
+  the schemas from the package root: that pulls in the scope catalog and CASL,
+  neither of which belongs in the browser bundle. The narrow subpath depends on
+  nothing but Zod. Because workspace `dist` folders sit outside `node_modules`,
+  `apps/web/vite.config.ts` now points the CommonJS interop plugin and
+  `optimizeDeps` at it — without that, Rollup cannot see the named exports.
+
+  `@flama/translations` adds the `validation.*` messages the error map resolves
+  (`required`, `email`, `minLength`, `maxLength`, `minItems`, `maxItems`) plus
+  `apiTokens.permissionsRequired`, in both English and Spanish.
+
+### Patch Changes
+
+- 7fdcefc: Capability registry: a missing optional key disables a feature instead of
+  booting with a `'not-set'` sentinel.
+
+  - `@flama/shared` exports `DEPLOYMENT_CAPABILITIES` / `DeploymentCapabilities`
+    — the catalog of optional features a deployment may or may not have
+    (`google_oauth`, `github_oauth`, `stripe_billing`, `s3_storage`,
+    `email_delivery`), plus the `CLIENT_CAPABILITIES` wire subset.
+  - `@flama/backend-core` gains a `CapabilitiesService` registry: the app
+    resolves its capability set from config once at boot, logs it at startup,
+    and every consumer asks the registry instead of comparing raw config against
+    sentinel values.
+  - The API's OAuth config keys are now genuinely optional
+    (`z.string().optional()`) rather than defaulting to `'not-set'`; blank or
+    whitespace-only env vars normalize to `undefined` across the optional
+    OAuth/Stripe/S3/email keys. The client-facing subset of the resolved set
+    (`CLIENT_CAPABILITIES`: the OAuth providers and `stripe_billing`) is served
+    at `GET /health/capabilities` (exempt from scope checks, like other
+    anonymous reads); server-internal capabilities stay in the startup log.
+  - `@flama/api-client` picks up the generated `HealthApi.deploymentCapabilities()`.
+  - `@flama/frontend` adds a `capabilities` module and a
+    `useDeploymentCapabilities()` hook; the web login page uses it to render
+    only configured social providers, and to name the env vars to set when none
+    are (only after a successful read — an unreachable API or a failed refetch
+    with retained stale data is not a missing configuration).
+
 ## 0.2.0
 
 ### Minor Changes

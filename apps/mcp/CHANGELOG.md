@@ -1,5 +1,114 @@
 # @flama/mcp
 
+## 0.3.0
+
+### Minor Changes
+
+- 4c51099: Adopt MCP protocol revision `2026-07-28`
+
+  The MCP server now speaks the `2026-07-28` revision, the largest change to the
+  protocol since it launched. Clients that still open with the 2025 `initialize`
+  handshake keep working — both entrypoints serve them from the same tool
+  registry — so this is not a breaking change for anyone connected today.
+
+  What changed:
+
+  - **Stateless by protocol, not just by convention.** The `initialize`
+    handshake and the `Mcp-Session-Id` header are gone; every request carries its
+    own protocol version, client identity and credential in `_meta`. The HTTP
+    entrypoint builds a server per request from that credential, so replicas
+    share nothing and a plain round-robin load balancer is enough.
+  - **`server/discover`** is answered, advertising the supported revisions and
+    capabilities up front.
+  - **Cacheable tool lists.** `tools/list` is returned with `ttlMs` (default 60s,
+    set `FLAMA_TOOLS_CACHE_TTL_MS`) and `cacheScope: "private"` — private because
+    the list is derived from the caller's own permissions and must never be
+    served to another user from a shared cache.
+  - **Deterministic tool order.** Tools are advertised sorted by name, so a
+    client's cache and the model's prompt cache are not busted by reshuffling.
+  - **Honest capabilities.** `tools.listChanged` is advertised as `false`; this
+    server has no change events to publish for a fixed-per-credential list.
+  - **Wider `structuredContent`.** A non-object tool result is now passed through
+    as-is, and only wrapped as `{ result: … }` when answering a 2025-era client.
+
+  Under the hood this moves from `@modelcontextprotocol/sdk` v1 to the v2
+  packages (`@modelcontextprotocol/server`, `@modelcontextprotocol/node`), which
+  brings two local consequences: `apps/mcp` is now on Zod 4 (the rest of the
+  monorepo stays on Zod 3 — this package imports no Zod schemas from
+  `@flama/shared`), and tool `inputSchema` is now a Zod object schema rather than
+  a raw shape:
+
+  ```diff
+  - inputSchema: { id: z.string().uuid() },
+  + inputSchema: z.object({ id: z.string().uuid() }),
+  ```
+
+- 07eb972: Serve every API error as an RFC 7807 problem document.
+
+  `AllExceptionsFilter` now answers with `application/problem+json` and the
+  standard members — `type`, `title`, `status`, `detail`, `instance` — plus the
+  `code`, `correlationId`, `timestamp` and `invalidParams` extensions, instead of
+  the ad-hoc `{ statusCode, code, message }` body.
+
+  - **Title vs detail.** `AppError` takes a second argument: `detail` (specific to
+    one occurrence) and `extensions` (extra members). The catalog message stays
+    the stable problem `title`, so handlers no longer interpolate request data
+    into it — `TOKEN_002` and `TOKEN_005` now report the offending scopes in
+    `detail` and as `ungrantableScopes` / `missingScopes`.
+  - **Validation failures** list every rejected field in `invalidParams`.
+  - **Domain exceptions** from `@flama/backend-ddd` carry an `httpStatus`, so a
+    `NotFoundException` surfaces as 404 rather than a blanket 500.
+  - **5xx responses** no longer echo the underlying message; the correlation id
+    ties the response to the logged stack trace.
+  - `type` URIs point at the new error reference (`https://flama.dev/errors`),
+    configurable per deployment with `ERROR_TYPE_BASE_URL`.
+
+  The `ProblemDetails` wire type lives in `@flama/shared`, replacing the unused
+  `ApiErrorResponse`. The CLI and MCP clients
+  read problem documents (still understanding the old body shape), `@flama/frontend`
+  exposes `toAppError` and the `@MapApiError` method decorator so screens can show
+  the server's `detail` and per-field errors, and `ApiProblemResponse` puts the
+  schema in the OpenAPI document and the generated client.
+
+- 25ff19f: One `.env` at the repo root, documented by a root `.env.example`.
+
+  New `@flama/env` package locates the workspace root (walking up to
+  `pnpm-workspace.yaml` or a `package.json` with `workspaces`), loads `.env`
+  then `.env.local` (local wins between the files), and never overwrites a
+  value already in `process.env` — real environment variables always win, so
+  the same loader is correct in CI and in production containers.
+
+  - `apps/api` entry points (`main.ts`, TypeORM CLI `data-source.ts`, seed,
+    OpenAPI generation, `auth.ts`) import `@flama/env/load` instead of
+    `dotenv/config`, which resolved `.env` against `process.cwd()`. The TypeORM
+    CLI previously loaded no env file at all.
+  - `apps/web` reads the root file via Vite's `envDir`; a `.env` inside the app
+    directory is no longer read.
+  - `apps/mobile` loads the root file in `app.config.ts` before Metro bundles,
+    and its deep-link `scheme` now reads `MOBILE_SCHEME` — the same variable the
+    API uses for its trusted origin — instead of a hardcoded copy.
+  - `apps/mcp` entry points load the root file too (a no-op outside a
+    workspace), and the HTTP port now prefers `MCP_PORT` over `PORT` so a shared
+    root `.env` can't make it collide with the API.
+  - Stale variables removed: the `JWT_SECRET` fallback for `BETTER_AUTH_SECRET`
+    and `JWT_REFRESH_SECRET` / `NEXT_PUBLIC_API_URL` in
+    `docker/docker-compose.prod.yml` (which now passes `BETTER_AUTH_SECRET` /
+    `BETTER_AUTH_URL`); `SENTRY_DSN` / `EXPO_PUBLIC_SENTRY_DSN` were documented
+    but never read and are not carried over.
+
+  The three per-app `.env.example` files are replaced by a single root
+  `.env.example` documenting every variable the repo reads.
+
+### Patch Changes
+
+- Updated dependencies [755b293]
+- Updated dependencies [7fdcefc]
+- Updated dependencies [6bf67a5]
+- Updated dependencies [07eb972]
+- Updated dependencies [25ff19f]
+  - @flama/shared@0.3.0
+  - @flama/env@0.2.0
+
 ## 0.2.0
 
 ### Minor Changes

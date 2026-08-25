@@ -1,10 +1,9 @@
-# @flama/mobile
+# @flama/env
 
-## 0.1.2
+## 0.2.0
 
-### Patch Changes
+### Minor Changes
 
-- 28b2d1b: Extract the Better Auth configuration both sides must agree on into a new `@flama/auth` package: the user-fields schema (consumed by the server's `user.additionalFields` and the clients' `inferAdditionalFields`), the shared client plugin set (`admin`, `organization` with the `teams` flag), and the `unwrap()` / `toAuthSession()` helpers previously copy-pasted into both client adapters. The `./client` entry ships TypeScript sources to preserve Better Auth's type inference; the root entry is compiled CJS for the NestJS API.
 - 25ff19f: One `.env` at the repo root, documented by a root `.env.example`.
 
   New `@flama/env` package locates the workspace root (walking up to
@@ -33,38 +32,3 @@
 
   The three per-app `.env.example` files are replaced by a single root
   `.env.example` documenting every variable the repo reads.
-
-- Updated dependencies [97f6f1e]
-- Updated dependencies [23e7181]
-- Updated dependencies [755b293]
-- Updated dependencies [7fdcefc]
-- Updated dependencies [af46e89]
-- Updated dependencies [28b2d1b]
-- Updated dependencies [510fb79]
-- Updated dependencies [6bf67a5]
-- Updated dependencies [07eb972]
-- Updated dependencies [25ff19f]
-- Updated dependencies [e6895ae]
-  - @flama/design-system-mobile@0.2.0
-  - @flama/frontend@0.3.0
-  - @flama/shared@0.3.0
-  - @flama/api-client@0.3.0
-  - @flama/translations@0.3.0
-  - @flama/auth@0.2.0
-  - @flama/env@0.2.0
-
-## 0.1.1
-
-### Patch Changes
-
-- Updated dependencies [4943eff]
-- Updated dependencies [e209380]
-- Updated dependencies [a93cf5d]
-- Updated dependencies [55e1d1a]
-- Updated dependencies [9c3e158]
-- Updated dependencies [68348a6]
-- Updated dependencies [719859f]
-  - @flama/shared@0.2.0
-  - @flama/frontend@0.2.0
-  - @flama/api-client@0.2.0
-  - @flama/translations@0.2.0
