@@ -1,6 +1,6 @@
 {
   "name": "@flama/api-client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "//": "Generated, self-contained client (uses platform fetch). Intentionally has no runtime `dependencies` — do not add an HTTP library here. See README.md.",
   "main": "./src/index.ts",
