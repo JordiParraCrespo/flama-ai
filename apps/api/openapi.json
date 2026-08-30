@@ -79,7 +79,7 @@
             "bearer": []
           }
         ],
-        "summary": "List all users",
+        "summary": "List all users (admin)",
         "tags": ["Users"]
       }
     },
@@ -6072,11 +6072,6 @@
           "lastName": {
             "type": "string",
             "minLength": 1
-          },
-          "role": {
-            "type": "string",
-            "minLength": 1,
-            "default": "user"
           }
         }
       },

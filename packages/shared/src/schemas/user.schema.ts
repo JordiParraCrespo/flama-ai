@@ -8,7 +8,14 @@ export const createUserSchema = z.object({
   role: z.string().min(1).default('user'),
 });
 
-export const updateUserSchema = createUserSchema.partial().omit({ email: true });
+/**
+ * Self-service profile edit. `role` is omitted deliberately: it is a privilege
+ * field, and a schema that accepts one on the endpoint a user calls to change
+ * their own name is a privilege-escalation path however carefully the handler
+ * is written. Role changes go through `PUT /v1/users/:userId/roles`, which is
+ * gated on `manage User`, or the admin plugin's `set-role`.
+ */
+export const updateUserSchema = createUserSchema.partial().omit({ email: true, role: true });
 
 export const userResponseSchema = z.object({
   id: z.string().uuid(),

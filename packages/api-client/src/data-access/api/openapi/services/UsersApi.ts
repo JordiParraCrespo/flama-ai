@@ -10,7 +10,7 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class UsersApi {
     /**
-     * List all users
+     * List all users (admin)
      * @param search Search by name or email
      * @param role Filter by role name
      * @param limit Items per page (default: 20, max: 100)

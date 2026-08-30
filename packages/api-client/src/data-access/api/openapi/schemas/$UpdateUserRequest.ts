@@ -12,9 +12,5 @@ export const $UpdateUserRequest = {
             type: 'string',
             minLength: 1,
         },
-        role: {
-            type: 'string',
-            minLength: 1,
-        },
     },
 } as const;

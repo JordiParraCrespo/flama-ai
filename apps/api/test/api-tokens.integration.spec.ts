@@ -259,6 +259,24 @@ describe('API tokens & scopes (integration)', () => {
       );
       expect(role.permissions.some((rule) => rule.subject === 'Article')).toBe(true);
     });
+
+    it('scopes the seeded user role’s User rules to the caller’s own record', async () => {
+      const [role]: {
+        permissions: {
+          action: string;
+          subject: string;
+          conditions?: Record<string, unknown>;
+        }[];
+      }[] = await dataSource.query(`SELECT permissions FROM "role" WHERE name = 'user'`);
+
+      const userRules = role.permissions.filter((rule) => rule.subject === 'User');
+      expect(userRules.map((rule) => rule.action).sort()).toEqual(['read', 'update']);
+      // Unconditional here would mean every account can read and write every
+      // other one — the escalation path this role was migrated to close.
+      for (const rule of userRules) {
+        expect(rule.conditions).toEqual({ id: '${user.id}' });
+      }
+    });
   });
 
   // --- minting -------------------------------------------------------------
@@ -340,7 +358,7 @@ describe('API tokens & scopes (integration)', () => {
         name: 'reader',
         scopes: ['users:read'],
       });
-      const response = await call('/api/v1/users', { token });
+      const response = await call(`/api/v1/users/${user.id}`, { token });
 
       expect(response.status).toBe(200);
     });
@@ -350,7 +368,7 @@ describe('API tokens & scopes (integration)', () => {
         name: 'header-form',
         scopes: ['users:read'],
       });
-      const response = await call('/api/v1/users', {
+      const response = await call(`/api/v1/users/${user.id}`, {
         headers: { 'x-api-key': token },
       });
 
@@ -389,13 +407,13 @@ describe('API tokens & scopes (integration)', () => {
         name: 'writer',
         scopes: ['users:write'],
       });
-      const response = await call('/api/v1/users', { token });
+      const response = await call(`/api/v1/users/${user.id}`, { token });
 
       expect(response.status).toBe(200);
     });
 
     it('rejects an unknown token', async () => {
-      const response = await call('/api/v1/users', {
+      const response = await call(`/api/v1/users/${user.id}`, {
         token: 'flama_pat_not-a-real-token',
       });
 
@@ -404,7 +422,7 @@ describe('API tokens & scopes (integration)', () => {
     });
 
     it('rejects a request with no credential at all', async () => {
-      const response = await call('/api/v1/users');
+      const response = await call(`/api/v1/users/${user.id}`);
       expect(response.status).toBe(401);
     });
   });
@@ -478,7 +496,7 @@ describe('API tokens & scopes (integration)', () => {
         name: 'to-revoke',
         scopes: ['users:read'],
       });
-      expect((await call('/api/v1/users', { token: created.token })).status).toBe(200);
+      expect((await call(`/api/v1/users/${user.id}`, { token: created.token })).status).toBe(200);
 
       const revoked = await call(`/api/v1/tokens/${created.id}`, {
         method: 'DELETE',
@@ -486,7 +504,9 @@ describe('API tokens & scopes (integration)', () => {
       });
       expect(revoked.status).toBe(204);
 
-      const after = await call('/api/v1/users', { token: created.token });
+      const after = await call(`/api/v1/users/${user.id}`, {
+        token: created.token,
+      });
       expect(after.status).toBe(401);
       expect(after.body?.code).toBe('TOKEN_003');
     });
@@ -550,7 +570,9 @@ describe('API tokens & scopes (integration)', () => {
 
       await dataSource.query(`UPDATE "api_token" SET "expiresAt" = now() - interval '1 day'`, []);
 
-      const response = await call('/api/v1/users', { token: created.token });
+      const response = await call(`/api/v1/users/${user.id}`, {
+        token: created.token,
+      });
       expect(response.status).toBe(401);
 
       await dataSource.query(`UPDATE "api_token" SET "expiresAt" = NULL WHERE id = $1`, [
@@ -563,7 +585,7 @@ describe('API tokens & scopes (integration)', () => {
         name: 'usage',
         scopes: ['users:read'],
       });
-      await call('/api/v1/users', { token: created.token });
+      await call(`/api/v1/users/${user.id}`, { token: created.token });
 
       // The usage stamp is written outside the request path; give it a moment.
       await new Promise((resolve) => setTimeout(resolve, 250));
@@ -582,7 +604,9 @@ describe('API tokens & scopes (integration)', () => {
         ipAllowlist: ['198.51.100.0/24'],
       });
 
-      const response = await call('/api/v1/users', { token: created.token });
+      const response = await call(`/api/v1/users/${user.id}`, {
+        token: created.token,
+      });
       expect(response.status).toBe(403);
       expect(response.body?.code).toBe('TOKEN_004');
     });
@@ -595,7 +619,9 @@ describe('API tokens & scopes (integration)', () => {
         ipAllowlist: ['127.0.0.0/8', '::1'],
       });
 
-      const response = await call('/api/v1/users', { token: created.token });
+      const response = await call(`/api/v1/users/${user.id}`, {
+        token: created.token,
+      });
       expect(response.status).toBe(200);
     });
   });

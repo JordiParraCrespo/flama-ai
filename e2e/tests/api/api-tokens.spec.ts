@@ -135,24 +135,41 @@ test.describe('API tokens', () => {
 });
 
 test.describe('API token scope ceiling', () => {
-  // Consequence of the unconditional `update User` grant on the default role:
-  // the scope check correctly concludes the caller *may* delegate `users:write`,
-  // so the resulting token can promote anyone to admin. Fixing the role fixes
-  // this too — remove the annotation when it does.
-  test.fail(
-    true,
-    "BUG #68: the default role's unconditional `update User` makes " +
-      '`users:write` a grantable scope, so a plain user can mint a token that ' +
-      'promotes anyone to admin.',
-  );
-  test('a token cannot exceed the scopes its owner is allowed to grant', async () => {
-    const { api } = await signedUpContext('overscope');
+  /**
+   * Effective access is `credential scopes ∩ owner's live ability`, so the
+   * assertion that matters is what the token can *do*, not what it was allowed
+   * to ask for. `grantableScopes` tests the ability at type level, where a
+   * conditional rule still reads as "can update User" — so minting
+   * `users:write` succeeds. The row-level check on the endpoint is what keeps
+   * that token inside its owner's own record.
+   */
+  test('a token cannot reach past what its owner may do', async () => {
+    const { userId: victimId, user: victim } = await signedUpContext('tokenceilingvictim');
+    const { api, userId: ownerId } = await signedUpContext('overscope');
 
-    const minted = await mintToken(api, ['users:write'], 'over-scoped');
+    const minted = await mintToken(api, ['users:write'], 'scoped to its owner');
+    test.skip(minted.status !== 201, `could not mint: ${JSON.stringify(minted.body)}`);
+    const asToken = await tokenContext(minted.secret as string);
 
+    const onSomeoneElse = await asToken.patch(`/api/v1/users/${victimId}`, {
+      data: { firstName: 'TokenPwned', role: 'admin' },
+      failOnStatusCode: false,
+    });
     expect(
-      minted.status,
-      'a plain user must not be able to mint a token that administers other users',
+      onSomeoneElse.status(),
+      'a users:write token must not write to accounts its owner cannot touch',
     ).toBe(403);
+
+    const { findUserByEmail } = await import('../../support/db');
+    const untouched = await findUserByEmail(victim.email);
+    expect(untouched?.firstName).not.toBe('TokenPwned');
+    expect(untouched?.role).toBe('user');
+
+    // The same token still works where it should — on its owner's own record.
+    const onSelf = await asToken.patch(`/api/v1/users/${ownerId}`, {
+      data: { firstName: 'Renamed' },
+      failOnStatusCode: false,
+    });
+    expect(onSelf.status(), 'the token is scoped, not broken').toBe(200);
   });
 });
