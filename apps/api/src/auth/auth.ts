@@ -168,6 +168,13 @@ export const auth = betterAuth({
     // Verification emails are sent on sign-up, but users can still sign in
     // immediately (set to `true` to hard-block unverified sign-ins).
     requireEmailVerification: false,
+    // A reset is what someone does when they believe another person has their
+    // account — a shared browser they forgot to sign out of, a stolen cookie.
+    // Rotating the credential while leaving those sessions alive would defeat
+    // the point, so every session is dropped and the user signs in again with
+    // the new password (the web flow already lands on /login on success).
+    // `changePassword` offers the same thing through `revokeOtherSessions`.
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
       await emailQueue.add('password-reset', { to: user.email, url });
     },
