@@ -78,11 +78,11 @@ const SEED_ORGANIZATION = {
  * Who is in {@link SEED_ORGANIZATION}, and as what. `organizationRole` is
  * Better Auth's roster role; `applicationRole` is the CASL role scoped to the
  * organization, mapped the same way `applicationRoleFor` maps it everywhere
- * else (`owner`/`admin` → `admin`, anything else → `user`).
+ * else (`owner`/`admin` → the tenant `owner` role, anything else → `user`).
  */
 const SEED_MEMBERSHIPS: Record<string, { organizationRole: string; applicationRole: Role }> = {
-  'superadmin@flama.dev': { organizationRole: 'owner', applicationRole: 'admin' },
-  'admin@flama.dev': { organizationRole: 'owner', applicationRole: 'admin' },
+  'superadmin@flama.dev': { organizationRole: 'owner', applicationRole: 'owner' },
+  'admin@flama.dev': { organizationRole: 'owner', applicationRole: 'owner' },
   'user@flama.dev': { organizationRole: 'member', applicationRole: 'user' },
 };
 
@@ -213,7 +213,7 @@ async function seed() {
  * the three accounts in the roles that make the development database
  * interesting.
  *
- * - `admin` and `superadmin` join as `owner`, and hold the org-scoped `admin`
+ * - `admin` and `superadmin` join as `owner`, and hold the org-scoped `owner`
  *   application role — the same one `OrganizationsService.create` writes for
  *   whoever creates an organization, and the invitation path writes for an
  *   invited owner.

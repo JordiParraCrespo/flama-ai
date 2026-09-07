@@ -107,14 +107,17 @@ function AcceptInvitationPage() {
       // here can turn a successful acceptance into a misleading 403.
       await app.organizations.acceptInvitation(id);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Accepting is what puts this account in a workspace, and the app shell
       // decides where to send a signed-in reader by the workspaces it can see.
       // That list is cached for a minute and persisted across reloads, so
       // without dropping it here an invitee who passed through onboarding
       // first would be bounced straight back to it — asked to create a
       // workspace seconds after joining one.
-      queryClient.invalidateQueries();
+      //
+      // Awaited: the shell redirects on a settled empty list, and navigating
+      // while the cached `[]` is still being refetched would race it.
+      await queryClient.invalidateQueries();
       navigate({ to: '/dashboard' });
     },
   });

@@ -168,10 +168,10 @@ export class InvitationsService {
   }
 }
 
-/** Map Better Auth's organization roles onto the application RBAC templates. */
-function applicationRoleFor(role: string): 'admin' | 'user' {
+/** Map Better Auth's organization roles onto the application RBAC templates (see `OrganizationsService`). */
+function applicationRoleFor(role: string): 'owner' | 'user' {
   const organizationRoles = role.split(',').map((value) => value.trim());
   return organizationRoles.some((value) => value === 'owner' || value === 'admin')
-    ? 'admin'
+    ? 'owner'
     : 'user';
 }

@@ -28,15 +28,21 @@ export const Route = createFileRoute('/_authenticated')({
  * waiting for them, instead of letting the app tell them on their first screen
  * that they do not have permission to look at it.
  *
- * The redirect waits for a *resolved, empty* list. While the query is in
- * flight, or if it failed, the shell renders as it always did: guessing
- * "nowhere to work" from an unanswered question would bounce every reader out
- * of the app on a network blip.
+ * The redirect waits for a *settled, successful, empty* list. While the query
+ * is in flight — including the background refetch that follows creating a
+ * workspace or accepting an invitation, when the cache still holds the `[]`
+ * that sent them to onboarding — or if it failed, the shell renders as it
+ * always did: guessing "nowhere to work" from an unanswered question would
+ * bounce every reader out of the app on a network blip, or straight back to
+ * the onboarding screen they just left.
  */
 function AuthenticatedShell() {
   const organizations = useOrganizations();
 
-  if (organizations.data?.length === 0) return <Navigate to="/onboarding" replace />;
+  const settledEmpty =
+    organizations.isSuccess && !organizations.isFetching && organizations.data.length === 0;
+
+  if (settledEmpty) return <Navigate to="/onboarding" replace />;
 
   return <AuthenticatedLayout />;
 }

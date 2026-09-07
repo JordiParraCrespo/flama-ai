@@ -15,6 +15,7 @@ import {
 } from '@/components/auth/auth-primitives';
 import { OAuthCallbackNotice } from '@/components/auth/oauth-callback-notice';
 import { SocialLoginButtons } from '@/components/social-login-buttons';
+import { sanitizeRedirect } from '@/lib/sanitize-redirect';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useZodResolver } from '@/lib/use-zod-resolver';
 
@@ -42,20 +43,6 @@ export const Route = createFileRoute('/_auth/login')({
   },
   component: LoginPage,
 });
-
-/**
- * Accepts only a path on this origin.
- *
- * The value arrives in the URL, so anyone can put anything in it. A
- * protocol-relative (`//evil.example`) or absolute value would send someone who
- * just typed their password to another site that looks like a login screen —
- * so anything that is not a single-slash path is dropped rather than sanitised.
- */
-function sanitizeRedirect(value: unknown): string | undefined {
-  if (typeof value !== 'string') return undefined;
-  if (!value.startsWith('/') || value.startsWith('//')) return undefined;
-  return value;
-}
 
 function LoginPage() {
   const { t } = useTranslation();

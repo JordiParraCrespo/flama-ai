@@ -1,7 +1,9 @@
+import { subject } from '@casl/ability';
 import { describePermission, ungrantablePermissions } from '@flama/backend-authz';
 import { AppError } from '@flama/backend-core';
 import type { PermissionDefinition } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
+import type { RoleEntity } from '../domain/role.entity';
 import { RoleErrors } from '../domain/role.errors';
 import { AbilityFactory } from './ability.factory';
 
@@ -46,6 +48,35 @@ export class RoleGrantPolicy {
     throw new AppError(RoleErrors.PERMISSION_NOT_GRANTABLE, {
       detail: `You do not hold: ${ungrantable.map(describePermission).join(', ')}`,
       extensions: { ungrantable },
+    });
+  }
+
+  /**
+   * Whether the actor may write *this* role row, not just "a Role".
+   *
+   * `@CheckPolicies` is a type-level check, and a role lookup scoped to the
+   * active organization returns the platform's global roles alongside the
+   * tenant's own. The tenant `owner` role's `manage Role` is conditioned on
+   * `organizationId = ${activeOrganizationId}`, so a global role (`null`) does
+   * not match it — without this check an organization owner could rewrite the
+   * default `user` role for every tenant. A platform admin's `manage all`
+   * matches any row.
+   */
+  async assertCanModify(actor: RoleActor | undefined, role: RoleEntity): Promise<void> {
+    if (!actor) return;
+
+    const ability = await this.abilityFactory.createForUser(
+      { id: actor.id, role: actor.role },
+      { activeOrganizationId: actor.activeOrganizationId ?? null },
+    );
+
+    const row = subject('Role', { id: role.id, organizationId: role.organizationId });
+    if (ability.can('update', row) || ability.can('manage', row)) return;
+
+    throw new AppError(RoleErrors.CROSS_ORGANIZATION_ROLE, {
+      detail: role.isGlobal()
+        ? 'Global roles are managed by the platform, not from within an organization.'
+        : 'That role belongs to another organization.',
     });
   }
 }

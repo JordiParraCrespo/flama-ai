@@ -68,6 +68,7 @@ export class RedisThrottlerStorage implements ThrottlerStorage, OnModuleDestroy 
     this.redis = new Redis({
       host: this.configService.get('redis.host'),
       port: this.configService.get('redis.port'),
+      password: this.configService.get<string>('redis.password') || undefined,
       // Never let a rate limiter be the reason a request hangs. Failing fast
       // here lands in the catch below, which fails open — see `increment`.
       maxRetriesPerRequest: 1,

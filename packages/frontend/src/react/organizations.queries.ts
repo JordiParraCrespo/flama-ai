@@ -141,8 +141,12 @@ export function useAcceptInvitation(
   return useMutation({
     mutationFn: (invitationId: string) => app.organizations.acceptInvitation(invitationId),
     ...options,
-    onSuccess: (...args) => {
-      queryClient.invalidateQueries();
+    onSuccess: async (...args) => {
+      // Awaited, so the caller's `onSuccess` — which navigates into the shell —
+      // runs only once the organizations list has been refetched. The shell
+      // redirects a settled empty list to onboarding, and navigating while the
+      // cached `[]` was still being refetched bounced the reader straight back.
+      await queryClient.invalidateQueries();
       options?.onSuccess?.(...args);
     },
   });
@@ -156,6 +160,10 @@ export function useAcceptInvitation(
  * the nav's permission set and every org-scoped list were all answers to "who
  * are you and where" — a narrow invalidation leaves the app reading a cached
  * "you belong nowhere" and bouncing them straight back to onboarding.
+ *
+ * The reply is the organization itself, so the list is seeded with it before
+ * the refetch is awaited: even if that refetch fails, the cache no longer says
+ * the caller belongs nowhere.
  */
 export function useCreateOrganization(
   options?: UseMutationOptions<OrganizationEntity, Error, CreateOrganizationDto>,
@@ -166,8 +174,13 @@ export function useCreateOrganization(
   return useMutation({
     mutationFn: (dto: CreateOrganizationDto) => app.organizations.create(dto),
     ...options,
-    onSuccess: (...args) => {
-      queryClient.invalidateQueries();
+    onSuccess: async (...args) => {
+      const [organization] = args;
+      queryClient.setQueryData<OrganizationEntity[]>(organizationsKeys.list(), (current) => [
+        ...(current ?? []),
+        organization,
+      ]);
+      await queryClient.invalidateQueries();
       options?.onSuccess?.(...args);
     },
   });

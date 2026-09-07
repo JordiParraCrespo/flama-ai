@@ -3,6 +3,7 @@ import { Controller, Delete, Param, ParseUUIDPipe, Req, UseGuards, Version } fro
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
@@ -31,12 +32,15 @@ export class DeleteRoleHttpController {
   @ApiProblemResponse({ status: 404, description: 'Role not found', code: 'ROLE_001' })
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() actor: { id: string; role?: string },
     @Req() request: ScopedRequest,
   ): Promise<void> {
     await this.commandBus.execute<DeleteRoleCommand, void>(
       new DeleteRoleCommand({
         roleId: id,
         activeOrganizationId: activeOrganizationIdOf(request),
+        actorId: actor.id,
+        actorRole: actor.role,
       }),
     );
   }

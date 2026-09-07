@@ -177,7 +177,7 @@ describe('OrganizationsService', () => {
 
       await service.create(headers, { name: 'Acme' });
 
-      expect(roles.findOneByName).toHaveBeenCalledWith('admin', null);
+      expect(roles.findOneByName).toHaveBeenCalledWith('owner', null);
       expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['system-role'], 'org1');
     });
 
@@ -450,7 +450,7 @@ describe('OrganizationsService', () => {
           body: { memberId: 'm1', role: 'admin', organizationId: 'org1' },
         }),
       );
-      expect(roles.findOneByName).toHaveBeenCalledWith('admin', null);
+      expect(roles.findOneByName).toHaveBeenCalledWith('owner', null);
       expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['system-role'], 'org1');
     });
 

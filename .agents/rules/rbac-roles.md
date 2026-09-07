@@ -199,11 +199,20 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   `activeTeamId` stay null until then (the web app sends such an account to
   onboarding, where it creates its first workspace). The default `user` role
   can *read* the organizations it belongs to and *create* one. Both paths that
-  create a membership write the org-scoped application role
+  create a membership write the org-scoped application role — the tenant
+  `owner` system role for a Better Auth owner/admin, `user` for a member
   in the same breath — `InvitationsService.accept` for a workspace someone
   joins, `OrganizationsService.create` for one the caller makes (which also
   provisions the "General" workspace) — so "you are a member" and "you may work
-  here" are never set separately. Provisioning behind the account's back is
+  here" are never set separately. `owner` grants organization resources only
+  (Organization/Member/Invitation/Workspace/Role, conditioned on
+  `${activeOrganizationId}`) and never `manage all` or `User`: assigned
+  org-scoped, a `manage all` role is unioned into the ability whenever that
+  organization is active, and every non-tenant route that checks only
+  action + subject (`DELETE /users/:id`, the admin façade) would open to
+  whoever created a workspace. `RoleGrantPolicy.assertCanModify` is the
+  row-level half for roles — a global role never matches the owner's
+  conditioned `manage Role`, so tenants cannot edit the platform's roles. Provisioning behind the account's back is
   what made a self-service sign-up the owner of an organization it had no
   permission to read. Invitation emails go through the BullMQ email queue
   (`EmailService.sendInvitation`).

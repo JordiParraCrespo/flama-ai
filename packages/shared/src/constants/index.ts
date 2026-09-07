@@ -9,13 +9,21 @@ export const ROLES = {
   SUPERADMIN: 'superadmin',
   ADMIN: 'admin',
   USER: 'user',
+  /**
+   * Tenant administrator. Only ever assigned **scoped to an organization**
+   * (`user_role.organizationId`), to whoever creates a workspace or is invited
+   * into one as owner/admin. Its grants stop at that organization's edge — it
+   * is deliberately not `manage all`, so running a workspace never reaches the
+   * platform's user directory or another tenant.
+   */
+  OWNER: 'owner',
 } as const;
 
 /**
  * Roles seeded by the platform. System roles cannot be renamed or deleted
  * through the API so the application's own authorization keeps working.
  */
-export const SYSTEM_ROLES = [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER] as const;
+export const SYSTEM_ROLES = [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.OWNER, ROLES.USER] as const;
 
 /**
  * Organization-level roles from the Better Auth organization plugin. Unlike the

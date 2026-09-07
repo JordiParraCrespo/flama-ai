@@ -234,6 +234,10 @@ export function defineAbilitiesFromPermissions(
 // biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
 const OWN_USER_ID = '${user.id}';
 
+/** Placeholder for the caller's active organization (see {@link AbilityContext}). */
+// biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
+const ACTIVE_ORGANIZATION_ID = '${activeOrganizationId}';
+
 /**
  * Permissions granted to the seeded **system roles**. Used by the migration /
  * seed to provision `admin` and `user`, and as the fallback for the legacy
@@ -242,6 +246,36 @@ const OWN_USER_ID = '${user.id}';
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
   superadmin: [{ action: 'manage', subject: 'all' }],
   admin: [{ action: 'manage', subject: 'all' }],
+  /**
+   * The tenant administrator, granted org-scoped to whoever creates an
+   * organization or is invited into one as owner/admin.
+   *
+   * Everything here is an organization resource, narrowed to the active
+   * organization by the `${activeOrganizationId}` placeholder. Nothing here
+   * touches `User`, `all` or another tenant: the role used to be the global
+   * `admin` (`manage all`) assigned org-scoped, and because non-tenant routes
+   * such as `DELETE /users/:id` check only action + subject, anyone who
+   * created a workspace could delete arbitrary platform accounts while that
+   * workspace was active.
+   */
+  owner: [
+    { action: 'manage', subject: 'Organization', conditions: { id: ACTIVE_ORGANIZATION_ID } },
+    { action: 'manage', subject: 'Member', conditions: { organizationId: ACTIVE_ORGANIZATION_ID } },
+    {
+      action: 'manage',
+      subject: 'Invitation',
+      conditions: { organizationId: ACTIVE_ORGANIZATION_ID },
+    },
+    {
+      action: 'manage',
+      subject: 'Workspace',
+      conditions: { organizationId: ACTIVE_ORGANIZATION_ID },
+    },
+    // Roles the organization owns. A global role (`organizationId: null`)
+    // does not match, which is what `RoleGrantPolicy.assertCanModify` relies
+    // on to keep the platform's own roles out of a tenant admin's reach.
+    { action: 'manage', subject: 'Role', conditions: { organizationId: ACTIVE_ORGANIZATION_ID } },
+  ],
   user: [
     /**
      * Deliberately small: a plain account holds nothing until it creates an

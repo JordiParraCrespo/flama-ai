@@ -4,6 +4,7 @@ import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
 import { RoleErrors } from '../../domain/role.errors';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
+import { RoleGrantPolicy } from '../../services/role-grant.policy';
 import { DeleteRoleCommand } from './delete-role.command';
 
 /**
@@ -15,6 +16,7 @@ export class DeleteRoleService implements ICommandHandler<DeleteRoleCommand, voi
   constructor(
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepositoryPort,
+    private readonly grantPolicy: RoleGrantPolicy,
   ) {}
 
   async execute(command: DeleteRoleCommand): Promise<void> {
@@ -26,6 +28,16 @@ export class DeleteRoleService implements ICommandHandler<DeleteRoleCommand, voi
 
     const role = found.unwrap();
     if (role.isSystem) throw new AppError(RoleErrors.SYSTEM_ROLE_IMMUTABLE);
+    await this.grantPolicy.assertCanModify(
+      command.actorId
+        ? {
+            id: command.actorId,
+            role: command.actorRole,
+            activeOrganizationId: command.activeOrganizationId,
+          }
+        : undefined,
+      role,
+    );
 
     role.delete();
     await this.roleRepository.delete(role);

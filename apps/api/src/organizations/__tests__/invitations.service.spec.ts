@@ -84,7 +84,7 @@ describe('InvitationsService', () => {
     expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u2', ['role1'], 'org1');
   });
 
-  it('grants the organization-scoped admin application role to an invited admin', async () => {
+  it('grants the organization-scoped owner application role to an invited admin', async () => {
     api.acceptInvitation.mockResolvedValue({
       invitation: { ...invitation, role: 'admin' },
       member: { userId: 'u2' },
@@ -92,7 +92,7 @@ describe('InvitationsService', () => {
 
     await service.accept(headers, 'inv1');
 
-    expect(roles.findOneByName).toHaveBeenCalledWith('admin', null);
+    expect(roles.findOneByName).toHaveBeenCalledWith('owner', null);
     expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u2', ['role1'], 'org1');
   });
 

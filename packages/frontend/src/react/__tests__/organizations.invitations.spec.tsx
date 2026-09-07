@@ -76,6 +76,26 @@ describe('useAcceptInvitation', () => {
     expect(invalidate).toHaveBeenCalledWith();
   });
 
+  it('runs the caller-supplied onSuccess only once the refetch has settled', async () => {
+    // The caller navigates into the shell, which redirects a settled empty
+    // organizations list to onboarding. If the navigation ran while the
+    // cached `[]` was still being refetched, the reader was bounced back to
+    // the screen they had just left.
+    const { wrapper, invalidate } = setup();
+    let released: () => void = () => {};
+    invalidate.mockImplementation(() => new Promise<void>((resolve) => (released = resolve)));
+    const onSuccess = vi.fn();
+    const { result } = renderHook(() => useAcceptInvitation({ onSuccess }), { wrapper });
+
+    result.current.mutate('invitation-1');
+
+    await waitFor(() => expect(invalidate).toHaveBeenCalled());
+    expect(onSuccess).not.toHaveBeenCalled();
+
+    released();
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+  });
+
   it('still runs a caller-supplied onSuccess', async () => {
     const { wrapper } = setup();
     const onSuccess = vi.fn();

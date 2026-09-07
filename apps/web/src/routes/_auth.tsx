@@ -5,6 +5,7 @@ import { AuthArtPanel } from '@/components/auth/auth-art-panel';
 import { AuthLegalNoteProvider } from '@/components/auth/auth-legal-note';
 import { BrandLogo } from '@/components/auth/brand-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { sanitizeRedirect } from '@/lib/sanitize-redirect';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: ({ context, location }) => {
@@ -19,7 +20,11 @@ export const Route = createFileRoute('/_auth')({
     // up with the restore query, so `_authenticated` bounces it here with the
     // original path in `redirect`. Honour it: without this the reader silently
     // lands on the dashboard instead of the page they asked for.
-    const requested = (location.search as { redirect?: string }).redirect;
+    //
+    // Sanitised with the same rule the login form applies before it sends a
+    // reader on: `?redirect=https://evil.example` on a link an authenticated
+    // reader opens would otherwise be an open redirect.
+    const requested = sanitizeRedirect((location.search as { redirect?: unknown }).redirect);
 
     if (requested) throw redirect({ href: requested });
     throw redirect({ to: '/dashboard' });

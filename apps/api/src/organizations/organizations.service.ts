@@ -518,13 +518,20 @@ export class OrganizationsService {
   }
 }
 
-/** Map Better Auth membership roles onto the application's system roles. */
-function applicationRoleFor(role: string): 'admin' | 'user' {
+/**
+ * Map Better Auth membership roles onto the application's system roles.
+ *
+ * `owner`/`admin` on the roster become the tenant-scoped `owner` role, never
+ * the global `admin`: that one is `manage all`, and assigned org-scoped it
+ * unioned into the caller's ability whenever the organization was active —
+ * reaching every non-tenant route, including deleting platform accounts.
+ */
+function applicationRoleFor(role: string): 'owner' | 'user' {
   return role
     .split(',')
     .map((value) => value.trim())
     .some((value) => value === 'owner' || value === 'admin')
-    ? 'admin'
+    ? 'owner'
     : 'user';
 }
 
