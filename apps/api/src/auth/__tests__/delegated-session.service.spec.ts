@@ -194,6 +194,7 @@ describe('DelegatedSessionService', () => {
       token: 'browser-session',
       userId: 'user-1',
       userAgent: 'Mozilla/5.0',
+      createdAt: new Date(),
       expiresAt: new Date(Date.now() + WEEK_SECONDS * 1000),
       delegated: false,
       delegatedCredentialId: null,

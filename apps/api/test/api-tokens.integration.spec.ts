@@ -253,21 +253,52 @@ describe('API tokens & scopes (integration)', () => {
       expect(tokenRules.map((rule) => rule.action).sort()).toEqual(['create', 'delete', 'read']);
     });
 
-    it('keeps the permissions the user role already had', async () => {
-      const [role]: { permissions: { subject: string }[] }[] = await dataSource.query(
-        `SELECT permissions FROM "role" WHERE name = 'user'`,
-      );
-      expect(role.permissions.some((rule) => rule.subject === 'Article')).toBe(true);
+    it('leaves the user role holding its own tokens and its workspaces, and nothing else', async () => {
+      // This used to assert that `Article` survived `AddApiTokenPermissions`,
+      // as the marker that the migration added its rules without clobbering
+      // what was already there. `Article` has since been removed on purpose —
+      // it had no resource, module or table behind it — so the assertion is
+      // now the stronger one it was standing in for: after the whole migration
+      // chain, the default role grants exactly this set. Anything else
+      // appearing here is a grant nobody decided to give a plain account.
+      const [role]: {
+        permissions: { action: string; subject: string; conditions?: unknown }[];
+      }[] = await dataSource.query(`SELECT permissions FROM "role" WHERE name = 'user'`);
+
+      expect(role.permissions.map((rule) => `${rule.action}:${rule.subject}`).sort()).toEqual([
+        'create:ApiToken',
+        'create:Organization',
+        'delete:ApiToken',
+        'read:ApiToken',
+        'read:Organization',
+      ]);
+
+      // The token rules stay scoped to the caller's own rows. The workspace
+      // rules need no condition: Better Auth answers the read from the
+      // caller's own memberships, and `create` is what lets a self-service
+      // sign-up make its first workspace from onboarding.
+      for (const rule of role.permissions.filter((rule) => rule.subject === 'ApiToken')) {
+        expect(rule.conditions).toBeTruthy();
+      }
+      expect(role.permissions.some((rule) => rule.subject === 'Article')).toBe(false);
     });
   });
 
   // --- minting -------------------------------------------------------------
 
   describe('minting a token', () => {
+    // These two are about the secret — returned once, stored as a digest — and
+    // the scope on them is incidental. It is `tokens:read` rather than
+    // `users:read` because they are the only tests here that mint as a plain
+    // seeded user, with no `grantOwnerPermissions` call ahead of them, and
+    // `TightenDefaultUserRole` deliberately took the unconditional `read User`
+    // rule off that role. `users:read` is therefore ungrantable to it and the
+    // mint is refused with 403 — correctly. `tokens:read` needs
+    // `read ApiToken`, which the seeded role does still hold.
     it('returns the secret exactly once and never again', async () => {
       const created = await mintToken({
         name: 'read-only',
-        scopes: ['users:read'],
+        scopes: ['tokens:read'],
       });
       expect(created.token).toMatch(/^flama_pat_/);
 
@@ -282,7 +313,7 @@ describe('API tokens & scopes (integration)', () => {
     it('stores only a digest of the secret', async () => {
       const created = await mintToken({
         name: 'digest-check',
-        scopes: ['users:read'],
+        scopes: ['tokens:read'],
       });
       const rows: { tokenHash: string }[] = await dataSource.query(
         'SELECT "tokenHash" FROM "api_token" WHERE "id" = $1',
