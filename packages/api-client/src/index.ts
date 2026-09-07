@@ -66,9 +66,11 @@ export type { UpdateProfileRequest } from './common/models/UpdateProfileRequest'
 export type { UpdateRolePermissionsRequest } from './common/models/UpdateRolePermissionsRequest';
 export type { UpdateRoleRequest } from './common/models/UpdateRoleRequest';
 export type { UpdateUserRequest } from './common/models/UpdateUserRequest';
+export type { UpdateUserSettingsRequest } from './common/models/UpdateUserSettingsRequest';
 export type { UpdateWorkspaceRequest } from './common/models/UpdateWorkspaceRequest';
 export type { UserResponseDto } from './common/models/UserResponseDto';
 export type { UserSessionResponseDto } from './common/models/UserSessionResponseDto';
+export type { UserSettingsResponseDto } from './common/models/UserSettingsResponseDto';
 export type { WorkspaceMemberResponseDto } from './common/models/WorkspaceMemberResponseDto';
 export type { WorkspaceResponseDto } from './common/models/WorkspaceResponseDto';
 // Core

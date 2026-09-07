@@ -73,9 +73,11 @@ export { $UpdateProfileRequest } from './schemas/$UpdateProfileRequest';
 export { $UpdateRolePermissionsRequest } from './schemas/$UpdateRolePermissionsRequest';
 export { $UpdateRoleRequest } from './schemas/$UpdateRoleRequest';
 export { $UpdateUserRequest } from './schemas/$UpdateUserRequest';
+export { $UpdateUserSettingsRequest } from './schemas/$UpdateUserSettingsRequest';
 export { $UpdateWorkspaceRequest } from './schemas/$UpdateWorkspaceRequest';
 export { $UserResponseDto } from './schemas/$UserResponseDto';
 export { $UserSessionResponseDto } from './schemas/$UserSessionResponseDto';
+export { $UserSettingsResponseDto } from './schemas/$UserSettingsResponseDto';
 export { $WorkspaceMemberResponseDto } from './schemas/$WorkspaceMemberResponseDto';
 export { $WorkspaceResponseDto } from './schemas/$WorkspaceResponseDto';
 

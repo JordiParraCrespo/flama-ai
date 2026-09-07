@@ -1,5 +1,4 @@
-import { subject } from '@casl/ability';
-import { describePermission, ungrantablePermissions } from '@flama/backend-authz';
+import { canAccessRow, describePermission, ungrantablePermissions } from '@flama/backend-authz';
 import { AppError } from '@flama/backend-core';
 import type { PermissionDefinition } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
@@ -70,8 +69,8 @@ export class RoleGrantPolicy {
       { activeOrganizationId: actor.activeOrganizationId ?? null },
     );
 
-    const row = subject('Role', { id: role.id, organizationId: role.organizationId });
-    if (ability.can('update', row) || ability.can('manage', row)) return;
+    const row = { id: role.id, organizationId: role.organizationId };
+    if (canAccessRow(ability, 'update', 'Role', row)) return;
 
     throw new AppError(RoleErrors.CROSS_ORGANIZATION_ROLE, {
       detail: role.isGlobal()

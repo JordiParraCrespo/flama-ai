@@ -5,11 +5,50 @@
 import type { ChangePasswordRequest } from '../../../../common/models/ChangePasswordRequest';
 import type { ProfileResponseDto } from '../../../../common/models/ProfileResponseDto';
 import type { UpdateProfileRequest } from '../../../../common/models/UpdateProfileRequest';
+import type { UpdateUserSettingsRequest } from '../../../../common/models/UpdateUserSettingsRequest';
 import type { UserSessionResponseDto } from '../../../../common/models/UserSessionResponseDto';
+import type { UserSettingsResponseDto } from '../../../../common/models/UserSettingsResponseDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ProfileApi {
+    /**
+     * Get the current user’s preferences
+     * Answers with the defaults when the user has never saved any.
+     * @returns UserSettingsResponseDto
+     * @throws ApiError
+     */
+    public static getSettings(): CancelablePromise<UserSettingsResponseDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/profile/settings',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
+        });
+    }
+    /**
+     * Replace the current user’s preferences
+     * Every preference is required — this is a replace, not a patch.
+     * @param requestBody
+     * @returns UserSettingsResponseDto
+     * @throws ApiError
+     */
+    public static updateSettings(
+        requestBody: UpdateUserSettingsRequest,
+    ): CancelablePromise<UserSettingsResponseDto> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/profile/settings',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
+        });
+    }
     /**
      * Upload the current user’s avatar
      * @param formData

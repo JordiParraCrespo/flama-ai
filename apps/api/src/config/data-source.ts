@@ -15,6 +15,7 @@ import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
+import { UserSettingsOrmEntity } from '../profile/database/user-settings.orm-entity';
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
@@ -35,6 +36,7 @@ export default new DataSource({
   database: process.env.DB_DATABASE || 'flama',
   entities: [
     UserOrmEntity,
+    UserSettingsOrmEntity,
     Session,
     Account,
     Verification,

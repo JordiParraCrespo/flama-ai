@@ -60,6 +60,9 @@ importers:
       '@flama/backend-email':
         specifier: workspace:*
         version: link:../../packages/backend/email
+      '@flama/backend-i18n':
+        specifier: workspace:*
+        version: link:../../packages/backend/i18n
       '@flama/backend-queue':
         specifier: workspace:*
         version: link:../../packages/backend/queue
@@ -72,6 +75,9 @@ importers:
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@flama/translations':
+        specifier: workspace:*
+        version: link:../../packages/translations
       '@nestjs/bullmq':
         specifier: ^11.0.4
         version: 11.0.4(@nestjs/common@11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(bullmq@5.81.2)
@@ -993,6 +999,28 @@ importers:
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/debug@4.1.13)(@types/node@26.1.1)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0)
+
+  packages/backend/i18n:
+    dependencies:
+      '@nestjs/common':
+        specifier: ^11.1.28
+        version: 11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../config
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.1)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(lightningcss@1.33.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0)
 
   packages/backend/queue:
     dependencies:

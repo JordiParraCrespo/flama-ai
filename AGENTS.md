@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 8 apps and 13 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 8 apps and 14 shared packages.
 
 ## Monorepo structure
 
@@ -25,6 +25,7 @@ flama/
 │   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
 │   │   ├── ddd/          # DDD/hexagon building blocks (@flama/backend-ddd)
 │   │   ├── email/        # Pluggable email + React Email templates (@flama/backend-email)
+│   │   ├── i18n/         # Server-side translation + Intl formatting (@flama/backend-i18n)
 │   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
 │   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
 │   ├── config/           # Shared TypeScript configs
@@ -190,10 +191,11 @@ packages/auth             → used by api, web, mobile (shared Better Auth confi
 packages/backend/core     → used by api, other backend packages
 packages/backend/ddd      → used by api (depends on backend/core)
 packages/backend/email    → used by api
+packages/backend/i18n     → used by api (bundles from packages/translations)
 packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
-packages/translations        → used by web, mobile
+packages/translations        → used by web, mobile, api (email copy via backend/i18n)
 packages/design-system/web    → used by web, web-showcase
 packages/design-system/mobile → used by mobile, mobile-showcase
 packages/api-client           → used by frontend

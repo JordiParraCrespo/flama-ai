@@ -1,9 +1,11 @@
 import { EmailService } from '@flama/backend-email';
+import { I18nService, type LocalizedFormatter } from '@flama/backend-i18n';
 import { QUEUE_NAMES } from '@flama/shared';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { EmailJobMapper } from './email-job.mapper';
+import { LocaleResolver } from '../profile/services/locale.resolver';
+import { EmailJobMapper, type EmailLocaleTarget } from './email-job.mapper';
 
 @Processor(QUEUE_NAMES.EMAIL)
 export class EmailProcessor extends WorkerHost {
@@ -11,6 +13,8 @@ export class EmailProcessor extends WorkerHost {
 
   constructor(
     private readonly emailService: EmailService,
+    private readonly i18n: I18nService,
+    private readonly locales: LocaleResolver,
     private readonly mapper: EmailJobMapper,
   ) {
     super();
@@ -20,32 +24,50 @@ export class EmailProcessor extends WorkerHost {
     this.logger.log(`Processing email job ${job.id}: ${job.name}`);
 
     switch (job.name) {
-      case 'password-reset':
+      case 'password-reset': {
+        const target = this.mapper.toLocaleTarget(job.data);
+        const t = await this.formatter(target);
         await this.emailService.sendPasswordReset(
-          this.mapper.toRecipient(job.data),
-          this.mapper.toPasswordReset(job.data),
+          target.to,
+          this.mapper.toPasswordReset(job.data, t),
         );
         break;
-      case 'email-verification':
+      }
+      case 'email-verification': {
+        const target = this.mapper.toLocaleTarget(job.data);
+        const t = await this.formatter(target);
         await this.emailService.sendEmailVerification(
-          this.mapper.toRecipient(job.data),
-          this.mapper.toEmailVerification(job.data),
+          target.to,
+          this.mapper.toEmailVerification(job.data, t),
         );
         break;
-      case 'welcome':
-        await this.emailService.sendWelcome(
-          this.mapper.toRecipient(job.data),
-          this.mapper.toWelcome(job.data),
-        );
+      }
+      case 'welcome': {
+        const target = this.mapper.toLocaleTarget(job.data);
+        const t = await this.formatter(target);
+        await this.emailService.sendWelcome(target.to, this.mapper.toWelcome(job.data, t));
         break;
-      case 'invitation':
-        await this.emailService.sendInvitation(
-          this.mapper.toRecipient(job.data),
-          this.mapper.toInvitation(job.data),
-        );
+      }
+      case 'invitation': {
+        const target = this.mapper.toLocaleTarget(job.data);
+        const t = await this.formatter(target);
+        await this.emailService.sendInvitation(target.to, this.mapper.toInvitation(job.data, t));
         break;
+      }
       default:
         this.logger.warn(`Unknown email job: ${job.name}`);
     }
+  }
+
+  /**
+   * The language to write in. A job that names the recipient's user id reads
+   * their saved preference; one that only has an address (an invitation) is
+   * matched to an account by that address, and a stranger gets the default.
+   */
+  private async formatter(target: EmailLocaleTarget): Promise<LocalizedFormatter> {
+    const resolved = target.userId
+      ? await this.locales.resolveForRecipient(target.userId)
+      : await this.locales.resolveForEmailRecipient(target.to);
+    return this.i18n.for(resolved.locale, resolved.timeZone);
   }
 }

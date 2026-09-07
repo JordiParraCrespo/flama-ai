@@ -1,7 +1,11 @@
+import type { Mapper } from '@flama/backend-ddd';
 import { Injectable } from '@nestjs/common';
 import type { UserEntity } from '../users/domain/user.entity';
+import { UserSettingsOrmEntity } from './database/user-settings.orm-entity';
+import { UserSettingsEntity } from './domain/user-settings.entity';
 import { ProfileResponseDto } from './dtos/profile.response.dto';
 import { UserSessionResponseDto } from './dtos/user-session.response.dto';
+import { UserSettingsResponseDto } from './dtos/user-settings.response.dto';
 
 /** The session columns this module reads. Better Auth owns the table. */
 export interface SessionRecord {
@@ -14,12 +18,57 @@ export interface SessionRecord {
 }
 
 /**
- * Shapes the two things the profile screen reads but does not own: the user
- * aggregate (owned by the users module) and Better Auth's sessions. Neither is
- * an aggregate of this module, so this is not a `Mapper` implementation.
+ * Maps the settings aggregate between its domain, persistence and response
+ * shapes, and shapes the two things the profile screen reads but does not own:
+ * the user aggregate (owned by the users module) and Better Auth's sessions.
+ *
+ * `Mapper` is implemented for the settings aggregate — the one this module owns
+ * — and the other two get their own methods, which is what the interface's
+ * three methods leave room for (see ARCHITECTURE.md, "Mapper").
  */
 @Injectable()
-export class ProfileMapper {
+export class ProfileMapper
+  implements Mapper<UserSettingsEntity, UserSettingsOrmEntity, UserSettingsResponseDto>
+{
+  toPersistence(entity: UserSettingsEntity): UserSettingsOrmEntity {
+    const record = new UserSettingsOrmEntity();
+    record.userId = entity.userId;
+    record.theme = entity.theme;
+    record.locale = entity.locale;
+    record.density = entity.density;
+    record.weeklyDigest = entity.weeklyDigest;
+    record.productUpdates = entity.productUpdates;
+    return record;
+  }
+
+  toDomain(record: UserSettingsOrmEntity): UserSettingsEntity {
+    return UserSettingsEntity.create({
+      id: record.userId,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      props: {
+        theme: record.theme,
+        locale: record.locale,
+        density: record.density,
+        weeklyDigest: record.weeklyDigest,
+        productUpdates: record.productUpdates,
+      },
+    });
+  }
+
+  toResponse(entity: UserSettingsEntity): UserSettingsResponseDto {
+    const dto = new UserSettingsResponseDto();
+    dto.userId = entity.userId;
+    dto.theme = entity.theme;
+    dto.locale = entity.locale;
+    dto.density = entity.density;
+    dto.weeklyDigest = entity.weeklyDigest;
+    dto.productUpdates = entity.productUpdates;
+    dto.createdAt = entity.createdAt;
+    dto.updatedAt = entity.updatedAt;
+    return dto;
+  }
+
   /**
    * `avatarUrl` is passed in rather than read off the user: what is persisted
    * is a storage key, and turning it into a loadable URL needs the storage

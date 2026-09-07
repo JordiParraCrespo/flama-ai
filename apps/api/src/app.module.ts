@@ -7,7 +7,12 @@ import {
   RequestContextInterceptor,
 } from '@flama/backend-core';
 import { EmailModule } from '@flama/backend-email';
+import { I18nModule } from '@flama/backend-i18n';
 import { StorageModule } from '@flama/backend-storage';
+// The JSON files directly, not the package root: that entry is a TypeScript
+// source the API's CommonJS build cannot require at runtime.
+import en from '@flama/translations/en/index.json';
+import es from '@flama/translations/es/index.json';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -151,6 +156,15 @@ import { UsersModule } from './users/user.module';
       }),
     }),
     OutboxModule,
+    // Server-side translation. The bundles are the same JSON the web and
+    // mobile apps load, so a string is written once and a translator edits one
+    // file — and an email, which has no request to negotiate a language from,
+    // renders from the recipient's stored preference instead.
+    I18nModule.forRoot({
+      bundles: { en, es },
+      defaultLocale: 'en',
+      defaultTimeZone: 'UTC',
+    }),
     // The kernel's registry is global; feature modules contribute their
     // resource declarations via AuthzModule.forFeature().
     AuthzKernelModule.forRoot(),
