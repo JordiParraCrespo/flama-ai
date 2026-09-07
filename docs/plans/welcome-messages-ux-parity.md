@@ -5,6 +5,22 @@ light "Miranda" UI) so the current implementation (source = screenshots 2–3,
 dark "AnitaWolf" UI) matches it 100 % in structure, hierarchy, copy, states and
 interaction. Every item below is a concrete, checkable difference.
 
+## Reference assets
+
+The plan and its acceptance checklist are defined against three screenshots.
+Commit them next to this document so implementers can verify spacing, states
+and copy without the original thread:
+
+| File | Content |
+|------|---------|
+| `docs/plans/assets/welcome-messages/target-auto-sequence-disabled.png` | Target UI (light, "Miranda ✨"): Auto Welcome Sequence tab, sequence disabled, empty step list, "Send to a fan" card with its empty-state hint |
+| `docs/plans/assets/welcome-messages/source-of-welcome.png` | Current UI (dark, "AnitaWolf"): OF Welcome tab, warning banner, enabled switch, message + 1 attachment, Edit Template / Delete |
+| `docs/plans/assets/welcome-messages/source-auto-sequence.png` | Current UI: Auto Welcome Sequence tab, two 2-min steps with Edit / Move up / Move down / Remove, Add Step, cancel checkbox, Save Sequence |
+
+The gap table below transcribes every visible element from them, so the
+document is self-contained for copy and structure; the images are still
+required for the pixel-level checks in section 8.
+
 ## 0. Gap inventory (source → target)
 
 | # | Area | Source (current) | Target (reference) |
@@ -31,10 +47,19 @@ interaction. Every item below is a concrete, checkable difference.
 2. Layout route `automations.tsx` renders:
    - `Breadcrumb` (`design-system-web/breadcrumb`) → `Chatting / {creator.name} / Automations`.
    - Section `Tabs variant="line"` bound to the child route (`useMatchRoute`), full-width, sticky under the header.
-3. Header chrome (search ⌘K, SFW switch, theme toggle, notifications) already
-   belongs to the app shell (`app-sidebar.tsx` / header); reuse it, do not
-   re-implement inside the page. The creator selector moves from the page to
-   the breadcrumb (creator segment is a `DropdownMenu`).
+3. Header chrome. Today `_authenticated.tsx` renders only a `SidebarTrigger`
+   and a `Separator`; there is no global search, SFW switch, theme toggle or
+   notifications control anywhere in `apps/web`. Build them once, in the shell
+   header (not inside the page), so every automation tab inherits them:
+   - Global search: `SearchInput` + `Kbd` "⌘K" opening a `Command` palette.
+   - SFW switch: `Switch` with `aria-label="Safe for work"` and a visible
+     "SFW" caption, persisted in a Zustand store in `packages/frontend`.
+   - Theme toggle: `IconButton` (sun/moon) wired to the existing
+     `ThemeProvider` (`theme-provider.tsx`).
+   - Notifications: `IconButton` (bell) + `Badge` count ("9+" cap) fed by a
+     `useUnreadNotifications` hook; the drawer itself can be a stub.
+   The creator selector moves from the page to the breadcrumb (creator segment
+   is a `DropdownMenu`).
 
 ## 2. Page header & sub-tabs (gaps 3–4)
 
@@ -48,6 +73,11 @@ interaction. Every item below is a concrete, checkable difference.
 ## 3. Auto Welcome Sequence card (gaps 5–11)
 
 1. `Card` with `CardHeader` in a 3-column grid: icon | title+description | `Switch`.
+   The switch has no visible label, so it must carry an accessible name:
+   `aria-labelledby` pointing at the card title id (or
+   `aria-label={t('automations.welcome.sequence.toggleLabel')}`). Same rule for
+   the OF Welcome switch (section 5), so the two controls are distinguishable
+   to screen readers.
 2. Title is derived, not static:
    `t(enabled ? 'automations.welcome.sequence.enabledTitle' : '…disabledTitle')`
    → "Sequence enabled" / "Sequence disabled". Toggling the switch flips the
@@ -107,8 +137,22 @@ Amber → blue accent, dark hard-codes → tokens.
 - Repository port + `api-client` adapter; hooks `useWelcomeSequence(creatorId)`,
   `useSaveWelcomeSequence`, `useToggleWelcomeSequence`, `useSendWelcomeStep`.
 - API (`apps/api`) module `welcome-sequences` via `/scaffold-module` if the
-  endpoints do not exist yet; add `@RequireScopes` and Swagger decorators, then
+  endpoints do not exist yet, with Swagger decorators, then
   `pnpm generate:api-client`.
+- Authorization on every endpoint (read, save, toggle, send), per
+  `.agents/rules/rbac-roles.md` and `scopes-and-credentials.md`:
+  - `@UseGuards(AuthGuard, PoliciesGuard)` + `@CheckPolicies({ action, subject: 'WelcomeSequence' })`
+    (`read` for GET, `update` for save/toggle, `create` for send) so
+    browser-session requests are governed by the user's roles.
+  - `@RequireScopes` with matching scopes (add `automations:read` /
+    `automations:write` / `messages:send` to the scope catalog in
+    `packages/shared/src/scopes/`) so API tokens and MCP clients are
+    intersected with the same rules.
+  - Creator ownership check in each handler: resolve `creatorId` from the
+    route, load the creator, and reject (404 via `AppError`) unless it belongs
+    to the caller's organization / is in `request.ability`'s resource scope.
+    Never trust a creator id from the body. "Send to a fan" additionally
+    verifies the fan belongs to that creator before enqueueing.
 
 ## 8. Verification checklist (definition of "100 %")
 
