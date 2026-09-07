@@ -38,7 +38,14 @@ export default defineConfig({
   optimizeDeps: {
     // Workspace packages are linked, not installed, so dev has to be told to
     // pre-bundle this CommonJS entrypoint into ESM.
-    include: ['@flama/shared/schemas/auth'],
+    include: [
+      '@flama/shared/schemas/auth',
+      '@flama/shared/schemas/organization',
+      '@flama/shared/schemas/profile',
+      '@flama/shared/schemas/role',
+      '@flama/shared/navigation',
+      '@flama/shared/permissions',
+    ],
   },
   build: {
     commonjsOptions: {
@@ -52,7 +59,10 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        // Reuse the API's canonical URL when development needs isolated ports
+        // (for example parallel agent sessions); the browser remains
+        // same-origin and keeps cookie auth identical to the default setup.
+        target: process.env.BETTER_AUTH_URL ?? 'http://localhost:3001',
         changeOrigin: true,
       },
     },

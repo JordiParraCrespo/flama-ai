@@ -23,6 +23,24 @@
       "require": "./dist/schemas/auth.schema.js",
       "default": "./dist/schemas/auth.schema.js"
     },
+    "./schemas/profile": {
+      "types": "./dist/schemas/profile.schema.d.ts",
+      "import": "./dist/schemas/profile.schema.js",
+      "require": "./dist/schemas/profile.schema.js",
+      "default": "./dist/schemas/profile.schema.js"
+    },
+    "./schemas/organization": {
+      "types": "./dist/schemas/organization.schema.d.ts",
+      "import": "./dist/schemas/organization.schema.js",
+      "require": "./dist/schemas/organization.schema.js",
+      "default": "./dist/schemas/organization.schema.js"
+    },
+    "./schemas/role": {
+      "types": "./dist/schemas/role.schema.d.ts",
+      "import": "./dist/schemas/role.schema.js",
+      "require": "./dist/schemas/role.schema.js",
+      "default": "./dist/schemas/role.schema.js"
+    },
     "./types": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/types/index.js",
@@ -40,6 +58,12 @@
       "import": "./dist/constants/index.js",
       "require": "./dist/constants/index.js",
       "default": "./dist/constants/index.js"
+    },
+    "./navigation": {
+      "types": "./dist/navigation/index.d.ts",
+      "import": "./dist/navigation/index.js",
+      "require": "./dist/navigation/index.js",
+      "default": "./dist/navigation/index.js"
     },
     "./scopes": {
       "types": "./dist/scopes/index.d.ts",

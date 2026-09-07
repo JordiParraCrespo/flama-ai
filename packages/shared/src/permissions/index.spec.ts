@@ -160,11 +160,11 @@ describe('defineAbilitiesFor (legacy single-role helper)', () => {
   it('builds the seeded `user` ability with limited access', () => {
     const ability = defineAbilitiesFor('user');
 
-    expect(ability.can('read', 'User')).toBe(true);
-    expect(ability.can('update', 'User')).toBe(true);
-    expect(ability.can('read', 'Article')).toBe(true);
-    expect(ability.can('create', 'Article')).toBe(true);
-    expect(ability.can('delete', 'Article')).toBe(false);
+    expect(ability.can('read', 'Organization')).toBe(true);
+    expect(ability.can('create', 'Organization')).toBe(true);
+    expect(ability.can('delete', 'Organization')).toBe(false);
+    expect(ability.can('read', 'User')).toBe(false);
+    expect(ability.can('update', 'User')).toBe(false);
     expect(ability.can('manage', 'all')).toBe(false);
   });
 
@@ -176,10 +176,11 @@ describe('defineAbilitiesFor (legacy single-role helper)', () => {
   });
 
   it('forwards the context so scoped fallback permissions still interpolate', () => {
-    // The seeded `user` role has no conditions, so this mainly asserts the
-    // context threads through without breaking a known role.
+    // The own-token rules interpolate the caller id; the legacy fallback must
+    // keep that ownership boundary when no database role is available.
     const ability = defineAbilitiesFor('user', { user: { id: 'user-1' } });
-    expect(ability.can('read', 'User')).toBe(true);
+    expect(ability.can('read', subject('ApiToken', { userId: 'user-1' }))).toBe(true);
+    expect(ability.can('read', subject('ApiToken', { userId: 'user-2' }))).toBe(false);
   });
 });
 

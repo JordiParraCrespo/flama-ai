@@ -14,7 +14,7 @@ export const capabilitiesKeys = {
 
 /**
  * Which client-facing optional features the deployment has configured (OAuth
- * providers, Stripe billing), from `GET /health/capabilities`.
+ * providers), from `GET /health/capabilities`.
  *
  * Use this to hide UI for features this install cannot serve — a social
  * sign-in button for a provider with no credentials is a dead button. The set

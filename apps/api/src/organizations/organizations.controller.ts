@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
+import { CheckPolicies, NoPolicy } from '../auth/decorators/check-policies.decorator';
 import { OrganizationScoped } from '../auth/decorators/organization-scoped.decorator';
 import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
@@ -150,7 +150,7 @@ export class OrganizationsController {
   @Version('1')
   @RequireScopes('organizations:read')
   @OrganizationScoped('id')
-  @CheckPolicies({ action: 'read', subject: 'Organization' })
+  @NoPolicy('selects one of the caller’s own memberships; Better Auth verifies membership')
   @ApiOperation({
     summary: 'Set the active organization for the current session',
   })

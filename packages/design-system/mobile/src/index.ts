@@ -18,13 +18,25 @@ export {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './components/ui/alert-dialog';
+export type { ApprovalStatus } from './components/ui/approval';
+export {
+  Approval,
+  ApprovalActions,
+  ApprovalDescription,
+  ApprovalDetail,
+  ApprovalDetails,
+  ApprovalHeader,
+  ApprovalIcon,
+  ApprovalOutcome,
+  ApprovalTitle,
+} from './components/ui/approval';
 
 export { AspectRatio } from './components/ui/aspect-ratio';
 
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
-
+export type { BadgeProps } from './components/ui/badge';
 export { Badge, badgeTextVariants, badgeVariants } from './components/ui/badge';
-
+export type { ButtonProps } from './components/ui/button';
 export {
   Button,
   buttonTextVariants,
@@ -40,13 +52,15 @@ export {
   CardTitle,
 } from './components/ui/card';
 
+export { ChatMarkdown } from './components/ui/chat-markdown';
 export { Checkbox } from './components/ui/checkbox';
-
 export {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from './components/ui/collapsible';
+export type { ComboboxOption } from './components/ui/combobox';
+export { Combobox } from './components/ui/combobox';
 
 export {
   ContextMenu,
@@ -95,19 +109,28 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from './components/ui/dropdown-menu';
-
+export {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './components/ui/empty';
+export { EmptyState } from './components/ui/empty-state';
+export type { FilterMenuOption } from './components/ui/filter-menu';
+export { FilterMenu } from './components/ui/filter-menu';
 export {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from './components/ui/hover-card';
-
 export { Icon } from './components/ui/icon';
-
 export { Input } from './components/ui/input';
 
 export { Label } from './components/ui/label';
 
+export { MailboxChip, MailboxTag } from './components/ui/mailbox-tag';
 export {
   Menubar,
   MenubarCheckboxItem,
@@ -126,6 +149,17 @@ export {
   MenubarSubTrigger,
   MenubarTrigger,
 } from './components/ui/menubar';
+export { MessageList, MessageListItem } from './components/ui/message-list';
+export {
+  MessageAttachment,
+  MessageReader,
+  MessageReaderBody,
+  MessageReaderHeader,
+  MessageReaderIdentity,
+  MessageReaderLink,
+  MessageReaderMeta,
+  MessageReaderSubject,
+} from './components/ui/message-reader';
 
 export {
   Popover,
@@ -136,6 +170,7 @@ export {
 export { Progress } from './components/ui/progress';
 
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
+export { ReplyBox } from './components/ui/reply-box';
 export type { Option } from './components/ui/select';
 export {
   Select,
@@ -153,22 +188,33 @@ export {
 export { Separator } from './components/ui/separator';
 
 export { Skeleton } from './components/ui/skeleton';
-
+export type {
+  StageBreakdownItem,
+  StageBreakdownProps,
+  StageBreakdownTone,
+} from './components/ui/stage-breakdown';
+export { StageBreakdown } from './components/ui/stage-breakdown';
 export { Switch } from './components/ui/switch';
-
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
-
 export { Text, TextClassContext } from './components/ui/text';
-
 export { Textarea } from './components/ui/textarea';
-
 export { Toggle, ToggleIcon, toggleVariants } from './components/ui/toggle';
-
 export {
   ToggleGroup,
   ToggleGroupIcon,
   ToggleGroupItem,
 } from './components/ui/toggle-group';
+export type { ToolCallStatus } from './components/ui/tool-call';
+export {
+  ToolCall,
+  ToolCallContent,
+  ToolCallIcon,
+  ToolCallIndicator,
+  ToolCallLabel,
+  ToolCallPayload,
+  ToolCallSummary,
+  ToolCallTrigger,
+} from './components/ui/tool-call';
 
 export {
   Tooltip,

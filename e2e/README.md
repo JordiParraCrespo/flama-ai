@@ -56,6 +56,18 @@ from where the API already puts them, so there is nothing to install:
   would have sent, which makes the log the mailbox. That is why step 2 above
   redirects the API's output to a file, and why `API_LOG` must point at it.
 
+## Accounts and workspaces
+
+Registering creates an account and nothing else: an account belongs to no
+workspace until it creates one from `/onboarding` or accepts an invitation. The
+`web` specs therefore start from `provisionedUser()` in `support/web.ts`, which
+signs up **and** creates a workspace through the API, so a spec spends its time
+on the screen it is about rather than on the two screens before it. Only the
+specs about registration and onboarding go through those screens themselves.
+
+Every browser spec mints its own account, so the `web` project runs fully in
+parallel and nothing has to be put back afterwards.
+
 ## Two conventions worth knowing
 
 **`test.fail()` marks a known bug, not a broken test.** A handful of tests

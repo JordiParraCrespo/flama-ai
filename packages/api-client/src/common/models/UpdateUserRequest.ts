@@ -5,6 +5,5 @@
 export type UpdateUserRequest = {
     firstName?: string;
     lastName?: string;
-    role?: string;
 };
 

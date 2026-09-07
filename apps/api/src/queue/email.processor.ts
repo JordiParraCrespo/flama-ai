@@ -3,12 +3,16 @@ import { QUEUE_NAMES } from '@flama/shared';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
+import { EmailJobMapper } from './email-job.mapper';
 
 @Processor(QUEUE_NAMES.EMAIL)
 export class EmailProcessor extends WorkerHost {
   private readonly logger = new Logger(EmailProcessor.name);
 
-  constructor(private readonly emailService: EmailService) {
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly mapper: EmailJobMapper,
+  ) {
     super();
   }
 
@@ -17,21 +21,28 @@ export class EmailProcessor extends WorkerHost {
 
     switch (job.name) {
       case 'password-reset':
-        await this.emailService.sendPasswordReset(job.data.to, job.data.url);
+        await this.emailService.sendPasswordReset(
+          this.mapper.toRecipient(job.data),
+          this.mapper.toPasswordReset(job.data),
+        );
         break;
       case 'email-verification':
-        await this.emailService.sendEmailVerification(job.data.to, job.data.url);
+        await this.emailService.sendEmailVerification(
+          this.mapper.toRecipient(job.data),
+          this.mapper.toEmailVerification(job.data),
+        );
         break;
       case 'welcome':
-        await this.emailService.sendWelcome(job.data.to, job.data.name);
+        await this.emailService.sendWelcome(
+          this.mapper.toRecipient(job.data),
+          this.mapper.toWelcome(job.data),
+        );
         break;
       case 'invitation':
-        await this.emailService.sendInvitation(job.data.to, {
-          organizationName: job.data.organizationName,
-          inviterName: job.data.inviterName,
-          role: job.data.role,
-          url: job.data.url,
-        });
+        await this.emailService.sendInvitation(
+          this.mapper.toRecipient(job.data),
+          this.mapper.toInvitation(job.data),
+        );
         break;
       default:
         this.logger.warn(`Unknown email job: ${job.name}`);

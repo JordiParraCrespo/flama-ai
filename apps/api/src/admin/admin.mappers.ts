@@ -43,7 +43,6 @@ export function mapSession(input: unknown): AdminSessionResponseDto {
   return {
     id: String(s.id),
     userId: String(s.userId),
-    token: String(s.token ?? ''),
     expiresAt: toDate(s.expiresAt),
     ipAddress: (s.ipAddress as string | null) ?? null,
     userAgent: (s.userAgent as string | null) ?? null,

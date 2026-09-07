@@ -33,7 +33,10 @@ export class CreateRoleService implements ICommandHandler<CreateRoleCommand, Agg
       command.permissions,
     );
 
-    const existing = await this.roleRepository.findOneByName(command.name);
+    const existing = await this.roleRepository.findOneByName(
+      command.name,
+      command.activeOrganizationId,
+    );
     if (existing.isSome()) throw new AppError(RoleErrors.NAME_TAKEN);
 
     const role = RoleEntity.createNew({

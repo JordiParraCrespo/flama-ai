@@ -26,7 +26,6 @@ export class UpdateUserService implements ICommandHandler<UpdateUserCommand, Agg
     user.updateProfile({
       firstName: command.firstName,
       lastName: command.lastName,
-      role: command.role,
       isActive: command.isActive,
     });
 

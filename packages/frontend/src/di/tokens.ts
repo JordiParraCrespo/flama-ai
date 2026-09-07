@@ -14,4 +14,8 @@ export const TOKENS = {
   ApiTokensService: Symbol.for('ApiTokensService'),
   OrganizationsRepository: Symbol.for('OrganizationsRepository'),
   OrganizationsService: Symbol.for('OrganizationsService'),
+  RolesRepository: Symbol.for('RolesRepository'),
+  RolesService: Symbol.for('RolesService'),
+  ProfileRepository: Symbol.for('ProfileRepository'),
+  ProfileService: Symbol.for('ProfileService'),
 } as const;

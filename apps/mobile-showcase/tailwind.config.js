@@ -90,6 +90,12 @@ module.exports = {
         "status-ended": token("status-ended"),
         "status-draft": token("status-draft"),
         "on-inverse": token("on-inverse"),
+        "on-inverse-muted": token("on-inverse-muted"),
+        "status-active-bg": token("status-active-bg"),
+        "status-paused-bg": token("status-paused-bg"),
+        "status-ended-bg": token("status-ended-bg"),
+        "status-draft-bg": token("status-draft-bg"),
+        "focus-ring": token("focus-ring"),
       },
 
       // The brand ships four sizes: 12 / 13 / 14 for UI, 24 for headings.

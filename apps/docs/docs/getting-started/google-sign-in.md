@@ -22,8 +22,10 @@ provider on.
 | Capability detection  | `apps/api/src/capabilities/capabilities.module.ts` | Resolves `google_oauth` from config at boot, logs it, serves it over HTTP |
 | Capability endpoint   | `GET /api/v1/health/capabilities`                  | Tells clients whether the provider is configured                          |
 | Web button            | `apps/web/src/components/social-login-buttons.tsx` | Renders only when the capability read says Google is available            |
-| Mobile button         | `apps/mobile/app/(auth)/login.tsx`                 | Opens an in-app browser and deep-links back via the `flama://` scheme     |
-| Post-sign-up hooks    | `apps/api/src/auth/auth.ts` (`databaseHooks`)      | Welcome email, default `user` role, personal organization + workspace     |
+| Mobile button         | `apps/mobile/app/(auth)/login.tsx`, `register.tsx` | Opens an in-app browser and deep-links back via the `flama://` scheme     |
+| Sign-up gating        | `apps/api/src/auth/auth.ts` (`disableImplicitSignUp`) | Refuses a Google account with no user here, unless the caller asked to register |
+| Account linking       | `apps/api/src/auth/auth.ts` (`account.accountLinking`) | Attaches Google to an existing email/password account on the same verified address |
+| Post-sign-up hooks    | `apps/api/src/auth/auth.ts` (`databaseHooks`)      | Welcome email, default `user` role                                       |
 
 A missing `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` is not an error — it is a
 disabled capability. The API boots normally, the button hides itself, and the
@@ -152,19 +154,56 @@ Open http://localhost:3000/login and click **Google**. The flow is:
 
 1. The browser leaves for Google's consent screen.
 2. Google redirects to `${BETTER_AUTH_URL}/api/auth/callback/google`.
-3. Better Auth creates (or links) the user, sets the session cookie, and
-   redirects to `/dashboard`. Failures land back on `/login`.
+3. Better Auth signs the user in — linking Google to the account they already
+   have, when the address matches one — sets the session cookie, and redirects
+   to `/dashboard`. A failure comes back to the screen the flow started from
+   with `?error=<code>` appended.
 
-On a **first** sign-in the standard sign-up hooks run, exactly as for
-email/password: the display name is split into `firstName` / `lastName`, a
-welcome email is queued, the default `user` role is assigned, and a personal
-organization with a "General" workspace is provisioned.
+On a **first** sign-up the standard hooks run, exactly as for email/password:
+the display name is split into `firstName` / `lastName`, a welcome email is
+queued, and the default `user` role is assigned. No organization is created —
+the account belongs nowhere until it creates a workspace from onboarding or an
+invitation puts it in one (the default `user` role may create organizations,
+and `POST /v1/organizations` grants the creator the org-scoped role that opens
+it), so the app sends it to onboarding rather than to a dashboard it has no
+permission to read.
 
-If the Google account's email matches an existing Flama user, Better Auth
-links the Google account to that user rather than creating a second one —
-Google verifies its emails, which is what makes the link safe. Set
-`account.accountLinking` in `apps/api/src/auth/auth.ts` if you want stricter
-behaviour.
+## Signing in and signing up are separate doors
+
+Both providers set `disableImplicitSignUp: true`, so a Google account with no
+user here **cannot** create one from the login screen: the callback comes back
+with `?error=signup_disabled`. The login route reads that code and forwards the
+person to `/register`, which says what happened and carries the same provider
+buttons — those pass `requestSignUp`, the one flag that lifts the refusal.
+Pressing **Google** there creates the account and signs them in.
+
+So "Continue with Google" never quietly creates an account, and someone who
+assumed they had one lands on the screen that can fix it rather than on an
+error that cannot.
+
+### An address that already has a password
+
+If the Google address belongs to a user who signed up with email and password,
+Better Auth attaches the Google identity to that account instead of forking a
+second one, and from then on either method lands in the same place. Nothing has
+to be done by hand and no password is asked for at the door.
+
+Two checks guard that link, both configured under `account.accountLinking` in
+`apps/api/src/auth/auth.ts`:
+
+- **The provider must have verified the address.** `trustedProviders` is
+  deliberately left empty, so what is trusted is Google's own `email_verified`
+  claim, not the fact that the provider happens to be Google.
+- **The existing account must have verified it too**
+  (`requireLocalEmailVerified`). Sign-up here does not require verification, so
+  without this check anyone could register a password account on an address
+  they do not own and be handed the real owner's account the moment that person
+  signed in with Google.
+
+An account that never verified its email therefore gets `account_not_linked`,
+which the login screen renders as "sign in with your password to continue".
+Clicking the link in the verification email makes the next Google sign-in link
+silently.
 
 ## Mobile
 
@@ -179,11 +218,18 @@ What must line up:
 - `MOBILE_SCHEME` matches the `scheme` in `apps/mobile/lib/auth-client.ts` and
   `app.config.ts` (all `flama` by default).
 
-Unlike the web login card, the mobile login screen renders its Google and
-GitHub buttons unconditionally — it does not read
+Unlike the web login card, the mobile login and register screens render their
+Google and GitHub buttons unconditionally — they do not read
 `GET /api/v1/health/capabilities`. On a deployment where the provider is not
 configured, the mobile button leads to a provider error rather than hiding
 itself.
+
+The refusal codes above reach mobile less usefully than they do on web: the
+Expo plugin closes the in-app browser on the redirect and keeps the URL, so a
+`signup_disabled` ends the attempt without a message rather than forwarding to
+the register screen. Somebody whose only credential is a Google account signs
+up from the register screen's own provider buttons, which ask for the sign-up
+explicitly.
 
 ### Testing on a physical device
 
@@ -239,3 +285,5 @@ All of these go on the `google` entry in `apps/api/src/auth/auth.ts`:
 | Button visible but the API says the provider is unknown | Env vars reached the shell but not the API process, or only one of the two is set.                                         |
 | Google flow succeeds, app still logged out              | Cookie never made it back: `BETTER_AUTH_URL` on a different site from the web app, or `FRONTEND_URL` not a trusted origin. |
 | Sign-in works on the simulator, not on a device         | The device cannot resolve `localhost` — use an HTTPS tunnel as above.                                                      |
+| Back on `/register` with `?error=signup_disabled`       | Working as designed: no account here uses that Google account. Press **Google** on that screen to create one.              |
+| `?error=account_not_linked` on the login page           | The address already has a password account whose email was never verified. Sign in with the password, or verify the address and retry. |

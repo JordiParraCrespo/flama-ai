@@ -1,11 +1,12 @@
 import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
-import { Controller, Delete, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
+import { Controller, Delete, Param, ParseUUIDPipe, Req, UseGuards, Version } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
+import { activeOrganizationIdOf, type ScopedRequest } from '../../../auth/scope-context';
 import { DeleteRoleCommand } from './delete-role.command';
 
 @ApiTags('Roles')
@@ -28,7 +29,15 @@ export class DeleteRoleHttpController {
     code: 'ROLE_003',
   })
   @ApiProblemResponse({ status: 404, description: 'Role not found', code: 'ROLE_001' })
-  async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    await this.commandBus.execute<DeleteRoleCommand, void>(new DeleteRoleCommand({ roleId: id }));
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() request: ScopedRequest,
+  ): Promise<void> {
+    await this.commandBus.execute<DeleteRoleCommand, void>(
+      new DeleteRoleCommand({
+        roleId: id,
+        activeOrganizationId: activeOrganizationIdOf(request),
+      }),
+    );
   }
 }

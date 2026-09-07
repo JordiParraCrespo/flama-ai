@@ -13,6 +13,8 @@ import { FindUserByIdQueryHandler } from './queries/find-user-by-id/find-user-by
 import { FindUsersHttpController } from './queries/find-users/find-users.http.controller';
 import { FindUsersQueryHandler } from './queries/find-users/find-users.query-handler';
 import { GetMeHttpController } from './queries/get-me/get-me.http.controller';
+import { GetMyPermissionsHttpController } from './queries/get-my-permissions/get-my-permissions.http.controller';
+import { GetMyPermissionsQueryHandler } from './queries/get-my-permissions/get-my-permissions.query-handler';
 import { USER_REPOSITORY } from './user.di-tokens';
 import { UserMapper } from './user.mapper';
 
@@ -20,6 +22,7 @@ import { UserMapper } from './user.mapper';
 const httpControllers = [
   FindUsersHttpController,
   GetMeHttpController,
+  GetMyPermissionsHttpController,
   FindUserByIdHttpController,
   UpdateUserHttpController,
   DeleteUserHttpController,
@@ -27,7 +30,11 @@ const httpControllers = [
 
 const commandHandlers: Provider[] = [UpdateUserService, DeleteUserService];
 
-const queryHandlers: Provider[] = [FindUsersQueryHandler, FindUserByIdQueryHandler];
+const queryHandlers: Provider[] = [
+  FindUsersQueryHandler,
+  FindUserByIdQueryHandler,
+  GetMyPermissionsQueryHandler,
+];
 
 const eventHandlers: Provider[] = [UserDeletedDomainEventHandler];
 

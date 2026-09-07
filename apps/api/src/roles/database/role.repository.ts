@@ -7,7 +7,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
-import { DataSource, ILike, In, type Repository } from 'typeorm';
+import { DataSource, type FindOptionsWhere, ILike, In, IsNull, type Repository } from 'typeorm';
 import type { RoleEntity } from '../domain/role.entity';
 import { RoleMapper } from '../roles.mapper';
 import { RoleOrmEntity } from './role.orm-entity';
@@ -47,19 +47,25 @@ export class RoleRepository implements RoleRepositoryPort {
     return this.mapper.toDomain(record);
   }
 
-  async findOneById(id: string): Promise<Option<RoleEntity>> {
-    const record = await this.repository.findOneBy({ id });
+  async findOneById(id: string, organizationId?: string | null): Promise<Option<RoleEntity>> {
+    const record = await this.repository.findOne({
+      where: scopedWhere({ id }, organizationId),
+    });
     return record ? Some(this.mapper.toDomain(record)) : None;
   }
 
-  async findOneByName(name: string): Promise<Option<RoleEntity>> {
-    const record = await this.repository.findOneBy({ name });
+  async findOneByName(name: string, organizationId?: string | null): Promise<Option<RoleEntity>> {
+    const record = await this.repository.findOne({
+      where: scopedWhere({ name }, organizationId),
+    });
     return record ? Some(this.mapper.toDomain(record)) : None;
   }
 
-  async findByIds(ids: string[]): Promise<RoleEntity[]> {
+  async findByIds(ids: string[], organizationId?: string | null): Promise<RoleEntity[]> {
     if (ids.length === 0) return [];
-    const records = await this.repository.findBy({ id: In(ids) });
+    const records = await this.repository.find({
+      where: scopedWhere({ id: In(ids) }, organizationId),
+    });
     return records.map((record) => this.mapper.toDomain(record));
   }
 
@@ -83,11 +89,11 @@ export class RoleRepository implements RoleRepositoryPort {
   }
 
   async findRoles(params: FindRolesParams): Promise<Paginated<RoleEntity>> {
-    const { page, limit, search } = params;
+    const { page, limit, search, organizationId } = params;
     const skip = (page - 1) * limit;
 
     const [records, count] = await this.repository.findAndCount({
-      where: search ? { name: ILike(`%${search}%`) } : {},
+      where: searchWhere(search, organizationId),
       skip,
       take: limit,
       order: { name: 'ASC' },
@@ -113,4 +119,40 @@ export class RoleRepository implements RoleRepositoryPort {
   transaction<T>(handler: () => Promise<T>): Promise<T> {
     return this.dataSource.transaction(() => handler());
   }
+}
+
+function scopedWhere(
+  where: FindOptionsWhere<RoleOrmEntity>,
+  organizationId?: string | null,
+): FindOptionsWhere<RoleOrmEntity> | FindOptionsWhere<RoleOrmEntity>[] {
+  if (organizationId === undefined) return where;
+  if (organizationId === null) return { ...where, organizationId: IsNull() };
+  return [
+    { ...where, organizationId: IsNull() },
+    { ...where, organizationId },
+  ];
+}
+
+/**
+ * A role matches on its name **or** its description.
+ *
+ * The description sits on the row under the name, so a reader searching for
+ * words they can see there has to find the role — matching the name alone
+ * answers a visible phrase with an empty table. TypeORM ORs an array of `where`
+ * objects, and the organization scope has to be applied inside each branch
+ * rather than around them, or a global role matches on one field and an
+ * organization's role on the other.
+ */
+function searchWhere(
+  search: string | undefined,
+  organizationId?: string | null,
+): FindOptionsWhere<RoleOrmEntity> | FindOptionsWhere<RoleOrmEntity>[] {
+  if (!search) return scopedWhere({}, organizationId);
+
+  const needle = ILike(`%${search}%`);
+
+  return [{ name: needle }, { description: needle }].flatMap((match) => {
+    const scoped = scopedWhere(match, organizationId);
+    return Array.isArray(scoped) ? scoped : [scoped];
+  });
 }

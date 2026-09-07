@@ -1,5 +1,5 @@
 import { type UserResponseDto, UsersApi } from '@flama/api-client';
-import type { Role, UpdateUserDto } from '@flama/shared';
+import type { PermissionDefinition, Role, UpdateUserDto } from '@flama/shared';
 import { injectable } from 'inversify';
 import { AppError } from '../core/errors';
 import { MapApiError } from '../core/map-api-error.decorator';
@@ -44,6 +44,18 @@ export class UsersRepository {
     const data = await UsersApi.me();
     if (!data) throw new AppError(UsersErrors.FETCH_FAILED);
     return toEntity(data);
+  }
+
+  /**
+   * The caller's own effective permissions (the union of their roles), used to
+   * gate which routes the sidebar shows. Plain CASL rules, not an entity — the
+   * app rebuilds an ability from them with `defineAbilitiesFromPermissions`.
+   */
+  @MapApiError(UsersErrors.FETCH_FAILED)
+  async myPermissions(): Promise<PermissionDefinition[]> {
+    const data = await UsersApi.permissions();
+    if (!data) throw new AppError(UsersErrors.FETCH_FAILED);
+    return data.permissions as PermissionDefinition[];
   }
 
   @MapApiError(UsersErrors.FETCH_FAILED)

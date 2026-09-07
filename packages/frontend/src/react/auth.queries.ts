@@ -8,7 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { SocialProvider } from '../modules/auth/auth.client';
+import type { SocialAuthIntent, SocialProvider } from '../modules/auth/auth.client';
 import { useFlamaApp } from './context';
 import { reconcileCacheOwner } from './persistence';
 import { profileQueryKey } from './users.queries';
@@ -53,13 +53,25 @@ export function useSessionRestore(
   });
 }
 
+/**
+ * What a social button hands the mutation. The `intent` is what separates the
+ * login screen's button from the register screen's: the API refuses a provider
+ * identity it has never seen unless the caller asked for a sign-up.
+ */
+export interface SocialLoginVariables {
+  provider: SocialProvider;
+  /** Defaults to `'sign-in'`, which refuses an identity with no account here. */
+  intent?: SocialAuthIntent;
+}
+
 export function useSocialLogin(
-  options?: Omit<UseMutationOptions<void, Error, SocialProvider>, 'mutationFn'>,
+  options?: Omit<UseMutationOptions<void, Error, SocialLoginVariables>, 'mutationFn'>,
 ) {
   const app = useFlamaApp();
 
   return useMutation({
-    mutationFn: (provider: SocialProvider) => app.auth.socialLogin(provider),
+    mutationFn: ({ provider, intent }: SocialLoginVariables) =>
+      app.auth.socialLogin(provider, intent),
     ...options,
   });
 }

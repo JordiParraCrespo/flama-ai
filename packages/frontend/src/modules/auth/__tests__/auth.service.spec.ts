@@ -106,6 +106,25 @@ describe('AuthService analytics', () => {
     expect(analytics.capture).not.toHaveBeenCalled();
   });
 
+  // The API refuses a provider identity it has never seen unless the caller
+  // asks to register, so an intent dropped on the way through would turn the
+  // register screen's Google button into one that can only ever fail.
+  it('passes the sign-up intent through to the client', async () => {
+    const { service, repository } = setup();
+
+    await service.socialLogin('google', 'sign-up');
+
+    expect(repository.socialLogin).toHaveBeenCalledWith('google', 'sign-up');
+  });
+
+  it('leaves the intent unset for a plain sign-in', async () => {
+    const { service, repository } = setup();
+
+    await service.socialLogin('google');
+
+    expect(repository.socialLogin).toHaveBeenCalledWith('google', undefined);
+  });
+
   it('captures the sign-in when an OAuth round-trip completes', async () => {
     const { service, analytics } = setup();
 

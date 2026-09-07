@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MyPermissionsResponseDto } from '../../../../common/models/MyPermissionsResponseDto';
 import type { PaginatedUsersResponseDto } from '../../../../common/models/PaginatedUsersResponseDto';
 import type { UpdateUserRequest } from '../../../../common/models/UpdateUserRequest';
 import type { UserResponseDto } from '../../../../common/models/UserResponseDto';
@@ -48,6 +49,22 @@ export class UsersApi {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/users/me',
+            errors: {
+                401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
+                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+            },
+        });
+    }
+    /**
+     * Get the current user’s effective permissions
+     * The union of every role assigned to the caller, as CASL rules. Drives which routes the web app shows in its sidebar.
+     * @returns MyPermissionsResponseDto
+     * @throws ApiError
+     */
+    public static permissions(): CancelablePromise<MyPermissionsResponseDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/users/me/permissions',
             errors: {
                 401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
                 403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,

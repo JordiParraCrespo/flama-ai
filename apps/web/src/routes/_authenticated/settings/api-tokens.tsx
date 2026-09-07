@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
   Checkbox,
+  DropdownMenuItem,
   Field,
   FieldError,
   FieldGroup,
@@ -22,13 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
   Separator,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from '@flama/design-system-web';
+import { Cpu } from '@flama/design-system-web/icons';
 import type { ApiTokenEntity } from '@flama/frontend';
 import {
   useApiTokens,
@@ -42,8 +38,16 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { DataTable, type DataTableColumn } from '@/components/data-table';
+import { PageHead } from '@/components/page-head';
 import { PermissionPicker } from '@/components/permission-picker';
+import { GroupHeading } from '@/components/section-ui';
+import { formatMediumDate } from '@/lib/format-date';
+import { paginateRows } from '@/lib/paginate-rows';
+import { useCopy } from '@/lib/use-copy';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { useLocale } from '@/lib/use-locale';
+import { useTableQuery } from '@/lib/use-table-query';
 
 export const Route = createFileRoute('/_authenticated/settings/api-tokens')({
   component: ApiTokensPage,
@@ -79,32 +83,28 @@ function ApiTokensPage() {
 
   return (
     <>
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('apiTokens.title')}</h1>
-        <p className="text-muted-foreground">{t('apiTokens.description')}</p>
+      <PageHead title={t('apiTokens.title')} sub={t('apiTokens.description')} />
+
+      <div className="flex flex-col gap-4">
+        {secret && <SecretPanel secret={secret} onDismiss={() => setSecret(null)} />}
+
+        <CreateTokenCard
+          grantable={catalog.data?.grantable ?? []}
+          groups={catalog.data?.groups ?? []}
+          loadingCatalog={catalog.isLoading}
+          onCreated={setSecret}
+        />
+
+        <section>
+          {/* The heading sits above the table rather than inside a card of its
+              own: `DataTable` brings the card, and nesting one in another gave
+              this list a header two rows taller than every other table. */}
+          <GroupHeading description={t('apiTokens.yourTokensDescription')}>
+            {t('apiTokens.yourTokens')}
+          </GroupHeading>
+          <TokenTable tokens={tokens.data ?? []} loading={tokens.isLoading} />
+        </section>
       </div>
-
-      {secret && <SecretPanel secret={secret} onDismiss={() => setSecret(null)} />}
-
-      <CreateTokenCard
-        grantable={catalog.data?.grantable ?? []}
-        groups={catalog.data?.groups ?? []}
-        loadingCatalog={catalog.isLoading}
-        onCreated={setSecret}
-      />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('apiTokens.yourTokens')}</CardTitle>
-          <CardDescription>{t('apiTokens.yourTokensDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {tokens.isLoading && (
-            <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
-          )}
-          {tokens.data && <TokenTable tokens={tokens.data} />}
-        </CardContent>
-      </Card>
     </>
   );
 }
@@ -115,23 +115,18 @@ function ApiTokensPage() {
  */
 function SecretPanel({ secret, onDismiss }: { secret: string; onDismiss: () => void }) {
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-
-  async function copy() {
-    await navigator.clipboard.writeText(secret);
-    setCopied(true);
-  }
+  const { copied, copy } = useCopy();
 
   return (
     <Alert>
       <AlertTitle>{t('apiTokens.created')}</AlertTitle>
       <AlertDescription className="flex flex-col gap-3">
         <span>{t('apiTokens.shownOnce')}</span>
-        <code className="block overflow-x-auto rounded bg-muted px-3 py-2 font-mono text-sm">
+        <code className="block overflow-x-auto rounded bg-surface-sunken px-3 py-2 font-mono text-sm">
           {secret}
         </code>
         <span className="flex gap-2">
-          <Button type="button" size="sm" onClick={copy}>
+          <Button type="button" size="sm" onClick={() => copy(secret)}>
             {copied ? t('apiTokens.copied') : t('apiTokens.copy')}
           </Button>
           <Button type="button" size="sm" variant="outline" onClick={onDismiss}>
@@ -194,9 +189,9 @@ function CreateTokenCard({
         <form onSubmit={onSubmit} noValidate>
           <FieldGroup>
             {create.error && (
-              <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {resolveError(create.error).message}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{resolveError(create.error).message}</AlertDescription>
+              </Alert>
             )}
 
             <Field data-invalid={Boolean(errors.name)}>
@@ -228,7 +223,7 @@ function CreateTokenCard({
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>{t('apiTokens.permissions')}</FieldLabel>
                   {loadingCatalog ? (
-                    <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+                    <p className="text-sm text-ink-600">{t('common.loading')}</p>
                   ) : (
                     <PermissionPicker
                       groups={groups}
@@ -238,7 +233,7 @@ function CreateTokenCard({
                       disabled={create.isPending}
                     />
                   )}
-                  <p className="text-xs text-muted-foreground">{t('apiTokens.permissionsHint')}</p>
+                  <p className="text-xs text-ink-600">{t('apiTokens.permissionsHint')}</p>
                   <FieldError errors={[fieldState.error]} />
                 </Field>
               )}
@@ -279,9 +274,7 @@ function CreateTokenCard({
                 render={({ field }) => (
                   <Field>
                     <FieldLabel>{t('apiTokens.organizations')}</FieldLabel>
-                    <p className="text-xs text-muted-foreground">
-                      {t('apiTokens.organizationsHint')}
-                    </p>
+                    <p className="text-xs text-ink-600">{t('apiTokens.organizationsHint')}</p>
                     <div className="flex flex-col gap-2">
                       {organizations.data.map((organization) => (
                         <div key={organization.id} className="flex items-center gap-2">
@@ -323,70 +316,118 @@ function CreateTokenCard({
   );
 }
 
-function TokenTable({ tokens }: { tokens: ApiTokenEntity[] }) {
+/** The design's tokens table shows eight rows before it pages. */
+const TOKEN_PAGE_SIZE = 8;
+
+function TokenTable({ tokens, loading }: { tokens: ApiTokenEntity[]; loading: boolean }) {
   const { t } = useTranslation();
+  const locale = useLocale();
   const revoke = useRevokeApiToken();
 
-  if (tokens.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t('apiTokens.empty')}</p>;
-  }
+  // Only the page is in the URL here: the list is short, has no search and no
+  // filter, and the one thing worth linking to is a row further down it.
+  const query = useTableQuery({ prefix: 'tokens' });
+  const page = paginateRows(tokens, TOKEN_PAGE_SIZE, query);
+
+  const columns: DataTableColumn<ApiTokenEntity>[] = [
+    {
+      key: 'name',
+      label: t('apiTokens.name'),
+      width: 200,
+      render: (token) => <span className="font-medium">{token.name}</span>,
+    },
+    {
+      key: 'prefix',
+      label: t('apiTokens.prefix'),
+      width: 120,
+      render: (token) => (
+        // Only the prefix survives creation — the rest is stored as a digest,
+        // so there is nothing else to show.
+        <span className="font-mono text-xs tracking-wide text-ink-600">{token.prefix}…</span>
+      ),
+    },
+    {
+      key: 'permissions',
+      label: t('apiTokens.permissions'),
+      width: 320,
+      render: (token) => (
+        <span className="flex max-w-[320px] flex-wrap gap-1">
+          {token.scopes.map((scope) => (
+            <Badge key={scope} variant="neutral" className="font-mono text-xs">
+              {scope}
+            </Badge>
+          ))}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      label: t('apiTokens.status'),
+      width: 120,
+      render: (token) => <StatusBadge status={token.status} />,
+    },
+    {
+      key: 'lastUsed',
+      label: t('apiTokens.lastUsed'),
+      width: 140,
+      align: 'right',
+      render: (token) => (
+        <span className="text-ink-400">
+          {token.lastUsedAt ? formatMediumDate(token.lastUsedAt, locale) : t('apiTokens.neverUsed')}
+        </span>
+      ),
+    },
+  ];
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t('apiTokens.name')}</TableHead>
-          <TableHead>{t('apiTokens.prefix')}</TableHead>
-          <TableHead>{t('apiTokens.permissions')}</TableHead>
-          <TableHead>{t('apiTokens.status')}</TableHead>
-          <TableHead>{t('apiTokens.lastUsed')}</TableHead>
-          <TableHead />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {tokens.map((token) => (
-          <TableRow key={token.id}>
-            <TableCell className="font-medium">{token.name}</TableCell>
-            <TableCell className="font-mono text-xs">{token.prefix}…</TableCell>
-            <TableCell className="max-w-xs">
-              <span className="flex flex-wrap gap-1">
-                {token.scopes.map((scope) => (
-                  <Badge key={scope} variant="secondary" className="font-mono text-xs">
-                    {scope}
-                  </Badge>
-                ))}
-              </span>
-            </TableCell>
-            <TableCell>
-              <StatusBadge status={token.status} />
-            </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
-              {token.lastUsedAt ? token.lastUsedAt.toLocaleDateString() : t('apiTokens.neverUsed')}
-            </TableCell>
-            <TableCell className="text-right">
-              {token.isActive && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={revoke.isPending}
-                  onClick={() => revoke.mutate(token.id)}
-                >
-                  {t('apiTokens.revoke')}
-                </Button>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <DataTable
+      columns={columns}
+      rows={page.rows}
+      pagination={page.pagination}
+      getKey={(token) => token.id}
+      isLoading={loading}
+      // A revoked token cannot be un-revoked, and revoking a handful at once is
+      // not something anyone asked for — so there is no selection here.
+      selectable={false}
+      emptyLabel={t('apiTokens.empty')}
+      emptyIcon={<Cpu />}
+      rowActions={(token) =>
+        // A revoked or expired token has nothing left to do to it, and a menu
+        // whose only item is disabled says less than no menu at all.
+        token.isActive ? (
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={revoke.isPending}
+            onClick={() => revoke.mutate(token.id)}
+          >
+            {t('apiTokens.revoke')}
+          </DropdownMenuItem>
+        ) : null
+      }
+    />
   );
 }
+
+/**
+ * The token's lifecycle on the brand's status set, the same way
+ * `DomainStatusBadge` reads a domain's. `expired` is `paused` rather than
+ * `ended`: it stopped working on its own and can be replaced, where `revoked`
+ * was a decision someone made.
+ */
+const TOKEN_STATUS_VARIANT = {
+  active: 'active',
+  expired: 'paused',
+  revoked: 'ended',
+} as const satisfies Record<ApiTokenEntity['status'], 'active' | 'paused' | 'ended'>;
+
+const TOKEN_STATUS_LABEL = {
+  active: 'apiTokens.active',
+  expired: 'apiTokens.expired',
+  revoked: 'apiTokens.revoked',
+} as const satisfies Record<ApiTokenEntity['status'], string>;
 
 function StatusBadge({ status }: { status: ApiTokenEntity['status'] }) {
   const { t } = useTranslation();
 
-  if (status === 'revoked') return <Badge variant="destructive">{t('apiTokens.revoked')}</Badge>;
-  if (status === 'expired') return <Badge variant="outline">{t('apiTokens.expired')}</Badge>;
-  return <Badge variant="secondary">{t('apiTokens.active')}</Badge>;
+  return <Badge variant={TOKEN_STATUS_VARIANT[status]}>{t(TOKEN_STATUS_LABEL[status])}</Badge>;
 }

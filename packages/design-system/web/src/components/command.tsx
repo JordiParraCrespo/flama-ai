@@ -64,14 +64,31 @@ function CommandDialog({
   );
 }
 
+/**
+ * The palette's search row. Its default chrome is dialog chrome — a full-bleed
+ * field over a hairline, with an `esc` badge — because that is what ⌘K is.
+ *
+ * A `Command` inside a popover wants neither: `esc` closes a dialog, and a
+ * 280px menu reads better with the field inset. `wrapperClassName` restyles
+ * the row and `hint={null}` drops the badge, mirroring how `Alert` takes
+ * `icon={null}`. Both default to the dialog's look, so ⌘K is untouched.
+ */
 function CommandInput({
   className,
+  wrapperClassName,
+  hint,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+}: React.ComponentProps<typeof CommandPrimitive.Input> & {
+  wrapperClassName?: string;
+  hint?: React.ReactNode | null;
+}) {
   return (
     <div
       data-slot="command-input-wrapper"
-      className="flex items-center gap-3 border-b border-border-subtle px-4 py-4"
+      className={cn(
+        "flex items-center gap-3 border-b border-border-subtle px-4 py-4",
+        wrapperClassName,
+      )}
     >
       <SearchIcon className="size-4 shrink-0 text-ink-400" />
       <CommandPrimitive.Input
@@ -82,9 +99,13 @@ function CommandInput({
         )}
         {...props}
       />
-      <kbd className="shrink-0 rounded-[6px] bg-surface-sunken px-2 py-1 text-[11px] text-ink-400">
-        esc
-      </kbd>
+      {hint === null
+        ? null
+        : (hint ?? (
+            <kbd className="shrink-0 rounded-[6px] bg-surface-sunken px-2 py-1 text-[11px] text-ink-400">
+              esc
+            </kbd>
+          ))}
     </div>
   );
 }

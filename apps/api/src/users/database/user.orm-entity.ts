@@ -7,8 +7,8 @@ import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } fro
  *
  * Better Auth owns writes to identity columns (sign-up, OAuth, verification);
  * the application reads/updates the profile columns through TypeORM for the
- * `/users` endpoints. `firstName`, `lastName`, `role` and `isActive` are Better
- * Auth "additional fields" declared in `auth.ts`.
+ * `/users` endpoints. `firstName`, `lastName`, `phone`, `jobTitle`, `role` and
+ * `isActive` are Better Auth "additional fields" declared in `auth.ts`.
  */
 @Entity('user')
 export class UserOrmEntity {
@@ -32,6 +32,12 @@ export class UserOrmEntity {
 
   @Column({ type: 'varchar' })
   lastName!: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  phone!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  jobTitle!: string | null;
 
   @Column({ type: 'varchar', default: 'user' })
   role!: Role;

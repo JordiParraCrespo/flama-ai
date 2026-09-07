@@ -25,6 +25,7 @@ import {
   AdminCreateUserRequest,
   AdminUpdateUserRequest,
   BanUserRequest,
+  RevokeSessionRequest,
   SetUserPasswordRequest,
   SetUserRoleRequest,
 } from './dtos/admin.request.dto';
@@ -49,7 +50,11 @@ function forwardCookies(headers: Headers, res: Response): void {
 @ApiTags('Admin')
 @ApiBearerAuth()
 @ApiAuthProblemResponses()
-@ApiProblemResponse({ status: 404, description: 'The user does not exist', code: 'ADMIN_001' })
+@ApiProblemResponse({
+  status: 404,
+  description: 'The user does not exist',
+  code: 'ADMIN_001',
+})
 @ApiProblemResponse({
   status: 403,
   description:
@@ -135,17 +140,23 @@ export class AdminController {
     return user;
   }
 
-  @Post('sessions/revoke')
+  @Post('users/:id/sessions/revoke')
   @Version('1')
   @RequireScopes('admin:write')
   @CheckPolicies({ action: 'manage', subject: 'User' })
-  @ApiOperation({ summary: 'Revoke a session by token' })
+  @ApiOperation({ summary: "Revoke one of a user's sessions by id" })
   @ApiResponse({ status: 200, type: AdminSuccessResponseDto })
+  @ApiProblemResponse({
+    status: 404,
+    description: 'Session not found',
+    code: 'ADMIN_009',
+  })
   revokeSession(
     @Req() req: Request,
-    @Body('sessionToken') sessionToken: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: RevokeSessionRequest,
   ): Promise<AdminSuccessResponseDto> {
-    return this.admin.revokeSession(req.headers, sessionToken);
+    return this.admin.revokeSession(req.headers, id, body.sessionId);
   }
 
   @Get('users/:id')

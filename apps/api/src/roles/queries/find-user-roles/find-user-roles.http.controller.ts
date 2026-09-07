@@ -1,11 +1,12 @@
 import { ApiAuthProblemResponses } from '@flama/backend-core';
-import { Controller, Get, Param, ParseUUIDPipe, UseGuards, Version } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
+import { activeOrganizationIdOf, type ScopedRequest } from '../../../auth/scope-context';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
 import { RoleMapper } from '../../roles.mapper';
@@ -28,9 +29,12 @@ export class FindUserRolesHttpController {
   @RequireScopes('roles:read')
   @ApiOperation({ summary: "List a user's assigned roles" })
   @ApiResponse({ status: 200, type: [RoleResponseDto] })
-  async findUserRoles(@Param('userId', ParseUUIDPipe) userId: string): Promise<RoleResponseDto[]> {
+  async findUserRoles(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Req() request: ScopedRequest,
+  ): Promise<RoleResponseDto[]> {
     const roles = await this.queryBus.execute<FindUserRolesQuery, RoleEntity[]>(
-      new FindUserRolesQuery(userId),
+      new FindUserRolesQuery(userId, activeOrganizationIdOf(request)),
     );
     return roles.map((role) => this.mapper.toResponse(role));
   }

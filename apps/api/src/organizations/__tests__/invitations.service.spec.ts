@@ -1,4 +1,5 @@
 import type { IncomingHttpHeaders } from 'node:http';
+import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../auth/auth', () => ({
@@ -9,8 +10,10 @@ vi.mock('../../auth/auth', () => ({
       rejectInvitation: vi.fn(),
       cancelInvitation: vi.fn(),
       getInvitation: vi.fn(),
+      getSession: vi.fn(),
       listInvitations: vi.fn(),
       listUserInvitations: vi.fn(),
+      setActiveOrganization: vi.fn(),
     },
   },
 }));
@@ -34,10 +37,20 @@ const invitation = {
 
 describe('InvitationsService', () => {
   let service: InvitationsService;
+  const roles = { findOneByName: vi.fn() };
+  const userRoles = { setRolesForUser: vi.fn().mockResolvedValue(undefined) };
+  const invitationRecords = { findOne: vi.fn().mockResolvedValue(null) };
+  const memberRecords = { exists: vi.fn().mockResolvedValue(false) };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new InvitationsService();
+    roles.findOneByName.mockResolvedValue(Some({ id: 'role1' }));
+    service = new InvitationsService(
+      roles as never,
+      userRoles as never,
+      invitationRecords as never,
+      memberRecords as never,
+    );
   });
 
   it('invites a member forwarding email, role and teamId', async () => {
@@ -61,12 +74,63 @@ describe('InvitationsService', () => {
   });
 
   it('accepts an invitation unwrapping the `{ invitation }` envelope', async () => {
-    api.acceptInvitation.mockResolvedValue({ invitation });
+    api.acceptInvitation.mockResolvedValue({ invitation, member: { userId: 'u2' } });
     const result = await service.accept(headers, 'inv1');
     expect(result.id).toBe('inv1');
     expect(api.acceptInvitation).toHaveBeenCalledWith(
       expect.objectContaining({ body: { invitationId: 'inv1' } }),
     );
+    expect(roles.findOneByName).toHaveBeenCalledWith('user', null);
+    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u2', ['role1'], 'org1');
+  });
+
+  it('grants the organization-scoped admin application role to an invited admin', async () => {
+    api.acceptInvitation.mockResolvedValue({
+      invitation: { ...invitation, role: 'admin' },
+      member: { userId: 'u2' },
+    });
+
+    await service.accept(headers, 'inv1');
+
+    expect(roles.findOneByName).toHaveBeenCalledWith('admin', null);
+    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u2', ['role1'], 'org1');
+  });
+
+  it('repairs and returns an already-accepted invitation for the same member', async () => {
+    invitationRecords.findOne.mockResolvedValueOnce({ ...invitation, status: 'accepted' });
+    api.getSession.mockResolvedValueOnce({ user: { id: 'u2', email: invitation.email } });
+    memberRecords.exists.mockResolvedValueOnce(true);
+    api.setActiveOrganization.mockResolvedValueOnce({ id: 'org1' });
+
+    const result = await service.accept(headers, 'inv1');
+
+    expect(result.status).toBe('accepted');
+    expect(api.acceptInvitation).not.toHaveBeenCalled();
+    expect(api.setActiveOrganization).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { organizationId: 'org1' } }),
+    );
+    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u2', ['role1'], 'org1');
+  });
+
+  it('does not recover an accepted invitation for a different account', async () => {
+    invitationRecords.findOne.mockResolvedValueOnce({ ...invitation, status: 'accepted' });
+    api.getSession.mockResolvedValueOnce({ user: { id: 'u3', email: 'other@x.com' } });
+    api.acceptInvitation.mockResolvedValueOnce({ invitation, member: { userId: 'u3' } });
+
+    await service.accept(headers, 'inv1');
+
+    expect(api.setActiveOrganization).not.toHaveBeenCalled();
+    expect(api.acceptInvitation).toHaveBeenCalled();
+  });
+
+  it('fails visibly when a required system role is missing', async () => {
+    api.acceptInvitation.mockResolvedValue({ invitation, member: { userId: 'u2' } });
+    roles.findOneByName.mockResolvedValueOnce(None);
+
+    await expect(service.accept(headers, 'inv1')).rejects.toThrow(
+      'Required system role "user" is missing',
+    );
+    expect(userRoles.setRolesForUser).not.toHaveBeenCalled();
   });
 
   it('rejects an invitation unwrapping the `{ invitation }` envelope', async () => {

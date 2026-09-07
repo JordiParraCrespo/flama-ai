@@ -2,14 +2,19 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
-const ThemeContext = createContext<{ theme: Theme; setTheme: (t: Theme) => void }>({
-  theme: 'dark',
+const ThemeContext = createContext<{
+  theme: Theme;
+  setTheme: (t: Theme) => void;
+}>({
+  theme: 'light',
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Light is the brand's default: every reference screen is drawn on the warm
+  // off-white canvas, and dark is the opt-in.
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem('theme') as Theme) ?? 'dark',
+    () => (localStorage.getItem('theme') as Theme) ?? 'light',
   );
 
   useEffect(() => {

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MemberUserResponseDto } from './MemberUserResponseDto';
 export type MemberResponseDto = {
     id: string;
     organizationId: string;
@@ -11,5 +12,6 @@ export type MemberResponseDto = {
      */
     role: string;
     createdAt: string;
+    user: MemberUserResponseDto | null;
 };
 

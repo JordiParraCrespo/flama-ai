@@ -31,6 +31,18 @@ export interface SignUpParams {
 
 export type SocialProvider = 'google' | 'github';
 
+/**
+ * What the caller means by starting an OAuth round-trip.
+ *
+ * The API refuses to mint an account from a bare sign-in
+ * (`disableImplicitSignUp`), so a provider identity it has never seen is
+ * rejected unless the caller asked for a sign-up. Both intents still *sign in*
+ * an identity that already exists — including one that only exists as an
+ * email/password account, which the API links on the way through. The intent
+ * decides one thing: whether an unknown identity may become a new account.
+ */
+export type SocialAuthIntent = 'sign-in' | 'sign-up';
+
 export interface IAuthClient {
   /** Sign in with email and password. Rejects on failure. */
   signIn(email: string, password: string): Promise<void>;
@@ -39,8 +51,11 @@ export interface IAuthClient {
   /**
    * Start the OAuth flow for a social provider. On web this redirects the
    * browser; on mobile it opens an auth session and deep-links back.
+   *
+   * `intent` defaults to `'sign-in'`, which the API refuses for an identity
+   * that has no account here. Only the register screens pass `'sign-up'`.
    */
-  signInSocial(provider: SocialProvider): Promise<void>;
+  signInSocial(provider: SocialProvider, intent?: SocialAuthIntent): Promise<void>;
   /** Clear the current session. */
   signOut(): Promise<void>;
   /** Send a password reset email. */

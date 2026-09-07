@@ -12,7 +12,22 @@ package root:
 ```tsx
 import { Button } from "@flama/design-system-web/button";
 import { Card, CardHeader, CardContent } from "@flama/design-system-web";
+import { EmptyState } from "@flama/design-system-web/empty-state";
 import { cn } from "@flama/design-system-web/utils";
+```
+
+Compound components expose their slots on the root component:
+
+```tsx
+<EmptyState>
+  <EmptyState.Header>
+    <EmptyState.Media variant="icon">
+      <Globe />
+    </EmptyState.Media>
+    <EmptyState.Title>No domains yet</EmptyState.Title>
+    <EmptyState.Description>Domains will appear here.</EmptyState.Description>
+  </EmptyState.Header>
+</EmptyState>
 ```
 
 Wire up the styles and Tailwind preset in the consuming app:

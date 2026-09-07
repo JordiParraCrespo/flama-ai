@@ -20,7 +20,6 @@ export const KNOWN_ACTIONS = ['create', 'read', 'update', 'delete', 'manage'] as
 /** Built-in subjects used by the seeded system roles. `all` is CASL's wildcard. */
 export const KNOWN_SUBJECTS = [
   'User',
-  'Article',
   'Role',
   'Organization',
   'Workspace',
@@ -244,10 +243,27 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
   superadmin: [{ action: 'manage', subject: 'all' }],
   admin: [{ action: 'manage', subject: 'all' }],
   user: [
-    { action: 'read', subject: 'User' },
-    { action: 'update', subject: 'User' },
-    { action: 'read', subject: 'Article' },
-    { action: 'create', subject: 'Article' },
+    /**
+     * Deliberately small: a plain account holds nothing until it creates an
+     * organization or an invitation puts it in one, and whichever of those
+     * happens is what grants the org-scoped role for that workspace.
+     *
+     * It used to carry unconditional `read`/`update` on `User` — which let
+     * every account list and edit every other account across tenants — and
+     * `read`/`create` on `Article`, a subject with no module or table behind
+     * it. Self-service profile editing goes through `/profile`; colleagues come
+     * from the `Member` resource.
+     */
+    // Which organizations this account belongs to, and nothing else about
+    // them. Better Auth answers the read from the caller's own memberships, so
+    // it discloses no organization they are not in — it is what lets the app
+    // tell "you are in a workspace" from "you are waiting for an invitation".
+    { action: 'read', subject: 'Organization' },
+    // Self-service sign-up: a fresh account creates its first workspace from
+    // onboarding. `OrganizationsService.create` grants the creator the
+    // org-scoped `admin` role in the same act, so this is the one door into a
+    // workspace besides an invitation.
+    { action: 'create', subject: 'Organization' },
     // Every user manages their own API tokens; the condition keeps them off
     // everyone else's.
     {

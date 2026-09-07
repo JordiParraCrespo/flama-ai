@@ -35,7 +35,10 @@ export class UpdateRolePermissionsService
       command.permissions,
     );
 
-    const found = await this.roleRepository.findOneById(command.roleId);
+    const found = await this.roleRepository.findOneById(
+      command.roleId,
+      command.activeOrganizationId,
+    );
     if (found.isNone()) throw new AppError(RoleErrors.NOT_FOUND);
 
     const role = found.unwrap();

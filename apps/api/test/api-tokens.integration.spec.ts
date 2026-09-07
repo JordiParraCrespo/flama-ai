@@ -610,17 +610,26 @@ describe('API tokens & scopes (integration)', () => {
         { action: 'create', subject: 'ApiToken' },
       ]);
 
-      // The sign-up hook provisions a personal organization for every user.
-      const [membership]: { organizationId: string }[] = await dataSource.query(
-        'SELECT "organizationId" FROM "member" WHERE "userId" = $1',
-        [user.id],
+      // Sign-up provisions no organization any more — an account belongs
+      // nowhere until it creates one or is invited — so give the owner a
+      // membership to scope the token to.
+      const organizationId = '44444444-4444-4444-8444-444444444444';
+      await dataSource.query(
+        `INSERT INTO "organization" ("id", "name", "slug", "createdAt")
+           VALUES ($1, 'Integration Org', 'integration-org', now())
+           ON CONFLICT ("id") DO NOTHING`,
+        [organizationId],
       );
-      expect(membership).toBeDefined();
+      await dataSource.query(
+        `INSERT INTO "member" ("id", "organizationId", "userId", "role", "createdAt")
+           VALUES ($1, $2, $3, 'owner', now())`,
+        ['55555555-5555-4555-8555-555555555555', organizationId, user.id],
+      );
 
       const { token } = await mintToken({
         name: 'org-scoped',
         scopes: ['members:read'],
-        organizationIds: [membership.organizationId],
+        organizationIds: [organizationId],
       });
 
       const foreign = '22222222-2222-4222-8222-222222222222';

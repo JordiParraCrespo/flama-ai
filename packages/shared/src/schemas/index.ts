@@ -6,5 +6,6 @@ export * from './billing.schema';
 export * from './lead.schema';
 export * from './organization.schema';
 export * from './pagination.schema';
+export * from './profile.schema';
 export * from './role.schema';
 export * from './user.schema';

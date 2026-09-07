@@ -9,7 +9,7 @@ export const $CreateRoleRequest = {
             isRequired: true,
             maxLength: 50,
             minLength: 2,
-            pattern: '^[a-z0-9-_]+$',
+            pattern: '^[a-zA-Z0-9][a-zA-Z0-9 _-]*$',
         },
         description: {
             type: 'string',

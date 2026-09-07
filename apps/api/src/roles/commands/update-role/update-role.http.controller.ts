@@ -17,7 +17,7 @@ import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
-import type { ScopedRequest } from '../../../auth/scope-context';
+import { activeOrganizationIdOf, type ScopedRequest } from '../../../auth/scope-context';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
 import { FindRoleByIdQuery } from '../../queries/find-role-by-id/find-role-by-id.query';
@@ -60,16 +60,8 @@ export class UpdateRoleHttpController {
       }),
     );
     const role = await this.queryBus.execute<FindRoleByIdQuery, RoleEntity>(
-      new FindRoleByIdQuery(roleId),
+      new FindRoleByIdQuery(roleId, activeOrganizationIdOf(request)),
     );
     return this.mapper.toResponse(role);
   }
-}
-
-/** The organization the caller is acting in, from their session. */
-function activeOrganizationIdOf(request: ScopedRequest): string | null {
-  const session = request.session as {
-    activeOrganizationId?: string | null;
-  } | null;
-  return session?.activeOrganizationId ?? null;
 }

@@ -68,9 +68,16 @@ skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
 (`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
 Detailed rules live in `.agents/rules/`, each scoped by a `paths` glob so it
-loads only for the code it governs. The frontend has one — `forms.md`, covering
-React Hook Form and Zod validation across `apps/web`, `apps/mobile` and the
-shared schemas. The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
+loads only for the code it governs. Two are frontend:
+
+- `forms.md` — React Hook Form and Zod validation across `apps/web`,
+  `apps/mobile` and the shared schemas
+- `frontend-ui.md` — reaching for the design system before writing markup, the
+  colour vocabulary, where helpers and route files live, placeholder data,
+  translating exports, and e2e coverage. Every rule in it names the duplication
+  or bug it was written after finding
+
+The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
 
 - `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
 - `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
@@ -223,6 +230,31 @@ pnpm changeset          # Create a changeset for versioning
 - New translations go in `packages/translations/{locale}/index.json`
 - New web design tokens go in `packages/design-system/web/src/styles/globals.css`
 - Frontend business logic goes in `packages/frontend`, not in app components
+- Before writing markup in `apps/web`, check whether `@flama/design-system-web`
+  already ships it — read `packages/design-system/web/src/index.ts`, do not go
+  from memory. Errors are `Alert`, successes are `toast`, field validation is
+  `FieldError`, "nothing here" is `EmptyState`, a paged list is `DataTable`.
+  See `.agents/rules/frontend-ui.md`
+- A field picking one value out of a list the **workspace** grows — a teammate,
+  a tracked resource — is a `Combobox`, not a `Select`, and its `onQueryChange`
+  goes to the endpoint so the search is the API's to answer. `Select` is for
+  fixed product lists; `AsyncMultiSelect` for several values out of thousands;
+  `SelectMenu` / `FilterMenu` for toolbar chrome. The table in
+  `.agents/rules/frontend-ui.md` decides the rest
+- Colours in `apps/web` come from the brand primitives (`text-ink-600`,
+  `bg-surface-sunken`, `--status-*`), not shadcn's aliases and never a raw hex.
+  A value genuinely outside the palette becomes a named token in `globals.css`
+- Everything a file in `packages/design-system/web/src/components/` exports must
+  be re-exported from `index.ts`; `pnpm test` fails otherwise. A component
+  nobody can import is a component somebody will rewrite by hand
+- A helper used by a second screen moves to `apps/web/src/lib/`. A route file
+  composes — its dialogs, cells and tabs belong in `components/<feature>/`,
+  as `components/team/` does
+- Never render a placeholder number. If the real value is not available yet,
+  render nothing: no badge is honest, a wrong badge is not
+- Sign-up creates an account, not a workspace: an org-less account is sent to
+  `/onboarding`, which creates the first organization or accepts a pending
+  invitation. Only `/register` passes the social `sign-up` intent
 - Keep pluggable service pattern: abstract class → concrete implementations → factory in module
 - New API endpoints need `@RequireScopes` or they are unreachable by API tokens and MCP clients
 - New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires

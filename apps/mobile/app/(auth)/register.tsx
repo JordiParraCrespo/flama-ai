@@ -8,7 +8,7 @@ import {
 } from '@flama/design-system-mobile/card';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { useRegister } from '@flama/frontend/react';
+import { useRegister, useSocialLogin } from '@flama/frontend/react';
 import { type RegisterDto, registerSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
@@ -34,6 +34,26 @@ export default function RegisterScreen() {
     },
     onError: (error) => {
       Alert.alert(t('auth.register.failed'), error.message ?? t('auth.register.failed'));
+    },
+  });
+
+  // The register screen is the only caller that may turn a provider identity
+  // into an account: the API refuses an unknown one on a plain sign-in
+  // (`disableImplicitSignUp`), so without these buttons somebody whose only
+  // credential is a Google account could never get in on mobile at all.
+  const social = useSocialLogin({
+    onSuccess: () => {
+      router.replace('/(app)');
+    },
+    // No `error.message ?? t(…)` here: `unwrap` always populates `message`,
+    // either with Better Auth's English server string or with its own English
+    // default, so the translated half of that expression can never be reached
+    // and a Spanish reader gets English. The screen says it in their language
+    // instead. `auth.oauth.failed` rather than `auth.login.socialFailed`
+    // because the latter ends by offering a *sign-in*, which is not what this
+    // screen is for.
+    onError: () => {
+      Alert.alert(t('auth.register.failed'), t('auth.oauth.failed'));
     },
   });
 
@@ -152,6 +172,31 @@ export default function RegisterScreen() {
                 {register.isPending ? t('auth.register.submitting') : t('auth.register.submit')}
               </Text>
             </Button>
+            <View className="flex-row items-center gap-3 py-1">
+              <View className="h-px flex-1 bg-border" />
+              <Text className="text-xs uppercase text-muted-foreground">
+                {t('common.orContinueWith')}
+              </Text>
+              <View className="h-px flex-1 bg-border" />
+            </View>
+            <View className="flex-row gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={social.isPending}
+                onPress={() => social.mutate({ provider: 'google', intent: 'sign-up' })}
+              >
+                <Text>{t('common.google')}</Text>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={social.isPending}
+                onPress={() => social.mutate({ provider: 'github', intent: 'sign-up' })}
+              >
+                <Text>{t('common.github')}</Text>
+              </Button>
+            </View>
             <View className="flex-row items-center justify-center gap-1">
               <Text className="text-sm text-muted-foreground">{t('auth.register.hasAccount')}</Text>
               <Link href="/(auth)/login" asChild>
