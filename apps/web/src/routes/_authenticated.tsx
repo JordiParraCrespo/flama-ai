@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AppSidebar } from '@/components/app-shell/app-sidebar';
 import { CommandPalette } from '@/components/app-shell/command-palette';
 import { TopBar } from '@/components/app-shell/top-bar';
+import { useApplyUserSettings } from '@/lib/use-apply-user-settings';
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ context, location }) => {
@@ -53,6 +54,9 @@ function AuthenticatedShell() {
  */
 function AuthenticatedLayout() {
   const [commandOpen, setCommandOpen] = useState(false);
+  // The saved theme and language become this device's defaults — once, and
+  // only where the device has not chosen for itself.
+  useApplyUserSettings();
 
   return (
     <SidebarProvider className="h-svh min-h-0">

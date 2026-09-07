@@ -7,11 +7,12 @@ import {
   AVATAR_MIME_TYPES,
   type ChangeOwnPasswordDto,
   type UpdateProfileDto,
+  type UpdateUserSettingsDto,
 } from '@flama/shared/schemas/profile';
 import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
 import { AppError } from '../core/errors';
-import type { ProfileEntity, UserSessionEntity } from './profile.entity';
+import type { ProfileEntity, UserSessionEntity, UserSettingsEntity } from './profile.entity';
 import { ProfileErrors } from './profile.errors';
 import type { ProfileRepository } from './profile.repository';
 
@@ -49,6 +50,14 @@ export class ProfileService {
 
   async deleteAvatar(): Promise<ProfileEntity> {
     return this.profileRepository.deleteAvatar();
+  }
+
+  async getSettings(): Promise<UserSettingsEntity> {
+    return this.profileRepository.getSettings();
+  }
+
+  async updateSettings(dto: UpdateUserSettingsDto): Promise<UserSettingsEntity> {
+    return this.profileRepository.updateSettings(dto);
   }
 
   async changePassword(dto: ChangeOwnPasswordDto): Promise<void> {

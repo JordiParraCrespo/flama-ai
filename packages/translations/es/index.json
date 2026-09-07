@@ -548,7 +548,8 @@
     "sections": {
       "details": "Perfil",
       "password": "Contraseña",
-      "sessions": "Sesiones"
+      "sessions": "Sesiones",
+      "preferences": "Preferencias"
     },
     "sessions": {
       "activeNow": "Activa ahora",
@@ -562,7 +563,24 @@
       "unknownDevice": "Dispositivo no reconocido",
       "unknownLocation": "Dirección desconocida"
     },
-    "viewTeamCard": "Ver ficha del equipo"
+    "viewTeamCard": "Ver ficha del equipo",
+    "preferences": {
+      "title": "Preferencias",
+      "description": "Cómo se ve el espacio de trabajo y qué llega a tu bandeja.",
+      "darkTheme": "Tema oscuro",
+      "darkThemeDescription": "Cambia todo el espacio de trabajo a una paleta oscura.",
+      "language": "Idioma",
+      "density": "Densidad de las tablas",
+      "densityDescription": "Altura de fila en las tablas del espacio de trabajo",
+      "densities": {
+        "comfortable": "Cómoda",
+        "compact": "Compacta"
+      },
+      "weeklyDigest": "Resumen semanal",
+      "weeklyDigestDescription": "Resumen de los lunes con lo ocurrido en tu espacio de trabajo.",
+      "productUpdates": "Novedades del producto",
+      "productUpdatesDescription": "Correos ocasionales sobre nuevas funciones."
+    }
   },
   "public": {
     "footer": {

@@ -1,3 +1,5 @@
+import type { Locale, TableDensity, Theme } from '@flama/shared/schemas/profile';
+
 /**
  * The signed-in user's own account, as the profile screen needs it.
  *
@@ -31,6 +33,20 @@ export class ProfileEntity {
     const last = this.lastName.trim().charAt(0);
     return `${first}${last}`.toUpperCase();
   }
+}
+
+/** A user's workspace preferences. */
+export class UserSettingsEntity {
+  constructor(
+    public readonly userId: string,
+    public readonly theme: Theme,
+    public readonly locale: Locale,
+    public readonly density: TableDensity,
+    public readonly weeklyDigest: boolean,
+    public readonly productUpdates: boolean,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
+  ) {}
 }
 
 /** One device signed in to the account. */

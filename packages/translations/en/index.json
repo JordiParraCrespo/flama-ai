@@ -548,7 +548,8 @@
     "sections": {
       "details": "Profile",
       "password": "Password",
-      "sessions": "Sessions"
+      "sessions": "Sessions",
+      "preferences": "Preferences"
     },
     "sessions": {
       "activeNow": "Active now",
@@ -562,7 +563,24 @@
       "unknownDevice": "Unrecognised device",
       "unknownLocation": "Unknown address"
     },
-    "viewTeamCard": "View team card"
+    "viewTeamCard": "View team card",
+    "preferences": {
+      "title": "Preferences",
+      "description": "How the workspace looks and what lands in your inbox.",
+      "darkTheme": "Dark theme",
+      "darkThemeDescription": "Switch the whole workspace to a dark palette.",
+      "language": "Language",
+      "density": "Table density",
+      "densityDescription": "Row height in the workspace tables",
+      "densities": {
+        "comfortable": "Comfortable",
+        "compact": "Compact"
+      },
+      "weeklyDigest": "Weekly digest",
+      "weeklyDigestDescription": "Monday summary of what happened in your workspace.",
+      "productUpdates": "Product updates",
+      "productUpdatesDescription": "Occasional emails about new features."
+    }
   },
   "public": {
     "footer": {

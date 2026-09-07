@@ -9,6 +9,14 @@ export const ProfileErrors = {
     code: 'PROFILE_CLIENT_002',
     message: 'Failed to update profile',
   },
+  FETCH_SETTINGS_FAILED: {
+    code: 'PROFILE_CLIENT_003',
+    message: 'Failed to fetch preferences',
+  },
+  UPDATE_SETTINGS_FAILED: {
+    code: 'PROFILE_CLIENT_004',
+    message: 'Failed to update preferences',
+  },
   UPLOAD_AVATAR_FAILED: {
     code: 'PROFILE_CLIENT_005',
     message: 'Failed to upload avatar',

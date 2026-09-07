@@ -1,6 +1,10 @@
 'use client';
 
-import type { ChangeOwnPasswordDto, UpdateProfileDto } from '@flama/shared/schemas/profile';
+import type {
+  ChangeOwnPasswordDto,
+  UpdateProfileDto,
+  UpdateUserSettingsDto,
+} from '@flama/shared/schemas/profile';
 import {
   type UseMutationOptions,
   type UseQueryOptions,
@@ -8,7 +12,11 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { ProfileEntity, UserSessionEntity } from '../modules/profile/profile.entity';
+import type {
+  ProfileEntity,
+  UserSessionEntity,
+  UserSettingsEntity,
+} from '../modules/profile/profile.entity';
 import { useFlamaApp } from './context';
 import { usersKeys } from './users.queries';
 
@@ -23,6 +31,7 @@ import { usersKeys } from './users.queries';
 export const profileKeys = {
   all: ['profile'] as const,
   me: () => [...profileKeys.all, 'me'] as const,
+  settings: () => [...profileKeys.all, 'settings'] as const,
   sessions: () => [...profileKeys.all, 'sessions'] as const,
 };
 
@@ -84,6 +93,35 @@ export function useDeleteAvatar(options?: UseMutationOptions<ProfileEntity, Erro
   const app = useFlamaApp();
 
   return useProfileWrite(() => app.profile.deleteAvatar(), options);
+}
+
+export function useUserSettings(
+  options?: Omit<UseQueryOptions<UserSettingsEntity, Error>, 'queryKey' | 'queryFn'>,
+) {
+  const app = useFlamaApp();
+
+  return useQuery({
+    queryKey: profileKeys.settings(),
+    queryFn: () => app.profile.getSettings(),
+    ...options,
+  });
+}
+
+export function useUpdateUserSettings(
+  options?: UseMutationOptions<UserSettingsEntity, Error, UpdateUserSettingsDto>,
+) {
+  const app = useFlamaApp();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (dto: UpdateUserSettingsDto) => app.profile.updateSettings(dto),
+    ...options,
+    onSuccess: (...args) => {
+      const [settings] = args;
+      queryClient.setQueryData(profileKeys.settings(), settings);
+      options?.onSuccess?.(...args);
+    },
+  });
 }
 
 /**

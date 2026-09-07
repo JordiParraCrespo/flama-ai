@@ -2,12 +2,17 @@ import {
   ProfileApi,
   type ProfileResponseDto,
   type UserSessionResponseDto,
+  type UserSettingsResponseDto,
 } from '@flama/api-client';
-import type { ChangeOwnPasswordDto, UpdateProfileDto } from '@flama/shared/schemas/profile';
+import type {
+  ChangeOwnPasswordDto,
+  UpdateProfileDto,
+  UpdateUserSettingsDto,
+} from '@flama/shared/schemas/profile';
 import { injectable } from 'inversify';
 import { AppError } from '../core/errors';
 import { MapApiError } from '../core/map-api-error.decorator';
-import { ProfileEntity, UserSessionEntity } from './profile.entity';
+import { ProfileEntity, UserSessionEntity, UserSettingsEntity } from './profile.entity';
 import { ProfileErrors } from './profile.errors';
 
 function toProfile(data: ProfileResponseDto): ProfileEntity {
@@ -22,6 +27,19 @@ function toProfile(data: ProfileResponseDto): ProfileEntity {
     data.role,
     data.emailVerified,
     data.twoFactorEnabled,
+    new Date(data.createdAt),
+    new Date(data.updatedAt),
+  );
+}
+
+function toSettings(data: UserSettingsResponseDto): UserSettingsEntity {
+  return new UserSettingsEntity(
+    data.userId,
+    data.theme,
+    data.locale,
+    data.density,
+    data.weeklyDigest,
+    data.productUpdates,
     new Date(data.createdAt),
     new Date(data.updatedAt),
   );
@@ -69,6 +87,20 @@ export class ProfileRepository {
     const data = await ProfileApi.deleteAvatar();
     if (!data) throw new AppError(ProfileErrors.DELETE_AVATAR_FAILED);
     return toProfile(data);
+  }
+
+  @MapApiError(ProfileErrors.FETCH_SETTINGS_FAILED)
+  async getSettings(): Promise<UserSettingsEntity> {
+    const data = await ProfileApi.getSettings();
+    if (!data) throw new AppError(ProfileErrors.FETCH_SETTINGS_FAILED);
+    return toSettings(data);
+  }
+
+  @MapApiError(ProfileErrors.UPDATE_SETTINGS_FAILED)
+  async updateSettings(dto: UpdateUserSettingsDto): Promise<UserSettingsEntity> {
+    const data = await ProfileApi.updateSettings(dto);
+    if (!data) throw new AppError(ProfileErrors.UPDATE_SETTINGS_FAILED);
+    return toSettings(data);
   }
 
   @MapApiError(ProfileErrors.CHANGE_PASSWORD_FAILED)

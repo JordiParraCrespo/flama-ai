@@ -9,6 +9,8 @@ vi.mock('@flama/api-client', () => ({
     updateProfile: vi.fn(),
     uploadAvatar: vi.fn(),
     deleteAvatar: vi.fn(),
+    getSettings: vi.fn(),
+    updateSettings: vi.fn(),
     changePassword: vi.fn(),
     findSessions: vi.fn(),
     revokeSession: vi.fn(),
@@ -79,12 +81,12 @@ describe('ProfileRepository', () => {
   });
 
   it('maps a transport failure onto its declared error', async () => {
-    vi.mocked(ProfileApi.findSessions).mockRejectedValue(new Error('network down'));
+    vi.mocked(ProfileApi.getSettings).mockRejectedValue(new Error('network down'));
 
-    const error = await repository.getSessions().catch((e) => e as AppError);
+    const error = await repository.getSettings().catch((e) => e as AppError);
 
     expect(error).toBeInstanceOf(AppError);
-    expect((error as AppError).code).toBe('PROFILE_CLIENT_008');
+    expect((error as AppError).code).toBe('PROFILE_CLIENT_003');
   });
 
   it('sends the avatar as a multipart file field', async () => {

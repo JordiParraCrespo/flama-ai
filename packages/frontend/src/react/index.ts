@@ -71,7 +71,9 @@ export {
   useRevokeOtherProfileSessions,
   useRevokeProfileSession,
   useUpdateMyProfile,
+  useUpdateUserSettings,
   useUploadAvatar,
+  useUserSettings,
 } from './profile.queries';
 export {
   rolesKeys,

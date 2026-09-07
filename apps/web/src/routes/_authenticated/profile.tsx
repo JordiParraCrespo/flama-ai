@@ -1,5 +1,11 @@
 import { Alert, AlertDescription, Card, cn, Skeleton } from '@flama/design-system-web';
-import { Lock, type LucideIcon, Monitor, UserRound } from '@flama/design-system-web/icons';
+import {
+  Lock,
+  type LucideIcon,
+  Monitor,
+  SlidersHorizontal,
+  UserRound,
+} from '@flama/design-system-web/icons';
 import { useMyProfile } from '@flama/frontend/react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -7,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { PageHead } from '@/components/page-head';
 import { DetailsPane } from '@/components/profile/details-pane';
 import { PasswordPane } from '@/components/profile/password-pane';
+import { PreferencesPane } from '@/components/profile/preferences-pane';
 import { ProfileHero } from '@/components/profile/profile-hero';
 import { SessionsPane } from '@/components/profile/sessions-pane';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -19,17 +26,19 @@ const SECTIONS = [
   { key: 'details', icon: UserRound },
   { key: 'password', icon: Lock },
   { key: 'sessions', icon: Monitor },
+  { key: 'preferences', icon: SlidersHorizontal },
 ] as const satisfies readonly { key: string; icon: LucideIcon }[];
 
 type SectionKey = (typeof SECTIONS)[number]['key'];
 
 /**
  * The signed-in user's own account: one hero card, then a sub-navigation into
- * three panes.
+ * four panes.
  *
  * The hero and the details pane both need the profile, so it is fetched once
- * here and handed down — the sessions pane owns its own data, which is what
- * lets a slow session list keep the rest of the page interactive.
+ * here and handed down — the panes below it own their own data (sessions,
+ * preferences), which is what lets a slow session list keep the rest of the
+ * page interactive.
  */
 function ProfilePage() {
   const { t } = useTranslation();
@@ -91,6 +100,7 @@ function ProfilePage() {
               {section === 'details' && <DetailsPane profile={profile.data} />}
               {section === 'password' && <PasswordPane profile={profile.data} />}
               {section === 'sessions' && <SessionsPane />}
+              {section === 'preferences' && <PreferencesPane />}
             </div>
           </div>
         </>

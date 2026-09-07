@@ -13,17 +13,30 @@ import {
   useRevokeOtherProfileSessions,
   useRevokeProfileSession,
   useUpdateMyProfile,
+  useUpdateUserSettings,
   useUploadAvatar,
+  useUserSettings,
 } from '../profile.queries';
 import { usersKeys } from '../users.queries';
 
 const SAVED_PROFILE = { id: 'user-1', firstName: 'Adri', lastName: 'Rodrigo' };
+const SAVED_SETTINGS = {
+  userId: 'user-1',
+  theme: 'dark',
+  locale: 'en',
+  density: 'compact',
+  weeklyDigest: false,
+  productUpdates: true,
+};
+
 function setup() {
   const profile = {
     get: vi.fn().mockResolvedValue({ id: 'user-1' }),
     update: vi.fn().mockResolvedValue(SAVED_PROFILE),
     uploadAvatar: vi.fn().mockResolvedValue(SAVED_PROFILE),
     deleteAvatar: vi.fn().mockResolvedValue(SAVED_PROFILE),
+    getSettings: vi.fn().mockResolvedValue(SAVED_SETTINGS),
+    updateSettings: vi.fn().mockResolvedValue(SAVED_SETTINGS),
     changePassword: vi.fn().mockResolvedValue(undefined),
     getSessions: vi.fn().mockResolvedValue([]),
     revokeSession: vi.fn().mockResolvedValue(undefined),
@@ -67,13 +80,14 @@ function invalidated(spy: CallRecorder, key: readonly unknown[]): boolean {
 
 describe('profileKeys', () => {
   it('nests every key under the module root, so one call clears them all', () => {
-    for (const key of [profileKeys.me(), profileKeys.sessions()]) {
+    for (const key of [profileKeys.me(), profileKeys.settings(), profileKeys.sessions()]) {
       expect(key[0]).toBe('profile');
     }
   });
 
-  it('keeps the panes in separate cache entries', () => {
-    expect(profileKeys.me()).not.toEqual(profileKeys.sessions());
+  it('keeps the three panes in separate cache entries', () => {
+    expect(profileKeys.me()).not.toEqual(profileKeys.settings());
+    expect(profileKeys.settings()).not.toEqual(profileKeys.sessions());
   });
 
   it('does not collide with the user directory', () => {
@@ -93,12 +107,15 @@ describe('queries', () => {
     expect(profile.get).toHaveBeenCalled();
   });
 
-  it('reads the sessions through the service', async () => {
+  it('reads the preferences and the sessions separately', async () => {
     const { wrapper, profile } = setup();
 
+    const settings = renderHook(() => useUserSettings(), { wrapper });
     const sessions = renderHook(() => useProfileSessions(), { wrapper });
 
+    await waitFor(() => expect(settings.result.current.isSuccess).toBe(true));
     await waitFor(() => expect(sessions.result.current.isSuccess).toBe(true));
+    expect(profile.getSettings).toHaveBeenCalled();
     expect(profile.getSessions).toHaveBeenCalled();
   });
 });
@@ -157,6 +174,26 @@ describe('profile writes', () => {
     act(() => result.current.mutate({ firstName: 'Adri' }));
 
     await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+  });
+});
+
+describe('preferences', () => {
+  it('replaces them wholesale and shows the saved document', async () => {
+    const { wrapper, profile, queryClient } = setup();
+    const { result } = renderHook(() => useUpdateUserSettings(), { wrapper });
+
+    const dto = {
+      theme: 'dark',
+      locale: 'en',
+      density: 'compact',
+      weeklyDigest: false,
+      productUpdates: true,
+    } as const;
+    act(() => result.current.mutate(dto));
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(profile.updateSettings).toHaveBeenCalledWith(dto);
+    expect(queryClient.getQueryData(profileKeys.settings())).toBe(SAVED_SETTINGS);
   });
 });
 

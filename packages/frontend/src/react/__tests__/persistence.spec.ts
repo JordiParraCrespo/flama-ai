@@ -44,6 +44,7 @@ describe('shouldDehydrateQuery', () => {
   // "Invalid time value" on a warm start.
   it('never persists profile entities', () => {
     expect(shouldDehydrateQuery(query(profileKeys.me()))).toBe(false);
+    expect(shouldDehydrateQuery(query(profileKeys.settings()))).toBe(false);
     expect(shouldDehydrateQuery(query(profileKeys.sessions()))).toBe(false);
   });
 

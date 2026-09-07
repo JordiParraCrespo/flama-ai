@@ -20,6 +20,8 @@ describe('ProfileService', () => {
       update: vi.fn().mockResolvedValue({ id: 'user-1' }),
       uploadAvatar: vi.fn().mockResolvedValue({ id: 'user-1' }),
       deleteAvatar: vi.fn().mockResolvedValue({ id: 'user-1' }),
+      getSettings: vi.fn().mockResolvedValue({ userId: 'user-1' }),
+      updateSettings: vi.fn().mockResolvedValue({ userId: 'user-1' }),
       changePassword: vi.fn().mockResolvedValue(undefined),
       getSessions: vi.fn().mockResolvedValue([]),
       revokeSession: vi.fn().mockResolvedValue(undefined),

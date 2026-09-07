@@ -58,13 +58,14 @@ test('lists every pane and moves between them', async ({ page }) => {
   await openProfile(page);
 
   const nav = sectionNav(page);
-  for (const label of ['Profile', 'Password', 'Sessions']) {
+  for (const label of ['Profile', 'Password', 'Sessions', 'Preferences']) {
     await expect(nav.getByRole('button', { name: label, exact: true })).toBeVisible();
   }
 
   await expect(page.getByRole('heading', { name: 'Profile', level: 2 })).toBeVisible();
   await openPane(page, 'Password', 'Password');
   await openPane(page, 'Sessions', 'Sessions');
+  await openPane(page, 'Preferences', 'Preferences');
   await openPane(page, 'Profile', 'Profile');
 
   await api.dispose();
@@ -431,6 +432,90 @@ test.describe('the sessions pane', () => {
     await expect(sessionRows(page)).toHaveCount(1);
 
     await other.close();
+    await api.dispose();
+  });
+});
+
+test.describe('the preferences pane', () => {
+  test('repaints the workspace on the dark theme, and remembers it per device', async ({
+    page,
+  }) => {
+    const { user, api } = await provisionedUser('prefstheme');
+    await signInAs(page, user);
+    await openProfile(page);
+    await openPane(page, 'Preferences', 'Preferences');
+
+    await page.getByRole('switch', { name: 'Dark theme' }).click();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+
+    // The saved document is the server's: a cache-less reload still shows it.
+    await reloadFromServer(page);
+    await openPane(page, 'Preferences', 'Preferences');
+    await expect(page.getByRole('switch', { name: 'Dark theme' })).toBeChecked();
+
+    await page.getByRole('switch', { name: 'Dark theme' }).click();
+    await expect(page.locator('html')).toHaveClass(/light/);
+
+    await api.dispose();
+  });
+
+  test('saves the table density, and the server is the one that remembers it', async ({ page }) => {
+    const { user, api } = await provisionedUser('prefsdensity');
+    await signInAs(page, user);
+    await openProfile(page);
+    await openPane(page, 'Preferences', 'Preferences');
+
+    const density = page.getByRole('combobox', { name: 'Table density' });
+    await density.click();
+    await page.getByRole('option', { name: 'Compact' }).click();
+    await expect(density).toContainText('Compact');
+
+    await reloadFromServer(page);
+    await openPane(page, 'Preferences', 'Preferences');
+    await expect(page.getByRole('combobox', { name: 'Table density' })).toContainText('Compact');
+
+    await api.dispose();
+  });
+
+  test('saves a notification preference', async ({ page }) => {
+    const { user, api } = await provisionedUser('prefsdigest');
+    await signInAs(page, user);
+    await openProfile(page);
+    await openPane(page, 'Preferences', 'Preferences');
+
+    const digest = page.getByRole('switch', { name: 'Weekly digest' });
+    // The seeded default is on; the first click switches it off.
+    await expect(digest).toBeChecked();
+    await digest.click();
+    await expect(digest).not.toBeChecked();
+
+    await reloadFromServer(page);
+    await openPane(page, 'Preferences', 'Preferences');
+    await expect(page.getByRole('switch', { name: 'Weekly digest' })).not.toBeChecked();
+
+    await api.dispose();
+  });
+
+  test('switches the language of the whole page', async ({ page }) => {
+    const { user, api } = await provisionedUser('prefslang');
+    await signInAs(page, user);
+    await openProfile(page);
+    await openPane(page, 'Preferences', 'Preferences');
+
+    await page.getByRole('combobox', { name: 'Language' }).click();
+    await page.getByRole('option', { name: 'Español' }).click();
+    await expect(page.getByRole('heading', { name: 'Preferencias', level: 2 })).toBeVisible();
+
+    // The saved locale is the account's default on a device that has not
+    // chosen for itself: a fresh context signs in and reads a Spanish page.
+    const fresh = await page.context().browser()?.newContext();
+    if (fresh) {
+      const other = await fresh.newPage();
+      await signInAs(other, user);
+      await expect(other.getByRole('link', { name: 'Ajustes', exact: true })).toBeVisible();
+      await fresh.close();
+    }
+
     await api.dispose();
   });
 });
