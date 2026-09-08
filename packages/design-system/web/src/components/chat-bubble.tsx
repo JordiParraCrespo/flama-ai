@@ -6,23 +6,27 @@ import { cn } from "../lib/utils";
  * ChatBubble — one turn in the assistant thread. The user's turn is the dark
  * inverse fill, right-aligned; the assistant's is a white card with a hairline,
  * led by its mark. 14px at 1.55 line-height, capped at 82% of the rail.
+ *
+ * Who is speaking is `from`, not `role`: this renders a `div`, and a prop
+ * called `role` on a `div` is an ARIA role to every linter that looks at the
+ * JSX — `role="assistant"` failed `useValidAriaRole` at every call site.
  */
 function ChatBubble({
-  role,
+  from,
   avatar,
   children,
   className,
   ...props
 }: React.ComponentProps<"div"> & {
-  role: "user" | "assistant";
+  from: "user" | "assistant";
   avatar?: React.ReactNode;
 }) {
-  const isUser = role === "user";
+  const isUser = from === "user";
 
   return (
     <div
       data-slot="chat-bubble"
-      data-role={role}
+      data-role={from}
       className={cn("flex gap-2.5", isUser && "flex-row-reverse", className)}
       {...props}
     >
@@ -67,7 +71,7 @@ function ChatTyping({ className, ...props }: React.ComponentProps<"span">) {
       {[0, 1, 2].map((index) => (
         <span
           key={index}
-          className="size-1.5 animate-bounce rounded-full bg-ink-400"
+          className="size-1.5 animate-bounce rounded-full bg-ink-400 motion-reduce:animate-none"
           style={{ animationDelay: `${index * 120}ms` }}
         />
       ))}

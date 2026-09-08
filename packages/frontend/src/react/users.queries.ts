@@ -1,6 +1,6 @@
 'use client';
 
-import type { Role, UpdateUserDto } from '@flama/shared';
+import type { PermissionDefinition, Role, UpdateUserDto } from '@flama/shared';
 import {
   type UseMutationOptions,
   type UseQueryOptions,
@@ -35,9 +35,27 @@ export const usersKeys = {
   details: () => [...usersKeys.all, 'detail'] as const,
   detail: (id: string) => [...usersKeys.details(), id] as const,
   me: () => [...usersKeys.all, 'me'] as const,
+  permissions: () => [...usersKeys.me(), 'permissions'] as const,
 };
 
 export const profileQueryKey = usersKeys.me();
+
+/**
+ * The caller's own effective permissions (CASL rules), used to gate which
+ * routes appear in the app's navigation. Kept alongside the profile query so
+ * the shell can build the signed-in user's ability once and share it.
+ */
+export function useMyPermissions(
+  options?: Omit<UseQueryOptions<PermissionDefinition[], Error>, 'queryKey' | 'queryFn'>,
+) {
+  const app = useFlamaApp();
+
+  return useQuery({
+    queryKey: usersKeys.permissions(),
+    queryFn: () => app.users.myPermissions(),
+    ...options,
+  });
+}
 
 export function useProfile(
   options?: Omit<UseQueryOptions<UserEntity, Error>, 'queryKey' | 'queryFn'>,

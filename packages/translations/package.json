@@ -6,7 +6,9 @@
   "exports": {
     ".": "./index.ts",
     "./en": "./en/index.json",
-    "./es": "./es/index.json"
+    "./es": "./es/index.json",
+    "./en/index.json": "./en/index.json",
+    "./es/index.json": "./es/index.json"
   },
   "scripts": {
     "lint": "biome check ."

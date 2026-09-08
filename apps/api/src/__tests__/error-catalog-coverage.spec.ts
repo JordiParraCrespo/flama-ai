@@ -49,7 +49,11 @@ function localeCodes(locale: string): Set<string> {
 
 const codes = catalogCodes();
 const locales = readdirSync(TRANSLATIONS, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory() && entry.name !== 'node_modules')
+  // Locales are the plain directories; `node_modules` and turbo's `.turbo` cache
+  // live alongside them and carry no bundle.
+  .filter(
+    (entry) => entry.isDirectory() && entry.name !== 'node_modules' && !entry.name.startsWith('.'),
+  )
   .map((entry) => entry.name);
 
 describe('error catalog coverage', () => {

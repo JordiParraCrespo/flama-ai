@@ -1,0 +1,122 @@
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@flama/design-system-web';
+import { useOrganizations } from '@flama/frontend/react';
+import { Link, useRouterState } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import type { NavCountKey } from '@/components/app-shell/nav';
+import { useAuthorizedNav } from '@/components/app-shell/use-authorized-nav';
+import { UserMenu } from '@/components/app-shell/user-menu';
+
+function organizationInitial(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || '—';
+}
+
+/**
+ * The live totals behind the nav badges.
+ *
+ * None yet. Serving the team count would mean mounting the organizations →
+ * members pair in the shell, which runs on every route — a waterfall on every
+ * cold load for a number nobody navigates by. It stays `undefined`, which
+ * renders as no badge at all: an absent count is honest where an invented one
+ * is not. Wiring one up later is a line here once the API can answer it in one
+ * call.
+ */
+function useNavCounts(): Record<NavCountKey, number | undefined> {
+  return { team: undefined };
+}
+
+/**
+ * The workspace sidebar: brand row, the nav, and the user menu pinned to the
+ * bottom. 244px and the hairline against the canvas both come from the design
+ * system's `Sidebar`, which is already cut to this brand.
+ */
+export function AppSidebar() {
+  const { t } = useTranslation();
+  const counts = useNavCounts();
+  const { data: organizations } = useOrganizations();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+
+  // Only the routes this user's permissions actually reach — a restricted user
+  // never sees a row that would answer with "No tienes permiso para hacer eso".
+  const entries = useAuthorizedNav();
+  // The shell shows the first organization the caller belongs to. Keeping this
+  // on the same list query as General Settings means a saved name or logo is
+  // reflected here immediately from the query cache.
+  const organization = organizations?.[0];
+  const organizationName = organization?.name ?? t('common.appName');
+
+  return (
+    <Sidebar className="border-r border-border-subtle">
+      <SidebarHeader className="p-3">
+        <div className="flex min-w-0 items-center gap-2.5 px-2 py-2">
+          <Avatar size={24} className="rounded-md after:rounded-md">
+            {organization?.logo && (
+              <AvatarImage src={organization.logo} alt="" className="rounded-md object-contain" />
+            )}
+            <AvatarFallback className="rounded-md bg-surface-sunken font-medium text-ink-600">
+              {organizationInitial(organizationName)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="truncate text-base font-medium text-ink-900">{organizationName}</span>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup
+          className="px-3 py-0"
+          role="navigation"
+          aria-label={t('nav.primaryNavigation')}
+        >
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-px">
+              {entries.map((entry) => {
+                const Icon = entry.icon;
+                const count = entry.countKey ? counts[entry.countKey] : undefined;
+                // `/settings/api-tokens` should still light up Settings, so
+                // match on the prefix rather than the exact path.
+                const active = pathname === entry.to || pathname.startsWith(`${entry.to}/`);
+
+                return (
+                  <SidebarMenuItem key={entry.to}>
+                    <SidebarMenuButton isActive={active} render={<Link to={entry.to} />}>
+                      <Icon />
+                      <span>{t(`nav.${entry.labelKey}`)}</span>
+                    </SidebarMenuButton>
+                    {count != null &&
+                      count > 0 &&
+                      (entry.badge ? (
+                        <SidebarMenuBadge>{count}</SidebarMenuBadge>
+                      ) : (
+                        <SidebarMenuBadge className="bg-transparent text-ink-400">
+                          {count}
+                        </SidebarMenuBadge>
+                      ))}
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="p-3">
+        <UserMenu />
+      </SidebarFooter>
+    </Sidebar>
+  );
+}

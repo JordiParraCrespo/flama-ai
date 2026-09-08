@@ -7,10 +7,7 @@ import {
 import { AppIcon, AppTile } from "@flama/design-system-web/app-icon";
 import { Avatar, AvatarFallback } from "@flama/design-system-web/avatar";
 import { Badge } from "@flama/design-system-web/badge";
-import {
-  BreakdownRow,
-  TopItemRow,
-} from "@flama/design-system-web/breakdown-row";
+import { TopItemRow } from "@flama/design-system-web/breakdown-row";
 import { Button } from "@flama/design-system-web/button";
 import { Card, CardContent } from "@flama/design-system-web/card";
 import {
@@ -27,6 +24,7 @@ import { SearchInput } from "@flama/design-system-web/search-input";
 import { Separator } from "@flama/design-system-web/separator";
 import { Skeleton } from "@flama/design-system-web/skeleton";
 import { Sparkline } from "@flama/design-system-web/sparkline";
+import { StageBreakdown } from "@flama/design-system-web/stage-breakdown";
 import { Switch } from "@flama/design-system-web/switch";
 import { Tag } from "@flama/design-system-web/tag";
 import { Toggle } from "@flama/design-system-web/toggle";
@@ -58,10 +56,12 @@ import {
   UsersIcon,
 } from "lucide-react";
 import {
+  ApprovalDemo,
   ChartDemo,
   CommandPaletteDemo,
   ComposerDemo,
   DialogDemo,
+  ToolCallDemo,
 } from "@/components/component-demos";
 import {
   Attachments,
@@ -71,6 +71,15 @@ import {
   Scroller,
 } from "@/components/chat";
 import { LeadTable } from "@/components/lead-table";
+import {
+  FacetFilterDemo,
+  MailboxPickerDemo,
+  MailboxTagDemo,
+  MailRailDemo,
+  MessageListDemo,
+  MessageReaderDemo,
+  ReplyBoxDemo,
+} from "@/components/mail";
 import {
   RolePill,
   ScopeCell,
@@ -83,6 +92,7 @@ import {
   ActionsDropdown,
   Autocompletes,
   Choices,
+  Comboboxes,
   EnvDropdown,
   SelectMenus,
   Selects,
@@ -435,6 +445,16 @@ export default function DesignSystemPage() {
       </Spec>
 
       <Spec
+        id="combobox"
+        title="Combobox"
+        meta="forms/Combobox"
+        desc="The labelled field for picking one value out of a list that grows with the workspace — a teammate, a tracked domain. Same box as Input and Select on a form row, with a search over the options and a row that clears the field. Pass onQueryChange and the search is the API's to answer."
+        code={`<Combobox options={owners} value={ownerId} onValueChange={setOwnerId} clearLabel="Unassigned" />`}
+      >
+        <Comboboxes />
+      </Spec>
+
+      <Spec
         id="asyncselect"
         title="Autocomplete"
         meta="forms/AsyncMultiSelect"
@@ -469,6 +489,16 @@ export default function DesignSystemPage() {
       </Spec>
 
       <Spec
+        id="facetfilter"
+        title="Facet filter"
+        meta="forms/FilterMenu"
+        desc="The component behind the pattern above: additive facets with the size of each on the right. The trigger turns blue and counts what is on — it cannot name the facets, because they narrow together."
+        code={`<FilterMenu options={[…]} selected={…} onSelectedChange={…} />`}
+      >
+        <FacetFilterDemo />
+      </Spec>
+
+      <Spec
         id="choice"
         title="Checkbox & radio"
         meta="forms/Checkbox · RadioGroup"
@@ -492,6 +522,9 @@ export default function DesignSystemPage() {
         </Swatch>
         <Swatch label="install pattern">
           <DialogDemo variant="install" />
+        </Swatch>
+        <Swatch label="scrolling body">
+          <DialogDemo variant="scroll" />
         </Swatch>
       </Spec>
 
@@ -620,22 +653,42 @@ export default function DesignSystemPage() {
       >
         <Card className="w-[340px]">
           <CardContent>
-            <div className="mb-1.5 text-base font-medium">Leads by stage</div>
-            <BreakdownRow
-              label="Qualified"
-              value="148"
-              trend={[110, 120, 132, 140, 148]}
-            />
-            <BreakdownRow
-              label="Contacted"
-              value="132"
-              trend={[100, 108, 118, 126, 132]}
-            />
-            <BreakdownRow
-              label="Lost"
-              value="32"
-              trend={[40, 38, 36, 34, 32]}
-              up={false}
+            <div className="mb-3 flex items-baseline justify-between gap-4">
+              <span className="text-sm font-medium">Leads by stage</span>
+              <span className="text-xs text-muted-foreground">420 total</span>
+            </div>
+            <StageBreakdown
+              total={420}
+              items={[
+                {
+                  id: "qualified",
+                  label: "Qualified",
+                  value: 148,
+                  delta: 8,
+                  tone: "active",
+                },
+                {
+                  id: "contacted",
+                  label: "Contacted",
+                  value: 132,
+                  delta: 5,
+                  tone: "paused",
+                },
+                {
+                  id: "new",
+                  label: "New",
+                  value: 87,
+                  delta: 12,
+                  tone: "draft",
+                },
+                {
+                  id: "lost",
+                  label: "Lost",
+                  value: 32,
+                  delta: -4,
+                  tone: "ended",
+                },
+              ]}
             />
           </CardContent>
         </Card>
@@ -867,6 +920,68 @@ export default function DesignSystemPage() {
         </Card>
       </Spec>
 
+      {/* ── Mail ──────────────────────────────────────────────────────── */}
+
+      <Spec
+        id="mailrail"
+        title="Mailbox rail"
+        meta="mail/MailboxRail"
+        desc="The mail client's left rail: folder rows with their totals, then every mailbox grouped under the domain that owns it. A folder with nothing in it shows no number rather than a zero."
+        code={`<MailboxRail><MailboxRailRow …/><MailboxRailGroup>…</MailboxRailGroup></MailboxRail>`}
+      >
+        <MailRailDemo />
+      </Spec>
+
+      <Spec
+        id="mailboxpicker"
+        title="Mailbox picker"
+        meta="mail/MailboxPicker"
+        desc="A searchable multi-select over every mailbox, grouped by domain and selectable a whole domain at a time. The trigger names the selection by the tightest thing that fits — one address, a domain, or a count."
+        code={`<MailboxPicker mailboxes={…} selected={…} onSelectedChange={…} />`}
+      >
+        <MailboxPickerDemo />
+      </Spec>
+
+      <Spec
+        id="mailboxtag"
+        title="Mailbox tag & chip"
+        meta="mail/MailboxTag · MailboxChip"
+        desc="The pill naming the mailbox a message landed in, with that mailbox's purpose dot. The chip is the removable form, used in the toolbar's “currently filtering by” row."
+        code={`<MailboxTag tone="#1F9D57">…</MailboxTag> · <MailboxChip onRemove={…}>…</MailboxChip>`}
+      >
+        <MailboxTagDemo />
+      </Spec>
+
+      <Spec
+        id="messagelist"
+        title="Message list"
+        meta="mail/MessageList · MessageListItem"
+        desc="Unread is the lit state, not the bold one alone: the row lifts to the card white, takes the blue dot, and sets sender and subject in medium. Three signals for one fact, because the row is scanned rather than read."
+        code={`<MessageList><MessageListItem unread from={…} subject={…} …/></MessageList>`}
+      >
+        <MessageListDemo />
+      </Spec>
+
+      <Spec
+        id="messagereader"
+        title="Message reader"
+        meta="mail/MessageReader"
+        desc="The reading pane's contents — subject, sender, body, attachment, the record the message is linked to, and the reply. The panel around them is a Sheet, the same overlay as every other detail view."
+        code={`<MessageReader><MessageReaderHeader/><MessageReaderBody/><MessageAttachment/></MessageReader>`}
+      >
+        <MessageReaderDemo />
+      </Spec>
+
+      <Spec
+        id="replybox"
+        title="Reply box"
+        meta="mail/ReplyBox"
+        desc="A letter, not a prompt: multi-paragraph by default, Enter inserts a newline, and the send control is the workspace's ordinary CTA. Composer is the assistant's input and stays separate for exactly those reasons."
+        code={`<ReplyBox value={…} onValueChange={…} toolbar={…} actions={…} />`}
+      >
+        <ReplyBoxDemo />
+      </Spec>
+
       {/* ── Navigation ────────────────────────────────────────────────── */}
 
       <Spec
@@ -944,11 +1059,11 @@ export default function DesignSystemPage() {
         title="Chat bubbles"
         meta="assistant/ChatBubble"
         desc="The user's turn is the dark inverse fill, right-aligned; the assistant's is a white card with a hairline, led by its mark."
-        code={`<ChatBubble role="user">…</ChatBubble>`}
+        code={`<ChatBubble from="user">…</ChatBubble>`}
       >
         <div className="flex w-full max-w-[460px] flex-col gap-4.5">
           <ChatBubble
-            role="user"
+            from="user"
             avatar={
               <Avatar size={28}>
                 <AvatarFallback gradient="purple">A</AvatarFallback>
@@ -958,7 +1073,7 @@ export default function DesignSystemPage() {
             Find high-intent leads this week
           </ChatBubble>
           <ChatBubble
-            role="assistant"
+            from="assistant"
             avatar={
               <ChatMark>
                 <SparklesIcon className="text-ink-600" />
@@ -969,7 +1084,7 @@ export default function DesignSystemPage() {
             Rivera (76). Want follow-ups drafted?
           </ChatBubble>
           <ChatBubble
-            role="assistant"
+            from="assistant"
             avatar={
               <ChatMark>
                 <SparklesIcon className="text-ink-600" />
@@ -991,6 +1106,25 @@ export default function DesignSystemPage() {
         <ComposerDemo />
       </Spec>
 
+      <Spec
+        id="toolcall"
+        title="Tool call"
+        meta="assistant/ToolCall"
+        desc="One step the assistant took, folded shut. The row is the claim, the panel is the evidence — arguments and payload — so an answer stays readable while remaining auditable."
+        code={`<ToolCall status="complete"><ToolCallTrigger>…</ToolCallTrigger><ToolCallContent>…</ToolCallContent></ToolCall>`}
+      >
+        <ToolCallDemo />
+      </Spec>
+
+      <Spec
+        id="approval"
+        title="Approval"
+        meta="assistant/Approval"
+        desc="An action the assistant proposed and will not take until somebody clicks. The details list is a first-class part: what is about to happen has to read without the paragraph above it."
+        code={`<Approval status="pending"><ApprovalHeader>…</ApprovalHeader><ApprovalDetails>…</ApprovalDetails><ApprovalActions>…</ApprovalActions></Approval>`}
+      >
+        <ApprovalDemo />
+      </Spec>
 
       {/* ── Chat ──────────────────────────────────────────────────────── */}
 
@@ -1050,23 +1184,28 @@ export default function DesignSystemPage() {
         id="alert"
         title="Alerts"
         meta="core/Alert"
-        desc="A card-radius surface with a leading icon. Status callouts share Badge's vocabulary — active, paused, ended, draft — and colour the ink and the hairline, never the fill."
+        desc="A card-radius surface with a leading icon. The destructive callout and the status ones — active, paused, ended, draft — colour the ink and the hairline, never the fill."
         code={`<Alert variant="paused"><AlertTitle>…</AlertTitle><AlertDescription>…</AlertDescription></Alert>`}
       >
-        <Alert className="w-full max-w-lg">
-          <AlertCircleIcon className="size-4" />
+        <Alert icon={AlertCircleIcon} className="w-full max-w-lg">
           <AlertTitle>Heads up</AlertTitle>
           <AlertDescription>
             Two domains have not been verified yet.
           </AlertDescription>
         </Alert>
+        {/* The failure callout every form and page in the product reaches for
+            when a submission or a query fails. It carries a description alone
+            there, which is the shape shown here. */}
+        <Alert variant="destructive" className="w-full max-w-lg">
+          <AlertDescription>Incorrect email or password.</AlertDescription>
+        </Alert>
         {ALERT_STATUSES.map((status) => (
           <Alert
             key={status.variant}
             variant={status.variant}
+            icon={status.icon}
             className="w-full max-w-lg"
           >
-            <status.icon className="size-4" />
             <AlertTitle>{status.title}</AlertTitle>
             <AlertDescription>{status.body}</AlertDescription>
           </Alert>

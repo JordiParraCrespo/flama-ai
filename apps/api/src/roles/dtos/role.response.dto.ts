@@ -34,3 +34,25 @@ export class RoleResponseDto {
   @ApiProperty()
   updatedAt!: Date;
 }
+
+export class RolePaginationMetaDto {
+  @ApiProperty()
+  total!: number;
+
+  @ApiProperty()
+  page!: number;
+
+  @ApiProperty()
+  limit!: number;
+
+  @ApiProperty()
+  totalPages!: number;
+}
+
+export class PaginatedRolesResponseDto {
+  @ApiProperty({ type: [RoleResponseDto] })
+  data!: RoleResponseDto[];
+
+  @ApiProperty({ type: RolePaginationMetaDto })
+  meta!: RolePaginationMetaDto;
+}

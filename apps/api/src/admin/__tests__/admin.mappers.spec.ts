@@ -135,7 +135,7 @@ describe('mapSession', () => {
 
     expect(result.id).toBe('s1');
     expect(result.userId).toBe('u1');
-    expect(result.token).toBe('');
+    expect(result).not.toHaveProperty('token');
     expect(result.ipAddress).toBeNull();
     expect(result.userAgent).toBeNull();
     expect(result.expiresAt).toBeInstanceOf(Date);

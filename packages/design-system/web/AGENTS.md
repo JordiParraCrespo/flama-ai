@@ -25,11 +25,23 @@ tsup.config.ts    # build config
   variants) mirrored with `@flama/design-system-mobile` so both platforms stay
   consistent.
 - Colors/spacing/typography come from the shared design tokens — don't hardcode.
-- Export new components from `index.ts`; preview them in `apps/web-showcase`.
+- **Export new components from `index.ts`.** This is enforced:
+  `scripts/check-exports.mjs` runs as the package's `test` script and fails the
+  build when a file in `src/components/` exports something the barrel does not.
+  Every component also has a `./name` subpath in package.json, and the two
+  consumers use different ones: `apps/web-showcase` imports each component by
+  subpath, while `apps/web` takes components from the root and only icons by
+  subpath. So a missing barrel entry does not break the showcase — it just
+  makes the component invisible to the product app, which is how `Breadcrumb`
+  and `Collapsible` sat unused until an audit went looking, by which time a
+  screen had hand-rolled a breadcrumb.
+  If something must stay internal, do not export it from its own module either.
+- Preview new components in `apps/web-showcase`.
 
 ## Commands
 
 ```bash
 pnpm --filter @flama/design-system-web build
 pnpm --filter @flama/design-system-web dev
+pnpm --filter @flama/design-system-web test   # the barrel-export check
 ```

@@ -7,13 +7,18 @@ import {
   RequestContextInterceptor,
 } from '@flama/backend-core';
 import { EmailModule } from '@flama/backend-email';
+import { I18nModule } from '@flama/backend-i18n';
 import { StorageModule } from '@flama/backend-storage';
+// The JSON files directly, not the package root: that entry is a TypeScript
+// source the API's CommonJS build cannot require at runtime.
+import en from '@flama/translations/en/index.json';
+import es from '@flama/translations/es/index.json';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { AdminModule } from './admin/admin.module';
@@ -38,8 +43,12 @@ import { HealthModule } from './health/health.module';
 import { LeadsModule } from './leads/leads.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { OutboxModule } from './outbox/outbox.module';
+import { ProfileModule } from './profile/profile.module';
 import { QueueModule } from './queue/queue.module';
 import { RolesModule } from './roles/roles.module';
+import { CredentialThrottlerGuard } from './throttling/credential-throttler.guard';
+import { RedisThrottlerStorage } from './throttling/redis-throttler.storage';
+import { ThrottlingModule } from './throttling/throttling.module';
 import { UsersModule } from './users/user.module';
 
 @Module({
@@ -103,11 +112,18 @@ import { UsersModule } from './users/user.module';
         };
       },
     }),
-    ThrottlerModule.forRoot({
-      throttlers: [{ ttl: 60000, limit: 100 }],
-      // Integration tests drive many requests through the same pipeline in
-      // seconds; rate limiting there measures nothing but the limit itself.
-      skipIf: () => process.env.NODE_ENV === 'test',
+    ThrottlerModule.forRootAsync({
+      imports: [ThrottlingModule],
+      inject: [RedisThrottlerStorage],
+      useFactory: (storage: RedisThrottlerStorage) => ({
+        throttlers: [{ ttl: 60000, limit: 100 }],
+        // Integration tests drive many requests through the same pipeline in
+        // seconds; rate limiting there measures nothing but the limit itself.
+        skipIf: () => process.env.NODE_ENV === 'test',
+        // Counters live in Redis so the limit is the limit, not the limit times
+        // the replica count. See `RedisThrottlerStorage`.
+        storage,
+      }),
     }),
     BullModule.forRootAsync({
       inject: [ConfigService],
@@ -115,6 +131,7 @@ import { UsersModule } from './users/user.module';
         connection: {
           host: configService.get('redis.host'),
           port: configService.get('redis.port'),
+          password: configService.get('redis.password'),
         },
       }),
     }),
@@ -139,6 +156,15 @@ import { UsersModule } from './users/user.module';
       }),
     }),
     OutboxModule,
+    // Server-side translation. The bundles are the same JSON the web and
+    // mobile apps load, so a string is written once and a translator edits one
+    // file — and an email, which has no request to negotiate a language from,
+    // renders from the recipient's stored preference instead.
+    I18nModule.forRoot({
+      bundles: { en, es },
+      defaultLocale: 'en',
+      defaultTimeZone: 'UTC',
+    }),
     // The kernel's registry is global; feature modules contribute their
     // resource declarations via AuthzModule.forFeature().
     AuthzKernelModule.forRoot(),
@@ -146,6 +172,7 @@ import { UsersModule } from './users/user.module';
     AuthzModule,
     ApiTokensModule,
     UsersModule,
+    ProfileModule,
     RolesModule,
     OrganizationsModule,
     LeadsModule,
@@ -155,7 +182,8 @@ import { UsersModule } from './users/user.module';
     BillingModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Keyed on the calling credential, not the source IP — see the guard.
+    { provide: APP_GUARD, useClass: CredentialThrottlerGuard },
     // Registered globally so a route that forgets to declare its scope
     // requirements is closed to scoped credentials rather than open by
     // omission. Browser sessions pass straight through.

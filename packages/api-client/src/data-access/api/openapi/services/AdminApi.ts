@@ -9,6 +9,7 @@ import type { AdminUpdateUserRequest } from '../../../../common/models/AdminUpda
 import type { AdminUserListResponseDto } from '../../../../common/models/AdminUserListResponseDto';
 import type { AdminUserResponseDto } from '../../../../common/models/AdminUserResponseDto';
 import type { BanUserRequest } from '../../../../common/models/BanUserRequest';
+import type { RevokeSessionRequest } from '../../../../common/models/RevokeSessionRequest';
 import type { SetUserPasswordRequest } from '../../../../common/models/SetUserPasswordRequest';
 import type { SetUserRoleRequest } from '../../../../common/models/SetUserRoleRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -102,20 +103,30 @@ export class AdminApi {
         });
     }
     /**
-     * Revoke a session by token
+     * Revoke one of a user's sessions by id
+     * @param id
+     * @param requestBody
      * @returns AdminSuccessResponseDto
      * @throws ApiError
      */
-    public static revokeSession(): CancelablePromise<AdminSuccessResponseDto> {
+    public static revokeSession(
+        id: string,
+        requestBody: RevokeSessionRequest,
+    ): CancelablePromise<AdminSuccessResponseDto> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/admin/sessions/revoke',
+            url: '/api/v1/admin/users/{id}/sessions/revoke',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 400: `ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected`,
                 401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
                 403: `ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
                 AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
-                404: `ADMIN_001 — The user does not exist`,
+                404: `ADMIN_009 — Session not found`,
                 409: `ADMIN_002 — A user with that email already exists`,
                 502: `ADMIN_008 — The admin service failed to handle the request`,
             },

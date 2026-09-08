@@ -8,7 +8,13 @@ export const createUserSchema = z.object({
   role: z.string().min(1).default('user'),
 });
 
-export const updateUserSchema = createUserSchema.partial().omit({ email: true });
+// `role` is deliberately omitted: it maps to the Better Auth `user.role`
+// column, which gates the admin plugin (impersonate/ban/set-password) and is
+// unioned into the caller's CASL ability. Letting a profile update write it
+// turns `update User` into privilege escalation. Role changes go through the
+// dedicated, grant-checked paths instead — `PUT /v1/users/:userId/roles` for
+// the dynamic-RBAC join and the admin plugin's `set-role` for `user.role`.
+export const updateUserSchema = createUserSchema.partial().omit({ email: true, role: true });
 
 export const userResponseSchema = z.object({
   id: z.string().uuid(),

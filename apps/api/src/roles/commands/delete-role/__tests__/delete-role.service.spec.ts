@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RoleRepositoryPort } from '../../../database/role.repository.port';
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
+import type { RoleGrantPolicy } from '../../../services/role-grant.policy';
 import { DeleteRoleCommand } from '../delete-role.command';
 import { DeleteRoleService } from '../delete-role.service';
 
@@ -28,7 +29,12 @@ describe('DeleteRoleService', () => {
       findOneById: vi.fn().mockResolvedValue(Some(makeRole(false))),
       delete: vi.fn().mockResolvedValue(true),
     };
-    service = new DeleteRoleService(repo as RoleRepositoryPort);
+    service = new DeleteRoleService(
+      repo as RoleRepositoryPort,
+      {
+        assertCanModify: vi.fn().mockResolvedValue(undefined),
+      } as unknown as RoleGrantPolicy,
+    );
   });
 
   it('deletes a custom role and raises the deletion event', async () => {

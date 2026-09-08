@@ -1,10 +1,27 @@
 "use client";
 
 import { Input as InputPrimitive } from "@base-ui/react/input";
+import { cva, type VariantProps } from "class-variance-authority";
 import { SearchIcon } from "lucide-react";
 import type * as React from "react";
 
 import { cn } from "../lib/utils";
+
+const searchInputVariants = cva(
+  "inline-flex w-64 items-center gap-2.5 rounded-full border border-border-default bg-card px-3 transition-colors hover:border-border-strong",
+  {
+    variants: {
+      size: {
+        sm: "h-7",
+        default: "h-9",
+        lg: "h-11",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+    },
+  },
+);
 
 /**
  * SearchInput — the quiet pill search field from the workspace topbar: a
@@ -18,18 +35,18 @@ function SearchInput({
   hint = "⌘K",
   className,
   containerClassName,
+  size = "default",
   ...props
-}: React.ComponentProps<"input"> & {
+}: Omit<React.ComponentProps<"input">, "size"> &
+  VariantProps<typeof searchInputVariants> & {
   hint?: React.ReactNode;
   containerClassName?: string;
 }) {
   return (
     <div
       data-slot="search-input"
-      className={cn(
-        "inline-flex h-9 w-64 items-center gap-2.5 rounded-full border border-border-default bg-card px-3 transition-colors hover:border-border-strong",
-        containerClassName,
-      )}
+      data-size={size}
+      className={cn(searchInputVariants({ size }), containerClassName)}
     >
       <SearchIcon className="size-4 shrink-0 text-ink-400" />
       <InputPrimitive
@@ -48,4 +65,4 @@ function SearchInput({
   );
 }
 
-export { SearchInput };
+export { SearchInput, searchInputVariants };

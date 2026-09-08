@@ -9,8 +9,13 @@ import { UserResponseDto } from './dtos/user.response.dto';
  * Maps the user aggregate between its domain, persistence and response shapes.
  *
  * Note: `toPersistence` only writes the profile columns the application owns.
- * `name` and `image` are managed by Better Auth and deliberately left untouched
- * so a profile update never clobbers them.
+ * `name` is Better Auth's display name and is *derived* here from the first
+ * and last name: the member list and the invitation email read `name`, and a
+ * profile update that left it alone kept showing the old name everywhere the
+ * user is not the one looking. `image` is round-tripped rather than skipped: the
+ * avatar endpoints write it, and mapping it both ways means an update that does
+ * not mention the avatar leaves whatever is there — including one a social
+ * provider supplied at sign-up — exactly as it was.
  */
 @Injectable()
 export class UserMapper implements Mapper<UserEntity, UserOrmEntity, UserResponseDto> {
@@ -20,6 +25,10 @@ export class UserMapper implements Mapper<UserEntity, UserOrmEntity, UserRespons
     record.email = entity.email;
     record.firstName = entity.firstName;
     record.lastName = entity.lastName;
+    record.name = displayNameOf(entity);
+    record.phone = entity.phone;
+    record.jobTitle = entity.jobTitle;
+    record.image = entity.avatarUrl;
     record.role = entity.role;
     record.isActive = entity.isActive;
     record.emailVerified = entity.emailVerified;
@@ -35,6 +44,9 @@ export class UserMapper implements Mapper<UserEntity, UserOrmEntity, UserRespons
         email: new Email({ value: record.email }),
         firstName: record.firstName,
         lastName: record.lastName,
+        phone: record.phone,
+        jobTitle: record.jobTitle,
+        avatarUrl: record.image,
         role: record.role,
         isActive: record.isActive,
         emailVerified: record.emailVerified,
@@ -55,4 +67,9 @@ export class UserMapper implements Mapper<UserEntity, UserOrmEntity, UserRespons
     dto.updatedAt = entity.updatedAt;
     return dto;
   }
+}
+
+/** The display name Better Auth (and every screen that reads `user.name`) shows. */
+function displayNameOf(entity: UserEntity): string {
+  return `${entity.firstName} ${entity.lastName}`.trim();
 }

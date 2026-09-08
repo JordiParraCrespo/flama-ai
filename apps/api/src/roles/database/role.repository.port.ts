@@ -6,6 +6,7 @@ export interface FindRolesParams {
   page: number;
   limit: number;
   search?: string;
+  organizationId?: string | null;
 }
 
 /**
@@ -13,7 +14,8 @@ export interface FindRolesParams {
  * TypeORM adapter in `role.repository.ts`.
  */
 export interface RoleRepositoryPort extends RepositoryPort<RoleEntity> {
-  findOneByName(name: string): Promise<Option<RoleEntity>>;
-  findByIds(ids: string[]): Promise<RoleEntity[]>;
+  findOneById(id: string, organizationId?: string | null): Promise<Option<RoleEntity>>;
+  findOneByName(name: string, organizationId?: string | null): Promise<Option<RoleEntity>>;
+  findByIds(ids: string[], organizationId?: string | null): Promise<RoleEntity[]>;
   findRoles(params: FindRolesParams): Promise<Paginated<RoleEntity>>;
 }

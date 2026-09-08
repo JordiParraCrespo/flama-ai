@@ -19,7 +19,7 @@ export const createRoleSchema = z.object({
     .string()
     .min(2)
     .max(50)
-    .regex(/^[a-z0-9-_]+$/, 'Role name may only contain lowercase letters, numbers, - and _'),
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9 _-]*$/),
   description: z.string().max(255).optional(),
   permissions: z.array(permissionSchema).default([]),
 });
@@ -39,11 +39,22 @@ export const assignUserRolesSchema = z.object({
   roleIds: z.array(z.string().uuid()),
 });
 
+export const memberRoleFormSchema = z.object({
+  roleId: z.string().uuid().nullable(),
+});
+
+export const roleEditorSchema = z.object({
+  name: createRoleSchema.shape.name,
+  description: createRoleSchema.shape.description,
+  permissions: z.array(permissionSchema),
+});
+
 export const roleResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string().nullable(),
   isSystem: z.boolean(),
+  organizationId: z.string().uuid().nullable(),
   permissions: z.array(permissionSchema),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -54,4 +65,6 @@ export type CreateRoleDto = z.infer<typeof createRoleSchema>;
 export type UpdateRoleDto = z.infer<typeof updateRoleSchema>;
 export type UpdateRolePermissionsDto = z.infer<typeof updateRolePermissionsSchema>;
 export type AssignUserRolesDto = z.infer<typeof assignUserRolesSchema>;
+export type MemberRoleFormDto = z.infer<typeof memberRoleFormSchema>;
+export type RoleEditorDto = z.infer<typeof roleEditorSchema>;
 export type RoleResponse = z.infer<typeof roleResponseSchema>;

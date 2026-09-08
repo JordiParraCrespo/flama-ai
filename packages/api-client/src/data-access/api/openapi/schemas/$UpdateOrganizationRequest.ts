@@ -17,6 +17,7 @@ export const $UpdateOrganizationRequest = {
         },
         logo: {
             type: 'string',
+            isNullable: true,
             format: 'uri',
         },
     },

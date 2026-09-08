@@ -21,6 +21,7 @@ export {
 } from './api-tokens.queries';
 export {
   authKeys,
+  type SocialLoginVariables,
   useChangePassword,
   useForgotPassword,
   useLogin,
@@ -36,7 +37,22 @@ export {
 } from './capabilities.queries';
 export { FlamaProvider, useFlamaApp } from './context';
 export { useAuthState } from './hooks';
-export { organizationsKeys, useOrganizations } from './organizations.queries';
+export {
+  type InviteMembersVariables,
+  organizationsKeys,
+  type UpdateOrganizationVariables,
+  useAcceptInvitation,
+  useCancelOrganizationInvitation,
+  useCreateOrganization,
+  useInviteMembers,
+  useMyInvitations,
+  useOrganizationInvitations,
+  useOrganizationMembers,
+  useOrganizations,
+  useRemoveOrganizationMember,
+  useUpdateOrganization,
+  useUpdateOrganizationMemberRole,
+} from './organizations.queries';
 export {
   cacheOwnerKey,
   createQueryPersistOptions,
@@ -47,8 +63,33 @@ export {
   shouldDehydrateQuery,
 } from './persistence';
 export {
+  profileKeys,
+  useChangeOwnPassword,
+  useDeleteAvatar,
+  useMyProfile,
+  useProfileSessions,
+  useRevokeOtherProfileSessions,
+  useRevokeProfileSession,
+  useUpdateMyProfile,
+  useUpdateUserSettings,
+  useUploadAvatar,
+  useUserSettings,
+} from './profile.queries';
+export {
+  rolesKeys,
+  useAssignUserRoles,
+  useAuthorizationCatalog,
+  useCreateRole,
+  useDeleteRole,
+  useRoles,
+  useUpdateRole,
+  useUserRoles,
+  useUsersRoles,
+} from './roles.queries';
+export {
   profileQueryKey,
   useDeleteUser,
+  useMyPermissions,
   useProfile,
   usersKeys,
   useUpdateUser,

@@ -1,64 +1,54 @@
-import { Body, Container, Head, Heading, Html, Preview, Text } from '@react-email/components';
+import { Heading, Section, Text } from '@react-email/components';
 import type * as React from 'react';
+import type { WelcomeEmailParams } from '../email.service';
+import { bodyText, Divider, EmailLayout, fontFamily, heading } from './email-layout';
 
-interface WelcomeEmailProps {
-  name: string;
-}
-
-export function WelcomeEmail({ name }: WelcomeEmailProps) {
+export function WelcomeEmail(params: WelcomeEmailParams) {
   return (
-    <Html>
-      <Head />
-      <Preview>Welcome to Flama</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={heading}>Welcome to Flama!</Heading>
-          <Text style={text}>Hi {name},</Text>
-          <Text style={text}>
-            Your account has been created successfully. We&apos;re excited to have you on board.
-          </Text>
-          <Text style={text}>
-            If you have any questions, feel free to reach out to our support team.
-          </Text>
-          <Text style={footerText}>&mdash; The Flama Team</Text>
-        </Container>
-      </Body>
-    </Html>
+    <EmailLayout
+      locale={params.locale}
+      preview={params.preview}
+      brandName={params.brandName}
+      footer={params.footer}
+    >
+      <Section className="email-px" style={eyebrowSection}>
+        <Text style={eyebrow}>{params.eyebrow}</Text>
+      </Section>
+      <Section className="email-px" style={introSection}>
+        <Heading className="email-heading" style={heading}>
+          {params.heading}
+        </Heading>
+        <Text style={greeting}>{params.greeting}</Text>
+        <Text style={bodyText}>{params.body}</Text>
+      </Section>
+      <Divider />
+      <Section className="email-px" style={closingSection}>
+        <Text style={supportText}>{params.supportText}</Text>
+        <Text style={signoff}>{params.signoff}</Text>
+      </Section>
+    </EmailLayout>
   );
 }
 
-const main: React.CSSProperties = {
-  backgroundColor: '#f6f9fc',
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+const eyebrowSection: React.CSSProperties = { padding: '32px 40px 0' };
+const introSection: React.CSSProperties = { padding: '16px 40px 0' };
+const closingSection: React.CSSProperties = { padding: '20px 40px 36px' };
+
+const eyebrow: React.CSSProperties = {
+  display: 'inline-block',
+  margin: 0,
+  padding: '5px 12px',
+  backgroundColor: '#EAF2FE',
+  border: '1px solid #D3E4FC',
+  borderRadius: '999px',
+  color: '#2F80F6',
+  fontFamily,
+  fontSize: '12px',
+  fontWeight: 500,
+  letterSpacing: '-0.15px',
+  lineHeight: '16px',
 };
 
-const container: React.CSSProperties = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '40px 20px',
-  maxWidth: '560px',
-  borderRadius: '8px',
-};
-
-const heading: React.CSSProperties = {
-  fontSize: '24px',
-  fontWeight: '700',
-  color: '#1a1a1a',
-  textAlign: 'center' as const,
-  margin: '0 0 24px',
-};
-
-const text: React.CSSProperties = {
-  fontSize: '16px',
-  lineHeight: '26px',
-  color: '#484848',
-  margin: '0 0 12px',
-};
-
-const footerText: React.CSSProperties = {
-  fontSize: '14px',
-  lineHeight: '22px',
-  color: '#898989',
-  margin: '24px 0 0',
-};
+const greeting: React.CSSProperties = { ...bodyText, margin: '0 0 8px', color: '#292929' };
+const supportText: React.CSSProperties = { ...bodyText, margin: '0 0 12px', fontSize: '13px' };
+const signoff: React.CSSProperties = { ...bodyText, color: '#9E9E9E', fontSize: '13px' };

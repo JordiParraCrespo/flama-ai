@@ -49,3 +49,9 @@ export interface ScopedRequest extends Request {
   ability?: unknown;
   scopeContext?: ScopeContext | null;
 }
+
+/** The organization selected in the caller's Better Auth session. */
+export function activeOrganizationIdOf(request: ScopedRequest): string | null {
+  const value = request.session?.activeOrganizationId;
+  return typeof value === 'string' ? value : null;
+}

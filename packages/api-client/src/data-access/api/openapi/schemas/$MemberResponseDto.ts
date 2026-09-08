@@ -26,5 +26,13 @@ export const $MemberResponseDto = {
             isRequired: true,
             format: 'date-time',
         },
+        user: {
+            type: 'all-of',
+            contains: [{
+                type: 'MemberUserResponseDto',
+            }],
+            isRequired: true,
+            isNullable: true,
+        },
     },
 } as const;

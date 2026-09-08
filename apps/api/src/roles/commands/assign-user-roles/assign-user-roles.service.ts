@@ -8,6 +8,7 @@ import type { RoleRepositoryPort } from '../../database/role.repository.port';
 import type { UserRoleRepositoryPort } from '../../database/user-role.repository.port';
 import { RoleErrors } from '../../domain/role.errors';
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from '../../roles.di-tokens';
+import { RoleGrantPolicy } from '../../services/role-grant.policy';
 import { AssignUserRolesCommand } from './assign-user-roles.command';
 
 /**
@@ -24,6 +25,7 @@ export class AssignUserRolesService implements ICommandHandler<AssignUserRolesCo
     private readonly roleRepository: RoleRepositoryPort,
     @Inject(USER_ROLE_REPOSITORY)
     private readonly userRoleRepository: UserRoleRepositoryPort,
+    private readonly grantPolicy: RoleGrantPolicy,
   ) {}
 
   async execute(command: AssignUserRolesCommand): Promise<void> {
@@ -31,9 +33,35 @@ export class AssignUserRolesService implements ICommandHandler<AssignUserRolesCo
     if (user.isNone()) throw new AppError(UserErrors.NOT_FOUND);
 
     const uniqueRoleIds = [...new Set(command.roleIds)];
-    const roles = await this.roleRepository.findByIds(uniqueRoleIds);
+    const roles =
+      command.activeOrganizationId === undefined
+        ? await this.roleRepository.findByIds(uniqueRoleIds)
+        : await this.roleRepository.findByIds(uniqueRoleIds, command.activeOrganizationId);
     if (roles.length !== uniqueRoleIds.length) throw new AppError(RoleErrors.NOT_FOUND);
 
-    await this.userRoleRepository.setRolesForUser(command.userId, uniqueRoleIds);
+    // No privilege escalation: assigning a role grants its permissions to the
+    // target, so the caller must already hold everything those roles confer.
+    // `RoleGrantPolicy` guards role *definitions*; this closes the parallel
+    // escalation path where a lesser admin assigns a role that outranks them.
+    await this.grantPolicy.assertGrantable(
+      command.actorId
+        ? {
+            id: command.actorId,
+            role: command.actorRole,
+            activeOrganizationId: command.activeOrganizationId,
+          }
+        : undefined,
+      roles.flatMap((role) => role.permissions.map((permission) => permission.toDefinition())),
+    );
+
+    if (command.activeOrganizationId === undefined) {
+      await this.userRoleRepository.setRolesForUser(command.userId, uniqueRoleIds);
+    } else {
+      await this.userRoleRepository.setRolesForUser(
+        command.userId,
+        uniqueRoleIds,
+        command.activeOrganizationId,
+      );
+    }
   }
 }

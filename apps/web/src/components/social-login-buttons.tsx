@@ -1,9 +1,14 @@
-import { Button } from '@flama/design-system-web';
+import { Alert, AlertDescription, Button, cn } from '@flama/design-system-web';
+import { Info } from '@flama/design-system-web/icons';
+import type { SocialAuthIntent } from '@flama/frontend';
 import { useDeploymentCapabilities, useSocialLogin } from '@flama/frontend/react';
 import { useTranslation } from 'react-i18next';
+import { AuthDivider, authControlClass } from '@/components/auth/auth-primitives';
+import { GithubIcon, GoogleIcon } from '@/components/auth/provider-icons';
+import { useErrorMessage } from '@/lib/use-error-message';
 
 /**
- * Social sign-in section of the login card, driven by the deployment's
+ * Social sign-in section of the login screen, driven by the deployment's
  * capability set (`GET /health/capabilities`) so only providers that are
  * actually configured render a button.
  *
@@ -12,9 +17,21 @@ import { useTranslation } from 'react-i18next';
  * missing configuration. The "nothing configured" hint — which names the env
  * vars to set, for the self-hoster who is the one person able to fix it —
  * only ever renders from a successful read reporting no providers.
+ *
+ * `intent` is what separates the two screens that render this. The API refuses
+ * a provider identity it has never seen unless the caller asks for a sign-up,
+ * so the login screen's buttons sign in only, and the register screen's are
+ * the one place an account can be created from a provider.
  */
-export function SocialLoginButtons({ disabled }: { disabled?: boolean }) {
+export function SocialLoginButtons({
+  disabled,
+  intent = 'sign-in',
+}: {
+  disabled?: boolean;
+  intent?: SocialAuthIntent;
+}) {
   const { t } = useTranslation();
+  const resolveError = useErrorMessage();
   const social = useSocialLogin();
   const { data, error } = useDeploymentCapabilities();
 
@@ -28,32 +45,42 @@ export function SocialLoginButtons({ disabled }: { disabled?: boolean }) {
   const github = capabilities?.github_oauth ?? true;
 
   if (!google && !github) {
+    // A notice, not a failure — nobody signing in did anything wrong — so it is
+    // the plain `Alert`, not the destructive one. It was a centred grey
+    // paragraph, which is the shape this screen is not allowed to invent.
     return (
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        {t('auth.login.noSocialProviders')}
-      </p>
+      <Alert icon={Info} className="mt-4">
+        <AlertDescription>{t('auth.login.noSocialProviders')}</AlertDescription>
+      </Alert>
     );
   }
 
+  const providerButton = cn(authControlClass, 'gap-2.5');
+
   return (
     <>
-      <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">{t('common.orContinueWith')}</span>
-        </div>
-      </div>
-      <div className={google && github ? 'grid grid-cols-2 gap-4' : 'grid gap-4'}>
+      <AuthDivider label={t('common.or')} />
+      {/* Starting the round-trip can fail before the redirect ever happens —
+          the API unreachable, the provider rejected server-side. It used to
+          fail silently: the button simply stopped spinning. */}
+      {social.error && (
+        <Alert variant="destructive" className="mb-2.5">
+          <AlertDescription>
+            {resolveError(social.error, t('auth.login.socialFailed')).message}
+          </AlertDescription>
+        </Alert>
+      )}
+      <div className="flex flex-col gap-2.5">
         {google && (
           <Button
             variant="outline"
             type="button"
             disabled={disabled || social.isPending}
-            onClick={() => social.mutate('google')}
+            onClick={() => social.mutate({ provider: 'google', intent })}
+            className={providerButton}
           >
-            {t('common.google')}
+            <GoogleIcon />
+            {t('auth.login.continueWithGoogle')}
           </Button>
         )}
         {github && (
@@ -61,9 +88,11 @@ export function SocialLoginButtons({ disabled }: { disabled?: boolean }) {
             variant="outline"
             type="button"
             disabled={disabled || social.isPending}
-            onClick={() => social.mutate('github')}
+            onClick={() => social.mutate({ provider: 'github', intent })}
+            className={providerButton}
           >
-            {t('common.github')}
+            <GithubIcon />
+            {t('auth.login.continueWithGithub')}
           </Button>
         )}
       </div>

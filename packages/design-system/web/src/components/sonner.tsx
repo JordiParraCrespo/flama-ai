@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import * as React from 'react';
-import { Toaster as Sonner, type ToasterProps } from 'sonner';
+import { Toaster as Sonner, toast, type ToasterProps } from 'sonner';
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme();
@@ -43,4 +43,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-export { Toaster };
+/**
+ * Re-exported so apps reach the toast through the design system rather than
+ * taking their own `sonner` dependency — the same reason every other primitive
+ * is published from here.
+ */
+export { toast, Toaster };

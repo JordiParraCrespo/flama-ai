@@ -1,7 +1,24 @@
 export type { AgentGradient } from './components/agent-card';
 export { AGENT_GRADIENTS, AgentCard } from './components/agent-card';
-export { Alert, AlertDescription, AlertTitle } from './components/alert';
+export {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from './components/alert';
 export { AppIcon, AppTile } from './components/app-icon';
+export type { ApprovalStatus } from './components/approval';
+export {
+  Approval,
+  ApprovalActions,
+  ApprovalDescription,
+  ApprovalDetail,
+  ApprovalDetails,
+  ApprovalHeader,
+  ApprovalIcon,
+  ApprovalOutcome,
+  ApprovalTitle,
+} from './components/approval';
 export type { AsyncOption } from './components/async-multi-select';
 export { AsyncMultiSelect } from './components/async-multi-select';
 export {
@@ -15,7 +32,9 @@ export {
   AttachmentTitle,
   AttachmentTrigger,
 } from './components/attachment';
+export type { AvatarGradient } from './components/avatar';
 export {
+  AVATAR_GRADIENTS,
   Avatar,
   AvatarBadge,
   AvatarFallback,
@@ -25,8 +44,22 @@ export {
 } from './components/avatar';
 export { Badge, badgeVariants } from './components/badge';
 export { BrandMark } from './components/brand-mark';
+export {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from './components/breadcrumb';
 export { BreakdownRow, TopItemRow } from './components/breakdown-row';
-export { Bubble, BubbleContent, BubbleGroup, BubbleReactions } from './components/bubble';
+export {
+  Bubble,
+  BubbleContent,
+  BubbleGroup,
+  BubbleReactions,
+} from './components/bubble';
 export { Button, buttonVariants } from './components/button';
 export {
   Card,
@@ -47,7 +80,15 @@ export {
   ChartTooltipContent,
 } from './components/chart';
 export { ChatBubble, ChatMark, ChatTyping } from './components/chat-bubble';
+export { ChatMarkdown } from './components/chat-markdown';
 export { Checkbox } from './components/checkbox';
+export {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from './components/collapsible';
+export type { ComboboxOption } from './components/combobox';
+export { Combobox } from './components/combobox';
 export {
   Command,
   CommandDialog,
@@ -55,6 +96,7 @@ export {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandItemIcon,
   CommandList,
   CommandSeparator,
   CommandShortcut,
@@ -63,11 +105,14 @@ export { Composer } from './components/composer';
 export { DeltaText } from './components/delta-text';
 export {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogHero,
+  DialogHeroPlate,
   DialogOverlay,
   DialogPortal,
   DialogTitle,
@@ -102,6 +147,15 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from './components/dropdown-menu';
+export {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './components/empty';
+export { EmptyState } from './components/empty-state';
 export { FeatureRow } from './components/feature-row';
 export {
   Field,
@@ -115,8 +169,10 @@ export {
   FieldSet,
   FieldTitle,
 } from './components/field';
+export type { FilterMenuOption } from './components/filter-menu';
+export { FilterMenu } from './components/filter-menu';
 export { IconButton, iconButtonVariants } from './components/icon-button';
-export { Input } from './components/input';
+export { Input, inputVariants } from './components/input';
 export {
   InputGroup,
   InputGroupAddon,
@@ -128,6 +184,22 @@ export {
 export { Kbd } from './components/kbd';
 export { Kpi, KpiCard } from './components/kpi';
 export { Label } from './components/label';
+export type {
+  MailboxOption,
+  MailboxPickerLabels,
+} from './components/mailbox-picker';
+export { MailboxPicker } from './components/mailbox-picker';
+export {
+  MailboxRail,
+  MailboxRailDomain,
+  MailboxRailEmpty,
+  MailboxRailGroup,
+  MailboxRailGroupLabel,
+  MailboxRailItem,
+  MailboxRailRow,
+  MailboxRailSearch,
+} from './components/mailbox-rail';
+export { MailboxChip, MailboxTag } from './components/mailbox-tag';
 export {
   Message,
   MessageAvatar,
@@ -136,6 +208,17 @@ export {
   MessageGroup,
   MessageHeader,
 } from './components/message';
+export { MessageList, MessageListItem } from './components/message-list';
+export {
+  MessageAttachment,
+  MessageReader,
+  MessageReaderBody,
+  MessageReaderHeader,
+  MessageReaderIdentity,
+  MessageReaderLink,
+  MessageReaderMeta,
+  MessageReaderSubject,
+} from './components/message-reader';
 export {
   MessageScroller,
   MessageScrollerButton,
@@ -164,7 +247,13 @@ export {
   PopoverTitle,
   PopoverTrigger,
 } from './components/popover';
-export { Progress } from './components/progress';
+export {
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressValue,
+} from './components/progress';
 export { PromptCard } from './components/prompt-card';
 export {
   Questionnaire,
@@ -185,7 +274,8 @@ export {
 } from './components/questionnaire';
 export { RadioGroup, RadioGroupItem } from './components/radio-group';
 export { RecentItem } from './components/recent-item';
-export { SearchInput } from './components/search-input';
+export { ReplyBox } from './components/reply-box';
+export { SearchInput, searchInputVariants } from './components/search-input';
 export {
   Select,
   SelectContent,
@@ -197,6 +287,7 @@ export {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
+  selectTriggerVariants,
 } from './components/select';
 export { SelectMenu } from './components/select-menu';
 export { Separator } from './components/separator';
@@ -237,8 +328,14 @@ export {
   useSidebar,
 } from './components/sidebar';
 export { Skeleton } from './components/skeleton';
-export { Toaster } from './components/sonner';
+export { Toaster, toast } from './components/sonner';
 export { Sparkline } from './components/sparkline';
+export type {
+  StageBreakdownItem,
+  StageBreakdownProps,
+  StageBreakdownTone,
+} from './components/stage-breakdown';
+export { StageBreakdown } from './components/stage-breakdown';
 export { Stepper } from './components/stepper';
 export { Switch } from './components/switch';
 export {
@@ -251,11 +348,34 @@ export {
   TableHeader,
   TableRow,
 } from './components/table';
-export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/tabs';
+export {
+  Tabs,
+  TabsContent,
+  TabsCount,
+  TabsList,
+  TabsTrigger,
+  tabsListVariants,
+} from './components/tabs';
 export { Tag, tagVariants } from './components/tag';
 export { Textarea } from './components/textarea';
 export { Toggle, toggleVariants } from './components/toggle';
 export { ToggleGroup, ToggleGroupItem } from './components/toggle-group';
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/tooltip';
+export type { ToolCallStatus } from './components/tool-call';
+export {
+  ToolCall,
+  ToolCallContent,
+  ToolCallIcon,
+  ToolCallIndicator,
+  ToolCallLabel,
+  ToolCallPayload,
+  ToolCallSummary,
+  ToolCallTrigger,
+} from './components/tool-call';
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './components/tooltip';
 export { useIsMobile } from './hooks/use-mobile';
 export { cn } from './lib/utils';

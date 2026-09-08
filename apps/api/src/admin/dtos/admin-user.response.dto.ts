@@ -57,8 +57,10 @@ export class AdminSessionResponseDto {
   @ApiProperty()
   userId!: string;
 
-  @ApiProperty()
-  token!: string;
+  // The session token is deliberately NOT exposed: it is a bearer credential
+  // that the `bearer` plugin accepts as `Authorization: Bearer <token>`, so
+  // returning it would let this read-only listing hand out the means to
+  // impersonate any device. Revocation works by session id server-side.
 
   @ApiProperty()
   expiresAt!: Date;

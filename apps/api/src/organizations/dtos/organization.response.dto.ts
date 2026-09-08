@@ -27,6 +27,32 @@ export class OrganizationResponseDto {
 }
 
 /** A user's membership of an organization. */
+export class MemberUserResponseDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiProperty()
+  email!: string;
+
+  @ApiProperty({ nullable: true, type: String })
+  image!: string | null;
+
+  @ApiProperty()
+  firstName!: string;
+
+  @ApiProperty()
+  lastName!: string;
+
+  @ApiProperty()
+  isActive!: boolean;
+
+  @ApiProperty()
+  emailVerified!: boolean;
+}
+
 export class MemberResponseDto {
   @ApiProperty()
   id!: string;
@@ -44,6 +70,9 @@ export class MemberResponseDto {
 
   @ApiProperty()
   createdAt!: Date;
+
+  @ApiProperty({ nullable: true, type: MemberUserResponseDto })
+  user!: MemberUserResponseDto | null;
 }
 
 /** A pending invitation to join an organization. */

@@ -12,10 +12,6 @@ export const $AdminSessionResponseDto = {
             type: 'string',
             isRequired: true,
         },
-        token: {
-            type: 'string',
-            isRequired: true,
-        },
         expiresAt: {
             type: 'string',
             isRequired: true,

@@ -1,4 +1,12 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import {
+  CircleAlert,
+  CircleCheck,
+  CirclePause,
+  CircleX,
+  Info,
+  type LucideIcon,
+} from "lucide-react";
 import * as React from "react";
 
 import { cn } from "../lib/utils";
@@ -9,8 +17,13 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "bg-card text-card-foreground",
+        // The failure callout, on the same terms as the status ones below: the
+        // hairline takes the destructive hue so the edge reads as an error
+        // rather than as a plain card that happens to hold red text. It was
+        // the one variant left on the neutral `border-border`, which is why a
+        // failed sign-in looked like an unstyled box.
         destructive:
-          "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+          "border-destructive/25 bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
         // Status callouts, mirroring Badge's vocabulary. The surface stays the
         // flat card and only the ink carries the signal — a full-bleed tint at
         // this size would be decoration, which the brand does not do. The
@@ -31,18 +44,55 @@ const alertVariants = cva(
   },
 );
 
+/**
+ * The leading icon each variant wears when the caller does not name one.
+ *
+ * An alert without an icon is a box of coloured text, which is what every
+ * error callout in the product was until these became the default — the icon
+ * was optional, so all 47 of them went without. `destructive` takes the alert
+ * disc rather than `ended`'s cross: one is a failure to act on, the other a
+ * state something has settled into, and they share a colour.
+ */
+const VARIANT_ICONS: Record<
+  NonNullable<VariantProps<typeof alertVariants>["variant"]>,
+  LucideIcon
+> = {
+  default: CircleAlert,
+  destructive: CircleAlert,
+  active: CircleCheck,
+  paused: CirclePause,
+  ended: CircleX,
+  draft: Info,
+};
+
 function Alert({
   className,
   variant,
+  icon,
+  children,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+}: React.ComponentProps<"div"> &
+  VariantProps<typeof alertVariants> & {
+    /**
+     * Overrides the variant's leading icon. `null` renders none — for the rare
+     * callout that is one line inside something already labelled. Mirrors the
+     * mobile package, whose `Alert` has taken an `icon` component all along;
+     * web took it as a child, which is the half nobody remembered to pass.
+     */
+    icon?: LucideIcon | null;
+  }) {
+  const LeadingIcon = icon === null ? null : (icon ?? VARIANT_ICONS[variant ?? "default"]);
+
   return (
     <div
       data-slot="alert"
       role="alert"
       className={cn(alertVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {LeadingIcon ? <LeadingIcon /> : null}
+      {children}
+    </div>
   );
 }
 

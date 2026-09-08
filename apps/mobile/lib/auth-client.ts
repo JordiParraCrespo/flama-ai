@@ -42,12 +42,21 @@ export const mobileAuthClient: IAuthClient = {
     );
   },
 
-  async signInSocial(provider) {
+  async signInSocial(provider, intent = 'sign-in') {
     // Opens an in-app browser and deep-links back via the app scheme.
     unwrap(
       await authClient.signIn.social({
         provider,
         callbackURL: `${scheme}://`,
+        // Relative on purpose: the Expo client plugin turns a leading-slash
+        // path into a deep link with `Linking.createURL`, which is what makes
+        // it resolve in a dev client (`exp://…/--/login`) as well as a
+        // standalone build.
+        errorCallbackURL: intent === 'sign-up' ? '/register' : '/login',
+        // The API refuses a provider identity that has no account here
+        // (`disableImplicitSignUp`); only the register screen lifts it, so
+        // signing in never silently creates an account.
+        requestSignUp: intent === 'sign-up',
       }),
     );
   },

@@ -49,4 +49,9 @@ export const AdminErrors = {
     message: 'The admin service failed to handle this request',
     httpStatus: 502,
   },
+  SESSION_NOT_FOUND: {
+    code: 'ADMIN_009',
+    message: 'No such session for that user',
+    httpStatus: 404,
+  },
 } as const satisfies Record<string, ErrorDefinition>;

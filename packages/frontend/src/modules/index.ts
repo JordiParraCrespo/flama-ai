@@ -4,4 +4,6 @@ export * from './auth';
 export * from './capabilities';
 export * from './core';
 export * from './organizations';
+export * from './profile';
+export * from './roles';
 export * from './users';

@@ -1,10 +1,12 @@
 import type { IncomingHttpHeaders } from 'node:http';
+import { AppError } from '@flama/backend-core';
 import type { AdminCreateUserDto, AdminUpdateUserDto, ListUsersQuery } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { auth } from '../auth/auth';
-import { betterAuthHeaders } from '../auth/better-auth.util';
+import { asRecord, betterAuthHeaders, unwrapArray } from '../auth/better-auth.util';
 import { mapSessionsFromResult, mapSuccess, mapUserFromResult, mapUserList } from './admin.mappers';
 import { invokeAdminApi } from './admin-error.mapper';
+import { AdminErrors } from './domain/admin.errors';
 import type {
   AdminSessionResponseDto,
   AdminUserListResponseDto,
@@ -153,14 +155,31 @@ export class AdminService {
     return mapSessionsFromResult(result);
   }
 
+  /**
+   * Revoke a single session by its **id**. The Better Auth admin API revokes by
+   * session token, but the session token is a live bearer credential, so it is
+   * never handed to the client (see `AdminSessionResponseDto`). We resolve the
+   * id to its token here, server-side, and revoke with that — the token never
+   * leaves the API.
+   */
   async revokeSession(
     headers: IncomingHttpHeaders,
-    sessionToken: string,
+    userId: string,
+    sessionId: string,
   ): Promise<{ success: boolean }> {
+    const authHeaders = this.headers(headers);
+    const sessions = await invokeAdminApi(() =>
+      auth.api.listUserSessions({ body: { userId }, headers: authHeaders }),
+    );
+    const match = unwrapArray(sessions, 'sessions')
+      .map(asRecord)
+      .find((session) => String(session.id) === sessionId);
+    if (!match) throw new AppError(AdminErrors.SESSION_NOT_FOUND);
+
     const result = await invokeAdminApi(() =>
       auth.api.revokeUserSession({
-        body: { sessionToken },
-        headers: this.headers(headers),
+        body: { sessionToken: String(match.token) },
+        headers: authHeaders,
       }),
     );
     return mapSuccess(result);

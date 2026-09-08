@@ -7,6 +7,7 @@ import type { ZodErrorMap } from 'zod';
 export type ValidationMessageKey =
   | 'validation.required'
   | 'validation.email'
+  | 'validation.url'
   | 'validation.minLength'
   | 'validation.maxLength'
   | 'validation.minItems'
@@ -38,9 +39,23 @@ export function createZodErrorMap(t: TranslateFn): ZodErrorMap {
           : { message: ctx.defaultError };
 
       case 'invalid_string':
-        return issue.validation === 'email'
-          ? { message: t('validation.email') }
+        if (issue.validation === 'email') return { message: t('validation.email') };
+        if (issue.validation === 'url') return { message: t('validation.url') };
+        return { message: ctx.defaultError };
+
+      case 'invalid_union': {
+        // Optional URL inputs are represented as `url().or(literal(''))` so
+        // an empty control can mean "remove it". Zod reports a failed URL in
+        // that union at the union level, so preserve the useful URL message.
+        const containsUrlFailure = issue.unionErrors.some((error) =>
+          error.issues.some(
+            (candidate) => candidate.code === 'invalid_string' && candidate.validation === 'url',
+          ),
+        );
+        return containsUrlFailure
+          ? { message: t('validation.url') }
           : { message: ctx.defaultError };
+      }
 
       case 'too_small': {
         const min = Number(issue.minimum);

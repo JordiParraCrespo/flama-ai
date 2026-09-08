@@ -1,6 +1,12 @@
 import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
-import type { AuthSession, IAuthClient, SignUpParams, SocialProvider } from './auth.client';
+import type {
+  AuthSession,
+  IAuthClient,
+  SignUpParams,
+  SocialAuthIntent,
+  SocialProvider,
+} from './auth.client';
 
 /**
  * Thin adapter over the platform {@link IAuthClient}. Keeps the service layer
@@ -18,8 +24,8 @@ export class AuthRepository {
     return this.client.signUp(params);
   }
 
-  socialLogin(provider: SocialProvider): Promise<void> {
-    return this.client.signInSocial(provider);
+  socialLogin(provider: SocialProvider, intent?: SocialAuthIntent): Promise<void> {
+    return this.client.signInSocial(provider, intent);
   }
 
   getSession(): Promise<AuthSession | null> {

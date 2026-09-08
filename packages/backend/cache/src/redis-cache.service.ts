@@ -12,6 +12,10 @@ export class RedisCacheService extends CacheService {
     this.redis = new Redis({
       host: this.configService.get('redis.host'),
       port: this.configService.get('redis.port'),
+      // Optional — `REDIS_PASSWORD` in the root .env. Read here rather than at
+      // one call site only, or a `requirepass` Redis accepts the queue and
+      // refuses the cache.
+      password: this.configService.get<string>('redis.password') || undefined,
     });
   }
 

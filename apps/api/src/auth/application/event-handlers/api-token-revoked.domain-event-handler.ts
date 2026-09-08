@@ -19,7 +19,7 @@ export class ApiTokenRevokedDomainEventHandler {
 
   @OnEvent(ApiTokenRevokedDomainEvent.name)
   async handle(event: ApiTokenRevokedDomainEvent): Promise<void> {
-    await this.delegatedSessions.invalidate(event.aggregateId);
+    await this.delegatedSessions.invalidate(event.aggregateId, event.userId);
     this.logger.log(`API token revoked: ${event.aggregateId}`);
   }
 }
