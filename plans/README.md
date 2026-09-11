@@ -1,0 +1,7 @@
+# Implementation plans
+
+This directory collects implementation plans that describe proposed Flama work.
+
+| Plan                                      | Scope                                                                    |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| [QA scenario pack](qa-scenario-pack.md)   | Port the scenario-driven QA pack (`qa/`) from adri-rodrigo-seo-crm       |
