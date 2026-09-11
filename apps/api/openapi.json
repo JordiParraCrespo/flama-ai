@@ -655,7 +655,7 @@
             "bearer": []
           }
         ],
-        "summary": "List all users",
+        "summary": "List all users (admin)",
         "tags": ["Users"]
       }
     },

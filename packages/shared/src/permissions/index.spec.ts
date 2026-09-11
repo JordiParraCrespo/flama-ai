@@ -2,6 +2,7 @@ import { subject } from '@casl/ability';
 import { describe, expect, it } from 'vitest';
 import {
   type AbilityContext,
+  canAccess,
   defineAbilitiesFor,
   defineAbilitiesFromPermissions,
   KNOWN_ACTIONS,
@@ -301,5 +302,27 @@ describe('scope placeholders', () => {
 
     expect(ability.can('read', lead({ organizationId: 'org-1', id: 'x' }))).toBe(true);
     expect(ability.can('read', lead({ organizationId: 'org-2', id: 'x' }))).toBe(false);
+  });
+});
+
+describe('canAccess', () => {
+  it('checks conditional User grants against the actual record', () => {
+    const ability = defineAbilitiesFromPermissions(
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: runtime permission placeholder
+      [{ action: 'update', subject: 'User', conditions: { id: '${user.id}' } }],
+      { user: { id: 'owner' } },
+    );
+    expect(canAccess(ability, 'update', 'User', { id: 'owner' })).toBe(true);
+    expect(canAccess(ability, 'update', 'User', { id: 'other' })).toBe(false);
+    expect(canAccess(ability, 'read', 'User', { id: 'owner' })).toBe(false);
+  });
+
+  it('preserves platform admin access and the default role restrictions', () => {
+    const admin = defineAbilitiesFromPermissions(SYSTEM_ROLE_PERMISSIONS.admin);
+    const user = defineAbilitiesFromPermissions(SYSTEM_ROLE_PERMISSIONS.user, {
+      user: { id: 'owner' },
+    });
+    expect(canAccess(admin, 'update', 'User', { id: 'other' })).toBe(true);
+    expect(canAccess(user, 'update', 'User', { id: 'owner' })).toBe(false);
   });
 });

@@ -135,24 +135,9 @@ test.describe('API tokens', () => {
 });
 
 test.describe('API token scope ceiling', () => {
-  // Consequence of the unconditional `update User` grant on the default role:
-  // the scope check correctly concludes the caller *may* delegate `users:write`,
-  // so the resulting token can promote anyone to admin. Fixing the role fixes
-  // this too — remove the annotation when it does.
-  test.fail(
-    true,
-    "BUG #68: the default role's unconditional `update User` makes " +
-      '`users:write` a grantable scope, so a plain user can mint a token that ' +
-      'promotes anyone to admin.',
-  );
-  test('a token cannot exceed the scopes its owner is allowed to grant', async () => {
+  test('a default user cannot mint a token with platform User permissions', async () => {
     const { api } = await signedUpContext('overscope');
-
-    const minted = await mintToken(api, ['users:write'], 'over-scoped');
-
-    expect(
-      minted.status,
-      'a plain user must not be able to mint a token that administers other users',
-    ).toBe(403);
+    const minted = await mintToken(api, ['users:write'], 'unavailable platform scope');
+    expect(minted.status).toBe(403);
   });
 });
