@@ -66,6 +66,10 @@ export const setUserPasswordSchema = z.object({
   newPassword: z.string().min(8),
 });
 
+export const adminAssignRolesSchema = z.object({
+  roleIds: z.array(z.string().uuid()),
+});
+
 export const revokeSessionSchema = z.object({
   /** Id of the session to revoke (from the admin session listing). */
   sessionId: z.string().min(1),
@@ -81,4 +85,5 @@ export type AdminUpdateUserDto = z.infer<typeof adminUpdateUserSchema>;
 export type SetUserRoleBodyDto = z.infer<typeof setUserRoleBodySchema>;
 export type BanUserBodyDto = z.infer<typeof banUserBodySchema>;
 export type SetUserPasswordDto = z.infer<typeof setUserPasswordSchema>;
+export type AdminAssignRolesDto = z.infer<typeof adminAssignRolesSchema>;
 export type RevokeSessionDto = z.infer<typeof revokeSessionSchema>;

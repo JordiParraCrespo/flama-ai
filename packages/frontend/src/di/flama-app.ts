@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 import { Container, type ContainerModule } from 'inversify';
+import type { AdminUsersService } from '../modules/admin-users';
+import { AdminUsersModule } from '../modules/admin-users';
 import type { AnalyticsService } from '../modules/analytics';
 import { AnalyticsModule } from '../modules/analytics';
 import type { IAnalyticsClient } from '../modules/analytics/analytics.client';
@@ -46,6 +48,7 @@ export class FlamaApp {
 
     // Feature modules
     container.load(AnalyticsModule);
+    container.load(AdminUsersModule);
     container.load(AuthModule);
     container.load(CapabilitiesModule);
     container.load(UsersModule);
@@ -66,6 +69,10 @@ export class FlamaApp {
 
   get auth(): AuthService {
     return this.container.get(TOKENS.AuthService);
+  }
+
+  get adminUsers(): AdminUsersService {
+    return this.container.get(TOKENS.AdminUsersService);
   }
 
   get users(): UsersService {

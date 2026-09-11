@@ -7,8 +7,10 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 | App/Package                     | Description                                                        |
 | ------------------------------- | ------------------------------------------------------------------ |
 | `apps/api`                      | NestJS REST API — auth, queues, caching, storage, email            |
-| `apps/web`                      | Vite + TanStack Router SPA — Tailwind v4, shadcn/ui, react-i18next |
-| `apps/mobile`                   | Expo — NativeWind, i18next, SecureStore                            |
+| `apps/web`                      | Consumer Vite + TanStack Router SPA                               |
+| `apps/mobile`                   | Consumer Expo app — NativeWind, i18next, SecureStore              |
+| `apps/admin-web`                | Super-admin web control plane — users, roles and permissions      |
+| `apps/admin-mobile`             | Super-admin Expo control plane — users and roles                  |
 | `apps/docs`                     | Docusaurus — project documentation                                 |
 | `apps/cli`                      | `flama` command-line interface — commander, scoped API tokens      |
 | `apps/mcp`                      | MCP server — stdio + Streamable HTTP, scope-filtered tools         |
@@ -44,6 +46,7 @@ pnpm dev
 | App                | URL                            |
 | ------------------ | ------------------------------ |
 | Web                | http://localhost:3000          |
+| Admin Web          | http://localhost:3003          |
 | API                | http://localhost:3001          |
 | API Docs (Swagger) | http://localhost:3001/api/docs |
 | Docs               | http://localhost:3002          |

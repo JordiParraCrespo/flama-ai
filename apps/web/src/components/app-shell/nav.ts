@@ -1,14 +1,6 @@
-import { LayoutDashboard, type LucideIcon, Settings, Users } from '@flama/design-system-web/icons';
-import { SCREENS, type ScreenPolicy } from '@flama/shared/navigation';
+import { LayoutDashboard, type LucideIcon, Settings } from '@flama/design-system-web/icons';
+import type { ScreenPolicy } from '@flama/shared/navigation';
 import type { Messages } from '@flama/translations';
-
-/**
- * The live totals a nav row can display. A row names the total it wants; the
- * shell is what fetches it — see `useNavCounts` in `app-sidebar.tsx`. Keeping
- * the number out of this file is the point: a hardcoded count here is a count
- * nobody notices has gone stale.
- */
-export type NavCountKey = 'team';
 
 /**
  * A CASL rule a row requires to be shown. A row lists the rules its
@@ -30,10 +22,6 @@ interface NavEntry {
   to: string;
   icon: LucideIcon;
   labelKey: keyof Messages['nav'];
-  /** Which live total this row shows, or `null` for the rows that carry none. */
-  countKey: NavCountKey | null;
-  /** Whether that total reads as a blue badge rather than a muted number. */
-  badge: boolean;
   /**
    * The permissions this row's destination needs — taken from `SCREENS` in
    * `@flama/shared/navigation`, never written out here, so a row cannot claim
@@ -44,10 +32,6 @@ interface NavEntry {
   policies: readonly NavPolicy[];
 }
 
-// Every entry states `countKey` and `badge` even when they are empty: with the
-// `as const` below, a key omitted from one member is missing from the union and
-// unreadable on any of them.
-//
 // `satisfies` rather than a type annotation, so `to` stays a literal — which is
 // what TanStack Router's `Link` wants.
 export const NAV = [
@@ -55,17 +39,7 @@ export const NAV = [
     to: '/dashboard',
     icon: LayoutDashboard,
     labelKey: 'dashboard',
-    countKey: null,
-    badge: false,
     policies: [],
-  },
-  {
-    to: '/team',
-    icon: Users,
-    labelKey: 'team',
-    countKey: 'team',
-    badge: false,
-    policies: SCREENS['/team'].policies,
   },
 ] as const satisfies readonly NavEntry[];
 
@@ -73,8 +47,6 @@ export const SETTINGS_NAV = {
   to: '/settings',
   icon: Settings,
   labelKey: 'settings',
-  countKey: null,
-  badge: false,
   policies: [],
 } as const satisfies NavEntry;
 

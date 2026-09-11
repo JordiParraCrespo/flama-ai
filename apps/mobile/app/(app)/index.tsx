@@ -8,9 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@flama/design-system-mobile/card';
-import { Icon } from '@flama/design-system-mobile/icon';
-import type { LucideIcon } from '@flama/design-system-mobile/icons';
-import { Activity, Server, Users, Zap } from '@flama/design-system-mobile/icons';
 import { Separator } from '@flama/design-system-mobile/separator';
 import { Skeleton } from '@flama/design-system-mobile/skeleton';
 import { Text } from '@flama/design-system-mobile/text';
@@ -30,28 +27,6 @@ export default function HomeScreen() {
       router.replace('/(auth)/login');
     },
   });
-
-  const stats: Array<{
-    key: string;
-    label: string;
-    value: string;
-    icon: LucideIcon;
-  }> = [
-    {
-      key: 'totalUsers',
-      label: t('home.totalUsers'),
-      value: '128',
-      icon: Users,
-    },
-    {
-      key: 'activeSessions',
-      label: t('home.activeSessions'),
-      value: '24',
-      icon: Activity,
-    },
-    { key: 'apiCalls', label: t('home.apiCalls'), value: '1,420', icon: Zap },
-    { key: 'uptime', label: t('home.uptime'), value: '99.9%', icon: Server },
-  ];
 
   return (
     <ScrollView contentContainerClassName="p-6 gap-6">
@@ -74,23 +49,6 @@ export default function HomeScreen() {
             </Text>
           )}
           <Text className="text-sm text-muted-foreground">{t('home.subtitle')}</Text>
-        </View>
-      </View>
-
-      <View className="gap-2">
-        <Text className="text-sm font-medium text-muted-foreground">{t('home.overview')}</Text>
-        <View className="flex-row flex-wrap gap-3">
-          {stats.map((stat) => (
-            <Card key={stat.key} className="min-w-[45%] flex-1">
-              <CardHeader className="gap-2">
-                <View className="flex-row items-center justify-between">
-                  <CardDescription>{stat.label}</CardDescription>
-                  <Icon as={stat.icon} className="text-muted-foreground" size={16} />
-                </View>
-                <CardTitle className="text-2xl">{stat.value}</CardTitle>
-              </CardHeader>
-            </Card>
-          ))}
         </View>
       </View>
 

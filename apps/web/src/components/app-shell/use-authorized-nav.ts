@@ -1,12 +1,4 @@
-import type { AppAbility } from '@flama/shared/permissions';
-import { useMemo } from 'react';
 import { NAV, type NavItem, SETTINGS_NAV } from '@/components/app-shell/nav';
-import { useAbilityState } from '@/lib/use-ability';
-
-/** Whether an ability satisfies every policy a row declares. */
-function reaches(ability: AppAbility, entry: NavItem): boolean {
-  return entry.policies.every((policy) => ability.can(policy.action, policy.subject));
-}
 
 /**
  * The nav rows the signed-in user may actually reach, in order. A row is shown
@@ -24,16 +16,7 @@ function reaches(ability: AppAbility, entry: NavItem): boolean {
  * this reader may open, and the guards, which are the real gate, still do.
  */
 export function useAuthorizedNav(): NavItem[] {
-  const { ability, isUnavailable } = useAbilityState();
-
-  return useMemo(() => {
-    const entries: NavItem[] = [...NAV, SETTINGS_NAV];
-    if (isUnavailable) return entries;
-    if (!ability) {
-      return entries.filter((entry) => entry.policies.length === 0);
-    }
-    return entries.filter((entry) => reaches(ability, entry));
-  }, [ability, isUnavailable]);
+  return [...NAV, SETTINGS_NAV];
 }
 
 /**
@@ -50,10 +33,5 @@ export function useAuthorizedNav(): NavItem[] {
  * screen rather than bouncing the reader between two of them.
  */
 export function useLandingRoute(): (typeof NAV)[number]['to'] | null {
-  const { ability } = useAbilityState();
-
-  return useMemo(() => {
-    if (!ability) return null;
-    return NAV.find((entry) => reaches(ability, entry))?.to ?? null;
-  }, [ability]);
+  return NAV[0]?.to ?? null;
 }

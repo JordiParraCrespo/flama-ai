@@ -4,13 +4,11 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-  Button,
   Card,
 } from '@flama/design-system-web';
-import { Camera, ExternalLink } from '@flama/design-system-web/icons';
+import { Camera } from '@flama/design-system-web/icons';
 import type { ProfileEntity } from '@flama/frontend';
 import { useUploadAvatar } from '@flama/frontend/react';
-import { Link } from '@tanstack/react-router';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RolePill } from '@/components/role-pill';
@@ -76,11 +74,6 @@ export function ProfileHero({ profile }: { profile: ProfileEntity }) {
               </span>
             </div>
           </div>
-
-          <Button variant="secondary" size="sm" render={<Link to="/team" />}>
-            <ExternalLink data-icon="inline-start" />
-            {t('profile.viewTeamCard')}
-          </Button>
         </div>
       </Card>
 

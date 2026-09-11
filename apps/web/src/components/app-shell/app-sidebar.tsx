@@ -9,14 +9,12 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@flama/design-system-web';
 import { useOrganizations } from '@flama/frontend/react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import type { NavCountKey } from '@/components/app-shell/nav';
 import { useAuthorizedNav } from '@/components/app-shell/use-authorized-nav';
 import { UserMenu } from '@/components/app-shell/user-menu';
 
@@ -34,10 +32,6 @@ function organizationInitial(name: string): string {
  * is not. Wiring one up later is a line here once the API can answer it in one
  * call.
  */
-function useNavCounts(): Record<NavCountKey, number | undefined> {
-  return { team: undefined };
-}
-
 /**
  * The workspace sidebar: brand row, the nav, and the user menu pinned to the
  * bottom. 244px and the hairline against the canvas both come from the design
@@ -45,7 +39,6 @@ function useNavCounts(): Record<NavCountKey, number | undefined> {
  */
 export function AppSidebar() {
   const { t } = useTranslation();
-  const counts = useNavCounts();
   const { data: organizations } = useOrganizations();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -86,7 +79,6 @@ export function AppSidebar() {
             <SidebarMenu className="gap-px">
               {entries.map((entry) => {
                 const Icon = entry.icon;
-                const count = entry.countKey ? counts[entry.countKey] : undefined;
                 // `/settings/api-tokens` should still light up Settings, so
                 // match on the prefix rather than the exact path.
                 const active = pathname === entry.to || pathname.startsWith(`${entry.to}/`);
@@ -97,15 +89,6 @@ export function AppSidebar() {
                       <Icon />
                       <span>{t(`nav.${entry.labelKey}`)}</span>
                     </SidebarMenuButton>
-                    {count != null &&
-                      count > 0 &&
-                      (entry.badge ? (
-                        <SidebarMenuBadge>{count}</SidebarMenuBadge>
-                      ) : (
-                        <SidebarMenuBadge className="bg-transparent text-ink-400">
-                          {count}
-                        </SidebarMenuBadge>
-                      ))}
                   </SidebarMenuItem>
                 );
               })}
