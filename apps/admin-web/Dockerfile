@@ -22,6 +22,8 @@ RUN pnpm --filter @flama/admin-web... build
 
 FROM nginx:alpine AS runner
 COPY --from=builder /app/apps/admin-web/dist /usr/share/nginx/html
-COPY apps/admin-web/nginx.conf /etc/nginx/conf.d/default.conf
+ENV API_UPSTREAM=api:3001
+ENV NGINX_ENVSUBST_FILTER=API_UPSTREAM
+COPY apps/admin-web/nginx.conf /etc/nginx/templates/default.conf.template
 EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]

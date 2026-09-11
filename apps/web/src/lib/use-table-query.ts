@@ -57,8 +57,8 @@ export interface TableSort<TSortKey extends string> {
 
 export interface TableQueryOptions<TSortKey extends string, TFilter extends string> {
   /**
-   * Distinguishes two tables that share one route. Team's members and roles
-   * tabs are both `/team`, and without this they would fight over `?q=`.
+   * Distinguishes two tables that share one route. Without a prefix they would
+   * both read and write the same `?q=` key.
    */
   prefix?: string;
   /**
@@ -76,9 +76,8 @@ export interface TableQueryOptions<TSortKey extends string, TFilter extends stri
    * so without this a mistyped link answers with a failed request rather than
    * with an unfiltered table.
    *
-   * Omit it when the values are not a fixed set the app knows up front: team's
-   * role filter is a list of role ids from the server, and it filters rows in
-   * the browser, so an id that matches nothing simply matches nothing.
+   * Omit it when the values are not a fixed set the app knows up front. A
+   * server-provided id that matches nothing can simply match nothing.
    */
   filters?: readonly TFilter[];
   /**

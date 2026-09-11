@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 8 apps and 14 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 10 apps and 14 shared packages.
 
 ## Monorepo structure
 
@@ -10,12 +10,14 @@ Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It conta
 flama/
 ├── apps/
 │   ├── api/              # NestJS REST API
+│   ├── admin-mobile/     # Expo control plane for users and roles
+│   ├── admin-web/        # Vite control plane for users and roles
 │   ├── cli/              # `flama` command-line interface
 │   ├── docs/             # Docusaurus documentation
 │   ├── mcp/              # MCP server (stdio + Streamable HTTP)
-│   ├── mobile/           # Expo (React Native)
+│   ├── mobile/           # Consumer Expo app
 │   ├── mobile-showcase/  # Expo app showcasing the mobile design system
-│   ├── web/              # Vite + TanStack Router SPA
+│   ├── web/              # Consumer Vite + TanStack Router SPA
 │   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
 │   ├── api-client/       # Auto-generated typed client from Swagger
@@ -52,7 +54,7 @@ usage.
 - **One `.env`, at the repo root**; the root `.env.example` is its
   documentation (a note per variable, nothing unread in it). Never add a
   per-package `.env`. Node apps load it via `@flama/env` (real env vars always
-  win); `apps/web` reads it through Vite's `envDir`; `apps/mobile` loads it in
+  win); the web apps read it through Vite's `envDir`; the mobile apps load it in
   `app.config.ts`
 - Biome for linting and formatting (not ESLint/Prettier)
 - Conventional commits enforced via commitlint
@@ -149,6 +151,14 @@ behalf, and effective access is the intersection — see
 - React Hook Form + `zodResolver` for forms
 - Vite env vars (`import.meta.env`, `VITE_`-prefixed) for configuration, read
   from the root `.env` (`envDir` in `vite.config.ts` points at the repo root)
+
+### Control plane (apps/admin-web, apps/admin-mobile)
+
+- Separate web and Expo entrypoints for platform administration
+- Restricted to Better Auth `admin` and `superadmin` platform roles
+- Owns user lifecycle, application-role assignment, and role permissions
+- Has no public registration flow; consumer products remain in `apps/web` and
+  `apps/mobile`
 
 ### Mobile (apps/mobile)
 

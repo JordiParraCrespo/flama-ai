@@ -8,9 +8,11 @@ sidebar_position: 2
 flama/
 ├── apps/
 │   ├── api/              # NestJS REST API
+│   ├── admin-mobile/     # Expo control plane
+│   ├── admin-web/        # Vite control plane
 │   ├── docs/             # Docusaurus documentation
-│   ├── mobile/           # Expo (React Native)
-│   └── web/              # Vite + TanStack Router SPA
+│   ├── mobile/           # Consumer Expo app
+│   └── web/              # Consumer Vite SPA
 ├── packages/
 │   ├── api-client/       # Auto-generated typed API client
 │   ├── backend/
@@ -41,8 +43,8 @@ packages/backend/email    → api
 packages/backend/cache    → api
 packages/backend/storage  → api
 packages/backend/queue    → api
-packages/translations     → web, mobile
-packages/design-system    → web, mobile
+packages/translations     → consumer and control-plane apps
+packages/design-system    → consumer and control-plane apps
 packages/api-client       → frontend
-packages/frontend         → web, mobile
+packages/frontend         → consumer and control-plane apps
 ```

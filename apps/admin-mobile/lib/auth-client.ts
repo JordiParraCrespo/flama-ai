@@ -6,18 +6,24 @@ import * as SecureStore from 'expo-secure-store';
 
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-// Must match the `scheme` in app.config.ts and MOBILE_SCHEME on the API so
+// Must match the `scheme` in app.config.ts and ADMIN_MOBILE_SCHEME on the API so
 // OAuth and password-reset deep links resolve back into the app.
 const scheme = process.env.EXPO_PUBLIC_ADMIN_MOBILE_SCHEME ?? 'flama-admin';
+
+type CookieAuthClient = { getCookie(): string };
 
 export const authClient = createAuthClient({
   baseURL: `${apiBaseUrl}/api/auth`,
   plugins: [
+    // @better-auth/expo and better-auth currently publish structurally
+    // incompatible BetterFetch generics even at the same package version.
+    // The runtime plugin contract is compatible; erase only that duplicate
+    // dependency type so the remaining plugins keep their inference.
     expoClient({
       scheme,
       storagePrefix: 'flama-admin',
       storage: SecureStore,
-    }),
+    }) as never,
     // The shared plugin set (additional user fields, admin, organizations)
     // comes from @flama/auth so the client types stay in lockstep with the
     // server.
@@ -30,19 +36,11 @@ export const mobileAuthClient: IAuthClient = {
     unwrap(await authClient.signIn.email({ email, password }));
   },
 
-  async signUp({ email, password, firstName, lastName }) {
-    unwrap(
-      await authClient.signUp.email({
-        email,
-        password,
-        name: `${firstName} ${lastName}`.trim(),
-        firstName,
-        lastName,
-      }),
-    );
+  async signUp() {
+    throw new Error('Control-plane accounts must be provisioned by an administrator.');
   },
 
-  async signInSocial(provider, intent = 'sign-in') {
+  async signInSocial(provider) {
     // Opens an in-app browser and deep-links back via the app scheme.
     unwrap(
       await authClient.signIn.social({
@@ -52,11 +50,9 @@ export const mobileAuthClient: IAuthClient = {
         // path into a deep link with `Linking.createURL`, which is what makes
         // it resolve in a dev client (`exp://…/--/login`) as well as a
         // standalone build.
-        errorCallbackURL: intent === 'sign-up' ? '/register' : '/login',
-        // The API refuses a provider identity that has no account here
-        // (`disableImplicitSignUp`); only the register screen lifts it, so
-        // signing in never silently creates an account.
-        requestSignUp: intent === 'sign-up',
+        errorCallbackURL: '/login',
+        // Control-plane accounts are provisioned by an existing administrator.
+        requestSignUp: false,
       }),
     );
   },
@@ -89,7 +85,7 @@ export const mobileAuthClient: IAuthClient = {
   // Attach the Better Auth session cookie (stored in SecureStore) to the
   // generated REST client's requests.
   async getAuthHeaders(): Promise<Record<string, string>> {
-    const cookie = authClient.getCookie();
+    const cookie = (authClient as typeof authClient & CookieAuthClient).getCookie();
     return cookie ? { Cookie: cookie } : {};
   },
 };

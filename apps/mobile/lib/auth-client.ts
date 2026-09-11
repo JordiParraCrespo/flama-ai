@@ -8,16 +8,22 @@ const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 // Must match the `scheme` in app.config.ts and MOBILE_SCHEME on the API so
 // OAuth and password-reset deep links resolve back into the app.
-const scheme = 'flama';
+const scheme = process.env.EXPO_PUBLIC_MOBILE_SCHEME ?? 'flama';
+
+type CookieAuthClient = { getCookie(): string };
 
 export const authClient = createAuthClient({
   baseURL: `${apiBaseUrl}/api/auth`,
   plugins: [
+    // @better-auth/expo and better-auth currently publish structurally
+    // incompatible BetterFetch generics even at the same package version.
+    // The runtime plugin contract is compatible; erase only that duplicate
+    // dependency type so the remaining plugins keep their inference.
     expoClient({
       scheme,
       storagePrefix: 'flama',
       storage: SecureStore,
-    }),
+    }) as never,
     // The shared plugin set (additional user fields, admin, organizations)
     // comes from @flama/auth so the client types stay in lockstep with the
     // server.
@@ -89,7 +95,7 @@ export const mobileAuthClient: IAuthClient = {
   // Attach the Better Auth session cookie (stored in SecureStore) to the
   // generated REST client's requests.
   async getAuthHeaders(): Promise<Record<string, string>> {
-    const cookie = authClient.getCookie();
+    const cookie = (authClient as typeof authClient & CookieAuthClient).getCookie();
     return cookie ? { Cookie: cookie } : {};
   },
 };

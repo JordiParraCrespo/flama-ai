@@ -48,24 +48,19 @@ describe('useAuthorizedNav', () => {
   it('offers an owner everything', () => {
     signedInWith([{ action: 'manage', subject: 'all' }]);
 
-    expect(routesOffered()).toEqual(['/dashboard', '/team', '/settings']);
+    expect(routesOffered()).toEqual(['/dashboard', '/settings']);
   });
 
-  /**
-   * The bug this catalog was built for: a row shown to a member whose read
-   * behind it answers 403. `/team` reads the member list, which the default
-   * `user` role cannot.
-   */
   it('offers a member holding nothing only the ungated rows', () => {
     signedInWith([]);
 
     expect(routesOffered()).toEqual(['/dashboard', '/settings']);
   });
 
-  it('offers the team row to a permission set that reads members', () => {
+  it('keeps control-plane permissions out of consumer navigation', () => {
     signedInWith([{ action: 'read', subject: 'Member' }]);
 
-    expect(routesOffered()).toEqual(['/dashboard', '/team', '/settings']);
+    expect(routesOffered()).toEqual(['/dashboard', '/settings']);
   });
 
   it('shows only the ungated rows while the permission set is loading', () => {
@@ -74,10 +69,10 @@ describe('useAuthorizedNav', () => {
     expect(routesOffered()).toEqual(['/dashboard', '/settings']);
   });
 
-  it('shows every row when the permission set could not be fetched', () => {
+  it('keeps the consumer shell usable when permissions could not be fetched', () => {
     couldNotBeFetched();
 
-    expect(routesOffered()).toHaveLength(3);
+    expect(routesOffered()).toEqual(['/dashboard', '/settings']);
   });
 });
 
@@ -94,11 +89,11 @@ describe('useLandingRoute', () => {
     expect(landing()).toBe('/dashboard');
   });
 
-  it('is nothing while the permission set is unknown, loading or failed', () => {
+  it('remains the dashboard while permissions are loading or unavailable', () => {
     stillLoading();
-    expect(landing()).toBeNull();
+    expect(landing()).toBe('/dashboard');
 
     couldNotBeFetched();
-    expect(landing()).toBeNull();
+    expect(landing()).toBe('/dashboard');
   });
 });
