@@ -1,6 +1,7 @@
 import {
   AlignLeftIcon,
   AppWindowIcon,
+  AtSignIcon,
   BadgeIcon,
   ChartLineIcon,
   CircleDotIcon,
@@ -20,17 +21,23 @@ import {
   ListOrderedIcon,
   type LucideIcon,
   MenuIcon,
+  InboxIcon,
+  MailIcon,
+  MailOpenIcon,
   MessageSquareIcon,
   PaperclipIcon,
+  ReplyIcon,
   MinusIcon,
   MousePointerClickIcon,
   PaletteIcon,
   PanelLeftIcon,
   RectangleHorizontalIcon,
   Rows3Icon,
+  ListFilterIcon,
   SearchCheckIcon,
   SearchIcon,
   ShapesIcon,
+  ShieldAlertIcon,
   SparklesIcon,
   SquareCheckIcon,
   SquareChevronDownIcon,
@@ -46,6 +53,7 @@ import {
   TriangleAlertIcon,
   TypeIcon,
   WaypointsIcon,
+  WrenchIcon,
 } from "lucide-react";
 
 export type TocItem = { id: string; label: string; icon: LucideIcon };
@@ -85,9 +93,11 @@ export const TOC: TocGroup[] = [
       { id: "textfield", label: "Text field", icon: TextCursorInputIcon },
       { id: "select", label: "Select", icon: SquareChevronDownIcon },
       { id: "selectmenu", label: "Select menu", icon: AlignLeftIcon },
+      { id: "combobox", label: "Combobox", icon: ListFilterIcon },
       { id: "asyncselect", label: "Autocomplete", icon: SearchCheckIcon },
       { id: "dropdown", label: "Dropdown menu", icon: MenuIcon },
       { id: "filtermenu", label: "Filter menus", icon: FilterIcon },
+      { id: "facetfilter", label: "Facet filter", icon: FilterIcon },
       { id: "choice", label: "Checkbox & radio", icon: SquareCheckIcon },
     ],
   },
@@ -128,6 +138,17 @@ export const TOC: TocGroup[] = [
     ],
   },
   {
+    group: "Mail",
+    items: [
+      { id: "mailrail", label: "Mailbox rail", icon: InboxIcon },
+      { id: "mailboxpicker", label: "Mailbox picker", icon: AtSignIcon },
+      { id: "mailboxtag", label: "Mailbox tag & chip", icon: TagIcon },
+      { id: "messagelist", label: "Message list", icon: MailIcon },
+      { id: "messagereader", label: "Message reader", icon: MailOpenIcon },
+      { id: "replybox", label: "Reply box", icon: ReplyIcon },
+    ],
+  },
+  {
     group: "Navigation",
     items: [
       { id: "nav", label: "Nav items", icon: PanelLeftIcon },
@@ -142,6 +163,8 @@ export const TOC: TocGroup[] = [
       { id: "promptcards", label: "Prompt cards", icon: LightbulbIcon },
       { id: "chat", label: "Chat bubbles", icon: MessageSquareIcon },
       { id: "composer", label: "Composer", icon: SquarePenIcon },
+      { id: "toolcall", label: "Tool call", icon: WrenchIcon },
+      { id: "approval", label: "Approval", icon: ShieldAlertIcon },
     ],
   },
   {

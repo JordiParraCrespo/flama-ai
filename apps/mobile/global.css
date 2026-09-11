@@ -50,12 +50,47 @@
     --data-track: 45 10% 92%; /* #ECEBE8 */
     --track-off: 45 7% 88%; /* #E3E2DF switch off */
 
+    /* Theme pill. The knob and its active icon are the one bit of chrome that
+       deliberately does NOT invert, so the dark block restates only the idle
+       icon — see the web `globals.css`. Mirrored here to keep the three token
+       files in step; mobile has no theme pill of its own yet. */
+    --theme-toggle-knob: 240 5% 90%; /* #E5E5E8 */
+    --theme-toggle-icon: 220 8% 36%; /* #555A63 */
+    --theme-toggle-icon-idle: 220 8% 36%;
+
+    /* Email body frame. Deliberately light in both themes — email HTML is
+       authored against an assumed white background, so a body inheriting the
+       dark canvas renders much of it near-black on near-black; the dark block
+       therefore restates none of these. Mirrored here to keep the three token
+       files in step; mobile has no mail reader of its own yet. See the web
+       `globals.css`. */
+    --surface-email: 0 0% 100%; /* #FFFFFF */
+    --email-ink: 0 0% 16%; /* #292929 */
+    --email-ink-muted: 0 0% 36%; /* #5D5D5D */
+    --email-rule: 0 0% 88%; /* flattened from rgba(0,0,0,.12) on white */
+    --email-link: 217 92% 57%; /* #2F80F6 */
+
     --status-active: 147 67% 37%;
     --status-paused: 34 80% 43%; /* #C77A16 */
     --status-ended: 358 75% 59%;
     --status-draft: 216 92% 58%;
 
     --on-inverse: 0 0% 100%;
+
+    /* Status tints, flattened over the card white — web keeps them as rgba
+       over whatever they sit on; React Native cannot composite a token that
+       way, so each is the resolved colour instead. Restated in the dark block. */
+    --status-active-bg: 148 39% 92%;
+    --status-paused-bg: 34 62% 93%;
+    --status-ended-bg: 357 76% 95%;
+    --status-draft-bg: 215 92% 95%;
+
+    /* Secondary text on an inverse surface (web: rgba(255,255,255,.62)). */
+    --on-inverse-muted: 40 2% 68%;
+
+    /* The focus halo and the "selected" wash — web's rgba(47,128,246,.35),
+       flattened over the card white. */
+    --focus-ring: 217 92% 85%;
 
     /* =====================================================================
        shadcn semantic aliases
@@ -101,8 +136,16 @@
 
     --data-track: 36 6% 16.3%; /* #2C2A27 */
     --track-off: 36 5% 22%;
+    --theme-toggle-icon-idle: 240 3% 80%;
 
     --on-inverse: 40 7% 8%;
+
+    --status-active-bg: 140 30% 14%;
+    --status-paused-bg: 34 48% 15%;
+    --status-ended-bg: 2 34% 17%;
+    --status-draft-bg: 216 38% 17%;
+    --on-inverse-muted: 40 1% 42%;
+    --focus-ring: 215 57% 30%;
 
     --background: 40 7% 8%;
     --foreground: 45 13% 93.7%;

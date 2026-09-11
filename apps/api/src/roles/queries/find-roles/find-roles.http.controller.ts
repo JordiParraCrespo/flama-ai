@@ -1,13 +1,15 @@
 import { ApiAuthProblemResponses } from '@flama/backend-core';
 import type { Paginated } from '@flama/backend-ddd';
-import { Controller, Get, Query, UseGuards, Version } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
+import { activeOrganizationIdOf, type ScopedRequest } from '../../../auth/scope-context';
 import type { RoleEntity } from '../../domain/role.entity';
+import { PaginatedRolesResponseDto } from '../../dtos/role.response.dto';
 import { RoleMapper } from '../../roles.mapper';
 import { FindRolesQuery } from './find-roles.query';
 import { FindRolesRequest } from './find-roles.request.dto';
@@ -46,10 +48,10 @@ export class FindRolesHttpController {
     type: String,
     description: 'Search by role name',
   })
-  @ApiResponse({ status: 200 })
-  async findAll(@Query() query: FindRolesRequest) {
+  @ApiResponse({ status: 200, type: PaginatedRolesResponseDto })
+  async findAll(@Query() query: FindRolesRequest, @Req() request: ScopedRequest) {
     const result = await this.queryBus.execute<FindRolesQuery, Paginated<RoleEntity>>(
-      new FindRolesQuery(query),
+      new FindRolesQuery({ ...query, activeOrganizationId: activeOrganizationIdOf(request) }),
     );
 
     return {

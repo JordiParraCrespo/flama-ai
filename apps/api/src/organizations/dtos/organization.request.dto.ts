@@ -5,6 +5,7 @@ import {
   createOrganizationSchema,
   createWorkspaceSchema,
   inviteMemberSchema,
+  listMembersSchema,
   updateMemberRoleSchema,
   updateOrganizationSchema,
   updateWorkspaceSchema,
@@ -15,6 +16,7 @@ export class CreateOrganizationRequest extends createZodDto(createOrganizationSc
 export class UpdateOrganizationRequest extends createZodDto(updateOrganizationSchema) {}
 export class CheckSlugRequest extends createZodDto(checkSlugSchema) {}
 export class AddMemberRequest extends createZodDto(addMemberSchema) {}
+export class ListMembersRequest extends createZodDto(listMembersSchema) {}
 export class UpdateMemberRoleRequest extends createZodDto(updateMemberRoleSchema) {}
 export class InviteMemberRequest extends createZodDto(inviteMemberSchema) {}
 export class CreateWorkspaceRequest extends createZodDto(createWorkspaceSchema) {}

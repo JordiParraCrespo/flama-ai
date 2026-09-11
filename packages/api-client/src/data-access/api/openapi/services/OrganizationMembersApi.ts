@@ -31,17 +31,25 @@ export class OrganizationMembersApi {
     /**
      * List members of an organization
      * @param orgId
+     * @param roleIds Role facet: keep members holding any of these assigned roles; repeat the parameter to select several
+     * @param search Filter by member name, email, organization role or assigned role name
      * @returns MemberResponseDto
      * @throws ApiError
      */
     public static list(
         orgId: string,
+        roleIds?: Array<string>,
+        search?: string,
     ): CancelablePromise<Array<MemberResponseDto>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/organizations/{orgId}/members',
             path: {
                 'orgId': orgId,
+            },
+            query: {
+                'roleIds': roleIds,
+                'search': search,
             },
             errors: {
                 401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,

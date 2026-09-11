@@ -35,10 +35,23 @@ export class UpdateRoleService implements ICommandHandler<UpdateRoleCommand, Agg
       );
     }
 
-    const found = await this.roleRepository.findOneById(command.roleId);
+    const found = await this.roleRepository.findOneById(
+      command.roleId,
+      command.activeOrganizationId,
+    );
     if (found.isNone()) throw new AppError(RoleErrors.NOT_FOUND);
 
     const role = found.unwrap();
+    await this.grantPolicy.assertCanModify(
+      command.actorId
+        ? {
+            id: command.actorId,
+            role: command.actorRole,
+            activeOrganizationId: command.activeOrganizationId,
+          }
+        : undefined,
+      role,
+    );
 
     if (command.description !== undefined) {
       role.updateDescription(command.description);

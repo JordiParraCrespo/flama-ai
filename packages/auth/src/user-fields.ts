@@ -15,6 +15,11 @@ type UserAdditionalFields = NonNullable<NonNullable<BetterAuthOptions['user']>['
 export const userAdditionalFields = {
   firstName: { type: 'string', required: true, input: true },
   lastName: { type: 'string', required: true, input: true },
+  // Profile fields the user edits from the profile screen. `input: false`
+  // keeps them out of sign-up: they are set through `PATCH /profile`, which
+  // validates them, rather than accepted unchecked on the public sign-up route.
+  phone: { type: 'string', required: false, input: false },
+  jobTitle: { type: 'string', required: false, input: false },
   // Server-managed fields: never part of sign-up input.
   role: {
     type: 'string',

@@ -8,7 +8,7 @@ import {
 } from '../analytics/analytics.events';
 import type { AnalyticsService } from '../analytics/analytics.service';
 import type { IStorageService } from '../core/storage.service';
-import type { SocialProvider } from './auth.client';
+import type { SocialAuthIntent, SocialProvider } from './auth.client';
 import type { AuthRepository } from './auth.repository';
 import type { AuthStore } from './auth.state';
 
@@ -58,12 +58,18 @@ export class AuthService {
     this.trackAuthenticated(ANALYTICS_EVENTS.USER_SIGNED_UP, 'password');
   }
 
-  async socialLogin(provider: SocialProvider): Promise<void> {
+  /**
+   * `intent` decides whether the round-trip may create an account: the API
+   * refuses an unknown provider identity on a plain `'sign-in'`, so only the
+   * register screens pass `'sign-up'`. Either way an identity that already
+   * exists — including one that so far only had a password — is signed in.
+   */
+  async socialLogin(provider: SocialProvider, intent?: SocialAuthIntent): Promise<void> {
     // Written before the redirect, consumed by `restoreSession()` when the
     // provider sends the user back. Best-effort: if storage is unavailable the
     // sign-in still works, it just goes uncounted.
     await this.storage.set(PENDING_SOCIAL_LOGIN_KEY, provider).catch(() => {});
-    await this.authRepository.socialLogin(provider);
+    await this.authRepository.socialLogin(provider, intent);
   }
 
   /**

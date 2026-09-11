@@ -11,6 +11,10 @@ import {
   type AsyncOption,
 } from "@flama/design-system-web/async-multi-select";
 import { Button } from "@flama/design-system-web/button";
+import {
+  Combobox,
+  type ComboboxOption,
+} from "@flama/design-system-web/combobox";
 import { Checkbox } from "@flama/design-system-web/checkbox";
 import { Input } from "@flama/design-system-web/input";
 import { Label } from "@flama/design-system-web/label";
@@ -291,6 +295,65 @@ export function Autocompletes() {
           width={300}
         />
       </Swatch>
+    </>
+  );
+}
+
+/* ── Combobox ───────────────────────────────────────────────────────────── */
+
+const TEAMMATES: ComboboxOption[] = [
+  { value: "lucia", label: "Lucía Ferrer", meta: "lucia@flama.dev" },
+  { value: "marc", label: "Marc Oliver", meta: "marc@flama.dev" },
+  { value: "nadia", label: "Nadia Khan", meta: "nadia@flama.dev" },
+  { value: "iker", label: "Iker Sanz", meta: "iker@flama.dev" },
+  { value: "paula", label: "Paula Rey", meta: "paula@flama.dev" },
+  { value: "tomas", label: "Tomás Bru", meta: "tomas@flama.dev" },
+];
+
+const SITES: ComboboxOption[] = [
+  "asesoriarodrigo.es",
+  "kitdigital-galicia.es",
+  "clinicadentalvigo.com",
+  "reformas-coruna.es",
+  "gestoriaourense.com",
+  "tallermecanicolugo.es",
+].map((hostname) => ({ value: hostname, label: hostname }));
+
+export function Comboboxes() {
+  const [owner, setOwner] = React.useState<string | null>(null);
+  const [site, setSite] = React.useState<string | null>("asesoriarodrigo.es");
+
+  return (
+    <>
+      <Field label="Owner" htmlFor="cb-owner">
+        <Combobox
+          id="cb-owner"
+          options={TEAMMATES}
+          value={owner}
+          onValueChange={setOwner}
+          clearLabel="Unassigned"
+          searchPlaceholder="Search teammates…"
+        />
+      </Field>
+      <Field label="Domain" htmlFor="cb-domain">
+        <Combobox
+          id="cb-domain"
+          options={SITES}
+          value={site}
+          onValueChange={setSite}
+          clearLabel="No domain"
+          searchPlaceholder="Search domains…"
+        />
+      </Field>
+      <Field label="Disabled" htmlFor="cb-disabled">
+        <Combobox
+          id="cb-disabled"
+          options={SITES}
+          value={SITES[0].value}
+          onValueChange={() => undefined}
+          disabled
+        />
+      </Field>
     </>
   );
 }

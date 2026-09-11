@@ -12,6 +12,7 @@ export class RedisHealthIndicator extends HealthIndicator {
     this.redis = new Redis({
       host: configService.get('redis.host'),
       port: configService.get('redis.port'),
+      password: configService.get<string>('redis.password') || undefined,
       lazyConnect: true,
     });
   }

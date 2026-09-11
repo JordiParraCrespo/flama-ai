@@ -10,6 +10,7 @@ export { LeadsApi } from './LeadsApi';
 export { OrganizationInvitationsApi } from './OrganizationInvitationsApi';
 export { OrganizationMembersApi } from './OrganizationMembersApi';
 export { OrganizationsApi } from './OrganizationsApi';
+export { ProfileApi } from './ProfileApi';
 export { RolesApi } from './RolesApi';
 export { UsersApi } from './UsersApi';
 export { WorkspacesApi } from './WorkspacesApi';

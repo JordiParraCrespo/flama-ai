@@ -1,21 +1,23 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-} from '@flama/design-system-web';
+import { Button, FieldGroup, Input } from '@flama/design-system-web';
+import { MailCheck } from '@flama/design-system-web/icons';
 import { useForgotPassword } from '@flama/frontend/react';
 import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared/schemas/auth';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { useAuthLegalNote } from '@/components/auth/auth-legal-note';
+import {
+  AuthBackLink,
+  AuthField,
+  AuthFormError,
+  AuthIconCircle,
+  AuthNote,
+  AuthSubtitle,
+  AuthTitle,
+  authControlClass,
+  authInputClass,
+} from '@/components/auth/auth-primitives';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useZodResolver } from '@/lib/use-zod-resolver';
 
@@ -26,7 +28,14 @@ export const Route = createFileRoute('/_auth/forgot-password')({
 function ForgotPasswordPage() {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
-  const { mutate, isPending, isSuccess, error } = useForgotPassword();
+  const { mutate, isPending, error } = useForgotPassword();
+
+  // Held locally rather than read off the mutation so that "try another
+  // email" can walk the screen back to the request state without the success
+  // flag dragging it forward again.
+  const [sentTo, setSentTo] = useState<string | null>(null);
+
+  useAuthLegalNote(t('auth.forgotPassword.legal'));
 
   const {
     register,
@@ -37,58 +46,78 @@ function ForgotPasswordPage() {
     defaultValues: { email: '' },
   });
 
-  const onSubmit = handleSubmit(({ email }) => mutate(email));
+  const onSubmit = handleSubmit(({ email }) =>
+    mutate(email, { onSuccess: () => setSentTo(email) }),
+  );
+
+  if (sentTo) {
+    return (
+      <>
+        <AuthIconCircle>
+          <MailCheck />
+        </AuthIconCircle>
+        <AuthTitle>{t('auth.forgotPassword.successTitle')}</AuthTitle>
+        <AuthSubtitle>
+          <Trans
+            i18nKey="auth.forgotPassword.sentMessage"
+            values={{ email: sentTo }}
+            components={{
+              address: <strong className="font-medium text-ink-900" />,
+            }}
+          />
+        </AuthSubtitle>
+        <AuthNote>
+          <Trans
+            i18nKey="auth.forgotPassword.notReceived"
+            components={{
+              retry: (
+                <button
+                  type="button"
+                  onClick={() => setSentTo(null)}
+                  className="text-accent-blue transition-opacity hover:opacity-80"
+                />
+              ),
+            }}
+          />
+        </AuthNote>
+        <AuthBackLink />
+      </>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">{t('auth.forgotPassword.title')}</CardTitle>
-          <CardDescription>{t('auth.forgotPassword.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isSuccess ? (
-            <div className="rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">
-              {t('auth.forgotPassword.successMessage')}
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} noValidate>
-              <FieldGroup>
-                {error && (
-                  <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {resolveError(error, t('auth.forgotPassword.error')).message}
-                  </div>
-                )}
-                <Field data-invalid={Boolean(errors.email)}>
-                  <FieldLabel htmlFor="email">{t('auth.email')}</FieldLabel>
-                  <Input
-                    {...register('email')}
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder={t('auth.emailPlaceholder')}
-                    aria-invalid={Boolean(errors.email)}
-                    disabled={isPending}
-                  />
-                  <FieldError errors={[errors.email]} />
-                </Field>
-                <Field>
-                  <Button type="submit" disabled={isPending}>
-                    {isPending
-                      ? t('auth.forgotPassword.submitting')
-                      : t('auth.forgotPassword.submit')}
-                  </Button>
-                </Field>
-              </FieldGroup>
-            </form>
+    <>
+      <AuthTitle>{t('auth.forgotPassword.title')}</AuthTitle>
+      <AuthSubtitle>{t('auth.forgotPassword.description')}</AuthSubtitle>
+
+      <form onSubmit={onSubmit} noValidate>
+        <FieldGroup className="gap-4">
+          {error && (
+            <AuthFormError>
+              {resolveError(error, t('auth.forgotPassword.error')).message}
+            </AuthFormError>
           )}
-        </CardContent>
-      </Card>
-      <div className="text-center text-sm">
-        <Link to="/login" className="underline underline-offset-4 hover:text-primary">
-          {t('auth.forgotPassword.backToSignIn')}
-        </Link>
-      </div>
-    </div>
+
+          <AuthField label={t('auth.email')} htmlFor="email" error={errors.email}>
+            <Input
+              {...register('email')}
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder={t('auth.emailPlaceholder')}
+              aria-invalid={Boolean(errors.email)}
+              disabled={isPending}
+              className={authInputClass}
+            />
+          </AuthField>
+
+          <Button type="submit" disabled={isPending} className={authControlClass}>
+            {isPending ? t('auth.forgotPassword.submitting') : t('auth.forgotPassword.submit')}
+          </Button>
+        </FieldGroup>
+      </form>
+
+      <AuthBackLink />
+    </>
   );
 }

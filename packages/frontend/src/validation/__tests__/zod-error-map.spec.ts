@@ -33,6 +33,13 @@ describe('createZodErrorMap', () => {
     expect(messageFor(z.string().email(), 'nope')).toBe('validation.email');
   });
 
+  it('translates a rejected optional URL', () => {
+    const optionalUrl = z.string().url().or(z.literal(''));
+
+    expect(messageFor(optionalUrl, '')).toBeUndefined();
+    expect(messageFor(optionalUrl, 'not-a-url')).toBe('validation.url');
+  });
+
   it('cannot override a message the schema states explicitly', () => {
     // Zod short-circuits the error map when the check carries its own message.
     // This is why the schemas in `@flama/shared` deliberately omit them.

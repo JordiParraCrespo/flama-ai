@@ -4,6 +4,18 @@ import { Badge } from "@flama/design-system-web/badge";
 import { Button } from "@flama/design-system-web/button";
 import { AppIcon } from "@flama/design-system-web/app-icon";
 import {
+  Approval,
+  ApprovalActions,
+  ApprovalDescription,
+  ApprovalDetail,
+  ApprovalDetails,
+  ApprovalHeader,
+  ApprovalIcon,
+  ApprovalOutcome,
+  type ApprovalStatus,
+  ApprovalTitle,
+} from "@flama/design-system-web/approval";
+import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
@@ -21,12 +33,24 @@ import {
 import { Composer } from "@flama/design-system-web/composer";
 import { DeltaText } from "@flama/design-system-web/delta-text";
 import {
+  ToolCall,
+  ToolCallContent,
+  ToolCallIcon,
+  ToolCallIndicator,
+  ToolCallLabel,
+  ToolCallPayload,
+  ToolCallSummary,
+  ToolCallTrigger,
+} from "@flama/design-system-web/tool-call";
+import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogHero,
   DialogTitle,
   DialogTrigger,
 } from "@flama/design-system-web/dialog";
@@ -51,8 +75,10 @@ import {
   LayoutDashboardIcon,
   MoreHorizontalIcon,
   PlusIcon,
+  ShieldAlertIcon,
   SparklesIcon,
   Trash2Icon,
+  TrendingUpIcon,
   UserRoundIcon,
   UsersIcon,
 } from "lucide-react";
@@ -89,16 +115,56 @@ function DropdownDemo() {
 /* ── Overlays ───────────────────────────────────────────────────────────── */
 
 /**
- * Two sheet shapes: the plain one, and the "install" pattern that leads with
- * the app plates being connected. Both are the same 16px-radius sheet on a
- * dimmed backdrop — one of the few places the flat system allows depth.
+ * Three sheet shapes: the plain one, the "install" pattern that leads with the
+ * app plates being connected, and the tall one whose middle scrolls. All are
+ * the same 16px-radius sheet on a dimmed backdrop — one of the few places the
+ * flat system allows depth.
+ *
+ * The `scroll` variant is the one to check after touching dialog layout: the
+ * hero and footer must stay put while only the body moves, and the scrollbar
+ * must sit inside the card's rounded corners rather than across them.
  */
 export function DialogDemo({
   variant = "basic",
 }: {
-  variant?: "basic" | "install";
+  variant?: "basic" | "install" | "scroll";
 }) {
   const install = variant === "install";
+
+  if (variant === "scroll") {
+    return (
+      <Dialog>
+        <DialogTrigger
+          render={<Button variant="secondary">Open long dialog</Button>}
+        />
+        <DialogContent>
+          <DialogHero>
+            <AppIcon app="slack" size={44} />
+          </DialogHero>
+          <DialogHeader className="text-center sm:text-center">
+            <DialogTitle>Choose channels</DialogTitle>
+            <DialogDescription>
+              Pick the channels your agents may post in.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody className="flex flex-col gap-3">
+            {Array.from({ length: 24 }, (_, index) => (
+              <div
+                key={`channel-${index}`}
+                className="flex items-center justify-between border-border-subtle border-b pb-3 last:border-b-0"
+              >
+                <span className="text-base">#channel-{index + 1}</span>
+                <Switch defaultChecked={index < 3} />
+              </div>
+            ))}
+          </DialogBody>
+          <DialogFooter>
+            <DialogClose render={<Button className="w-full">Save</Button>} />
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog>
@@ -112,10 +178,10 @@ export function DialogDemo({
       />
       <DialogContent>
         {install ? (
-          <div className="-mx-6 -mt-6 mb-2 flex h-28 items-center justify-center gap-3 rounded-t-2xl bg-[linear-gradient(120deg,#A7C7FF_0%,#C9B8FF_55%,#9FD3FF_100%)]">
+          <DialogHero className="mb-2">
             <AppIcon app="slack" size={44} />
             <AppIcon app="googlechrome" size={44} />
-          </div>
+          </DialogHero>
         ) : null}
         <DialogHeader className="text-center sm:text-center">
           <DialogTitle>
@@ -380,6 +446,127 @@ export function ComposerDemo() {
           />
         }
       />
+    </div>
+  );
+}
+
+/* ── Tool call ──────────────────────────────────────────────────────────── */
+
+export function ToolCallDemo() {
+  return (
+    <div className="flex w-full max-w-lg flex-col gap-2">
+      <ToolCall status="running">
+        <ToolCallTrigger>
+          <ToolCallIcon>
+            <GlobeIcon />
+          </ToolCallIcon>
+          <ToolCallLabel>domains_list</ToolCallLabel>
+          <ToolCallSummary>owner: Marta</ToolCallSummary>
+          <ToolCallIndicator />
+        </ToolCallTrigger>
+        <ToolCallContent>
+          <ToolCallPayload>{`{ "owner": "marta@adrirodrigo.es", "limit": 25 }`}</ToolCallPayload>
+        </ToolCallContent>
+      </ToolCall>
+
+      <ToolCall status="complete" defaultOpen>
+        <ToolCallTrigger>
+          <ToolCallIcon>
+            <TrendingUpIcon />
+          </ToolCallIcon>
+          <ToolCallLabel>seo_overview</ToolCallLabel>
+          <ToolCallSummary>3 domains · 28 days</ToolCallSummary>
+          <ToolCallIndicator />
+        </ToolCallTrigger>
+        <ToolCallContent>
+          <ToolCallPayload>{`{\n  "adrirodrigo.es": { "clicks": 4180, "delta": "+12%" },\n  "blog.adrirodrigo.es": { "clicks": 910, "delta": "-31%" }\n}`}</ToolCallPayload>
+        </ToolCallContent>
+      </ToolCall>
+
+      <ToolCall status="error">
+        <ToolCallTrigger>
+          <ToolCallIcon>
+            <UsersIcon />
+          </ToolCallIcon>
+          <ToolCallLabel>members_remove</ToolCallLabel>
+          <ToolCallSummary>Forbidden</ToolCallSummary>
+          <ToolCallIndicator />
+        </ToolCallTrigger>
+        <ToolCallContent>
+          The credential does not hold <code>members:write</code>.
+        </ToolCallContent>
+      </ToolCall>
+    </div>
+  );
+}
+
+/* ── Approval ───────────────────────────────────────────────────────────── */
+
+export function ApprovalDemo() {
+  const [status, setStatus] = React.useState<ApprovalStatus>("pending");
+
+  return (
+    <div className="flex w-full max-w-lg flex-col gap-3">
+      <Approval status={status}>
+        <ApprovalHeader>
+          <ApprovalIcon>
+            <ShieldAlertIcon />
+          </ApprovalIcon>
+          <div className="min-w-0 flex-1">
+            <ApprovalTitle>Pause 3 domains</ApprovalTitle>
+            <ApprovalDescription>domains_set_status</ApprovalDescription>
+          </div>
+        </ApprovalHeader>
+        <ApprovalDetails>
+          <ApprovalDetail label="Domains">
+            adrirodrigo.es, blog.adrirodrigo.es, tienda.adrirodrigo.es
+          </ApprovalDetail>
+          <ApprovalDetail label="Status">paused</ApprovalDetail>
+          <ApprovalDetail label="Reverses">Yes — set them back to active</ApprovalDetail>
+        </ApprovalDetails>
+        {status === "pending" ? (
+          <ApprovalActions>
+            <Button size="sm" onClick={() => setStatus("approved")}>
+              Approve
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setStatus("rejected")}
+            >
+              Reject
+            </Button>
+          </ApprovalActions>
+        ) : (
+          <ApprovalActions>
+            <ApprovalOutcome>
+              {status === "approved"
+                ? "Approved."
+                : "Rejected — nothing was changed."}
+            </ApprovalOutcome>
+            <Button
+              size="xs"
+              variant="ghost"
+              onClick={() => setStatus("pending")}
+            >
+              Reset
+            </Button>
+          </ApprovalActions>
+        )}
+      </Approval>
+
+      <Approval status="expired">
+        <ApprovalHeader>
+          <ApprovalIcon>
+            <ShieldAlertIcon />
+          </ApprovalIcon>
+          <div className="min-w-0 flex-1">
+            <ApprovalTitle>Export 412 leads</ApprovalTitle>
+            <ApprovalDescription>leads_export</ApprovalDescription>
+          </div>
+        </ApprovalHeader>
+        <ApprovalOutcome>Expired without an answer.</ApprovalOutcome>
+      </Approval>
     </div>
   );
 }

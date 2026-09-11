@@ -1,4 +1,4 @@
-import type { Role, UpdateUserDto } from '@flama/shared';
+import type { PermissionDefinition, Role, UpdateUserDto } from '@flama/shared';
 import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
 import type { UserEntity } from './user.entity';
@@ -17,6 +17,10 @@ export class UsersService {
 
   async me(): Promise<UserEntity> {
     return this.usersRepository.me();
+  }
+
+  async myPermissions(): Promise<PermissionDefinition[]> {
+    return this.usersRepository.myPermissions();
   }
 
   async findById(id: string): Promise<UserEntity> {

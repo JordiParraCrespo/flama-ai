@@ -8,7 +8,7 @@ import type { UserEntity } from './domain/user.entity';
  * Row-level authorization for a single user record.
  *
  * `PoliciesGuard` can only answer "may this caller read/update *a* User?" — it
- * never sees the row. The seeded `user` role scopes both rules to
+ * never sees the row. An explicitly granted rule may be scoped to
  * `{ id: '${user.id}' }`, and a condition like that is only decidable once the
  * record is loaded, so every handler that returns or writes one user must ask
  * again with the row in hand. Skipping this call reopens the IDOR the

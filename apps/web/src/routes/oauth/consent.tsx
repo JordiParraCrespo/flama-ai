@@ -1,4 +1,6 @@
 import {
+  Alert,
+  AlertDescription,
   Badge,
   Button,
   Card,
@@ -109,45 +111,41 @@ function ConsentPage() {
 
         <CardContent className="flex flex-col gap-4">
           {error && (
-            <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           <div className="divide-y rounded-md border">
             {scopes.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">{t('consent.noPermissions')}</p>
+              <p className="p-4 text-sm text-ink-600">{t('consent.noPermissions')}</p>
             )}
             {scopes.map(({ group, level }) => (
               <div key={`${group.resource}:${level}`} className="flex items-start gap-3 p-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{group.label}</span>
-                    <Badge variant="secondary">{group.levels[level].label}</Badge>
-                    {group.sensitive && (
-                      <Badge variant="outline" className="text-amber-600 dark:text-amber-500">
-                        {t('apiTokens.sensitive')}
-                      </Badge>
-                    )}
+                    <Badge variant="neutral">{group.levels[level].label}</Badge>
+                    {group.sensitive && <Badge variant="paused">{t('apiTokens.sensitive')}</Badge>}
                   </div>
-                  <p className="text-sm text-muted-foreground">{group.levels[level].description}</p>
+                  <p className="text-sm text-ink-600">{group.levels[level].description}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {unknown.length > 0 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-600">
               {t('consent.unknownScopes', { scopes: unknown.join(', ') })}
             </p>
           )}
 
-          <p className="text-sm text-muted-foreground">{t('consent.effectiveNote')}</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-600">{t('consent.effectiveNote')}</p>
+          <p className="text-sm text-ink-600">
             {t('consent.narrowerAlternative')}{' '}
             <Link
               to="/settings/api-tokens"
-              className="underline underline-offset-4 hover:text-foreground"
+              className="underline underline-offset-4 hover:text-ink-900"
             >
               {t('consent.apiTokensLink')}
             </Link>

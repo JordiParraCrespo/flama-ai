@@ -14,6 +14,10 @@ import { createCoreModule } from '../modules/core/core.module';
 import type { IStorageService } from '../modules/core/storage.service';
 import type { OrganizationsService } from '../modules/organizations';
 import { OrganizationsModule } from '../modules/organizations';
+import type { ProfileService } from '../modules/profile';
+import { ProfileModule } from '../modules/profile';
+import type { RolesService } from '../modules/roles';
+import { RolesModule } from '../modules/roles';
 import type { UsersService } from '../modules/users';
 import { UsersModule } from '../modules/users';
 import { TOKENS } from './tokens';
@@ -47,6 +51,8 @@ export class FlamaApp {
     container.load(UsersModule);
     container.load(ApiTokensModule);
     container.load(OrganizationsModule);
+    container.load(RolesModule);
+    container.load(ProfileModule);
 
     // Additional modules provided by the app
     if (config.modules) {
@@ -72,6 +78,14 @@ export class FlamaApp {
 
   get organizations(): OrganizationsService {
     return this.container.get(TOKENS.OrganizationsService);
+  }
+
+  get roles(): RolesService {
+    return this.container.get(TOKENS.RolesService);
+  }
+
+  get profile(): ProfileService {
+    return this.container.get(TOKENS.ProfileService);
   }
 
   get analytics(): AnalyticsService {

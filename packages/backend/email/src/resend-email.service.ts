@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { type CreateEmailOptions, Resend } from 'resend';
-import { EmailService, type InvitationEmailParams } from './email.service';
+import {
+  EmailService,
+  type EmailVerificationEmailParams,
+  type InvitationEmailParams,
+  type PasswordResetEmailParams,
+  type WelcomeEmailParams,
+} from './email.service';
 import {
   renderEmailVerificationEmail,
   renderInvitationEmail,
@@ -45,32 +51,32 @@ export class ResendEmailService extends EmailService {
     return this.configService.get('email.from') || 'noreply@flama.dev';
   }
 
-  async sendPasswordReset(to: string, url: string): Promise<void> {
-    const html = await renderPasswordResetEmail(url);
+  async sendPasswordReset(to: string, params: PasswordResetEmailParams): Promise<void> {
+    const html = await renderPasswordResetEmail(params);
     await this.send({
       from: this.from,
       to,
-      subject: 'Reset your password',
+      subject: params.subject,
       html,
     });
   }
 
-  async sendEmailVerification(to: string, url: string): Promise<void> {
-    const html = await renderEmailVerificationEmail(url);
+  async sendEmailVerification(to: string, params: EmailVerificationEmailParams): Promise<void> {
+    const html = await renderEmailVerificationEmail(params);
     await this.send({
       from: this.from,
       to,
-      subject: 'Verify your email',
+      subject: params.subject,
       html,
     });
   }
 
-  async sendWelcome(to: string, name: string): Promise<void> {
-    const html = await renderWelcomeEmail(name);
+  async sendWelcome(to: string, params: WelcomeEmailParams): Promise<void> {
+    const html = await renderWelcomeEmail(params);
     await this.send({
       from: this.from,
       to,
-      subject: 'Welcome to Flama',
+      subject: params.subject,
       html,
     });
   }
@@ -80,7 +86,7 @@ export class ResendEmailService extends EmailService {
     await this.send({
       from: this.from,
       to,
-      subject: `You've been invited to join ${params.organizationName}`,
+      subject: params.subject,
       html,
     });
   }

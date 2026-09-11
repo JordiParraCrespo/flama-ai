@@ -90,6 +90,24 @@ is short of, the more precise `TOKEN_*` codes are used instead.
 | ------------------------------ | -------------- | ---- |
 | `USER_001` <a id="user_001" /> | User not found | 404  |
 
+## Profile
+
+The caller's own account: profile fields, avatar, password and sessions.
+
+| Code                                 | Title                                                 | HTTP |
+| ------------------------------------ | ----------------------------------------------------- | ---- |
+| `PROFILE_001` <a id="profile_001" /> | Profile not found                                     | 404  |
+| `PROFILE_002` <a id="profile_002" /> | The current password is incorrect                     | 400  |
+| `PROFILE_003` <a id="profile_003" /> | Session not found                                     | 404  |
+| `PROFILE_004` <a id="profile_004" /> | That file type is not supported for an avatar         | 415  |
+| `PROFILE_005` <a id="profile_005" /> | That image is too large                               | 413  |
+| `PROFILE_006` <a id="profile_006" /> | The new password does not meet the password policy    | 400  |
+| `PROFILE_007` <a id="profile_007" /> | The session you are currently using cannot be revoked | 409  |
+| `PROFILE_008` <a id="profile_008" /> | The account service could not complete that request   | 502  |
+
+`PROFILE_003` is returned for a session belonging to someone else as well as one
+that does not exist, so session ids cannot be probed.
+
 ## API tokens
 
 | Code                             | Title                                                              | HTTP |
@@ -227,6 +245,7 @@ operation, its code is folded onto the catalog, and the original survives as
 | `ADMIN_006` <a id="admin_006" /> | That user is banned from this application                         | 403  |
 | `ADMIN_007` <a id="admin_007" /> | The admin service rejected this request                           | 400  |
 | `ADMIN_008` <a id="admin_008" /> | The admin service failed to handle this request                   | 502  |
+| `ADMIN_009` <a id="admin_009" /> | No such session for that user                                     | 404  |
 
 ## Domain invariants
 

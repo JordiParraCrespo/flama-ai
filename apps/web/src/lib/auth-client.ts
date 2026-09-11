@@ -45,13 +45,29 @@ export const webAuthClient: IAuthClient = {
     );
   },
 
-  async signInSocial(provider) {
-    // Redirects the browser to the provider and back to /dashboard.
-    await authClient.signIn.social({
-      provider,
-      callbackURL: '/dashboard',
-      errorCallbackURL: '/login',
-    });
+  async signInSocial(provider, intent = 'sign-in') {
+    const url = (path: string) => new URL(path, window.location.origin).toString();
+
+    // Redirects the browser to the provider and back to /dashboard — but only
+    // when the call to start the round-trip succeeds. It is the one method
+    // here that used to skip `unwrap`, so a provider the API rejected resolved
+    // as if it had worked and the screen had nothing to show.
+    unwrap(
+      await authClient.signIn.social({
+        provider,
+        callbackURL: url('/dashboard'),
+        // A failed round-trip comes back here with `?error=<code>` appended, so
+        // it has to land on the screen the person actually started from —
+        // otherwise a rejected sign-up reports itself on the login screen,
+        // which would then bounce them back to register in a loop.
+        errorCallbackURL: url(intent === 'sign-up' ? '/register' : '/login'),
+        // The API refuses a provider identity that has no account here
+        // (`disableImplicitSignUp`), and this flag is the only thing that lifts
+        // that refusal. Only the register screen sets it: pressing "Continue
+        // with Google" to *sign in* must not quietly create an account.
+        requestSignUp: intent === 'sign-up',
+      }),
+    );
   },
 
   async signOut() {

@@ -80,6 +80,18 @@ export class AbilityFactory {
     return ability;
   }
 
+  /**
+   * The caller's effective permission definitions — the same union
+   * {@link createForUser} builds an ability from, but returned raw so a client
+   * can rebuild the ability itself (the web app gates its sidebar on this).
+   */
+  async permissionsForUser(
+    user: AuthenticatedUser,
+    scope: AbilityScope = {},
+  ): Promise<PermissionDefinition[]> {
+    return this.resolvePermissions(user, scope.activeOrganizationId ?? null);
+  }
+
   async createForUser(user: AuthenticatedUser, scope: AbilityScope = {}): Promise<AppAbility> {
     const permissions = await this.resolvePermissions(user, scope.activeOrganizationId ?? null);
     // Pass the principal and active-org scope so resource-scoping conditions

@@ -8,18 +8,23 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
   Version,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CheckPolicies } from '../auth/decorators/check-policies.decorator';
 import { OrganizationScoped } from '../auth/decorators/organization-scoped.decorator';
 import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
-import { AddMemberRequest, UpdateMemberRoleRequest } from './dtos/organization.request.dto';
+import {
+  AddMemberRequest,
+  ListMembersRequest,
+  UpdateMemberRoleRequest,
+} from './dtos/organization.request.dto';
 import { MemberResponseDto } from './dtos/organization.response.dto';
 import { OrganizationsService } from './organizations.service';
 
@@ -71,12 +76,31 @@ export class MembersController {
   @OrganizationScoped('orgId')
   @CheckPolicies({ action: 'read', subject: 'Member' })
   @ApiOperation({ summary: 'List members of an organization' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Filter by member name, email, organization role or assigned role name',
+  })
+  @ApiQuery({
+    name: 'roleIds',
+    required: false,
+    isArray: true,
+    type: String,
+    format: 'uuid',
+    description:
+      'Role facet: keep members holding any of these assigned roles; repeat the parameter to select several',
+  })
   @ApiResponse({ status: 200, type: [MemberResponseDto] })
   list(
     @Req() req: Request,
     @Param('orgId', ParseUUIDPipe) orgId: string,
+    @Query() query: ListMembersRequest,
   ): Promise<MemberResponseDto[]> {
-    return this.organizations.listMembers(req.headers, orgId);
+    return this.organizations.listMembers(req.headers, orgId, {
+      search: query.search,
+      roleIds: query.roleIds,
+    });
   }
 
   @Post(':orgId/members')

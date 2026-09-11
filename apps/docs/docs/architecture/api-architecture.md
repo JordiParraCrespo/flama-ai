@@ -105,8 +105,10 @@ app-managed access/refresh token pair. Better Auth also provides:
 - **Super-admin** (`admin` plugin): list/ban/impersonate users, set roles,
   revoke sessions — gated by the `superadmin` / `admin` roles under
   `/api/auth/admin/*`.
-- **Organizations, members & invitations** (`organization` plugin): every user
-  gets a personal organization on sign-up; invitations are emailed via the queue.
+- **Organizations, members & invitations** (`organization` plugin): sign-up
+  creates an account and nothing else — an account belongs to no organization
+  until it creates one (`POST /v1/organizations`, which makes the caller its
+  owner) or accepts an invitation; invitations are emailed via the queue.
 - **Workspaces** (org plugin teams): `team` / `teamMember`, scoped to an org.
 
 CASL remains the authorization engine for the app's own REST routes (see the

@@ -1,60 +1,46 @@
-import { expect, type Page, test } from '@playwright/test';
-import { newUser, type TestUser, VALID_PASSWORD } from '../../support/auth';
+import { expect, test } from '@playwright/test';
+import { newUser, VALID_PASSWORD } from '../../support/auth';
 import { findResetToken, findUserByEmail } from '../../support/db';
 import { waitForEmailUrl } from '../../support/mail';
+import {
+  createOrganization,
+  loginThroughUi,
+  provisionedUser,
+  registerThroughUi,
+} from '../../support/web';
 
 const NEW_PASSWORD = 'Rotated!Password9';
 
-/** Registers through the UI and lands on the dashboard. */
-async function registerThroughUi(page: Page, user: TestUser): Promise<void> {
-  await page.goto('/register');
-  await page.fill('#firstName', user.firstName);
-  await page.fill('#lastName', user.lastName);
-  await page.fill('#email', user.email);
-  await page.fill('#password', user.password);
-  await page.getByRole('button', { name: 'Create account' }).click();
-}
-
-async function loginThroughUi(page: Page, email: string, password: string): Promise<void> {
-  await page.goto('/login');
-  await page.fill('#email', email);
-  await page.fill('#password', password);
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-}
-
 test.describe('web auth UI', () => {
-  test('a visitor can register and lands authenticated on the dashboard', async ({ page }) => {
+  test('a visitor can register and is sent to onboarding, not to a refusal', async ({ page }) => {
     const user = newUser('uireg');
 
     await registerThroughUi(page, user);
 
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+    // Registering creates an account, not a workspace: the only honest next
+    // screen is the one that makes a workspace.
+    await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
     expect(await findUserByEmail(user.email), 'the account really exists').toBeTruthy();
   });
 
-  test('a registered user can sign in', async ({ page }) => {
-    const user = newUser('uilogin');
-    await registerThroughUi(page, user);
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+  test('a registered user with a workspace can sign in', async ({ page }) => {
+    const { user } = await provisionedUser('uilogin');
 
-    await page.goto('/login');
-    // An authenticated visitor should not be asked to sign in again.
-    await page.waitForLoadState('networkidle');
-
-    await page.context().clearCookies();
     await loginThroughUi(page, user.email, user.password);
 
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+
+    // An authenticated visitor should not be asked to sign in again.
+    await page.goto('/login');
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
   });
 
   test('a wrong password shows an error and stays on the login page', async ({ page }) => {
-    const user = newUser('uibadpw');
-    await registerThroughUi(page, user);
-    await page.context().clearCookies();
+    const { user } = await provisionedUser('uibadpw');
 
     await loginThroughUi(page, user.email, 'DefinitelyWrong123!');
 
-    await expect(page.getByText(/(incorrect|invalid) email or password/i)).toBeVisible({
+    await expect(page.getByRole('alert').first()).toContainText(/invalid email or password/i, {
       timeout: 20_000,
     });
     await expect(page).toHaveURL(/\/login/);
@@ -83,9 +69,23 @@ test.describe('web auth UI', () => {
     expect(page.url()).toContain('redirect=');
   });
 
+  test('the redirect brings a deep link back with its search params', async ({ page }) => {
+    const { user } = await provisionedUser('uideep');
+
+    await page.goto('/settings?section=security');
+    await expect(page).toHaveURL(/\/login/, { timeout: 20_000 });
+
+    await page.fill('#email', user.email);
+    await page.fill('#password', user.password);
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+
+    // `href`, not `pathname`: the section the reader asked for survives.
+    await expect(page).toHaveURL(/\/settings\?section=security/, { timeout: 20_000 });
+  });
+
   test('after sign-out the dashboard is closed again', async ({ page }) => {
-    const user = newUser('uilogout');
-    await registerThroughUi(page, user);
+    const { user } = await provisionedUser('uilogout');
+    await loginThroughUi(page, user.email, user.password);
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
 
     await page.context().clearCookies();
@@ -97,15 +97,13 @@ test.describe('web auth UI', () => {
   test('forgot-password confirms without revealing whether the account exists', async ({
     page,
   }) => {
-    const user = newUser('uiforgot');
-    await registerThroughUi(page, user);
-    await page.context().clearCookies();
+    const { user } = await provisionedUser('uiforgot');
 
     await page.goto('/forgot-password');
     await page.fill('#email', user.email);
     await page.getByRole('button', { name: 'Send reset link' }).click();
 
-    await expect(page.getByText(/you will receive a reset link/i)).toBeVisible({
+    await expect(page.getByRole('heading', { name: /check your email/i })).toBeVisible({
       timeout: 20_000,
     });
   });
@@ -115,20 +113,18 @@ test.describe('web auth UI', () => {
     await page.fill('#email', `ghost-${Date.now().toString(36)}@e2e.flama.test`);
     await page.getByRole('button', { name: 'Send reset link' }).click();
 
-    await expect(page.getByText(/you will receive a reset link/i)).toBeVisible({
+    await expect(page.getByRole('heading', { name: /check your email/i })).toBeVisible({
       timeout: 20_000,
     });
   });
 
   test('the whole reset journey works through the browser', async ({ page }) => {
-    const user = newUser('uireset');
-    await registerThroughUi(page, user);
-    await page.context().clearCookies();
+    const { user } = await provisionedUser('uireset');
 
     await page.goto('/forgot-password');
     await page.fill('#email', user.email);
     await page.getByRole('button', { name: 'Send reset link' }).click();
-    await expect(page.getByText(/you will receive a reset link/i)).toBeVisible({
+    await expect(page.getByRole('heading', { name: /check your email/i })).toBeVisible({
       timeout: 20_000,
     });
 
@@ -141,7 +137,12 @@ test.describe('web auth UI', () => {
     });
 
     await page.fill('#password', NEW_PASSWORD);
+    await page.fill('#confirmPassword', NEW_PASSWORD);
     await page.getByRole('button', { name: 'Reset password' }).click();
+    await expect(page.getByRole('heading', { name: /password updated/i })).toBeVisible({
+      timeout: 20_000,
+    });
+    await page.getByRole('button', { name: /continue to workspace/i }).click();
     await expect(page).toHaveURL(/\/login/, { timeout: 20_000 });
 
     await loginThroughUi(page, user.email, NEW_PASSWORD);
@@ -151,9 +152,7 @@ test.describe('web auth UI', () => {
   });
 
   test('the old password stops working after a reset', async ({ page }) => {
-    const user = newUser('uiresetold');
-    await registerThroughUi(page, user);
-    await page.context().clearCookies();
+    const { user } = await provisionedUser('uiresetold');
 
     await page.goto('/forgot-password');
     await page.fill('#email', user.email);
@@ -162,12 +161,15 @@ test.describe('web auth UI', () => {
 
     await page.goto(`/reset-password?token=${token}`);
     await page.fill('#password', NEW_PASSWORD);
+    await page.fill('#confirmPassword', NEW_PASSWORD);
     await page.getByRole('button', { name: 'Reset password' }).click();
-    await expect(page).toHaveURL(/\/login/, { timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: /password updated/i })).toBeVisible({
+      timeout: 20_000,
+    });
 
     await loginThroughUi(page, user.email, VALID_PASSWORD);
 
-    await expect(page.getByText(/(incorrect|invalid) email or password/i)).toBeVisible({
+    await expect(page.getByRole('alert').first()).toContainText(/invalid email or password/i, {
       timeout: 20_000,
     });
   });
@@ -184,24 +186,36 @@ test.describe('web auth UI', () => {
   test('a forged reset token is rejected by the server', async ({ page }) => {
     await page.goto('/reset-password?token=this-token-was-never-issued');
     await page.fill('#password', NEW_PASSWORD);
+    await page.fill('#confirmPassword', NEW_PASSWORD);
     await page.getByRole('button', { name: 'Reset password' }).click();
 
     // The form must stay put and say something, rather than silently "succeed".
     await expect(page).toHaveURL(/\/reset-password/, { timeout: 20_000 });
+    await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
   });
 
   test('registering with an email already taken shows an error', async ({ page }) => {
     const user = newUser('uidupe');
     await registerThroughUi(page, user);
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+    await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
     await page.context().clearCookies();
 
     await registerThroughUi(page, user);
 
-    await expect(page).not.toHaveURL(/\/dashboard/);
-    await expect(page.locator('.text-destructive').first()).toBeVisible({
-      timeout: 20_000,
-    });
+    await expect(page).not.toHaveURL(/\/onboarding/);
+    await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('a signed-in account with a workspace is bounced off onboarding', async ({ page }) => {
+    const user = newUser('uionb');
+    await registerThroughUi(page, user);
+    await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
+
+    // The browser's own cookie jar, so the workspace belongs to this session.
+    await createOrganization(page.request);
+
+    await page.goto('/onboarding');
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
   });
 
   test('social sign-in is absent or explained when no provider is configured', async ({ page }) => {
@@ -214,7 +228,7 @@ test.describe('web auth UI', () => {
     const hasExplanation = (await explanation.count()) > 0;
 
     // Either is fine; a dead button that throws on click is not.
-    expect(hasButton || hasExplanation || true).toBe(true);
+    expect(hasButton || hasExplanation).toBe(true);
     if (hasButton) {
       await expect(googleButton.first()).toBeEnabled();
     }

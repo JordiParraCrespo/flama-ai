@@ -7,6 +7,7 @@ import {
   mapMembers,
   mapOrganization,
   mapOrganizations,
+  mapPendingInvitations,
   mapWorkspace,
   mapWorkspaceMember,
   mapWorkspaceMembers,
@@ -219,6 +220,37 @@ describe('mapFullOrganization', () => {
     expect(result.members).toEqual([]);
     expect(result.invitations).toEqual([]);
     expect(result.teams).toEqual([]);
+  });
+});
+
+describe('mapPendingInvitations', () => {
+  const invitation = (status: string) => ({
+    id: `inv-${status}`,
+    organizationId: 'org1',
+    email: `${status}@x.com`,
+    role: 'member',
+    status,
+    inviterId: 'u1',
+    expiresAt: '2024-02-01T00:00:00.000Z',
+    createdAt: '2024-01-01T00:00:00.000Z',
+  });
+
+  it('keeps only pending invitations and drops resolved ones', () => {
+    // Better Auth returns cancelled/rejected rows from listInvitations; the
+    // pending list must not surface them.
+    const result = mapPendingInvitations([
+      invitation('pending'),
+      invitation('canceled'),
+      invitation('rejected'),
+      invitation('accepted'),
+    ]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.status).toBe('pending');
+  });
+
+  it('tolerates a non-array', () => {
+    expect(mapPendingInvitations('nope')).toEqual([]);
   });
 });
 

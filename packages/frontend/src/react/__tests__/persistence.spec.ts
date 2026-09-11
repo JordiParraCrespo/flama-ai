@@ -11,6 +11,7 @@ import {
   reconcileCacheOwner,
   shouldDehydrateQuery,
 } from '../persistence';
+import { profileKeys } from '../profile.queries';
 import { usersKeys } from '../users.queries';
 
 /** A real `Query` in the given state — dehydration reads `state` and `queryKey`. */
@@ -38,6 +39,15 @@ describe('shouldDehydrateQuery', () => {
     expect(shouldDehydrateQuery(query(apiTokensKeys.credential()))).toBe(false);
   });
 
+  // Profile and session results are entities. A restored session turns its
+  // Date fields into strings and the sessions pane's Intl formatter throws
+  // "Invalid time value" on a warm start.
+  it('never persists profile entities', () => {
+    expect(shouldDehydrateQuery(query(profileKeys.me()))).toBe(false);
+    expect(shouldDehydrateQuery(query(profileKeys.settings()))).toBe(false);
+    expect(shouldDehydrateQuery(query(profileKeys.sessions()))).toBe(false);
+  });
+
   it('only persists successful queries', () => {
     expect(shouldDehydrateQuery(query(usersKeys.list(), 'error'))).toBe(false);
     expect(shouldDehydrateQuery(query(usersKeys.list(), 'pending'))).toBe(false);
@@ -53,7 +63,7 @@ describe('createQueryPersistOptions', () => {
     const options = createQueryPersistOptions('1.2.3');
 
     expect(options.maxAge).toBe(QUERY_PERSIST_MAX_AGE);
-    expect(options.buster).toBe('1.2.3');
+    expect(options.buster).toBe('1.2.3:2');
     expect(options.dehydrateOptions.shouldDehydrateQuery).toBe(shouldDehydrateQuery);
   });
 

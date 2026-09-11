@@ -5,24 +5,20 @@ import { findUserByEmail } from '../../support/db';
 /**
  * What a plain, self-registered user may do to *other* people's records.
  *
- * The default `user` role scopes `read`/`update User` to `{ id: '${user.id}' }`
- * and the handlers enforce that per row, so everything here is a real boundary
- * rather than an aspiration.
+ * The default role grants no platform User permissions. Self-service edits
+ * use /profile, while explicit conditional User grants are checked per row.
  */
 test.describe('authorization boundaries for a default user', () => {
   test('cannot escalate their own role to admin', async () => {
     const { api, user, userId } = await signedUpContext('escalate');
 
-    // Updating your own name is allowed, so this request is authorized — the
-    // point is that the privilege field riding along with it must not take.
-    // `updateUserSchema` no longer declares `role`, so Zod drops it.
+    // Default users edit through /profile, not the platform User routes.
     const response = await api.patch(`/api/v1/users/${userId}`, {
       data: { firstName: 'Renamed', role: 'admin' },
       failOnStatusCode: false,
     });
 
-    expect(response.status()).toBe(200);
-    expect((await response.json()).firstName, 'the legitimate part still applies').toBe('Renamed');
+    expect(response.status()).toBe(403);
     expect(
       (await findUserByEmail(user.email))?.role,
       'a self-service profile update must never confer a privilege',

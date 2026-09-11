@@ -9,14 +9,16 @@
     "e2e:web": "playwright test --project=web",
     "e2e:ratelimit": "RUN_RATE_LIMIT=1 playwright test --project=api --workers=1 --grep @ratelimit",
     "lint": "biome check .",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
     "@playwright/test": "^1.57.0",
     "@types/node": "^22.10.0",
     "@types/pg": "^8.20.0",
-    "pg": "^8.22.0"
+    "pg": "^8.22.0",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@flama/env": "workspace:*"

@@ -3,6 +3,7 @@ import type {
   FullOrganizationResponseDto,
   InvitationResponseDto,
   MemberResponseDto,
+  MemberUserResponseDto,
   OrganizationResponseDto,
 } from './dtos/organization.response.dto';
 import type {
@@ -58,6 +59,21 @@ export function mapMember(input: unknown): MemberResponseDto {
     userId: String(m.userId),
     role: String(m.role),
     createdAt: toDate(m.createdAt),
+    user: m.user ? mapMemberUser(m.user) : null,
+  };
+}
+
+export function mapMemberUser(input: unknown): MemberUserResponseDto {
+  const user = asRecord(input);
+  return {
+    id: String(user.id),
+    name: String(user.name ?? ''),
+    email: String(user.email ?? ''),
+    image: (user.image as string | null) ?? null,
+    firstName: String(user.firstName ?? ''),
+    lastName: String(user.lastName ?? ''),
+    isActive: user.isActive !== false,
+    emailVerified: user.emailVerified === true,
   };
 }
 
@@ -107,11 +123,44 @@ export function mapFullOrganization(input: unknown): FullOrganizationResponseDto
   };
 }
 
+/** One role a user holds: the name the search matches, the id the facet picks. */
+export interface AssignedRole {
+  id: string;
+  name: string;
+}
+
+/**
+ * The `user_role` join's raw rows, grouped by user.
+ *
+ * A row per assignment is what the query can return; a list per user is what
+ * every caller wants, and building it is a shape transformation — so it lives
+ * here with the rest of them rather than as a loop inside the service.
+ */
+export function mapAssignedRolesByUser(input: unknown): Map<string, AssignedRole[]> {
+  const byUser = new Map<string, AssignedRole[]>();
+
+  for (const row of asArray(input)) {
+    const r = asRecord(row);
+    const userId = String(r.userId);
+    byUser.set(userId, [...(byUser.get(userId) ?? []), { id: String(r.id), name: String(r.name) }]);
+  }
+
+  return byUser;
+}
+
 export const mapOrganizations = (input: unknown): OrganizationResponseDto[] =>
   asArray(input).map(mapOrganization);
 export const mapMembers = (input: unknown): MemberResponseDto[] => asArray(input).map(mapMember);
 export const mapInvitations = (input: unknown): InvitationResponseDto[] =>
   asArray(input).map(mapInvitation);
+/**
+ * The pending subset of an invitation list. Better Auth cancels an invitation
+ * by flipping its status to `canceled` rather than deleting it, and returns
+ * every status from `listInvitations` — so the "pending invitations" endpoints
+ * must drop anything already resolved, or a cancelled invite keeps coming back.
+ */
+export const mapPendingInvitations = (input: unknown): InvitationResponseDto[] =>
+  mapInvitations(input).filter((invitation) => invitation.status === 'pending');
 export const mapWorkspaces = (input: unknown): WorkspaceResponseDto[] =>
   asArray(input).map(mapWorkspace);
 export const mapWorkspaceMembers = (input: unknown): WorkspaceMemberResponseDto[] =>

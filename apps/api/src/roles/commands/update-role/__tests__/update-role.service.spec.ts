@@ -40,7 +40,10 @@ describe('UpdateRoleService', () => {
     };
     service = new UpdateRoleService(
       repo as RoleRepositoryPort,
-      { assertGrantable: vi.fn().mockResolvedValue(undefined) } as unknown as RoleGrantPolicy,
+      {
+        assertGrantable: vi.fn().mockResolvedValue(undefined),
+        assertCanModify: vi.fn().mockResolvedValue(undefined),
+      } as unknown as RoleGrantPolicy,
     );
   });
 

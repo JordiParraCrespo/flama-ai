@@ -46,7 +46,6 @@ export const KNOWN_ACTIONS = ['create', 'read', 'update', 'delete', 'manage'] as
 /** Built-in subjects used by the seeded system roles. `all` is CASL's wildcard. */
 export const KNOWN_SUBJECTS = [
   'User',
-  'Article',
   'Role',
   'Organization',
   'Workspace',
@@ -261,6 +260,10 @@ export function defineAbilitiesFromPermissions(
 // biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
 const OWN_USER_ID = '${user.id}';
 
+/** Placeholder for the caller's active organization (see {@link AbilityContext}). */
+// biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
+const ACTIVE_ORGANIZATION_ID = '${activeOrganizationId}';
+
 /**
  * Permissions granted to the seeded **system roles**. Used by the migration /
  * seed to provision `admin` and `user`, and as the fallback for the legacy
@@ -269,15 +272,58 @@ const OWN_USER_ID = '${user.id}';
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
   superadmin: [{ action: 'manage', subject: 'all' }],
   admin: [{ action: 'manage', subject: 'all' }],
+  /**
+   * The tenant administrator, granted org-scoped to whoever creates an
+   * organization or is invited into one as owner/admin.
+   *
+   * Everything here is an organization resource, narrowed to the active
+   * organization by the `${activeOrganizationId}` placeholder. Nothing here
+   * touches `User`, `all` or another tenant: the role used to be the global
+   * `admin` (`manage all`) assigned org-scoped, and because non-tenant routes
+   * such as `DELETE /users/:id` check only action + subject, anyone who
+   * created a workspace could delete arbitrary platform accounts while that
+   * workspace was active.
+   */
+  owner: [
+    { action: 'manage', subject: 'Organization', conditions: { id: ACTIVE_ORGANIZATION_ID } },
+    { action: 'manage', subject: 'Member', conditions: { organizationId: ACTIVE_ORGANIZATION_ID } },
+    {
+      action: 'manage',
+      subject: 'Invitation',
+      conditions: { organizationId: ACTIVE_ORGANIZATION_ID },
+    },
+    {
+      action: 'manage',
+      subject: 'Workspace',
+      conditions: { organizationId: ACTIVE_ORGANIZATION_ID },
+    },
+    // Roles the organization owns. A global role (`organizationId: null`)
+    // does not match, which is what `RoleGrantPolicy.assertCanModify` relies
+    // on to keep the platform's own roles out of a tenant admin's reach.
+    { action: 'manage', subject: 'Role', conditions: { organizationId: ACTIVE_ORGANIZATION_ID } },
+  ],
   user: [
-    // Scoped to the caller's own record, the same way the ApiToken rules below
-    // are. Unconditional `read`/`update User` made every account readable and
-    // writable by every other account — the handlers enforce these conditions
-    // per row via `request.ability.can(action, subject('User', loaded))`.
-    { action: 'read', subject: 'User', conditions: { id: OWN_USER_ID } },
-    { action: 'update', subject: 'User', conditions: { id: OWN_USER_ID } },
-    { action: 'read', subject: 'Article' },
-    { action: 'create', subject: 'Article' },
+    /**
+     * Deliberately small: a plain account holds nothing until it creates an
+     * organization or an invitation puts it in one, and whichever of those
+     * happens is what grants the org-scoped role for that workspace.
+     *
+     * It used to carry unconditional `read`/`update` on `User` — which let
+     * every account list and edit every other account across tenants — and
+     * `read`/`create` on `Article`, a subject with no module or table behind
+     * it. Self-service profile editing goes through `/profile`; colleagues come
+     * from the `Member` resource.
+     */
+    // Which organizations this account belongs to, and nothing else about
+    // them. Better Auth answers the read from the caller's own memberships, so
+    // it discloses no organization they are not in — it is what lets the app
+    // tell "you are in a workspace" from "you are waiting for an invitation".
+    { action: 'read', subject: 'Organization' },
+    // Self-service sign-up: a fresh account creates its first workspace from
+    // onboarding. `OrganizationsService.create` grants the creator the
+    // org-scoped `admin` role in the same act, so this is the one door into a
+    // workspace besides an invitation.
+    { action: 'create', subject: 'Organization' },
     // Every user manages their own API tokens; the condition keeps them off
     // everyone else's.
     {

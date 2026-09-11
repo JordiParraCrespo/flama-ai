@@ -10,16 +10,24 @@ import { cn } from "../lib/utils";
  */
 function DeltaText({
   value,
+  formatValue,
   caret = false,
   className,
   ...props
-}: React.ComponentProps<"span"> & { value: number | string; caret?: boolean }) {
+}: React.ComponentProps<"span"> & {
+  value: number | string;
+  formatValue?: (value: number) => React.ReactNode;
+  caret?: boolean;
+}) {
   const numeric =
     typeof value === "number"
       ? value
       : Number.parseFloat(String(value).replace(/[^-\d.]/g, ""));
   const up = !(numeric < 0);
-  const label = typeof value === "number" ? `${up ? "+" : ""}${value}%` : value;
+  const label =
+    typeof value === "number"
+      ? (formatValue?.(value) ?? `${up ? "+" : ""}${value}%`)
+      : value;
   const Caret = up ? ArrowUpIcon : ArrowDownIcon;
 
   return (

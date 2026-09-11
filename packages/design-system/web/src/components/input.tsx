@@ -6,8 +6,15 @@ import { cn } from "../lib/utils";
 
 /**
  * The text field sits on the same three-step control ladder as Button and
- * IconButton — 28 / 36 / 40 — so a field and a button placed on one toolbar
- * row line up without either being overridden at the call site.
+ * IconButton — 28 / 36 / 44 (h-7 / h-9 / h-11) — so a field and a button
+ * placed on one toolbar row line up without either being overridden at the
+ * call site.
+ *
+ * `default` (36px) is the default, which is what `Button`, `SearchInput`,
+ * `InputGroup` and the `DataTable` header bar all render at. `lg` is for a
+ * surface built around one prominent field, not for ordinary form rows: it
+ * used to be the default, and it put every dialog field two rungs above the
+ * buttons beside them.
  *
  * Height is declared rather than derived from padding: when it fell out of
  * padding plus line-height, every control drifted the moment either changed.
@@ -23,7 +30,7 @@ const inputVariants = cva(
       },
     },
     defaultVariants: {
-      size: "lg",
+      size: "default",
     },
   },
 );

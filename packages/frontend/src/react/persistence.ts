@@ -3,6 +3,7 @@
 import type { Query, QueryClient } from '@tanstack/query-core';
 import { apiTokensKeys } from './api-tokens.queries';
 import { authKeys } from './auth.queries';
+import { profileKeys } from './profile.queries';
 
 /**
  * How long a restored cache entry stays usable before the persister throws it
@@ -31,6 +32,12 @@ let nonPersistedFeatures: ReadonlySet<string> | undefined;
  * - `apiTokens` — credential metadata (token prefixes, scopes, the permission
  *   catalog). Cheap to refetch, and not something to leave sitting in
  *   localStorage or AsyncStorage, neither of which is encrypted at rest.
+ * - `profile` — its data is **class instances**, and a prototype does not
+ *   survive JSON. Restored, the entity's getters are gone and its dates come
+ *   back as strings, and the screens format them through `Intl`, which throws
+ *   `Invalid time value` — a hard refresh rendered the error boundary instead
+ *   of the page. Small and cheap to refetch. Any new feature whose query
+ *   resolves to a class instance belongs on this list too.
  *
  * Built on first use rather than at module scope: `auth.queries` imports this
  * module for {@link reconcileCacheOwner}, so reading `authKeys` while this
@@ -38,7 +45,7 @@ let nonPersistedFeatures: ReadonlySet<string> | undefined;
  * cycle is entered from that side.
  */
 function getNonPersistedFeatures(): ReadonlySet<string> {
-  nonPersistedFeatures ??= new Set([authKeys.all[0], apiTokensKeys.all[0]]);
+  nonPersistedFeatures ??= new Set([authKeys.all[0], apiTokensKeys.all[0], profileKeys.all[0]]);
   return nonPersistedFeatures;
 }
 
@@ -93,17 +100,24 @@ export function reconcileCacheOwner(queryClient: QueryClient, ownerId: string | 
 }
 
 /**
+ * Increment when the persistence policy changes in a way that makes an
+ * already-stored cache unsafe to hydrate. This revision drops profile/session
+ * entities written before they were excluded from persistence.
+ */
+const QUERY_PERSIST_REVISION = 2;
+
+/**
  * Persistence options shared by web and mobile. The apps supply the platform's
  * `persister` (localStorage on web, AsyncStorage on mobile) and spread this in.
  *
- * `buster` invalidates every persisted cache at once: pass the app version (or
- * build id) so a deploy that changes a response shape drops stale entries
- * instead of hydrating them into components that no longer understand them.
+ * `buster` combines the app version with the cache-policy revision: releases
+ * drop incompatible response shapes, while a policy fix can invalidate unsafe
+ * entries before the next version bump.
  */
-export function createQueryPersistOptions(buster: string) {
+export function createQueryPersistOptions(appVersion: string) {
   return {
     maxAge: QUERY_PERSIST_MAX_AGE,
-    buster,
+    buster: `${appVersion}:${QUERY_PERSIST_REVISION}`,
     dehydrateOptions: { shouldDehydrateQuery },
   };
 }

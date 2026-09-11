@@ -59,4 +59,18 @@ describe('CreateRoleService', () => {
     ).rejects.toMatchObject({ code: RoleErrors.NAME_TAKEN.code });
     expect(repo.insert).not.toHaveBeenCalled();
   });
+
+  it('creates and checks custom roles inside the active organization', async () => {
+    await service.execute(
+      new CreateRoleCommand({
+        name: 'Content Lead',
+        permissions: [],
+        activeOrganizationId: 'organization-1',
+      }),
+    );
+
+    expect(repo.findOneByName).toHaveBeenCalledWith('Content Lead', 'organization-1');
+    const created = vi.mocked(repo.insert).mock.calls[0][0] as RoleEntity;
+    expect(created.organizationId).toBe('organization-1');
+  });
 });

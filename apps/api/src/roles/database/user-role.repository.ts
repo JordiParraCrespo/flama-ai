@@ -48,7 +48,14 @@ export class UserRoleRepository implements UserRoleRepositoryPort {
   async findRolesForUser(userId: string, organizationId?: string | null): Promise<RoleEntity[]> {
     const roleIds = await this.findRoleIdsForUser(userId, organizationId);
     if (roleIds.length === 0) return [];
-    const records = await this.roleRepository.findBy({ id: In(roleIds) });
+    // Ordered, because callers index into this. Without it Postgres answers in
+    // whatever physical order the rows happen to sit in, so two users holding
+    // the *same* roles came back in different orders — and the team table,
+    // which labelled a row with the first one, showed them different roles.
+    const records = await this.roleRepository.find({
+      where: { id: In(roleIds) },
+      order: { name: 'ASC' },
+    });
     return records.map((record) => this.mapper.toDomain(record));
   }
 

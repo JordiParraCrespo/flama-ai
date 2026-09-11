@@ -1,8 +1,9 @@
-import { Button } from '@flama/design-system-web';
+import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@flama/design-system-web';
 import { useAuthState, useSessionRestore } from '@flama/frontend/react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/components/theme-provider';
 import { routeTree } from './routeTree.gen';
 
 export interface RouterContext {
@@ -24,7 +25,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+/**
+ * The single `Toaster` mount for the app. Sonner renders every `toast()` into
+ * *every* mounted `<Toaster>`, so a second one anywhere in the tree shows each
+ * toast twice — mount it here and nowhere else.
+ */
 export function App() {
+  // The design system's `Toaster` reads `next-themes`, which this app does not
+  // run — left to itself it would fall back to `system` and light up against
+  // `prefers-color-scheme` while the rest of the product follows the toggle.
+  const { theme } = useTheme();
+
+  return (
+    <>
+      <AppRoutes />
+      <Toaster theme={theme} position="bottom-right" />
+    </>
+  );
+}
+
+function AppRoutes() {
   const { isAuthenticated } = useAuthState();
   // Rehydrate a persisted session (tokens in localStorage) before the router's
   // route guards run, so a returning/refreshing authenticated user isn't bounced
@@ -44,7 +64,7 @@ export function App() {
         <div
           role="status"
           aria-label="Loading"
-          className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary"
+          className="size-8 animate-spin rounded-full border-2 border-border-subtle border-t-surface-inverse"
         />
       </div>
     );
@@ -71,13 +91,19 @@ function SessionRestoreError({
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-background p-6">
-      <div role="alert" className="flex max-w-sm flex-col items-center gap-4 text-center">
-        <h1 className="text-lg font-semibold text-foreground">{t('auth.session.errorTitle')}</h1>
-        <p className="text-sm text-muted-foreground">{t('auth.session.errorMessage')}</p>
-        <Button onClick={onRetry} disabled={isRetrying}>
+      <Alert variant="destructive" className="max-w-sm">
+        <AlertTitle>{t('auth.session.errorTitle')}</AlertTitle>
+        <AlertDescription>{t('auth.session.errorMessage')}</AlertDescription>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onRetry}
+          disabled={isRetrying}
+          className="mt-3.5 w-fit"
+        >
           {isRetrying ? t('auth.session.retrying') : t('auth.session.retry')}
         </Button>
-      </div>
+      </Alert>
     </div>
   );
 }

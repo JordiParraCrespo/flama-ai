@@ -175,13 +175,36 @@ describe('AdminService', () => {
     expect(result[0].id).toBe('s1');
   });
 
-  it('revokes a single session by token', async () => {
+  it('revokes a single session by id, resolving its token server-side', async () => {
+    api.listUserSessions.mockResolvedValue({
+      sessions: [
+        { id: 's1', userId: 'u1', token: 'token-1' },
+        { id: 's2', userId: 'u1', token: 'token-2' },
+      ],
+    });
     api.revokeUserSession.mockResolvedValue({ success: true });
-    const result = await service.revokeSession(headers, 'session-token');
+
+    const result = await service.revokeSession(headers, 'u1', 's2');
+
     expect(result).toEqual({ success: true });
-    expect(api.revokeUserSession).toHaveBeenCalledWith(
-      expect.objectContaining({ body: { sessionToken: 'session-token' } }),
+    expect(api.listUserSessions).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { userId: 'u1' } }),
     );
+    // The client passed a session id; the raw token never left the API.
+    expect(api.revokeUserSession).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { sessionToken: 'token-2' } }),
+    );
+  });
+
+  it('throws SESSION_NOT_FOUND when the session id does not belong to the user', async () => {
+    api.listUserSessions.mockResolvedValue({
+      sessions: [{ id: 's1', userId: 'u1', token: 'token-1' }],
+    });
+
+    await expect(service.revokeSession(headers, 'u1', 'missing')).rejects.toMatchObject({
+      code: 'ADMIN_009',
+    });
+    expect(api.revokeUserSession).not.toHaveBeenCalled();
   });
 
   it('revokes all sessions', async () => {

@@ -2,6 +2,7 @@ import { subject } from '@casl/ability';
 import { describe, expect, it } from 'vitest';
 import {
   type AbilityContext,
+  canAccess,
   defineAbilitiesFor,
   defineAbilitiesFromPermissions,
   KNOWN_ACTIONS,
@@ -160,11 +161,11 @@ describe('defineAbilitiesFor (legacy single-role helper)', () => {
   it('builds the seeded `user` ability with limited access', () => {
     const ability = defineAbilitiesFor('user');
 
-    expect(ability.can('read', 'User')).toBe(true);
-    expect(ability.can('update', 'User')).toBe(true);
-    expect(ability.can('read', 'Article')).toBe(true);
-    expect(ability.can('create', 'Article')).toBe(true);
-    expect(ability.can('delete', 'Article')).toBe(false);
+    expect(ability.can('read', 'Organization')).toBe(true);
+    expect(ability.can('create', 'Organization')).toBe(true);
+    expect(ability.can('delete', 'Organization')).toBe(false);
+    expect(ability.can('read', 'User')).toBe(false);
+    expect(ability.can('update', 'User')).toBe(false);
     expect(ability.can('manage', 'all')).toBe(false);
   });
 
@@ -176,10 +177,11 @@ describe('defineAbilitiesFor (legacy single-role helper)', () => {
   });
 
   it('forwards the context so scoped fallback permissions still interpolate', () => {
-    // The seeded `user` role has no conditions, so this mainly asserts the
-    // context threads through without breaking a known role.
+    // The own-token rules interpolate the caller id; the legacy fallback must
+    // keep that ownership boundary when no database role is available.
     const ability = defineAbilitiesFor('user', { user: { id: 'user-1' } });
-    expect(ability.can('read', 'User')).toBe(true);
+    expect(ability.can('read', subject('ApiToken', { userId: 'user-1' }))).toBe(true);
+    expect(ability.can('read', subject('ApiToken', { userId: 'user-2' }))).toBe(false);
   });
 });
 
@@ -300,5 +302,27 @@ describe('scope placeholders', () => {
 
     expect(ability.can('read', lead({ organizationId: 'org-1', id: 'x' }))).toBe(true);
     expect(ability.can('read', lead({ organizationId: 'org-2', id: 'x' }))).toBe(false);
+  });
+});
+
+describe('canAccess', () => {
+  it('checks conditional User grants against the actual record', () => {
+    const ability = defineAbilitiesFromPermissions(
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: runtime permission placeholder
+      [{ action: 'update', subject: 'User', conditions: { id: '${user.id}' } }],
+      { user: { id: 'owner' } },
+    );
+    expect(canAccess(ability, 'update', 'User', { id: 'owner' })).toBe(true);
+    expect(canAccess(ability, 'update', 'User', { id: 'other' })).toBe(false);
+    expect(canAccess(ability, 'read', 'User', { id: 'owner' })).toBe(false);
+  });
+
+  it('preserves platform admin access and the default role restrictions', () => {
+    const admin = defineAbilitiesFromPermissions(SYSTEM_ROLE_PERMISSIONS.admin);
+    const user = defineAbilitiesFromPermissions(SYSTEM_ROLE_PERMISSIONS.user, {
+      user: { id: 'owner' },
+    });
+    expect(canAccess(admin, 'update', 'User', { id: 'other' })).toBe(true);
+    expect(canAccess(user, 'update', 'User', { id: 'owner' })).toBe(false);
   });
 });

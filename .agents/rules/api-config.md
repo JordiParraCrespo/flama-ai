@@ -156,6 +156,24 @@ Apply `@Throttle()` on public-facing endpoints:
 | Login           | 10/min |
 | Forgot password | 3/min  |
 
+The `/api/auth/*` routes never reach the NestJS `ThrottlerGuard` (Better Auth
+mounts them on the HTTP adapter first), so their limits live in Better Auth's
+own `rateLimit` block in `auth.ts`, stored in the `rateLimit` table so they
+hold across replicas. It is on in production and opt-in elsewhere
+(`AUTH_RATE_LIMIT_ENABLED`).
+
+**The tracker is keyed on the credential, not the IP.**
+`CredentialThrottlerGuard` (`src/throttling/`) is the app's `APP_GUARD`: it
+buckets by `credentialId`, falling back to the user id and only then to the
+IP. The default IP tracker is wrong for every machine caller — a relay forwards
+many callers' traffic from one address, so an IP bucket is shared by all of
+them and the per-route number describes nothing anybody intended.
+
+**Counters live in Redis** (`RedisThrottlerStorage`), because the in-memory
+default multiplies every limit by the replica count without saying so. It
+increments atomically in one round trip, and **fails open** if Redis is
+unreachable: a limiter must not be a second thing that can take the API down.
+
 ## Versioning
 
 All routes use URI versioning with `@Version('1')`. The default version is `v1`.

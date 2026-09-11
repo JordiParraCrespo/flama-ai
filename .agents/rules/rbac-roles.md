@@ -99,6 +99,22 @@ export class PublishArticleHttpController {
   ability to `request.ability`.
 - No `@CheckPolicies` ⇒ any authenticated user passes (e.g. `GET /users/me`).
 
+### An endpoint a screen is named after is also the sidebar's rule
+
+The endpoints that back a gated row in the web sidebar — members, roles, API
+tokens, admin, billing — are gated on the same `@CheckPolicies` the endpoint
+carries. That pairing is declared once, in `SCREENS`
+(`packages/shared/src/navigation/screens.ts`), and asserted by
+`apps/api/src/auth/__tests__/screen-policies.spec.ts`. Change the policy on one
+of those handlers and that test fails until `SCREENS` says the same thing —
+which is the point: a policy added to a controller would otherwise leave the
+sidebar offering a link that could only answer 403, and nothing in the build
+would notice. `GET /users/me/permissions` serves the caller's effective rules
+so the client can apply the same catalog.
+
+If a screen's data moves to a different handler, move its entry in `HANDLERS`
+there too. The test is only as honest as the handler it is pointed at.
+
 ### Resource scoping (own-resource checks)
 
 The guard only checks **action + subject** (type level) — it does not see the
@@ -177,10 +193,29 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   from `user_role` (assign via `PUT /v1/users/:userId/roles`); `user.role` is a
   single system-role name for admin-plugin gating.
 - **Organizations / members / invitations** — the `organization` plugin owns the
-  `organization`, `member`, `invitation` tables. New users get a personal org +
-  default workspace on sign-up (`databaseHooks.user.create.after`); the session
-  carries `activeOrganizationId` / `activeTeamId`. Invitation emails go through
-  the BullMQ email queue (`EmailService.sendInvitation`).
+  `organization`, `member`, `invitation` tables. **Sign-up provisions nothing**:
+  a new account belongs to no organization until it creates one or an
+  invitation puts it in one, and the session's `activeOrganizationId` /
+  `activeTeamId` stay null until then (the web app sends such an account to
+  onboarding, where it creates its first workspace). The default `user` role
+  can *read* the organizations it belongs to and *create* one. Both paths that
+  create a membership write the org-scoped application role — the tenant
+  `owner` system role for a Better Auth owner/admin, `user` for a member
+  in the same breath — `InvitationsService.accept` for a workspace someone
+  joins, `OrganizationsService.create` for one the caller makes (which also
+  provisions the "General" workspace) — so "you are a member" and "you may work
+  here" are never set separately. `owner` grants organization resources only
+  (Organization/Member/Invitation/Workspace/Role, conditioned on
+  `${activeOrganizationId}`) and never `manage all` or `User`: assigned
+  org-scoped, a `manage all` role is unioned into the ability whenever that
+  organization is active, and every non-tenant route that checks only
+  action + subject (`DELETE /users/:id`, the admin façade) would open to
+  whoever created a workspace. `RoleGrantPolicy.assertCanModify` is the
+  row-level half for roles — a global role never matches the owner's
+  conditioned `manage Role`, so tenants cannot edit the platform's roles. Provisioning behind the account's back is
+  what made a self-service sign-up the owner of an organization it had no
+  permission to read. Invitation emails go through the BullMQ email queue
+  (`EmailService.sendInvitation`).
 - **First-class REST façade** — `apps/api/src/organizations/` and
   `apps/api/src/admin/` expose the plugin operations as typed, Swagger-documented,
   CASL-guarded endpoints (`/v1/organizations`, `/v1/organizations/:id/members`,

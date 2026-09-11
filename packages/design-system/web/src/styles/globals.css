@@ -76,6 +76,36 @@
     --app-bg: #ffffff;
     --chrome-bg: #ffffff;
 
+    /* The email body frame — surface, and the little chrome the frame supplies
+       around a sender's own markup.
+
+       Deliberately light in both themes, and therefore stated once with no
+       counterpart in the dark block below. Email HTML is authored against an
+       assumed white background — senders set a text colour and leave the
+       background to the client — so a body inheriting the dark canvas renders
+       a large share of real mail as near-black on near-black. Gmail and
+       Outlook both keep HTML mail on its own light surface for this reason.
+       Sender markup is the one content in the product whose styling the theme
+       does not own.
+
+       The rest of the family exists because the frame is a *separate document*
+       and cannot resolve `var()` against this file — `MailHtmlFrame` reads
+       these values and writes them into the document it builds. Fixed light
+       values rather than aliases onto `--ink-*`, which invert; on a surface
+       that stays white, the dark theme's ink would be unreadable. */
+    --surface-email: #ffffff;
+    --email-ink: #292929; /* matches --ink-900's light value */
+    --email-ink-muted: #5d5d5d; /* matches --ink-600's light value */
+    --email-rule: rgba(0, 0, 0, 0.12); /* quote bars and hairlines on white */
+    --email-link: #2f80f6; /* matches --accent-blue */
+
+    /* The theme pill. The knob and its active icon are deliberately the same
+       in both themes — it is the one chrome element that does not invert, so
+       the dark block below restates only the idle icon. */
+    --theme-toggle-knob: #e5e5e8;
+    --theme-toggle-icon: #555a63;
+    --theme-toggle-icon-idle: rgba(85, 90, 99, 0.5);
+
     /* ---- Hairlines ----------------------------------------------------- */
     --border-subtle: rgba(0, 0, 0, 0.06);
     --border-default: rgba(0, 0, 0, 0.1);
@@ -109,6 +139,19 @@
 
     /* Off-state track for switches (matches the brand's iOS-ish toggle) */
     --track-off: #e3e2df;
+
+    /* The blue wash a toolbar control takes while it is filtering something —
+       the mailbox picker and the filter menu when either holds a selection.
+       Alpha rather than a flat tint so it reads the same over the card white
+       and the sunken well; carried over from the handoff's token set, where
+       the dark theme needs more of it to register against the near-black. */
+    --focus-ring: rgba(47, 128, 246, 0.35);
+
+    /* The dot of the `dotted-ground` pattern — the assistant rail's floor.
+       Not a surface colour: it has to sit a hair above whatever surface it is
+       painted on in both themes, so it is its own token rather than an alpha
+       on an existing one, and the dark theme restates it below. */
+    --dot-ground: rgba(0, 0, 0, 0.05);
 
     /* ---- Overlay depth -------------------------------------------------
        The four heights a floating layer can sit at. Everything inline stays
@@ -206,6 +249,9 @@
     --app-bg: #161513;
     --chrome-bg: #1b1a18;
 
+    /* Knob and active icon deliberately unchanged — see the light block. */
+    --theme-toggle-icon-idle: rgba(201, 201, 205, 0.7);
+
     --border-subtle: rgba(255, 255, 255, 0.08);
     --border-default: rgba(255, 255, 255, 0.13);
     --border-strong: rgba(255, 255, 255, 0.22);
@@ -213,6 +259,7 @@
     --data-grid: rgba(255, 255, 255, 0.07);
     --data-track: #2c2a27;
     --track-off: #3a3835;
+    --focus-ring: rgba(47, 128, 246, 0.45);
 
     --on-inverse: #161513;
     --on-inverse-muted: rgba(0, 0, 0, 0.55);
@@ -222,6 +269,7 @@
     --elevation-panel: 0 12px 34px rgba(0, 0, 0, 0.62);
     --elevation-modal: 0 24px 60px rgba(0, 0, 0, 0.72);
     --scrim: rgba(0, 0, 0, 0.6);
+    --dot-ground: rgba(255, 255, 255, 0.045);
 
     --status-active-bg: rgba(31, 157, 87, 0.18);
     --status-paused-bg: rgba(199, 122, 22, 0.2);
@@ -315,6 +363,11 @@
   --color-surface-sunken: var(--surface-sunken);
   --color-surface-hover: var(--surface-hover);
   --color-surface-inverse: var(--surface-inverse);
+  --color-surface-email: var(--surface-email);
+  --color-email-ink: var(--email-ink);
+  --color-email-ink-muted: var(--email-ink-muted);
+  --color-email-rule: var(--email-rule);
+  --color-email-link: var(--email-link);
 
   --color-border-subtle: var(--border-subtle);
   --color-border-default: var(--border-default);
@@ -343,7 +396,12 @@
   --color-on-inverse: var(--on-inverse);
   --color-on-inverse-muted: var(--on-inverse-muted);
   --color-track-off: var(--track-off);
+  --color-dot-ground: var(--dot-ground);
+  --color-focus-ring: var(--focus-ring);
   --color-scrim: var(--scrim);
+  --color-theme-toggle-knob: var(--theme-toggle-knob);
+  --color-theme-toggle-icon: var(--theme-toggle-icon);
+  --color-theme-toggle-icon-idle: var(--theme-toggle-icon-idle);
 
   /* ---- shadcn semantic colours ---------------------------------------- */
   --color-background: var(--background);
@@ -400,6 +458,14 @@
     outline: none;
   }
 
+  /* Tailwind v4's preflight gives buttons the default cursor. Restore the
+     interaction cue for every enabled native or ARIA button, including tabs
+     and design-system components built on Base UI primitives. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
   html {
     background-color: var(--app-bg);
   }
@@ -432,6 +498,19 @@
     font-weight: 500;
     letter-spacing: var(--tracking-brand);
   }
+}
+
+/* The assistant rail's floor: a 22px grid of 1px dots. Flat surfaces are the
+   rule everywhere else in this system, so the pattern is deliberately at the
+   edge of visible — it says "this pane is a different kind of place" without
+   becoming decoration. */
+@utility dotted-ground {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    var(--dot-ground) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
 }
 
 /* A quiet 8px scrollbar for panes that scroll inside a card — the product's

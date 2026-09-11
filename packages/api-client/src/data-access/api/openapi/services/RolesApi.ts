@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AssignUserRolesRequest } from '../../../../common/models/AssignUserRolesRequest';
 import type { CreateRoleRequest } from '../../../../common/models/CreateRoleRequest';
+import type { PaginatedRolesResponseDto } from '../../../../common/models/PaginatedRolesResponseDto';
 import type { RoleResponseDto } from '../../../../common/models/RoleResponseDto';
 import type { UpdateRolePermissionsRequest } from '../../../../common/models/UpdateRolePermissionsRequest';
 import type { UpdateRoleRequest } from '../../../../common/models/UpdateRoleRequest';
@@ -16,14 +17,14 @@ export class RolesApi {
      * @param search Search by role name
      * @param limit Items per page (default: 20, max: 100)
      * @param page Page number (default: 1)
-     * @returns any
+     * @returns PaginatedRolesResponseDto
      * @throws ApiError
      */
     public static findAll(
         search?: string,
         limit?: number,
         page?: number,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<PaginatedRolesResponseDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/roles',
@@ -197,7 +198,7 @@ export class RolesApi {
             mediaType: 'application/json',
             errors: {
                 401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
-                403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,
+                403: `ROLE_005 — Assigning a role that grants more than the caller holds`,
                 404: `USER_001 / ROLE_001 — User or role not found`,
             },
         });

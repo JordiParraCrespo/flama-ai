@@ -8,13 +8,12 @@ export const createUserSchema = z.object({
   role: z.string().min(1).default('user'),
 });
 
-/**
- * Self-service profile edit. `role` is omitted deliberately: it is a privilege
- * field, and a schema that accepts one on the endpoint a user calls to change
- * their own name is a privilege-escalation path however carefully the handler
- * is written. Role changes go through `PUT /v1/users/:userId/roles`, which is
- * gated on `manage User`, or the admin plugin's `set-role`.
- */
+// `role` is deliberately omitted: it maps to the Better Auth `user.role`
+// column, which gates the admin plugin (impersonate/ban/set-password) and is
+// unioned into the caller's CASL ability. Letting a profile update write it
+// turns `update User` into privilege escalation. Role changes go through the
+// dedicated, grant-checked paths instead — `PUT /v1/users/:userId/roles` for
+// the dynamic-RBAC join and the admin plugin's `set-role` for `user.role`.
 export const updateUserSchema = createUserSchema.partial().omit({ email: true, role: true });
 
 export const userResponseSchema = z.object({

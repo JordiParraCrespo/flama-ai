@@ -3,6 +3,7 @@ export type {
   AuthSessionUser,
   IAuthClient,
   SignUpParams,
+  SocialAuthIntent,
   SocialProvider,
 } from './auth.client';
 export { AuthErrors } from './auth.errors';

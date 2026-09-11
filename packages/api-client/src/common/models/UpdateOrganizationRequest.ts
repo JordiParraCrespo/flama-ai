@@ -5,6 +5,6 @@
 export type UpdateOrganizationRequest = {
     name?: string;
     slug?: string;
-    logo?: string;
+    logo?: string | null;
 };
 
