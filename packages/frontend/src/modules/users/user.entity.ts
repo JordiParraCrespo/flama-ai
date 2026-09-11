@@ -17,6 +17,21 @@ export class UserEntity {
   }
 
   get isAdmin(): boolean {
-    return this.role === 'admin';
+    return this.platformRoles.includes('admin');
+  }
+
+  get isSuperAdmin(): boolean {
+    return this.platformRoles.includes('superadmin');
+  }
+
+  get canAccessControlPlane(): boolean {
+    return this.isAdmin || this.isSuperAdmin;
+  }
+
+  private get platformRoles(): string[] {
+    return this.role
+      .split(',')
+      .map((role) => role.trim())
+      .filter(Boolean);
   }
 }

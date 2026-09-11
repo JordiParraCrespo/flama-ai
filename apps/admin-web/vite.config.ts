@@ -1,0 +1,71 @@
+import path from 'node:path';
+import tailwindcss from '@tailwindcss/vite';
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import pkg from './package.json' with { type: 'json' };
+
+export default defineConfig({
+  // There is one .env, at the monorepo root; a .env placed in apps/web is
+  // deliberately not read. Only VITE_-prefixed values reach the client bundle.
+  envDir: path.resolve(__dirname, '../..'),
+  // Busts the persisted query cache on release: a version bump drops entries
+  // that may not match the new response shapes.
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
+  plugins: [
+    TanStackRouterVite({
+      routesDirectory: './src/routes',
+      generatedRouteTree: './src/routeTree.gen.ts',
+      autoCodeSplitting: true,
+    }),
+    react(),
+    tailwindcss(),
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
+  },
+  optimizeDeps: {
+    // Workspace packages are linked, not installed, so dev has to be told to
+    // pre-bundle this CommonJS entrypoint into ESM.
+    include: [
+      '@flama/shared/schemas/admin',
+      '@flama/shared/schemas/auth',
+      '@flama/shared/schemas/organization',
+      '@flama/shared/schemas/profile',
+      '@flama/shared/schemas/role',
+      '@flama/shared/navigation',
+      '@flama/shared/permissions',
+    ],
+  },
+  build: {
+    commonjsOptions: {
+      // `@flama/shared` builds to CommonJS for the API's sake. Its `dist` sits
+      // outside `node_modules`, so the interop plugin skips it by default and
+      // Rollup cannot see the named exports.
+      include: [/node_modules/, /packages[\\/]shared[\\/]dist/],
+    },
+  },
+  server: {
+    port: 3003,
+    proxy: {
+      '/api': {
+        // Reuse the API's canonical URL when development needs isolated ports
+        // (for example parallel agent sessions); the browser remains
+        // same-origin and keeps cookie auth identical to the default setup.
+        target: process.env.BETTER_AUTH_URL ?? 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
+});

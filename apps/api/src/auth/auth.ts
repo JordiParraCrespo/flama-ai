@@ -38,7 +38,9 @@ const superadminAc = defaultAc.newRole({
 const OAUTH_SCOPES_SUPPORTED = ['openid', 'profile', 'email', 'offline_access', ...SCOPES];
 
 const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+const adminFrontendUrl = process.env.ADMIN_FRONTEND_URL ?? 'http://localhost:3003';
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
+const adminMobileScheme = process.env.ADMIN_MOBILE_SCHEME ?? 'flama-admin';
 
 // Read through `orUndefined` so a blank `DB_X=` means "unset" here exactly as
 // it does in `database.config.ts`. Better Auth owns its own pool rather than
@@ -94,7 +96,7 @@ export const auth = betterAuth({
   basePath: '/api/auth',
   secret: process.env.BETTER_AUTH_SECRET,
   database: pool,
-  trustedOrigins: [frontendUrl, `${mobileScheme}://`],
+  trustedOrigins: [frontendUrl, adminFrontendUrl, `${mobileScheme}://`, `${adminMobileScheme}://`],
   // Brute-force protection on the auth surface. `/api/auth/*` is mounted on the
   // HTTP adapter before Nest binds middleware, so the NestJS ThrottlerGuard
   // never sees these routes — Better Auth's own limiter is the only thing that

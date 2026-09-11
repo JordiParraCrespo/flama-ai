@@ -23,6 +23,12 @@
       "require": "./dist/schemas/auth.schema.js",
       "default": "./dist/schemas/auth.schema.js"
     },
+    "./schemas/admin": {
+      "types": "./dist/schemas/admin.schema.d.ts",
+      "import": "./dist/schemas/admin.schema.js",
+      "require": "./dist/schemas/admin.schema.js",
+      "default": "./dist/schemas/admin.schema.js"
+    },
     "./schemas/profile": {
       "types": "./dist/schemas/profile.schema.d.ts",
       "import": "./dist/schemas/profile.schema.js",

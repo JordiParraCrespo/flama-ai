@@ -12,7 +12,7 @@ import {
   IconButton,
   SidebarMenuButton,
 } from '@flama/design-system-web';
-import { ChevronsUpDown, LogOut, Settings, UserRound, Users } from '@flama/design-system-web/icons';
+import { ChevronsUpDown, LogOut, Settings, UserRound } from '@flama/design-system-web/icons';
 import { useLogout, useProfile } from '@flama/frontend/react';
 import { locales } from '@flama/translations';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -94,10 +94,6 @@ export function UserMenu({ trigger = 'sidebar' }: { trigger?: 'sidebar' | 'avata
           <DropdownMenuItem render={<Link to="/settings" />}>
             <Settings />
             {t('nav.settings')}
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/team" />}>
-            <Users />
-            {t('nav.team')}
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
