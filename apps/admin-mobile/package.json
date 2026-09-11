@@ -10,7 +10,7 @@
     "build:dev": "eas build --profile development",
     "build:preview": "eas build --profile preview",
     "build:prod": "eas build --profile production",
-    "lint": "biome check app/",
+    "lint": "biome check app/ components/ lib/ app.config.ts && tsc --noEmit",
     "clean": "rm -rf .expo node_modules",
     "postinstall": "npx tailwindcss -i ./global.css -o ./node_modules/.cache/nativewind/global.css"
   },

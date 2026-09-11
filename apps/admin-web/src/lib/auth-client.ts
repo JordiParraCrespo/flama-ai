@@ -33,16 +33,8 @@ export const webAuthClient: IAuthClient = {
     unwrap(await authClient.signIn.email({ email, password }));
   },
 
-  async signUp({ email, password, firstName, lastName }) {
-    unwrap(
-      await authClient.signUp.email({
-        email,
-        password,
-        name: `${firstName} ${lastName}`.trim(),
-        firstName,
-        lastName,
-      }),
-    );
+  async signUp() {
+    throw new Error('Control-plane accounts must be provisioned by an administrator.');
   },
 
   async signInSocial(provider) {

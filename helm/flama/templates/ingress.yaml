@@ -12,6 +12,7 @@ spec:
     - hosts:
         - {{ .Values.ingress.hosts.api }}
         - {{ .Values.ingress.hosts.web }}
+        - {{ .Values.ingress.hosts.adminWeb }}
         - {{ .Values.ingress.hosts.docs }}
       secretName: {{ .Release.Name }}-tls
   {{- end }}
@@ -36,6 +37,16 @@ spec:
                 name: {{ .Release.Name }}-web
                 port:
                   number: {{ .Values.web.port }}
+    - host: {{ .Values.ingress.hosts.adminWeb }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-admin-web
+                port:
+                  number: {{ .Values.adminWeb.port }}
     - host: {{ .Values.ingress.hosts.docs }}
       http:
         paths:

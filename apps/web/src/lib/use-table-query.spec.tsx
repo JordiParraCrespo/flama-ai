@@ -270,8 +270,7 @@ describe('useTableQuery', () => {
 
   describe('prefixing', () => {
     it('reads its own keys when two tables share a route', () => {
-      // Team's members and roles tabs are both `/team` and would otherwise
-      // fight over `?q=`.
+      // Without the prefix, both table instances would read the same `?q=`.
       const { result } = setup('?members_q=ada&q=other', { prefix: 'members' });
 
       expect(result.current.search).toBe('ada');

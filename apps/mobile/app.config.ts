@@ -11,9 +11,9 @@ const config: ExpoConfig = {
   name: 'Flama',
   slug: 'flama',
   version: '0.1.0',
-  // Deep-link scheme; must agree with the API's MOBILE_SCHEME (it registers
-  // `${scheme}://` as a trusted origin), so both read the same variable.
-  scheme: process.env.MOBILE_SCHEME ?? 'flama',
+  // Deep-link scheme; the public variable is bundled into the client and must
+  // agree with the API's MOBILE_SCHEME trusted origin.
+  scheme: process.env.EXPO_PUBLIC_MOBILE_SCHEME ?? process.env.MOBILE_SCHEME ?? 'flama',
   newArchEnabled: true,
   platforms: ['ios', 'android'],
   userInterfaceStyle: 'automatic',

@@ -1,6 +1,5 @@
 import { Alert, AlertDescription, Button, cn } from '@flama/design-system-web';
 import { Info } from '@flama/design-system-web/icons';
-import type { SocialAuthIntent } from '@flama/frontend';
 import { useDeploymentCapabilities, useSocialLogin } from '@flama/frontend/react';
 import { useTranslation } from 'react-i18next';
 import { AuthDivider, authControlClass } from '@/components/auth/auth-primitives';
@@ -18,18 +17,10 @@ import { useErrorMessage } from '@/lib/use-error-message';
  * vars to set, for the self-hoster who is the one person able to fix it —
  * only ever renders from a successful read reporting no providers.
  *
- * `intent` is what separates the two screens that render this. The API refuses
- * a provider identity it has never seen unless the caller asks for a sign-up,
- * so the login screen's buttons sign in only, and the register screen's are
- * the one place an account can be created from a provider.
+ * The control plane only signs existing accounts in. Its auth adapter also
+ * refuses sign-up intent, so this component cannot create an administrator.
  */
-export function SocialLoginButtons({
-  disabled,
-  intent = 'sign-in',
-}: {
-  disabled?: boolean;
-  intent?: SocialAuthIntent;
-}) {
+export function SocialLoginButtons({ disabled }: { disabled?: boolean }) {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const social = useSocialLogin();
@@ -76,7 +67,7 @@ export function SocialLoginButtons({
             variant="outline"
             type="button"
             disabled={disabled || social.isPending}
-            onClick={() => social.mutate({ provider: 'google', intent })}
+            onClick={() => social.mutate({ provider: 'google', intent: 'sign-in' })}
             className={providerButton}
           >
             <GoogleIcon />
@@ -88,7 +79,7 @@ export function SocialLoginButtons({
             variant="outline"
             type="button"
             disabled={disabled || social.isPending}
-            onClick={() => social.mutate({ provider: 'github', intent })}
+            onClick={() => social.mutate({ provider: 'github', intent: 'sign-in' })}
             className={providerButton}
           >
             <GithubIcon />

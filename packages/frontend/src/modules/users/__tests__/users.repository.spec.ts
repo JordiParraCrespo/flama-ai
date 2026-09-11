@@ -59,6 +59,16 @@ describe('UserEntity', () => {
     expect(user({ role: 'superadmin' as Role }).isAdmin).toBe(false);
   });
 
+  it('recognizes control-plane roles in Better Auth comma-separated role lists', () => {
+    const administrator = user({ role: 'user, admin' as Role });
+    const superAdministrator = user({ role: 'user,superadmin' as Role });
+
+    expect(administrator.isAdmin).toBe(true);
+    expect(administrator.canAccessControlPlane).toBe(true);
+    expect(superAdministrator.isSuperAdmin).toBe(true);
+    expect(superAdministrator.canAccessControlPlane).toBe(true);
+  });
+
   it('is a getter, so it does not survive the persisted query cache', () => {
     // Documented rather than fixed: the cache is rehydrated from JSON, where a
     // getter is gone. `apps/web`'s `personName` exists because of exactly this,

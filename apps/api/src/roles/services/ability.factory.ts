@@ -127,12 +127,22 @@ export class AbilityFactory {
     //    promoted to `admin`/`superadmin` gains that role's permissions even
     //    though their `user_role` join still holds the default `user` row.
     if (user.role) {
-      const found = await this.roleRepository.findOneByName(user.role);
-      permissions.push(
-        ...(found.isSome()
-          ? found.unwrap().permissions.map((permission) => permission.toDefinition())
-          : (SYSTEM_ROLE_PERMISSIONS[user.role] ?? [])),
-      );
+      // Better Auth stores multiple platform roles as a comma-separated value.
+      // Resolve each name independently so `user,admin` receives the same
+      // control-plane permissions as a single `admin` role.
+      const platformRoles = user.role
+        .split(',')
+        .map((role) => role.trim())
+        .filter(Boolean);
+
+      for (const roleName of platformRoles) {
+        const found = await this.roleRepository.findOneByName(roleName);
+        permissions.push(
+          ...(found.isSome()
+            ? found.unwrap().permissions.map((permission) => permission.toDefinition())
+            : (SYSTEM_ROLE_PERMISSIONS[roleName] ?? [])),
+        );
+      }
     }
 
     return permissions;

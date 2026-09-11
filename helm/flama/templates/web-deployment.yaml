@@ -17,6 +17,9 @@ spec:
       containers:
         - name: web
           image: {{ .Values.web.image }}
+          env:
+            - name: API_UPSTREAM
+              value: {{ printf "%s-api:%v" .Release.Name .Values.api.port | quote }}
           ports:
             - containerPort: {{ .Values.web.port }}
           resources:

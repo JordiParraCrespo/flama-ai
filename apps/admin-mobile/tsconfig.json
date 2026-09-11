@@ -5,6 +5,9 @@
     "lib": ["ES2022"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false

@@ -16,10 +16,10 @@ import { useTranslation } from 'react-i18next';
 const NOTICES = {
   /**
    * No account here for that provider identity. `disableImplicitSignUp` in the
-   * API refuses to mint one from a sign-in, so this is guidance rather than a
-   * failure — and it renders on `/register`, the screen that can act on it.
+   * API refuses to mint one from a sign-in. Administrators must be provisioned
+   * through an existing control-plane account.
    */
-  signup_disabled: { tone: 'guidance', key: 'auth.oauth.noAccount' },
+  signup_disabled: { tone: 'guidance', key: 'control.auth.noAccount' },
   /**
    * The address belongs to an account that never verified its email, so the
    * API will not attach a provider to it (`requireLocalEmailVerified`). The
@@ -45,8 +45,8 @@ export function OAuthCallbackNotice({ code, className }: { code?: string; classN
   return (
     <Alert
       variant={guidance ? 'default' : 'destructive'}
-      // Only the guidance case overrides the icon: nobody signing up did
-      // anything wrong, so it takes `Info` rather than the alert disc.
+      // The missing-account case is guidance, so it takes `Info` rather than
+      // the alert disc.
       icon={guidance ? Info : undefined}
       className={className}
     >

@@ -33,9 +33,9 @@ export function AuthArtPanel({ className }: { className?: string }) {
   const { t } = useTranslation();
 
   const features = [
-    t('auth.art.features.workspaces'),
-    t('auth.art.features.team'),
-    t('auth.art.features.security'),
+    t('control.auth.features.users'),
+    t('control.auth.features.roles'),
+    t('control.auth.features.security'),
   ];
 
   return (
@@ -63,10 +63,10 @@ export function AuthArtPanel({ className }: { className?: string }) {
           this panel is set in the text cut, whose wider letterforms are what
           break the headline over three lines. */}
       <h2 className="relative z-10 mb-4 max-w-[460px] font-sans text-[34px] leading-tight font-medium tracking-[-0.4px] text-white">
-        {t('auth.art.headline')}
+        {t('control.auth.headline')}
       </h2>
       <p className="relative z-10 mb-[30px] max-w-[400px] text-base leading-normal text-white/[0.82]">
-        {t('auth.art.body')}
+        {t('control.auth.body')}
       </p>
       <ul className="relative z-10 flex max-w-[380px] list-none flex-col gap-3.5 p-0">
         {features.map((feature) => (

@@ -23,16 +23,6 @@ function organizationInitial(name: string): string {
 }
 
 /**
- * The live totals behind the nav badges.
- *
- * None yet. Serving the team count would mean mounting the organizations →
- * members pair in the shell, which runs on every route — a waterfall on every
- * cold load for a number nobody navigates by. It stays `undefined`, which
- * renders as no badge at all: an absent count is honest where an invented one
- * is not. Wiring one up later is a line here once the API can answer it in one
- * call.
- */
-/**
  * The workspace sidebar: brand row, the nav, and the user menu pinned to the
  * bottom. 244px and the hairline against the canvas both come from the design
  * system's `Sidebar`, which is already cut to this brand.

@@ -48,7 +48,7 @@ src/
   [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md).
 - **A route file composes.** `src/routes/` holds the `Route`, the page
   component and its queries; dialogs, cells and tabs go in
-  `src/components/<feature>/`. `components/team/` is the shape to copy. Layout vocabulary shared by more than one feature sits at
+  `src/components/<feature>/`. Layout vocabulary shared by more than one feature sits at
   the top of `components/` (`section-ui.tsx`), not inside whichever feature
   needed it first.
 - **The second time you write a helper, it moves to `src/lib/`.** Look there

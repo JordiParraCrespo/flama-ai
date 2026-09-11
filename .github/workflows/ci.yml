@@ -65,7 +65,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        app: [api, web, docs, mcp]
+        app: [api, web, admin-web, docs, mcp]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Lowercase repository name

@@ -86,6 +86,26 @@ describe('AbilityFactory', () => {
     expect(ability.can('delete', 'Role')).toBe(true); // from user.role = admin
   });
 
+  it('unions comma-separated Better Auth platform roles', async () => {
+    vi.mocked(roleRepo.findOneByName).mockImplementation(async (name) =>
+      name === 'admin'
+        ? Some(
+            makeRole(
+              'admin',
+              [Permission.fromDefinition({ action: 'manage', subject: 'all' })],
+              true,
+            ),
+          )
+        : None,
+    );
+
+    const ability = await factory.createForUser({ id: 'user-1', role: 'user, admin' });
+
+    expect(ability.can('delete', 'Role')).toBe(true);
+    expect(roleRepo.findOneByName).toHaveBeenNthCalledWith(1, 'user');
+    expect(roleRepo.findOneByName).toHaveBeenNthCalledWith(2, 'admin');
+  });
+
   it('falls back to the seeded system-role permissions when the role is not in the DB', async () => {
     vi.mocked(userRoleRepo.findRolesForUser).mockResolvedValue([]);
     vi.mocked(roleRepo.findOneByName).mockResolvedValue(None);
