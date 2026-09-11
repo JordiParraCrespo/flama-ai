@@ -12,10 +12,9 @@ import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend/
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, vars } from 'nativewind';
-import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
 import { ScreenViewTracker } from '../lib/analytics';
@@ -51,51 +50,45 @@ function AuthGate() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuthState();
   const { isLoading, isError, isFetching, refetch } = useSessionRestore();
-  const segments = useSegments();
-  const router = useRouter();
 
-  React.useEffect(() => {
-    // Don't route while restoring, and don't route on error: a failed restore
-    // must not be treated as "unauthenticated" and bounce the user to /login.
-    if (isLoading || isError) return;
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
+        <Stack.Protected guard={isAuthenticated}>
+          <Stack.Screen name="(app)" />
+        </Stack.Protected>
+      </Stack>
 
-    const inAuthGroup = segments[0] === '(auth)';
+      {isError ? (
+        // Restoring the session failed (network/server error). Surface it with
+        // a retry instead of treating the user as unauthenticated.
+        <View
+          className="absolute inset-0 z-50 items-center justify-center gap-4 bg-background p-6"
+          role="alert"
+        >
+          <Text className="text-lg font-semibold text-foreground">
+            {t('auth.session.errorTitle')}
+          </Text>
+          <Text className="text-center text-sm text-muted-foreground">
+            {t('auth.session.errorMessage')}
+          </Text>
+          <Button onPress={() => refetch()} disabled={isFetching} className="mt-2">
+            <Text>{isFetching ? t('auth.session.retrying') : t('auth.session.retry')}</Text>
+          </Button>
+        </View>
+      ) : null}
 
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(app)');
-    }
-  }, [isAuthenticated, isLoading, isError, segments, router]);
-
-  if (isError) {
-    // Restoring the session failed (network/server error). Surface it with a
-    // retry instead of falling through to the router, which would treat the
-    // user as unauthenticated and sign them out.
-    return (
-      <View className="flex-1 items-center justify-center gap-4 p-6" role="alert">
-        <Text className="text-lg font-semibold text-foreground">
-          {t('auth.session.errorTitle')}
-        </Text>
-        <Text className="text-center text-sm text-muted-foreground">
-          {t('auth.session.errorMessage')}
-        </Text>
-        <Button onPress={() => refetch()} disabled={isFetching} className="mt-2">
-          <Text>{isFetching ? t('auth.session.retrying') : t('auth.session.retry')}</Text>
-        </Button>
-      </View>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  return <Slot />;
+      {isLoading ? (
+        <View className="absolute inset-0 z-50 items-center justify-center bg-background">
+          <ActivityIndicator size="large" />
+        </View>
+      ) : null}
+    </>
+  );
 }
 
 const lightVars = {
