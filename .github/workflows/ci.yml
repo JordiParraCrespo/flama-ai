@@ -44,9 +44,9 @@ jobs:
         with:
           version: v2.5
           working-directory: apps/runner
-      - run: go test -race -count=1 ./...
-        env:
-          CGO_ENABLED: "1"
+      # The gha-vm runners ship no C compiler, and -race needs cgo; run the
+      # race detector locally (make test-race) and plain tests here.
+      - run: go test -count=1 ./...
       - run: go build -trimpath ./cmd/server
 
   test:

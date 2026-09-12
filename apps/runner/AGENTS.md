@@ -11,12 +11,15 @@ Go service template. Read the root [`CLAUDE.md`](../../CLAUDE.md) first, then
   for service tokens. Add a dependency only when the standard library cannot
   do the job
 - `golangci-lint` (config in `.golangci.yml`); `pnpm test` runs the suite
-  with `-race` and the import-boundary test in `internal/arch`
+  and the import-boundary test in `internal/arch`. `make test-race` runs it
+  under the race detector, which CI cannot (no C compiler on the runners),
+  so run it locally before pushing concurrent code
 
 ## Commands
 
 ```bash
 make dev          # run with the root .env
-make test-race    # what CI runs
+make test         # what CI runs
+make test-race    # run locally for anything concurrent
 make lint         # golangci-lint
 ```

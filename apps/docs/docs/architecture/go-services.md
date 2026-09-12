@@ -60,10 +60,11 @@ in-memory repositories give way to Postgres.
 
 ```bash
 pnpm --filter @flama/runner dev      # make dev, reads the root .env
-pnpm --filter @flama/runner test     # go test -race + the boundary test
+pnpm --filter @flama/runner test     # go test + the boundary test
 docker build -f apps/runner/Dockerfile .   # distroless, non-root, ~10 MB
 ```
 
-CI runs `go vet`, `golangci-lint` and the race-enabled tests in a dedicated
-job and publishes the image alongside the Node ones. See
+CI runs `go vet`, `golangci-lint` and the tests in a dedicated job (the race
+detector needs a C compiler the runners lack, so `make test-race` is a local
+step) and publishes the image alongside the Node ones. See
 `apps/runner/ARCHITECTURE.md` for the "add a bounded context" cookbook.

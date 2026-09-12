@@ -19,10 +19,10 @@ vet:
 	$(GO) vet ./...
 
 test:
-	$(GO) test ./...
+	$(GO) test -count=1 ./...
 
-# The race detector needs cgo; runners that default to CGO_ENABLED=0 would
-# otherwise refuse the flag outright.
+# The race detector needs cgo and a C compiler, which the CI runners lack;
+# run it locally before pushing anything concurrent.
 test-race:
 	CGO_ENABLED=1 $(GO) test -race -count=1 ./...
 

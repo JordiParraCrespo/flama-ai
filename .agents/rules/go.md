@@ -82,8 +82,9 @@ services — not a port of NestJS idioms.
 
 ## Tooling
 
-- `make lint` (golangci-lint, config in `.golangci.yml`) and `make test-race`
-  are what CI runs; both must be clean before a push.
+- `make lint` (golangci-lint, config in `.golangci.yml`) and `make test` are
+  what CI runs; `make test-race` is local only (the runners have no C
+  compiler). All three must be clean before a push that touches goroutines.
 - Add a dependency only when the standard library cannot do the job, and pin
   it in `go.mod` with `go mod tidy`.
 - Tests use `httptest` end to end (`internal/server/server_test.go`) and the

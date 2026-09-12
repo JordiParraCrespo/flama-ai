@@ -7,7 +7,7 @@
     "build": "make build",
     "dev": "make dev",
     "lint": "make lint",
-    "test": "make test-race",
+    "test": "make test",
     "clean": "make clean"
   }
 }
