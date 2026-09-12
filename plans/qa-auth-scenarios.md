@@ -1,5 +1,13 @@
 # QA pack — auth theme, basic test cases
 
+> **Built.** All eight scenarios are implemented in `qa/scenarios/auth/` and
+> `qa/specs/auth/`. The first run is `docs/screenshots/qa-auth-pass/`.
+> Two things this plan predicted came out differently: sign-up does **not**
+> provision a workspace (AUTH-05 confirms the documented behaviour), and the
+> repeated-wrong-password case was dropped from AUTH-04 because it trips the
+> per-IP limiter that every other scenario shares. It is in `maturity.yaml`
+> under `not-yet` with that reason.
+
 The first theme of the [QA scenario pack](qa-scenario-pack.md). Every case
 below becomes one `qa/scenarios/auth/<slug>.yaml` and one spec bound to its
 id. Each takes the laptop screenshots named under **artifacts**, and each

@@ -94,6 +94,13 @@ The strategy underneath, which is the part that has to survive the port:
 | `qa-env.sh` builds then `pnpm --filter @flama/api start`     | Same, plus `pnpm --filter @flama/api migration:run` before start (flama's API does not migrate on boot).     |
 | `.env` needs `INTEGRATIONS_ENCRYPTION_KEY`                   | Not present in flama-ai. Only `BETTER_AUTH_SECRET` and `EMAIL_PROVIDER=console` are required.               |
 
+## Status
+
+Phases 0-2 are built and running: the pack, its fixtures and the eight auth
+scenarios live in `qa/`, and the first pass is published under
+`docs/screenshots/qa-auth-pass/` at 7 passed, 1 failed. Phases 3-5 below are
+still plans.
+
 ## Phases
 
 ### Phase 0 — wiring (one PR, no scenarios yet)
