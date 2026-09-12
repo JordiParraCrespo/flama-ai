@@ -201,11 +201,53 @@ Port `roles.ts` (sign in through the API sharing the page's cookie jar,
 - `TEAM-01..03` in `workbench`: invite, change role, remove; each checked
   against `member`/`invitation` rows and screenshotted.
 
+### Screenshots — both kinds the CRM keeps
+
+The evidence is not optional in any phase. Two things, done exactly as the CRM does them:
+
+**1. Every verdict takes a laptop screenshot.** `ScenarioRecorder.shot` and
+`shotOf` come across unchanged: viewport 1440×900 at `deviceScaleFactor: 2`,
+written as a 2880×1800 PNG, no `fullPage`. After each capture the harness
+measures the app's inner scroll container and, when more than 24px sits below
+the fold, writes a note into the report instead of cropping silently. A scenario
+declares the files it promises under `artifacts:` in its YAML, and the report
+embeds every one inline next to the checks. flama-ai's shell is the same
+`h-svh` inner-scroller pattern as the CRM's, so the below-the-fold measurement
+applies as is. Run output lands in `qa/artifacts/screenshots/`, git-ignored.
+
+Two names per scenario is the norm: the whole screen (`dash-01-baseline-dashboard`)
+and the region the claim is about (`dash-01-kpis`, framed with `shotOf`). The
+admin control plane gets its own shots on the `adminPage`, named `admin-…`.
+
+**2. Each QA pass commits a curated set under `docs/screenshots/<pass>/`.**
+The CRM keeps `docs/screenshots/qa-dashboard-auth-pass/` with every PNG the
+run produced, the run's `report.md` copied in as `run-report.md` with its
+image links rewritten from `screenshots/…` to `./…`, and a README that says
+which run it was, the pass/fail count, which failure is the product and which
+is the pack, and a table naming the three or four captures that settle a
+question faster than a paragraph. The rest go under "Everything working".
+
+For flama-ai the first such folder is `docs/screenshots/qa-auth-dashboard-pass/`,
+committed with the Phase 4 PR, and it must include the **before** capture of
+the placeholder-number dashboard: the CRM's README points at its directory
+history for the screenshots that documented the original findings, and the
+issues opened from the run link to them. A second folder,
+`docs/screenshots/qa-permissions-pass/`, ships with Phase 3 and holds one
+landing-screen shot per role on both apps, including the `AccessDenied` card a
+plain member sees in admin-web.
+
+Budget: the CRM folder is 14 MB for 29 PNGs. Keep each pass under 20 MB, and
+add `qa/artifacts/` to `.gitignore` so only the curated copy is versioned.
+Add a `qa publish <pass-name>` subcommand to `cli.ts` that does the copy and
+the link rewrite, since doing it by hand is how the CRM README says the links
+break.
+
 ### Phase 5 — maturity, docs, CI
 
 - `qa/maturity.yaml` filled honestly per theme, with a `not-yet` list (OAuth,
   email verification, session expiry, rate limiting, mobile apps).
-- `apps/docs`: one page under Testing describing the pack, linking the report.
+- `apps/docs`: one page under Testing describing the pack, linking the report
+  and embedding the curated captures from `docs/screenshots/`.
 - CI: a manual `workflow_dispatch` job `qa-pack` that runs `qa-env.sh up`,
   `qa suite`, and uploads `qa/artifacts` — not on every PR. The CRM repo runs
   it by hand; the same posture here, since a run takes minutes and its output is
