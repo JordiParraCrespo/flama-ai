@@ -7,6 +7,7 @@ import (
 	"context"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/app"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/domain"
@@ -40,6 +41,18 @@ func (r *Repository) FindByID(_ context.Context, id string) (domain.Key, error) 
 		return domain.Key{}, app.ErrNotFound
 	}
 	return key, nil
+}
+
+func (r *Repository) Touch(_ context.Context, id string, at time.Time) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	key, ok := r.keys[id]
+	if !ok {
+		return nil
+	}
+	key.LastUsedAt = &at
+	r.keys[id] = key
+	return nil
 }
 
 func (r *Repository) List(_ context.Context) ([]domain.Key, error) {

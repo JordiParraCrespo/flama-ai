@@ -38,6 +38,27 @@ func (r *Repository) FindByID(_ context.Context, id string) (domain.Job, error) 
 	return job, nil
 }
 
+func (r *Repository) Update(_ context.Context, id string, fn func(job *domain.Job) error) (domain.Job, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	job, ok := r.jobs[id]
+	if !ok {
+		return domain.Job{}, app.ErrNotFound
+	}
+	if err := fn(&job); err != nil {
+		return domain.Job{}, err
+	}
+	r.jobs[id] = job
+	return job, nil
+}
+
+func (r *Repository) Delete(_ context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.jobs, id)
+	return nil
+}
+
 func (r *Repository) List(_ context.Context, f app.ListFilter) ([]domain.Job, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

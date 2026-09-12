@@ -19,6 +19,10 @@ type Repository interface {
 	Save(ctx context.Context, key domain.Key) error
 	FindByID(ctx context.Context, id string) (domain.Key, error)
 	List(ctx context.Context) ([]domain.Key, error)
+	// Touch records a use without rewriting the aggregate, so a concurrent
+	// revocation can never be overwritten by a stale copy loaded for
+	// verification. A missing id is not an error.
+	Touch(ctx context.Context, id string, at time.Time) error
 }
 
 // TokenIssuer mints service JWTs. Nil in the service means the capability

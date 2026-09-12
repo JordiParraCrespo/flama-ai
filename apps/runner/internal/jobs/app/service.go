@@ -122,8 +122,10 @@ func (s *Service) Submit(ctx context.Context, in SubmitInput) (domain.Job, error
 	select {
 	case s.queue <- job.ID:
 	default:
-		_ = job.Cancel(s.now())
-		_ = s.repo.Save(ctx, job)
+		// The caller gets a 429 and no id, so nothing may remain behind.
+		if err := s.repo.Delete(ctx, job.ID); err != nil {
+			s.logger.WarnContext(ctx, "could not remove rejected job", slog.String("jobId", job.ID), slog.Any("error", err))
+		}
 		return domain.Job{}, domain.ErrQueueFull.WithDetail("capacity %d", cap(s.queue))
 	}
 	s.pub.Publish(ctx, domain.Event{Name: domain.EventQueued, Job: job})
@@ -150,15 +152,16 @@ func (s *Service) List(ctx context.Context, filter ListFilter) ([]domain.Job, er
 // Cancel stops a queued or running job. A running job's context is
 // cancelled and the runner is expected to return promptly.
 func (s *Service) Cancel(ctx context.Context, id string) (domain.Job, error) {
-	job, err := s.Get(ctx, id)
-	if err != nil {
-		return domain.Job{}, err
-	}
-	if err := job.Cancel(s.now()); err != nil {
-		return domain.Job{}, domain.ErrInvalidTransition.WithDetail("%s", err.Error())
-	}
-	if err := s.repo.Save(ctx, job); err != nil {
-		return domain.Job{}, fmt.Errorf("save job: %w", err)
+	now := s.now()
+	job, err := s.repo.Update(ctx, id, func(j *domain.Job) error { return j.Cancel(now) })
+	var te *domain.TransitionError
+	switch {
+	case errors.Is(err, ErrNotFound):
+		return domain.Job{}, domain.ErrJobNotFound.WithDetail("job %q", id)
+	case errors.As(err, &te):
+		return domain.Job{}, domain.ErrInvalidTransition.WithDetail("%s", te.Error())
+	case err != nil:
+		return domain.Job{}, fmt.Errorf("cancel job: %w", err)
 	}
 	s.mu.Lock()
 	if cancel, ok := s.running[id]; ok {
@@ -196,19 +199,18 @@ func (s *Service) Wait() { s.wg.Wait() }
 func (s *Service) Depth() int { return len(s.queue) }
 
 func (s *Service) execute(ctx context.Context, log *slog.Logger, id string) {
-	job, err := s.repo.FindByID(ctx, id)
+	startedAt := s.now()
+	job, err := s.repo.Update(ctx, id, func(j *domain.Job) error {
+		if j.Status != domain.StatusQueued {
+			// Cancelled while waiting.
+			return ErrSkip
+		}
+		return j.Start(startedAt)
+	})
+	if errors.Is(err, ErrSkip) {
+		return
+	}
 	if err != nil {
-		log.Error("queued job vanished", slog.String("jobId", id), slog.Any("error", err))
-		return
-	}
-	if job.Status != domain.StatusQueued {
-		// Cancelled while waiting.
-		return
-	}
-	if err := job.Start(s.now()); err != nil {
-		return
-	}
-	if err := s.repo.Save(ctx, job); err != nil {
 		log.Error("could not mark job running", slog.String("jobId", id), slog.Any("error", err))
 		return
 	}
@@ -227,22 +229,30 @@ func (s *Service) execute(ctx context.Context, log *slog.Logger, id string) {
 
 	runErr := s.run(runCtx, job)
 
-	// Re-read: Cancel may have moved it while we were running.
-	current, err := s.repo.FindByID(ctx, id)
-	if err != nil || current.Status != domain.StatusRunning {
+	// The transition is applied against the stored state: if Cancel won the
+	// race while the runner was returning, the result is dropped and the
+	// job stays cancelled.
+	now := s.now()
+	current, err := s.repo.Update(ctx, id, func(j *domain.Job) error {
+		if j.Status != domain.StatusRunning {
+			return ErrSkip
+		}
+		if runErr != nil {
+			return j.Fail(runErr.Error(), now)
+		}
+		return j.Succeed(now)
+	})
+	if errors.Is(err, ErrSkip) {
 		return
 	}
-	now := s.now()
-	if runErr != nil {
-		_ = current.Fail(runErr.Error(), now)
-		log.Warn("job failed", slog.String("jobId", id), slog.String("kind", job.Kind), slog.Any("error", runErr))
-	} else {
-		_ = current.Succeed(now)
-		log.Info("job succeeded", slog.String("jobId", id), slog.String("kind", job.Kind), slog.Duration("took", now.Sub(*current.StartedAt)))
-	}
-	if err := s.repo.Save(ctx, current); err != nil {
+	if err != nil {
 		log.Error("could not persist job result", slog.String("jobId", id), slog.Any("error", err))
 		return
+	}
+	if runErr != nil {
+		log.Warn("job failed", slog.String("jobId", id), slog.String("kind", job.Kind), slog.Any("error", runErr))
+	} else {
+		log.Info("job succeeded", slog.String("jobId", id), slog.String("kind", job.Kind), slog.Duration("took", now.Sub(startedAt)))
 	}
 	s.pub.Publish(ctx, domain.Event{Name: domain.EventFinished, Job: current})
 }

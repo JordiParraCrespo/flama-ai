@@ -30,6 +30,30 @@ func TestRouterWritesProblems(t *testing.T) {
 	}
 }
 
+func TestUnmatchedRoutesAreProblems(t *testing.T) {
+	r := newTestRouter()
+	r.Use(RequestID())
+	r.HandleFunc("GET /only-get", func(w http.ResponseWriter, req *http.Request) error { return NoContent(w) })
+
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/missing", nil))
+	if rec.Code != 404 || rec.Header().Get("Content-Type") != problem.ContentType || rec.Header().Get(RequestIDHeader) == "" {
+		t.Fatalf("404: code=%d ct=%q id=%q", rec.Code, rec.Header().Get("Content-Type"), rec.Header().Get(RequestIDHeader))
+	}
+	if !strings.Contains(rec.Body.String(), `"code":"RUNNER_004"`) {
+		t.Fatalf("404 body: %s", rec.Body.String())
+	}
+
+	rec = httptest.NewRecorder()
+	r.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/only-get", nil))
+	if rec.Code != 405 || rec.Header().Get("Allow") != "GET, HEAD" || rec.Header().Get("Content-Type") != problem.ContentType {
+		t.Fatalf("405: code=%d allow=%q ct=%q", rec.Code, rec.Header().Get("Allow"), rec.Header().Get("Content-Type"))
+	}
+	if !strings.Contains(rec.Body.String(), `"status":405`) || !strings.Contains(rec.Body.String(), `"type":"about:blank"`) {
+		t.Fatalf("405 body: %s", rec.Body.String())
+	}
+}
+
 func TestGroupInheritsAndIsolatesMiddleware(t *testing.T) {
 	r := newTestRouter()
 	var order []string

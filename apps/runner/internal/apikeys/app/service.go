@@ -187,8 +187,7 @@ func (s *Service) Verify(ctx context.Context, token string) (*auth.Principal, er
 	if !key.Active(now) {
 		return nil, fmt.Errorf("%w: key revoked or expired", auth.ErrInvalidCredential)
 	}
-	key.Touch(now)
-	if err := s.repo.Save(ctx, key); err != nil {
+	if err := s.repo.Touch(ctx, key.ID, now); err != nil {
 		s.logger.WarnContext(ctx, "could not record key use", slog.String("keyId", key.ID), slog.Any("error", err))
 	}
 	return &auth.Principal{

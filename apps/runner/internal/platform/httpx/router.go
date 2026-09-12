@@ -73,10 +73,42 @@ func (r *Router) Wrap(h HandlerFunc) http.Handler {
 	})
 }
 
-// ServeHTTP makes the router a handler.
+// ServeHTTP makes the router a handler. A request no route matches is
+// answered by the mux's own 404/405 logic, but through the root middleware
+// stack and as a problem document, so an unknown path carries the same
+// headers, correlation id and body shape as every other failure.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if _, pattern := r.mux.Handler(req); pattern == "" {
+		Chain(http.HandlerFunc(r.unmatched), r.middleware...).ServeHTTP(w, req)
+		return
+	}
 	r.mux.ServeHTTP(w, req)
 }
+
+// unmatched lets the mux decide between 404 and 405 (and set Allow), then
+// replaces its plain-text body with a problem document.
+func (r *Router) unmatched(w http.ResponseWriter, req *http.Request) {
+	h, _ := r.mux.Handler(req)
+	probe := &statusProbe{header: w.Header()}
+	h.ServeHTTP(probe, req)
+	if probe.status == http.StatusMethodNotAllowed {
+		r.problems.Write(w, req, problem.Status(http.StatusMethodNotAllowed).
+			WithDetail("%s is not allowed on %s", req.Method, req.URL.Path))
+		return
+	}
+	r.problems.Write(w, req, problem.ErrNotFound.WithDetail("no route for %s %s", req.Method, req.URL.Path))
+}
+
+// statusProbe records the status the mux chose and drops its body. It
+// shares the real header map so Allow survives.
+type statusProbe struct {
+	header http.Header
+	status int
+}
+
+func (p *statusProbe) Header() http.Header         { return p.header }
+func (p *statusProbe) WriteHeader(code int)        { p.status = code }
+func (p *statusProbe) Write(b []byte) (int, error) { return len(b), nil }
 
 // Chain applies middleware so the first listed runs outermost.
 func Chain(h http.Handler, mw ...Middleware) http.Handler {

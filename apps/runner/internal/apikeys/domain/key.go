@@ -141,11 +141,6 @@ func (k *Key) Revoke(now time.Time) error {
 	return nil
 }
 
-// Touch records a use.
-func (k *Key) Touch(now time.Time) {
-	k.LastUsedAt = &now
-}
-
 // Sentinel validation errors the use case maps to problems.
 var (
 	ErrNameRequired   = errors.New("name is required")
