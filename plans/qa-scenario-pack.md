@@ -153,6 +153,8 @@ Implementation notes carried over from the CRM pack:
 
 ### Phase 2 — auth theme (port, mostly unchanged)
 
+The case-by-case plan is in [qa-auth-scenarios.md](qa-auth-scenarios.md).
+
 Port the six CRM scenarios and their specs; the flows exist in flama-ai and
 `e2e/tests/web/*` already proves the selectors:
 
