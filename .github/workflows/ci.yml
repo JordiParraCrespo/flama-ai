@@ -21,6 +21,14 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # `pnpm arch` runs through Turborepo, whose ^build edge now reaches
+      # the Go packages, so the toolchain has to be present here as well.
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            apps/runner/go.sum
+            packages/go/*/go.sum
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - name: Architecture boundaries
