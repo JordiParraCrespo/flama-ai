@@ -90,6 +90,50 @@ func TestSubscribeAndPublish(t *testing.T) {
 	}
 }
 
+// A WebSocket must outlive the HTTP request scope: when the request context
+// is cancelled (as the SIGTERM base context is on shutdown), the read loop
+// must not tear the connection down before hub.Close delivers its
+// going-away frame. This reproduces that ordering and asserts the client
+// still sees a clean 1001.
+func TestShutdownClosesGoingAwayDespiteRequestCancel(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	hub := NewHub(logger, DefaultOptions())
+	principal := &auth.Principal{ID: "k1", Kind: auth.KindAPIKey, Scopes: scope.NewSet("events:read")}
+	handler := Handler(hub, &problem.Writer{}, logger, nil)
+
+	// Each request's context is cancelled the moment the handler starts,
+	// standing in for the base context dying on SIGTERM.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqCtx, cancel := context.WithCancel(auth.WithPrincipal(r.Context(), principal))
+		cancel()
+		handler.ServeHTTP(w, r.WithContext(reqCtx))
+	}))
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http"), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	var hello Envelope
+	if err := wsjson.Read(ctx, c, &hello); err != nil || hello.Type != TypeHello {
+		t.Fatalf("hello: %+v %v", hello, err)
+	}
+
+	closed := make(chan error, 1)
+	go func() {
+		var e Envelope
+		closed <- wsjson.Read(ctx, c, &e)
+	}()
+	hub.Close(ctx)
+	if err := <-closed; websocket.CloseStatus(err) != websocket.StatusGoingAway {
+		t.Fatalf("client should see going-away 1001, got %v", err)
+	}
+}
+
 func TestUnauthenticatedUpgradeIsRefused(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	handler := Handler(NewHub(logger, DefaultOptions()), &problem.Writer{}, logger, nil)
