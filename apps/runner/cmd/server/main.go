@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/config"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/logging"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/server"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/logging"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
 )
 
 // version is stamped by the build (-ldflags "-X main.version=…").

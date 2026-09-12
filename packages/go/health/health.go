@@ -9,7 +9,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
 )
 
 // Checker reports whether a dependency is ready. Bounded contexts and

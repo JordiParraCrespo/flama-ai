@@ -2,12 +2,16 @@
 FROM golang:1.24-alpine AS builder
 WORKDIR /src
 ARG VERSION=dev
-COPY apps/runner/go.mod apps/runner/go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod go mod download
-COPY apps/runner/ ./
+# The runner depends on the shared modules in packages/go through relative
+# replace directives, so the workspace layout is reproduced inside the image.
+COPY go.work ./
+COPY packages/go/ ./packages/go/
+COPY apps/runner/go.mod apps/runner/go.sum ./apps/runner/
+RUN --mount=type=cache,target=/go/pkg/mod cd apps/runner && go mod download
+COPY apps/runner/ ./apps/runner/
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOOS=linux go build -trimpath \
+    cd apps/runner && CGO_ENABLED=0 GOOS=linux go build -trimpath \
       -ldflags="-s -w -X main.version=${VERSION}" \
       -o /out/runner ./cmd/server
 

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
 )
 
 // TokenPrefix marks a key minted by this service, so a bearer value can be
@@ -37,7 +37,7 @@ type Key struct {
 	// randomness, so a fast hash is the right choice; a password KDF would
 	// only slow down every request.
 	Hash       string
-	Scopes     []scopes.Scope
+	Scopes     []scope.Scope
 	CreatedBy  string
 	CreatedAt  time.Time
 	ExpiresAt  *time.Time
@@ -46,7 +46,7 @@ type Key struct {
 }
 
 // Generate mints a key and returns the one-time plaintext token.
-func Generate(name string, granted []scopes.Scope, createdBy string, expiresAt *time.Time, now time.Time) (Key, string, error) {
+func Generate(name string, granted []scope.Scope, createdBy string, expiresAt *time.Time, now time.Time) (Key, string, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return Key{}, "", ErrNameRequired
@@ -74,7 +74,7 @@ func Generate(name string, granted []scopes.Scope, createdBy string, expiresAt *
 		Name:      name,
 		Prefix:    TokenPrefix + "_" + id + "_" + secret[:displayChars],
 		Hash:      HashToken(token),
-		Scopes:    append([]scopes.Scope(nil), granted...),
+		Scopes:    append([]scope.Scope(nil), granted...),
 		CreatedBy: createdBy,
 		CreatedAt: now,
 		ExpiresAt: expiresAt,

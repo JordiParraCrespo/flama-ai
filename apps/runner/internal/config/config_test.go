@@ -3,9 +3,11 @@ package config
 import (
 	"strings"
 	"testing"
+
+	"github.com/jordiparracrespo/flama-ai/packages/go/config"
 )
 
-func lookup(m map[string]string) func(string) (string, bool) {
+func lookup(m map[string]string) config.Lookup {
 	return func(k string) (string, bool) { v, ok := m[k]; return v, ok }
 }
 
@@ -16,7 +18,7 @@ func TestParseDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Port != 3006 || cfg.Env != Development || cfg.LogFormat != "text" || cfg.JWT != nil {
+	if cfg.Port != 3006 || cfg.Env != config.Development || cfg.LogFormat != "text" || cfg.JWT != nil {
 		t.Fatalf("unexpected defaults %+v", cfg)
 	}
 }
@@ -52,21 +54,5 @@ func TestProductionDefaultsToJSONLogs(t *testing.T) {
 	}
 	if cfg.LogFormat != "json" || cfg.JWT == nil || cfg.JWT.Issuer != "flama-runner" {
 		t.Fatalf("unexpected %+v", cfg)
-	}
-}
-
-func TestParseValue(t *testing.T) {
-	cases := map[string]string{
-		`plain`:           "plain",
-		`plain # comment`: "plain",
-		`"quoted # keep"`: "quoted # keep",
-		`'single'`:        "single",
-		`"line\nbreak"`:   "line\nbreak",
-		`  padded  `:      "padded",
-	}
-	for in, want := range cases {
-		if got := parseValue(in); got != want {
-			t.Errorf("parseValue(%q) = %q, want %q", in, got, want)
-		}
 	}
 }

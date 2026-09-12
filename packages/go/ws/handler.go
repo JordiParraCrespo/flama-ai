@@ -10,8 +10,8 @@ import (
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // Authorizer decides whether a principal may subscribe to a topic. Bounded

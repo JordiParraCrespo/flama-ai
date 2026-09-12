@@ -9,10 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
+
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/domain"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // memRepo is a minimal Repository so this package's tests stay free of the
@@ -73,7 +75,7 @@ func (r *memRepo) Delete(_ context.Context, id string) error {
 }
 
 func callerCtx() context.Context {
-	return auth.WithPrincipal(context.Background(), &auth.Principal{ID: "t", Scopes: scopes.NewSet(scopes.JobsWrite)})
+	return auth.WithPrincipal(context.Background(), &auth.Principal{ID: "t", Scopes: scope.NewSet(scopes.JobsWrite)})
 }
 
 func newService(repo Repository, runner Runner, queue int) *Service {

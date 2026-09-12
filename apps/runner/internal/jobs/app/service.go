@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/domain"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // Service owns the job lifecycle and the worker pool that drives it.

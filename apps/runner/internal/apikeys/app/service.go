@@ -8,10 +8,12 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
+
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/domain"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // BootstrapID is the principal id of the environment-provided key.
@@ -150,7 +152,7 @@ func (s *Service) IssueServiceToken(ctx context.Context, subject, name string, r
 		return "", time.Time{}, domain.ErrScopeEscalation.WithDetail("caller lacks %v", missing)
 	}
 	now := s.now()
-	token, err = s.issuer.Issue(subject, name, scopes.NewSet(granted...), s.tokenTTL, now)
+	token, err = s.issuer.Issue(subject, name, scope.NewSet(granted...), s.tokenTTL, now)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("issue service token: %w", err)
 	}
@@ -194,7 +196,7 @@ func (s *Service) Verify(ctx context.Context, token string) (*auth.Principal, er
 		ID:     key.ID,
 		Name:   key.Name,
 		Kind:   auth.KindAPIKey,
-		Scopes: scopes.NewSet(key.Scopes...),
+		Scopes: scope.NewSet(key.Scopes...),
 	}, nil
 }
 
@@ -207,7 +209,7 @@ func (s *Service) verifyBootstrap(token string) (*auth.Principal, error) {
 		ID:     BootstrapID,
 		Name:   "bootstrap",
 		Kind:   auth.KindAPIKey,
-		Scopes: scopes.NewSet(scopes.All()...),
+		Scopes: scope.NewSet(scopes.All()...),
 	}, nil
 }
 

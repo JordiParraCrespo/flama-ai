@@ -7,10 +7,10 @@ import (
 
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/app"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/domain"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
 )
 
 // Handler exposes the API-key use cases.

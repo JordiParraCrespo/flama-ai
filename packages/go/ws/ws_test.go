@@ -13,15 +13,15 @@ import (
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 func TestSubscribeAndPublish(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	hub := NewHub(logger, DefaultOptions())
-	principal := &auth.Principal{ID: "k1", Kind: auth.KindAPIKey, Scopes: scopes.NewSet(scopes.EventsRead)}
+	principal := &auth.Principal{ID: "k1", Kind: auth.KindAPIKey, Scopes: scope.NewSet(scope.Scope("events:read"))}
 
 	authorize := func(_ context.Context, p *auth.Principal, topic string) error {
 		if !strings.HasPrefix(topic, "jobs") {

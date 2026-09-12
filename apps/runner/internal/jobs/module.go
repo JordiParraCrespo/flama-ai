@@ -11,9 +11,9 @@ import (
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/adapters/runner"
 	wsadapter "github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/adapters/ws"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/app"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/ws"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
+	"github.com/jordiparracrespo/flama-ai/packages/go/ws"
 )
 
 // Module bundles the context's wiring.

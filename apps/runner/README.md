@@ -14,15 +14,19 @@ with real ones, or the whole context with yours, and keep the shell.
 
 | Concern           | Where                                      | How                                                                                      |
 | ----------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Configuration     | `internal/config`                          | Root `.env` outside production, real env vars always win, required secrets fail boot     |
-| Errors            | `internal/platform/problem`                | RFC 7807 `application/problem+json`, same members and `type` scheme as the NestJS API    |
-| HTTP              | `internal/platform/httpx`                  | `net/http` 1.22 routing, middleware groups, error-returning handlers, JSON helpers        |
-| Authentication    | `internal/platform/auth` + `internal/apikeys` | API keys (`flr_…`, SHA-256 at rest) and HS256 service tokens; one `Principal` for both |
-| Authorization     | `internal/scopes`                          | `resource:read|write` catalog, `write` implies `read`, checked per route and per topic   |
-| WebSocket         | `internal/platform/ws`                     | Hub with topic subscriptions, backpressure, ping keepalive, graceful going-away          |
-| Health            | `internal/health`                          | `/healthz`, `/readyz` with registered checkers, `/health/capabilities`                   |
-| Logging           | `internal/platform/logging`                | `slog`, JSON in production, one access-log line per request with the correlation id     |
+| Configuration     | `internal/config` on `packages/go/config`   | Root `.env` outside production, real env vars always win, required secrets fail boot     |
+| Errors            | `packages/go/core/problem`                  | RFC 7807 `application/problem+json`, same members and `type` scheme as the NestJS API    |
+| HTTP              | `packages/go/httpx`                         | `net/http` 1.22 routing, middleware groups, error-returning handlers, JSON helpers        |
+| Authentication    | `packages/go/auth` + `internal/apikeys`     | API keys (`flr_…`, SHA-256 at rest) and HS256 service tokens; one `Principal` for both   |
+| Authorization     | `internal/scopes` on `packages/go/auth/scope` | This service's `resource:read|write` catalog; `write` implies `read`                   |
+| WebSocket         | `packages/go/ws`                            | Hub with topic subscriptions, backpressure, ping keepalive, graceful going-away          |
+| Health            | `packages/go/health`                        | `/healthz`, `/readyz` with registered checkers, `/health/capabilities`                   |
+| Logging           | `packages/go/core/logging`                  | `slog`, JSON in production, one access-log line per request with the correlation id     |
 | Architecture test | `internal/arch`                            | Fails the build when an import crosses a hexagon boundary                                |
+
+The cross-cutting rows are shared modules under `packages/go/` (see its
+README); this app owns only its config, its scope catalog, its bounded
+contexts and the composition root.
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the layer model and the "add a
 context" cookbook.

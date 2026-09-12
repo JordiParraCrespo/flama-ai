@@ -1,0 +1,16 @@
+{
+  "name": "@flama/go-auth",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bearer authentication, scope grammar and guards, HS256 service tokens",
+  "scripts": {
+    "build": "go build ./...",
+    "lint": "golangci-lint run ./...",
+    "test": "go test -count=1 ./...",
+    "clean": "go clean ./..."
+  },
+  "devDependencies": {
+    "@flama/go-core": "workspace:*",
+    "@flama/go-httpx": "workspace:*"
+  }
+}

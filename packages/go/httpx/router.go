@@ -11,7 +11,7 @@ package httpx
 import (
 	"net/http"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // Middleware wraps a handler.

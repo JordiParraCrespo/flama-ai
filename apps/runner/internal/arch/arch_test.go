@@ -2,16 +2,17 @@
 // apps/api's dependency-cruiser does: a test that fails when an import
 // crosses a boundary it must not.
 //
-// Rules, from the inside out:
-//   - `<ctx>/domain` imports no other internal package except platform/problem
-//     (error catalog entries live next to the aggregate) and scopes.
-//   - `<ctx>/app` imports only its own domain, platform/auth, platform/problem
-//     and scopes — never an adapter, never another context.
-//   - `<ctx>/adapters/*` import their own context's app and domain and the
-//     platform — never another context, never the composition root.
-//   - `platform/*` never imports a bounded context, config, health or server.
-//   - Only `server` (the composition root) and each context's module.go may
-//     import concrete adapters.
+// The shared toolkit lives in packages/go/* and is importable from any
+// layer that the table below allows; the bounded contexts live under
+// internal/ and may never import each other.
+//
+//   - `<ctx>/domain` imports only core/problem, auth/scope and the scope catalog.
+//   - `<ctx>/app` adds auth (the Principal) and core — never an adapter,
+//     never another context.
+//   - `<ctx>/adapters/*` import their own context's app and domain plus any
+//     packages/go module — never another context, never the composition root.
+//   - `<ctx>/module.go` wires only its own context.
+//   - `server` and `config` (the composition root) may import anything.
 package arch
 
 import (
@@ -23,7 +24,10 @@ import (
 	"testing"
 )
 
-const modulePrefix = "github.com/jordiparracrespo/flama-ai/apps/runner/internal/"
+const (
+	modulePrefix = "github.com/jordiparracrespo/flama-ai/apps/runner/internal/"
+	sharedPrefix = "github.com/jordiparracrespo/flama-ai/packages/go/"
+)
 
 var contexts = []string{"apikeys", "jobs"}
 
@@ -45,11 +49,14 @@ func TestImportBoundaries(t *testing.T) {
 		}
 		for _, imp := range f.Imports {
 			target := strings.Trim(imp.Path.Value, `"`)
-			if !strings.HasPrefix(target, modulePrefix) {
-				continue
+			var reason string
+			switch {
+			case strings.HasPrefix(target, modulePrefix):
+				reason = violatesInternal(pkg, strings.TrimPrefix(target, modulePrefix))
+			case strings.HasPrefix(target, sharedPrefix):
+				reason = violatesShared(pkg, strings.TrimPrefix(target, sharedPrefix))
 			}
-			target = strings.TrimPrefix(target, modulePrefix)
-			if reason := violates(pkg, target); reason != "" {
+			if reason != "" {
 				violations = append(violations, rel+" imports "+target+": "+reason)
 			}
 		}
@@ -63,19 +70,32 @@ func TestImportBoundaries(t *testing.T) {
 	}
 }
 
-func violates(from, to string) string {
+// violatesShared decides which packages/go modules a layer may use.
+func violatesShared(from, to string) string {
+	_, layer := split(from)
+	switch layer {
+	case "domain":
+		if to == "core/problem" || to == "auth/scope" {
+			return ""
+		}
+		return "domain may only use core/problem and auth/scope from the shared toolkit"
+	case "app":
+		if to == "auth" || to == "auth/scope" || strings.HasPrefix(to, "core/") {
+			return ""
+		}
+		return "app may only use auth and core from the shared toolkit"
+	}
+	return ""
+}
+
+// violatesInternal decides which internal packages a layer may use.
+func violatesInternal(from, to string) string {
 	fromCtx, fromLayer := split(from)
 	toCtx, _ := split(to)
 
 	switch {
-	case strings.HasPrefix(from, "platform/"):
-		if strings.HasPrefix(to, "platform/") || to == "scopes" {
-			return ""
-		}
-		return "platform must not depend on contexts or the root"
-
 	case fromLayer == "domain":
-		if to == "platform/problem" || to == "scopes" {
+		if to == "scopes" {
 			return ""
 		}
 		return "domain must stay free of infrastructure"
@@ -84,10 +104,10 @@ func violates(from, to string) string {
 		if toCtx == fromCtx && strings.HasSuffix(to, "/domain") {
 			return ""
 		}
-		if to == "platform/auth" || to == "platform/problem" || to == "scopes" {
+		if to == "scopes" {
 			return ""
 		}
-		return "app may only import its domain, auth, problem and scopes"
+		return "app may only import its domain and the scope catalog"
 
 	case strings.HasPrefix(fromLayer, "adapters/"):
 		if toCtx == fromCtx && !strings.Contains(strings.TrimPrefix(to, fromCtx+"/"), "adapters/") {
@@ -97,26 +117,23 @@ func violates(from, to string) string {
 			// The REST adapter reuses the wire struct so both surfaces match.
 			return ""
 		}
-		if strings.HasPrefix(to, "platform/") || to == "scopes" {
+		if to == "scopes" {
 			return ""
 		}
-		return "adapters may only import their own context and the platform"
+		return "adapters may only import their own context and the shared toolkit"
 
-	case fromLayer == "" && fromCtx != "" && isContext(fromCtx):
+	case fromLayer == "" && fromCtx != "":
 		// module.go: the context's own wiring.
-		if toCtx == fromCtx || strings.HasPrefix(to, "platform/") || to == "scopes" {
+		if toCtx == fromCtx || to == "scopes" {
 			return ""
 		}
 		return "a module wires only its own context"
-
-	case from == "server" || from == "health" || from == "config":
-		return ""
 	}
 	return ""
 }
 
-// split turns `jobs/adapters/http` into ("jobs", "adapters/http") and
-// `platform/ws` into ("", "").
+// split turns `jobs/adapters/http` into ("jobs", "adapters/http") and a
+// non-context package into ("", "").
 func split(pkg string) (ctx, layer string) {
 	parts := strings.SplitN(pkg, "/", 2)
 	if !isContext(parts[0]) {

@@ -1,32 +1,25 @@
-// Package config reads the process configuration from the environment.
+// Package config reads the runner's configuration from the environment.
 //
 // The rules match `.agents/rules/api-config.md`: one `.env` at the repo
 // root documents everything; real environment variables win; a required
 // secret missing fails boot; an optional capability missing disables the
-// capability and is reported, never sentinel-defaulted.
+// capability and is reported, never sentinel-defaulted. The loading and
+// parsing machinery lives in packages/go/config; this file is only the
+// list of variables this service reads.
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"time"
-)
 
-// Env is the deployment mode.
-type Env string
-
-const (
-	Development Env = "development"
-	Production  Env = "production"
-	Test        Env = "test"
+	"github.com/jordiparracrespo/flama-ai/packages/go/config"
 )
 
 // Config is the fully parsed, validated configuration.
 type Config struct {
-	Env     Env
+	Env     config.Mode
 	Port    int
 	Version string
 
@@ -71,72 +64,59 @@ type JobsConfig struct {
 // Load resolves configuration. Outside production it also applies the root
 // `.env`, located by walking up from the working directory.
 func Load() (*Config, error) {
-	if env := Env(getenv("RUNNER_ENV", string(Development))); env != Production {
-		if cwd, err := os.Getwd(); err == nil {
-			if root, ok := findWorkspaceRoot(cwd); ok {
-				if err := loadDotenv(root); err != nil {
-					return nil, fmt.Errorf("load .env: %w", err)
-				}
-			}
+	if mode, _ := config.ParseMode(os.Getenv("RUNNER_ENV")); mode != config.Production {
+		if err := config.LoadWorkspaceDotenv(); err != nil {
+			return nil, fmt.Errorf("load .env: %w", err)
 		}
 	}
 	return Parse(os.LookupEnv)
 }
 
 // Parse builds a Config from a lookup function so tests never touch the
-// process environment.
-func Parse(lookup func(string) (string, bool)) (*Config, error) {
-	get := func(key, def string) string {
-		if v, ok := lookup(key); ok && strings.TrimSpace(v) != "" {
-			return v
-		}
-		return def
-	}
-	var errs []error
+// process environment. Every problem is reported in one error.
+func Parse(lookup config.Lookup) (*Config, error) {
+	env := config.NewEnv(lookup)
 
-	cfg := &Config{
-		Env:              Env(get("RUNNER_ENV", string(Development))),
-		Version:          get("RUNNER_VERSION", "dev"),
-		LogLevel:         get("RUNNER_LOG_LEVEL", "info"),
-		ErrorTypeBaseURL: get("ERROR_TYPE_BASE_URL", "https://flama.dev/errors"),
-		BootstrapAPIKey:  get("RUNNER_BOOTSTRAP_API_KEY", ""),
-	}
-	switch cfg.Env {
-	case Development, Production, Test:
-	default:
-		errs = append(errs, fmt.Errorf("RUNNER_ENV must be development, production or test, got %q", cfg.Env))
+	mode, err := config.ParseMode(env.String("RUNNER_ENV", string(config.Development)))
+	if err != nil {
+		env.Failf("RUNNER_ENV %v", err)
 	}
 	defaultFormat := "text"
-	if cfg.Env == Production {
+	if mode == config.Production {
 		defaultFormat = "json"
 	}
-	cfg.LogFormat = get("RUNNER_LOG_FORMAT", defaultFormat)
 
-	cfg.Port = parseInt(get("RUNNER_PORT", "3006"), "RUNNER_PORT", &errs)
-	cfg.TrustProxy = parseInt(get("RUNNER_TRUST_PROXY", "0"), "RUNNER_TRUST_PROXY", &errs)
-	cfg.ShutdownTimeout = parseDuration(get("RUNNER_SHUTDOWN_TIMEOUT", "15s"), "RUNNER_SHUTDOWN_TIMEOUT", &errs)
-	cfg.MaxBodyBytes = int64(parseInt(get("RUNNER_MAX_BODY_BYTES", "1048576"), "RUNNER_MAX_BODY_BYTES", &errs))
-	cfg.Jobs.Workers = parseInt(get("RUNNER_JOB_WORKERS", "4"), "RUNNER_JOB_WORKERS", &errs)
-	cfg.Jobs.QueueSize = parseInt(get("RUNNER_JOB_QUEUE_SIZE", "1024"), "RUNNER_JOB_QUEUE_SIZE", &errs)
-
-	if len(cfg.BootstrapAPIKey) < 32 {
-		errs = append(errs, errors.New("RUNNER_BOOTSTRAP_API_KEY is required and must be at least 32 characters (openssl rand -base64 32)"))
+	cfg := &Config{
+		Env:              mode,
+		Version:          env.String("RUNNER_VERSION", "dev"),
+		LogLevel:         env.String("RUNNER_LOG_LEVEL", "info"),
+		LogFormat:        env.String("RUNNER_LOG_FORMAT", defaultFormat),
+		ErrorTypeBaseURL: env.String("ERROR_TYPE_BASE_URL", "https://flama.dev/errors"),
+		Port:             env.Int("RUNNER_PORT", 3006),
+		TrustProxy:       env.Int("RUNNER_TRUST_PROXY", 0),
+		ShutdownTimeout:  env.Duration("RUNNER_SHUTDOWN_TIMEOUT", 15*time.Second),
+		MaxBodyBytes:     int64(env.Int("RUNNER_MAX_BODY_BYTES", 1<<20)),
+		BootstrapAPIKey:  env.Secret("RUNNER_BOOTSTRAP_API_KEY", 32),
+		Jobs: JobsConfig{
+			Workers:   env.Int("RUNNER_JOB_WORKERS", 4),
+			QueueSize: env.Int("RUNNER_JOB_QUEUE_SIZE", 1024),
+		},
 	}
 
-	if secret := get("RUNNER_JWT_SECRET", ""); secret != "" {
+	if secret := env.Optional("RUNNER_JWT_SECRET"); secret != "" {
 		if len(secret) < 32 {
-			errs = append(errs, errors.New("RUNNER_JWT_SECRET must be at least 32 characters"))
+			env.Failf("RUNNER_JWT_SECRET must be at least 32 characters")
 		}
 		cfg.JWT = &JWTConfig{
 			Secret:   []byte(secret),
-			Issuer:   get("RUNNER_JWT_ISSUER", "flama-runner"),
-			Audience: get("RUNNER_JWT_AUDIENCE", "flama-runner"),
-			TTL:      parseDuration(get("RUNNER_JWT_TTL", "1h"), "RUNNER_JWT_TTL", &errs),
+			Issuer:   env.String("RUNNER_JWT_ISSUER", "flama-runner"),
+			Audience: env.String("RUNNER_JWT_AUDIENCE", "flama-runner"),
+			TTL:      env.Duration("RUNNER_JWT_TTL", time.Hour),
 		}
 	}
 
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
+	if err := env.Err(); err != nil {
+		return nil, err
 	}
 	return cfg, nil
 }
@@ -145,27 +125,4 @@ func Parse(lookup func(string) (string, bool)) (*Config, error) {
 func (c *Config) Addr() string { return ":" + strconv.Itoa(c.Port) }
 
 // IsProduction reports the production mode.
-func (c *Config) IsProduction() bool { return c.Env == Production }
-
-func getenv(key, def string) string {
-	if v := strings.TrimSpace(os.Getenv(key)); v != "" {
-		return v
-	}
-	return def
-}
-
-func parseInt(raw, key string, errs *[]error) int {
-	n, err := strconv.Atoi(strings.TrimSpace(raw))
-	if err != nil || n < 0 {
-		*errs = append(*errs, fmt.Errorf("%s must be a non-negative integer, got %q", key, raw))
-	}
-	return n
-}
-
-func parseDuration(raw, key string, errs *[]error) time.Duration {
-	d, err := time.ParseDuration(strings.TrimSpace(raw))
-	if err != nil || d <= 0 {
-		*errs = append(*errs, fmt.Errorf("%s must be a positive duration like 30s, got %q", key, raw))
-	}
-	return d
-}
+func (c *Config) IsProduction() bool { return c.Env == config.Production }

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // RequestIDHeader is read from the caller when present (so the NestJS API

@@ -7,9 +7,9 @@ import (
 
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/app"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/domain"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // Topic names: `jobs` carries every event, `jobs/<id>` one job's.

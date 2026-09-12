@@ -3,7 +3,7 @@ package domain
 import (
 	"net/http"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // Catalog entries for this context. Each has a row in apps/docs/docs/errors.md.

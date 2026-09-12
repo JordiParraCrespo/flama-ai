@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 )
 
 // DecodeJSON reads a JSON body into v, rejecting unknown fields and trailing

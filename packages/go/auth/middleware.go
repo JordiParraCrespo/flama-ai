@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
 )
 
 // Authenticate requires a `Authorization: Bearer <credential>` header and
@@ -48,7 +48,7 @@ func Authenticate(problems *problem.Writer, logger *slog.Logger, verifiers ...Ve
 // RequireScopes rejects authenticated callers that lack any of the scopes.
 // It must run after Authenticate; a missing principal is a programming
 // error reported as 401 rather than a silent pass.
-func RequireScopes(problems *problem.Writer, required ...scopes.Scope) httpx.Middleware {
+func RequireScopes(problems *problem.Writer, required ...scope.Scope) httpx.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			p := FromContext(r.Context())
@@ -57,20 +57,12 @@ func RequireScopes(problems *problem.Writer, required ...scopes.Scope) httpx.Mid
 				return
 			}
 			if missing := p.Scopes.Missing(required...); len(missing) > 0 {
-				problems.Write(w, r, problem.ErrForbidden.WithDetail("missing scope %s", joinScopes(missing)))
+				problems.Write(w, r, problem.ErrForbidden.WithDetail("missing scope %s", scope.Join(missing)))
 				return
 			}
 			next.ServeHTTP(w, r)
 		})
 	}
-}
-
-func joinScopes(s []scopes.Scope) string {
-	parts := make([]string, len(s))
-	for i, sc := range s {
-		parts[i] = string(sc)
-	}
-	return strings.Join(parts, ", ")
 }
 
 func bearer(r *http.Request) (string, bool) {

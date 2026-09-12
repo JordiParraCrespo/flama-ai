@@ -13,12 +13,12 @@ import (
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys"
 	keysapp "github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/app"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/config"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/health"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/ws"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/health"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
+	"github.com/jordiparracrespo/flama-ai/packages/go/ws"
 )
 
 // Capability names reported by /health/capabilities.

@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
+
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/domain"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
 )
@@ -15,7 +17,7 @@ func TestTouchDoesNotReviveRevokedKey(t *testing.T) {
 	ctx := context.Background()
 	repo := New()
 	now := time.Now()
-	key, _, err := domain.Generate("k", []scopes.Scope{scopes.JobsRead}, "b", nil, now)
+	key, _, err := domain.Generate("k", []scope.Scope{scopes.JobsRead}, "b", nil, now)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -16,8 +16,8 @@ import (
 	"github.com/coder/websocket/wsjson"
 
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/config"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/ws"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/ws"
 )
 
 const bootstrap = "test-bootstrap-key-0123456789abcdef0123456789"

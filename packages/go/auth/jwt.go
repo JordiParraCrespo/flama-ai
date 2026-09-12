@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
 )
 
 // JWTOptions configure the service-token verifier and issuer.
@@ -74,21 +74,17 @@ func (j *JWT) Verify(_ context.Context, token string) (*Principal, error) {
 	if claims.Subject == "" {
 		return nil, fmt.Errorf("%w: missing sub", ErrInvalidCredential)
 	}
-	granted, err := scopes.ParseAll(strings.Fields(claims.Scope))
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrInvalidCredential, err)
-	}
 	return &Principal{
 		ID:     claims.Subject,
 		Name:   claims.Name,
 		Kind:   KindService,
-		Scopes: scopes.NewSet(granted...),
+		Scopes: scope.ParseSet(claims.Scope),
 	}, nil
 }
 
 // Issue mints a token for subject with the scopes, valid for ttl. Callers
 // (the api-keys use case, an agent-bootstrap flow) decide who deserves one.
-func (j *JWT) Issue(subject, name string, granted scopes.Set, ttl time.Duration, now time.Time) (string, error) {
+func (j *JWT) Issue(subject, name string, granted scope.Set, ttl time.Duration, now time.Time) (string, error) {
 	claims := Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   subject,

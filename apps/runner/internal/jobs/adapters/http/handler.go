@@ -9,10 +9,10 @@ import (
 	wsadapter "github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/adapters/ws"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/app"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/domain"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
 )
 
 // Handler exposes the job use cases.

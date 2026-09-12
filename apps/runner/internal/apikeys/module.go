@@ -9,8 +9,8 @@ import (
 	httpadapter "github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/adapters/http"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/adapters/memory"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/app"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/httpx"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
+	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
 )
 
 // Module bundles the context's wiring. main builds one and mounts it.

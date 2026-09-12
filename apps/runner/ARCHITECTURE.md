@@ -3,21 +3,25 @@
 The service is a hexagon, the same shape as `apps/api`, expressed in idiomatic
 Go: interfaces for ports, constructors for injection, `internal/` for
 everything not meant to be imported, and one composition root that is the
-only place concrete adapters are named.
+only place concrete adapters are named. Everything domain-agnostic lives in
+the shared modules under `packages/go/` (the Go counterpart of
+`packages/backend/*`); this app holds only what is specific to it.
 
 ```
+packages/go/                  shared toolkit, one Go module each (see its README)
+  core/problem core/logging   RFC 7807 documents, slog setup
+  config/                     root .env loader, typed env accessors
+  httpx/                      router, middleware, JSON, server lifecycle
+  auth/ auth/scope            Principal, bearer middleware, scope grammar + guard, JWT
+  health/                     /healthz /readyz /health/capabilities
+  ws/                         hub, connection, envelope, upgrade handler
+
+apps/runner/
 cmd/server/main.go            signals, config, logger → server.New → httpx.Serve
 internal/
   server/                     composition root: the only importer of adapters
-  config/                     env → Config; loads the root .env outside production
-  scopes/                     credential scope catalog (resource:read|write)
-  health/                     /healthz /readyz /health/capabilities
-  platform/                   cross-cutting, domain-agnostic
-    problem/                  RFC 7807 documents and the shared error catalog
-    httpx/                    router, middleware, JSON, server lifecycle
-    auth/                     Principal, bearer middleware, scope guard, JWT
-    ws/                       hub, connection, envelope, upgrade handler
-    logging/                  slog setup
+  config/                     the variables this service reads → Config
+  scopes/                     this service's scope catalog on auth/scope
   apikeys/                    bounded context: credentials
   jobs/                       bounded context: the example workload
     domain/                   aggregate, invariants, events, error catalog
@@ -32,14 +36,14 @@ internal/
 
 ## Layers and the rule between them
 
-| Layer      | May import                                                  | Never imports                       |
-| ---------- | ----------------------------------------------------------- | ----------------------------------- |
-| `domain`   | `platform/problem` (its catalog entries), `scopes`          | anything else                       |
-| `app`      | its own `domain`, `platform/auth`, `platform/problem`, `scopes` | adapters, other contexts        |
-| `adapters` | its own `app` and `domain`, `platform/*`, `scopes`          | other contexts, `server`            |
-| `platform` | other `platform` packages, `scopes`                         | any context, `config`, `server`     |
-| `module.go`| its own context, `platform/*`                               | other contexts                      |
-| `server`   | everything                                                  | —                                   |
+| Layer         | May import                                                       | Never imports                    |
+| ------------- | ---------------------------------------------------------------- | -------------------------------- |
+| `domain`      | `core/problem` (its catalog entries), `auth/scope`, `scopes`     | anything else                    |
+| `app`         | its own `domain`, `auth`, `core/*`, `scopes`                     | adapters, other contexts         |
+| `adapters`    | its own `app` and `domain`, any `packages/go` module, `scopes`   | other contexts, `server`         |
+| `module.go`   | its own context, any `packages/go` module                        | other contexts                   |
+| `server`      | everything                                                       | —                                |
+| `packages/go` | other `packages/go` modules                                      | any app                          |
 
 `internal/arch/arch_test.go` enforces the table. It walks every non-test file,
 parses imports only, and fails with the offending file and rule. It is the
@@ -114,7 +118,7 @@ socket with `1001 Going Away` before the HTTP drain.
    repository so tests need nothing external.
 4. `internal/<name>/module.go` — `Options` + `New` + `Mount`.
 5. Add the context name to `contexts` in `internal/arch/arch_test.go` and
-   its scopes to `internal/scopes`.
+   its scopes to `internal/scopes` (the grammar is `packages/go/auth/scope`).
 6. Wire it in `internal/server/server.go`.
 
 ## Next steps this template leaves open

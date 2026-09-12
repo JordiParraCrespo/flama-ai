@@ -1,3 +1,7 @@
+// Package config is the environment-loading toolkit every Go service
+// shares: the root .env loader that mirrors @flama/env, and typed accessors
+// that collect every parse error so a misconfigured process reports all of
+// them at once.
 package config
 
 import (
@@ -12,8 +16,8 @@ import (
 // pnpm workspace is exactly what `@flama/env` looks for.
 const workspaceMarker = "pnpm-workspace.yaml"
 
-// findWorkspaceRoot walks up from dir until it finds the marker.
-func findWorkspaceRoot(dir string) (string, bool) {
+// FindWorkspaceRoot walks up from dir until it finds the marker.
+func FindWorkspaceRoot(dir string) (string, bool) {
 	for {
 		if _, err := os.Stat(filepath.Join(dir, workspaceMarker)); err == nil {
 			return dir, true
@@ -26,11 +30,11 @@ func findWorkspaceRoot(dir string) (string, bool) {
 	}
 }
 
-// loadDotenv applies the root `.env` then `.env.local` (local wins between
+// LoadDotenv applies the root `.env` then `.env.local` (local wins between
 // the files) without overwriting anything already in the environment — real
 // variables always win, which is what makes the same binary correct in CI
 // and in a container. A missing file is not an error.
-func loadDotenv(root string) error {
+func LoadDotenv(root string) error {
 	for _, name := range []string{".env.local", ".env"} {
 		if err := applyFile(filepath.Join(root, name)); err != nil {
 			return err

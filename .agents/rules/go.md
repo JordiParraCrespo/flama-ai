@@ -1,13 +1,36 @@
 ---
 paths:
   - "apps/runner/**/*"
+  - "packages/go/**/*"
+  - "go.work"
 ---
 
 # Go Service Rules
 
-`apps/runner` is the Go template for services the NestJS API delegates to.
-It is the same hexagon as `apps/api`, written the way the Go community writes
-services — not a port of NestJS idioms.
+`apps/runner` is the Go template for services the NestJS API delegates to,
+and `packages/go/*` is the shared toolkit it is built from — the Go
+counterpart of `packages/backend/*`. It is the same hexagon as `apps/api`,
+written the way the Go community writes services — not a port of NestJS
+idioms.
+
+## Modules and the workspace
+
+- Every directory under `packages/go/` is its own Go module
+  (`github.com/jordiparracrespo/flama-ai/packages/go/<name>`), listed in the
+  root `go.work`. Each module's `go.mod` carries a `require` **and** a
+  relative `replace` for every sibling it imports, transitively — `go mod
+  tidy` ignores `go.work`, and the Docker build must work without it.
+- A shared module never imports an app. Anything a second service could use
+  goes to `packages/go`; anything that names jobs, keys or this service's
+  scopes stays in the app.
+- Each module has a `package.json` (`@flama/go-<name>`) whose scripts call
+  `go` directly (the CI runners have no `make`), and declares the sibling
+  modules it imports as `workspace:*` devDependencies. That declaration is
+  the Turborepo graph: without it `--affected` and `^build` do not see the
+  edge. New module ⇒ `go.work`, `package.json`, `pnpm install`.
+- The repo root is not a module: use
+  `go test github.com/jordiparracrespo/flama-ai/...` or
+  `make -C packages/go <target>`, never `./...` from the root.
 
 ## Layout and boundaries
 
@@ -16,11 +39,11 @@ services — not a port of NestJS idioms.
 - `internal/server` is the **composition root**: the only package that names
   concrete adapters. A context's `module.go` may pick its own defaults.
 - A bounded context is `internal/<name>/{domain,app,adapters/*,module.go}`.
-  `domain` imports nothing but `platform/problem` and `scopes`; `app` imports
-  its domain and the `auth`/`problem` platform packages; adapters import their
-  own context and `platform`. `internal/arch/arch_test.go` fails the build on
-  anything else — add every new context to its `contexts` list.
-- `platform/*` is domain-agnostic. If a platform package needs to know about
+  `domain` imports nothing but `core/problem`, `auth/scope` and the app's
+  `scopes`; `app` adds `auth` and `core`; adapters import their own context
+  and any `packages/go` module. `internal/arch/arch_test.go` fails the build
+  on anything else — add every new context to its `contexts` list.
+- `packages/go/*` is domain-agnostic. If a shared module needs to know about
   jobs or keys, invert it: declare an interface or callback (`ws.Authorizer`,
   `auth.Verifier`) and let the context supply it.
 
@@ -52,8 +75,9 @@ services — not a port of NestJS idioms.
 
 - Every route under `/v1` sits behind `auth.Authenticate`; scope checks are
   `auth.RequireScopes` on a router group, never inline `if` checks.
-- New resources get scopes in `internal/scopes` (`resource:read|write`;
-  `write` implies `read`). Keys and tokens can only carry scopes their minter
+- New resources get scopes in the app's `internal/scopes` catalog
+  (`resource:read|write`; `write` implies `read`); the grammar and `Set`
+  live in `packages/go/auth/scope` and are never redefined per service. Keys and tokens can only carry scopes their minter
   holds — keep that check in the use case.
 - Secrets are compared with `crypto/subtle.ConstantTimeCompare`, stored as
   SHA-256 (they are 256-bit random, not passwords), and never logged. A
@@ -82,8 +106,9 @@ services — not a port of NestJS idioms.
 
 ## Tooling
 
-- `make lint` (golangci-lint, config in `.golangci.yml`) and `make test` are
-  what CI runs; `make test-race` is local only (the runners have no C
+- `make -C packages/go lint` (golangci-lint, config in the root
+  `.golangci.yml`) and `make -C packages/go test` are what CI runs across
+  the workspace; `make test-race` is local only (the runners have no C
   compiler). All three must be clean before a push that touches goroutines.
 - Add a dependency only when the standard library cannot do the job, and pin
   it in `go.mod` with `go mod tidy`.

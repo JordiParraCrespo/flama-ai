@@ -6,8 +6,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
+
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/domain"
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
 )
 
 // ErrNotFound is what a Repository returns for an unknown id; the use case
@@ -28,7 +29,7 @@ type Repository interface {
 // TokenIssuer mints service JWTs. Nil in the service means the capability
 // is off.
 type TokenIssuer interface {
-	Issue(subject, name string, granted scopes.Set, ttl time.Duration, now time.Time) (string, error)
+	Issue(subject, name string, granted scope.Set, ttl time.Duration, now time.Time) (string, error)
 }
 
 // Clock is injectable time.

@@ -9,5 +9,13 @@
     "lint": "golangci-lint run ./...",
     "test": "go test -count=1 ./...",
     "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@flama/go-auth": "workspace:*",
+    "@flama/go-config": "workspace:*",
+    "@flama/go-core": "workspace:*",
+    "@flama/go-health": "workspace:*",
+    "@flama/go-httpx": "workspace:*",
+    "@flama/go-ws": "workspace:*"
   }
 }

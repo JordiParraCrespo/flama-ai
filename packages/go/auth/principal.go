@@ -1,4 +1,4 @@
-// Package auth authenticates machine callers and enforces scopes.
+// Package auth authenticates machine callers and enforces scope.
 //
 // This service is never called by a browser: the NestJS API talks to it with
 // an API key, and agents it manages (runners, VMs) talk to it with a
@@ -9,7 +9,7 @@ package auth
 import (
 	"context"
 
-	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/scopes"
+	"github.com/jordiparracrespo/flama-ai/packages/go/auth/scope"
 )
 
 // Kind says which credential type authenticated the caller.
@@ -31,11 +31,11 @@ type Principal struct {
 	Name string
 	Kind Kind
 	// Scopes the credential was granted.
-	Scopes scopes.Set
+	Scopes scope.Set
 }
 
 // Can reports whether the principal satisfies every scope.
-func (p *Principal) Can(required ...scopes.Scope) bool {
+func (p *Principal) Can(required ...scope.Scope) bool {
 	return p != nil && p.Scopes.HasAll(required...)
 }
 

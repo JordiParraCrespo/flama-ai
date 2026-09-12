@@ -29,13 +29,35 @@ with interfaces, constructors and package visibility:
 | Guards               | `@UseGuards`, `@CheckPolicies`       | `auth.Authenticate`, `auth.RequireScopes` on groups  |
 | Boundary enforcement | dependency-cruiser                   | `internal/arch/arch_test.go`                         |
 
+## Shared modules, the Go `packages/backend`
+
+Everything domain-agnostic lives in `packages/go/*`, one Go module per
+concern, tied together by a `go.work` at the repo root:
+
+| Module   | Turborepo name     | Provides                                                   |
+| -------- | ------------------ | ---------------------------------------------------------- |
+| `core`   | `@flama/go-core`   | RFC 7807 documents, slog setup                             |
+| `config` | `@flama/go-config` | Root `.env` loader, typed accessors that collect errors    |
+| `httpx`  | `@flama/go-httpx`  | Router with middleware groups, JSON helpers, server        |
+| `auth`   | `@flama/go-auth`   | Bearer middleware, `Principal`, scope grammar, JWT         |
+| `health` | `@flama/go-health` | Liveness, readiness, capabilities                          |
+| `ws`     | `@flama/go-ws`     | WebSocket hub with backpressure and keepalive              |
+
+Each module has a `package.json` whose scripts call `go` directly and which
+declares the sibling modules it imports as workspace dependencies. That is
+what lets Turborepo order builds, run `--affected` and invalidate caches
+correctly: a change in `core` re-runs everything above it while `config`
+stays cached. Every module also carries relative `replace` directives so it
+builds and tidies on its own, which is what the Docker build relies on.
+
 ## What the template ships
 
 - **Config** from the root `.env` outside production, real env vars winning,
   the bootstrap key required, service tokens optional and reported on
   `/health/capabilities`.
-- **Errors** as the same RFC 7807 documents the API produces, with the runner
-  catalog listed on the [error reference](../errors.md#runner-service).
+- **Errors** as the same RFC 7807 documents the API produces (from
+  `packages/go/core/problem`), with the runner catalog listed on the
+  [error reference](../errors.md#runner-service).
 - **Authentication** by API key (`flr_…`, SHA-256 at rest, revocable,
   scoped) or HS256 service token, both resolving to one `Principal`.
 - **Scopes** in the `resource:read|write` vocabulary of the
@@ -59,12 +81,14 @@ in-memory repositories give way to Postgres.
 ## Running and building
 
 ```bash
-pnpm --filter @flama/runner dev      # make dev, reads the root .env
-pnpm --filter @flama/runner test     # go test + the boundary test
-docker build -f apps/runner/Dockerfile .   # distroless, non-root, ~10 MB
+pnpm --filter @flama/runner dev                 # reads the root .env
+pnpm turbo run test --filter='./packages/go/*'  # the shared modules
+make -C packages/go test                        # every Go module in go.work
+docker build -f apps/runner/Dockerfile .        # distroless, non-root, ~10 MB
 ```
 
-CI runs `go vet`, `golangci-lint` and the tests in a dedicated job (the race
-detector needs a C compiler the runners lack, so `make test-race` is a local
-step) and publishes the image alongside the Node ones. See
+CI runs `go vet`, `golangci-lint` and the tests across the whole workspace
+in a dedicated job (the race detector needs a C compiler the runners lack,
+so `make test-race` is a local step), builds the Go packages through
+Turborepo like the Node ones, and publishes the image alongside them. See
 `apps/runner/ARCHITECTURE.md` for the "add a bounded context" cookbook.
