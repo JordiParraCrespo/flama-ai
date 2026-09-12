@@ -1,0 +1,13 @@
+{
+  "name": "@flama/runner",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Go service template: REST + WebSocket, API-key and service-token auth, hexagonal modules",
+  "scripts": {
+    "build": "make build",
+    "dev": "make dev",
+    "lint": "make lint",
+    "test": "make test-race",
+    "clean": "make clean"
+  }
+}

@@ -26,6 +26,27 @@ jobs:
       - name: Architecture boundaries
         run: pnpm arch
 
+  go:
+    name: Go (apps/runner)
+    runs-on: gha-vm
+    defaults:
+      run:
+        working-directory: apps/runner
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/runner/go.mod
+          cache-dependency-path: apps/runner/go.sum
+      - run: go mod verify
+      - run: go vet ./...
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.5
+          working-directory: apps/runner
+      - run: go test -race -count=1 ./...
+      - run: go build -trimpath ./cmd/server
+
   test:
     name: Test
     runs-on: gha-vm
@@ -37,6 +58,12 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # Turborepo builds and tests apps/runner through its package.json
+      # scripts, so the Go toolchain has to be present here too.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/runner/go.mod
+          cache-dependency-path: apps/runner/go.sum
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
@@ -52,6 +79,10 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/runner/go.mod
+          cache-dependency-path: apps/runner/go.sum
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test:integration
@@ -59,13 +90,13 @@ jobs:
   build-images:
     name: Build Docker Images
     runs-on: gha-vm
-    needs: [test, test-integration]
+    needs: [test, test-integration, go]
     permissions:
       contents: read
       packages: write
     strategy:
       matrix:
-        app: [api, web, admin-web, docs, mcp]
+        app: [api, web, admin-web, docs, mcp, runner]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Lowercase repository name

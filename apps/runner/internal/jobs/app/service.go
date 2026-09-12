@@ -1,0 +1,258 @@
+package app
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log/slog"
+	"sync"
+	"time"
+
+	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/domain"
+	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/auth"
+	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/platform/problem"
+)
+
+// Service owns the job lifecycle and the worker pool that drives it.
+type Service struct {
+	repo    Repository
+	runners map[string]Runner
+	pub     Publisher
+	logger  *slog.Logger
+	now     func() time.Time
+	newID   IDGenerator
+
+	queue   chan string
+	workers int
+
+	mu      sync.Mutex
+	running map[string]context.CancelFunc
+	wg      sync.WaitGroup
+}
+
+// Options wire the service.
+type Options struct {
+	Repository Repository
+	Runners    map[string]Runner
+	Publisher  Publisher
+	Logger     *slog.Logger
+	Workers    int
+	QueueSize  int
+	Clock      func() time.Time
+	IDs        IDGenerator
+}
+
+// New builds the service. Start must be called to process the queue.
+func New(opts Options) *Service {
+	now := opts.Clock
+	if now == nil {
+		now = time.Now
+	}
+	ids := opts.IDs
+	if ids == nil {
+		ids = randomID
+	}
+	if opts.Workers <= 0 {
+		opts.Workers = 1
+	}
+	if opts.QueueSize <= 0 {
+		opts.QueueSize = 1
+	}
+	pub := opts.Publisher
+	if pub == nil {
+		pub = PublisherFunc(func(context.Context, domain.Event) {})
+	}
+	return &Service{
+		repo:    opts.Repository,
+		runners: opts.Runners,
+		pub:     pub,
+		logger:  opts.Logger,
+		now:     now,
+		newID:   ids,
+		queue:   make(chan string, opts.QueueSize),
+		workers: opts.Workers,
+		running: map[string]context.CancelFunc{},
+	}
+}
+
+func randomID() string {
+	var b [12]byte
+	_, _ = rand.Read(b[:])
+	return hex.EncodeToString(b[:])
+}
+
+// Kinds lists the registered runners, for capability listings.
+func (s *Service) Kinds() []string {
+	out := make([]string, 0, len(s.runners))
+	for k := range s.runners {
+		out = append(out, k)
+	}
+	return out
+}
+
+// SubmitInput is a new job request.
+type SubmitInput struct {
+	Kind    string
+	Payload json.RawMessage
+}
+
+// Submit validates, persists and enqueues a job. It returns 429 when the
+// queue is full rather than blocking the caller.
+func (s *Service) Submit(ctx context.Context, in SubmitInput) (domain.Job, error) {
+	caller := auth.FromContext(ctx)
+	if caller == nil {
+		return domain.Job{}, problem.ErrUnauthorized
+	}
+	job, err := domain.New(s.newID(), in.Kind, in.Payload, caller.ID, s.now())
+	if errors.Is(err, domain.ErrKindRequired) {
+		return domain.Job{}, problem.ErrValidation.WithInvalidParams(problem.InvalidParam{Name: "kind", Reason: "required"})
+	}
+	if err != nil {
+		return domain.Job{}, err
+	}
+	if _, ok := s.runners[job.Kind]; !ok {
+		return domain.Job{}, domain.ErrUnknownKind.WithDetail("kind %q; registered: %v", job.Kind, s.Kinds())
+	}
+	if err := s.repo.Save(ctx, job); err != nil {
+		return domain.Job{}, fmt.Errorf("save job: %w", err)
+	}
+	select {
+	case s.queue <- job.ID:
+	default:
+		_ = job.Cancel(s.now())
+		_ = s.repo.Save(ctx, job)
+		return domain.Job{}, domain.ErrQueueFull.WithDetail("capacity %d", cap(s.queue))
+	}
+	s.pub.Publish(ctx, domain.Event{Name: domain.EventQueued, Job: job})
+	return job, nil
+}
+
+// Get returns a job.
+func (s *Service) Get(ctx context.Context, id string) (domain.Job, error) {
+	job, err := s.repo.FindByID(ctx, id)
+	if errors.Is(err, ErrNotFound) {
+		return domain.Job{}, domain.ErrJobNotFound.WithDetail("job %q", id)
+	}
+	return job, err
+}
+
+// List returns jobs newest first.
+func (s *Service) List(ctx context.Context, filter ListFilter) ([]domain.Job, error) {
+	if filter.Limit <= 0 || filter.Limit > 200 {
+		filter.Limit = 50
+	}
+	return s.repo.List(ctx, filter)
+}
+
+// Cancel stops a queued or running job. A running job's context is
+// cancelled and the runner is expected to return promptly.
+func (s *Service) Cancel(ctx context.Context, id string) (domain.Job, error) {
+	job, err := s.Get(ctx, id)
+	if err != nil {
+		return domain.Job{}, err
+	}
+	if err := job.Cancel(s.now()); err != nil {
+		return domain.Job{}, domain.ErrInvalidTransition.WithDetail("%s", err.Error())
+	}
+	if err := s.repo.Save(ctx, job); err != nil {
+		return domain.Job{}, fmt.Errorf("save job: %w", err)
+	}
+	s.mu.Lock()
+	if cancel, ok := s.running[id]; ok {
+		cancel()
+	}
+	s.mu.Unlock()
+	s.pub.Publish(ctx, domain.Event{Name: domain.EventCancelled, Job: job})
+	return job, nil
+}
+
+// Start launches the worker pool. Workers stop when ctx is cancelled;
+// Wait blocks until they have.
+func (s *Service) Start(ctx context.Context) {
+	for i := 0; i < s.workers; i++ {
+		s.wg.Add(1)
+		go func(n int) {
+			defer s.wg.Done()
+			log := s.logger.With(slog.Int("worker", n))
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case id := <-s.queue:
+					s.execute(ctx, log, id)
+				}
+			}
+		}(i)
+	}
+}
+
+// Wait blocks until every worker has exited.
+func (s *Service) Wait() { s.wg.Wait() }
+
+// Depth is the number of queued job ids, for readiness and metrics.
+func (s *Service) Depth() int { return len(s.queue) }
+
+func (s *Service) execute(ctx context.Context, log *slog.Logger, id string) {
+	job, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		log.Error("queued job vanished", slog.String("jobId", id), slog.Any("error", err))
+		return
+	}
+	if job.Status != domain.StatusQueued {
+		// Cancelled while waiting.
+		return
+	}
+	if err := job.Start(s.now()); err != nil {
+		return
+	}
+	if err := s.repo.Save(ctx, job); err != nil {
+		log.Error("could not mark job running", slog.String("jobId", id), slog.Any("error", err))
+		return
+	}
+	s.pub.Publish(ctx, domain.Event{Name: domain.EventStarted, Job: job})
+
+	runCtx, cancel := context.WithCancel(ctx)
+	s.mu.Lock()
+	s.running[id] = cancel
+	s.mu.Unlock()
+	defer func() {
+		cancel()
+		s.mu.Lock()
+		delete(s.running, id)
+		s.mu.Unlock()
+	}()
+
+	runErr := s.run(runCtx, job)
+
+	// Re-read: Cancel may have moved it while we were running.
+	current, err := s.repo.FindByID(ctx, id)
+	if err != nil || current.Status != domain.StatusRunning {
+		return
+	}
+	now := s.now()
+	if runErr != nil {
+		_ = current.Fail(runErr.Error(), now)
+		log.Warn("job failed", slog.String("jobId", id), slog.String("kind", job.Kind), slog.Any("error", runErr))
+	} else {
+		_ = current.Succeed(now)
+		log.Info("job succeeded", slog.String("jobId", id), slog.String("kind", job.Kind), slog.Duration("took", now.Sub(*current.StartedAt)))
+	}
+	if err := s.repo.Save(ctx, current); err != nil {
+		log.Error("could not persist job result", slog.String("jobId", id), slog.Any("error", err))
+		return
+	}
+	s.pub.Publish(ctx, domain.Event{Name: domain.EventFinished, Job: current})
+}
+
+// run isolates a runner panic to the job it was executing.
+func (s *Service) run(ctx context.Context, job domain.Job) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("runner panicked: %v", r)
+		}
+	}()
+	return s.runners[job.Kind].Run(ctx, job)
+}
