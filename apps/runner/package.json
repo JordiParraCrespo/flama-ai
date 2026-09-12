@@ -4,10 +4,10 @@
   "private": true,
   "description": "Go service template: REST + WebSocket, API-key and service-token auth, hexagonal modules",
   "scripts": {
-    "build": "make build",
-    "dev": "make dev",
-    "lint": "make lint",
-    "test": "make test",
-    "clean": "make clean"
+    "build": "go build -trimpath -o dist/runner ./cmd/server",
+    "dev": "go run ./cmd/server",
+    "lint": "golangci-lint run ./...",
+    "test": "go test -count=1 ./...",
+    "clean": "rm -rf dist"
   }
 }

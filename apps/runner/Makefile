@@ -1,5 +1,5 @@
-# Contributor entrypoints. `pnpm --filter @flama/runner <script>` calls these
-# so Turborepo can orchestrate the Go app like the Node ones.
+# Contributor entrypoints. package.json mirrors the CI-relevant ones by
+# calling `go` directly, because the CI runners have no make.
 GO      ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)
