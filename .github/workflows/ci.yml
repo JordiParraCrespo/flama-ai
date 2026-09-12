@@ -45,6 +45,8 @@ jobs:
           version: v2.5
           working-directory: apps/runner
       - run: go test -race -count=1 ./...
+        env:
+          CGO_ENABLED: "1"
       - run: go build -trimpath ./cmd/server
 
   test:

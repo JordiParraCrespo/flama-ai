@@ -21,8 +21,10 @@ vet:
 test:
 	$(GO) test ./...
 
+# The race detector needs cgo; runners that default to CGO_ENABLED=0 would
+# otherwise refuse the flag outright.
 test-race:
-	$(GO) test -race -count=1 ./...
+	CGO_ENABLED=1 $(GO) test -race -count=1 ./...
 
 tidy:
 	$(GO) mod tidy
