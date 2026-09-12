@@ -1,5 +1,29 @@
 # QA scenario pack — porting the strategy from adri-rodrigo-seo-crm
 
+## Lineage
+
+The strategy originates in [openclaw/openclaw](https://github.com/openclaw/openclaw)'s
+`qa/` directory: a repo-backed scenario pack (`qa/scenarios/index.yaml` plus
+one `scenarios/<theme>/<slug>.yaml` per runnable scenario), a `qa suite`
+that runs the selected set and writes `qa-suite-report.md` / `qa-evidence.json`,
+`qa coverage` as the inventory, and a `maturity-scores.yaml` that scores each
+surface separately from coverage. adri-rodrigo-seo-crm ported that shape into
+a product-shaped pack for a CRM: same file layout, same commands, but
+Playwright specs bound by id instead of OpenClaw's YAML `flow` runner, and
+seeded Postgres fixtures instead of gateway config patches.
+
+What OpenClaw has that the CRM port dropped, and what to do with each here:
+
+| OpenClaw piece                                                    | CRM port | flama-ai decision                                                                                                     |
+| ----------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `coverage.primary` / `secondary` ids from a `taxonomy.yaml`        | dropped  | **Carry.** A small `qa/taxonomy.yaml` of `surface.feature` ids (auth.password-reset, permissions.self-escalation…). |
+| `docsRefs` / `codeRefs` on every scenario                          | dropped  | **Carry.** Cheap, and `qa coverage --match <path>` becomes possible: touched a file, find the scenario that proves it. |
+| `execution.kind: vitest \| playwright \| script` + `execution.path` | dropped  | **Carry as `playwright` only.** Lets an existing `e2e/tests/web/*.spec.ts` count as a scenario's evidence without rewriting it. |
+| `suiteIsolation` / `parallelSafe`                                  | dropped  | Skip. The pack runs with one worker; fixtures own their organizations.                                                |
+| Kickoff mission, operator identity, agent-driven `qa manual`       | dropped  | Skip. No agent runs this pack; a person reads the report.                                                             |
+| Maturity as quality/completeness scores per surface                | reduced to `depth` + `not-yet` | Keep the CRM's honest prose form; add a numeric `completeness` only once a theme has more than five scenarios.         |
+| Provider modes, live channel lanes, Convex credential pool         | dropped  | Not applicable.                                                                                                       |
+
 ## What is being ported
 
 `adri-rodrigo-seo-crm` carries a `qa/` workspace package (`@flama/qa`) that is
@@ -19,6 +43,7 @@ the truth" — and it has its own equipment for it:
 | `qa/src/mail-sink.ts`       | Reads reset/invitation links out of the API log (`EMAIL_PROVIDER=console`). Counts first, waits for one more.   |
 | `qa/bin/qa-env.sh`          | Brings up Postgres, Redis, API on 3001, web on 3000; docker compose first, local Postgres/Redis as fallback.      |
 | `qa/maturity.yaml`          | Per theme: what the pack reaches and what it does not yet. Separate from coverage on purpose.                    |
+| `qa/taxonomy.yaml` (new)    | Coverage ids a scenario may claim, so `coverage --match` can answer "what proves this file". From OpenClaw.       |
 
 The strategy underneath, which is the part that has to survive the port:
 
@@ -91,6 +116,11 @@ The strategy underneath, which is the part that has to survive the port:
   section stays: the ownership rule and the tenant-admin rule both apply here).
 - `scenarios/index.yaml`: `pack: flama-ai — auth, permissions & dashboard QA`,
   environment with `web`, `adminWeb`, `api`, `apiHealth`, `mailSink: log`.
+- `src/scenarios.ts`: extend the schema with OpenClaw's `coverage: {primary, secondary}`,
+  `docsRefs`, `codeRefs` and optional `execution: {kind: playwright, path}`;
+  validate coverage ids against `qa/taxonomy.yaml`. `cli.ts` gains
+  `coverage --match <query>` over ids, titles, refs and coverage ids, and
+  `suite` runs `execution.path` specs from `e2e/` for scenarios that declare one.
 - Acceptance: `pnpm --filter @flama/qa coverage` prints an empty inventory,
   `qa/bin/qa-env.sh up` reaches `ready`, `pnpm --filter @flama/qa lint` passes.
 
