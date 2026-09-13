@@ -14,9 +14,10 @@ directives so it stays buildable and tidy-able on its own.
 | `health`     | `@flama/go-health` | `/healthz`, `/readyz` with registered checkers, `/health/capabilities`           |
 | `auth`       | `@flama/go-auth`   | Bearer middleware, `Principal`, scope grammar and guard, HS256 service tokens    |
 | `ws`         | `@flama/go-ws`     | WebSocket hub: topics, backpressure, keepalive, graceful going-away              |
+| `postgres`   | `@flama/go-postgres` | Pooled `pgx` connection, forward-only SQL migrator (advisory-locked), readiness checker |
 
-Dependency flow: `core` ← `httpx` ← `health`, `auth` ← `ws`; `config` stands
-alone. A module never imports an app.
+Dependency flow: `core` ← `httpx` ← `health`, `auth` ← `ws`; `config` and
+`postgres` stand alone. A module never imports an app.
 
 ## How Turborepo sees them
 

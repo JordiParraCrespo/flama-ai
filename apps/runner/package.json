@@ -16,6 +16,7 @@
     "@flama/go-core": "workspace:*",
     "@flama/go-health": "workspace:*",
     "@flama/go-httpx": "workspace:*",
+    "@flama/go-postgres": "workspace:*",
     "@flama/go-ws": "workspace:*"
   }
 }

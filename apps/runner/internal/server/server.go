@@ -11,20 +11,27 @@ import (
 	"time"
 
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys"
+	keyspg "github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/adapters/postgres"
 	keysapp "github.com/jordiparracrespo/flama-ai/apps/runner/internal/apikeys/app"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/config"
 	"github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs"
+	jobspg "github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/adapters/postgres"
+	jobsapp "github.com/jordiparracrespo/flama-ai/apps/runner/internal/jobs/app"
 	"github.com/jordiparracrespo/flama-ai/packages/go/auth"
 	"github.com/jordiparracrespo/flama-ai/packages/go/core/problem"
 	"github.com/jordiparracrespo/flama-ai/packages/go/health"
 	"github.com/jordiparracrespo/flama-ai/packages/go/httpx"
+	pg "github.com/jordiparracrespo/flama-ai/packages/go/postgres"
 	"github.com/jordiparracrespo/flama-ai/packages/go/ws"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Capability names reported by /health/capabilities.
 const (
 	CapabilityServiceTokens = "service_tokens"
 	CapabilityWebSocket     = "websocket"
+	CapabilityPostgres      = "postgres"
 )
 
 // Server is the assembled application.
@@ -34,10 +41,12 @@ type Server struct {
 	Jobs    *jobs.Module
 	APIKeys *apikeys.Module
 	Health  *health.Module
+	// pool is non-nil when RUNNER_DATABASE_URL is set; closed on Shutdown.
+	pool *pgxpool.Pool
 }
 
 // New builds the application. Nothing starts running until Start.
-func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
+func New(ctx context.Context, cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	problems := &problem.Writer{TypeBaseURL: cfg.ErrorTypeBaseURL, Logger: logger}
 
 	// Optional capability: service tokens.
@@ -57,6 +66,30 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 
 	hub := ws.NewHub(logger.With(slog.String("module", "ws")), ws.DefaultOptions())
 
+	// Optional capability: Postgres persistence. Empty URL keeps the
+	// in-memory stores (Repository nil in the module options).
+	var (
+		pool     *pgxpool.Pool
+		keysRepo keysapp.Repository
+		jobsRepo jobsapp.Repository
+	)
+	if cfg.DatabaseURL != "" {
+		p, err := pg.Open(ctx, cfg.DatabaseURL, pg.Options{})
+		if err != nil {
+			return nil, err
+		}
+		pool = p
+		if keysRepo, err = keyspg.New(ctx, pool); err != nil {
+			pool.Close()
+			return nil, err
+		}
+		if jobsRepo, err = jobspg.New(ctx, pool); err != nil {
+			pool.Close()
+			return nil, err
+		}
+	}
+	capabilities[CapabilityPostgres] = pool != nil
+
 	// A nil *auth.JWT must become a nil interface, not an interface holding
 	// a nil pointer, or the service would think tokens are enabled.
 	var issuerPort keysapp.TokenIssuer
@@ -71,13 +104,15 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		TokenTTL:     tokenTTL,
 		Problems:     problems,
 		Logger:       logger,
+		Repository:   keysRepo,
 	})
 	jobsModule := jobs.New(jobs.Options{
-		Hub:       hub,
-		Problems:  problems,
-		Logger:    logger,
-		Workers:   cfg.Jobs.Workers,
-		QueueSize: cfg.Jobs.QueueSize,
+		Hub:        hub,
+		Problems:   problems,
+		Logger:     logger,
+		Workers:    cfg.Jobs.Workers,
+		QueueSize:  cfg.Jobs.QueueSize,
+		Repository: jobsRepo,
 	})
 	healthModule := health.New(cfg.Version, capabilities)
 	healthModule.Register(health.CheckerFunc{CheckName: "jobs_queue", Fn: func(context.Context) error {
@@ -86,6 +121,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		}
 		return nil
 	}})
+	if pool != nil {
+		healthModule.Register(pg.Checker{Pool: pool})
+	}
 
 	// Verifiers: JWTs are recognised by shape, everything else is a key.
 	verifiers := []auth.Verifier{}
@@ -112,7 +150,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		api.Handle("GET /v1/ws", ws.Handler(hub, problems, logger, jobsModule.Authorize()))
 	})
 
-	return &Server{Handler: root, Hub: hub, Jobs: jobsModule, APIKeys: keys, Health: healthModule}, nil
+	return &Server{Handler: root, Hub: hub, Jobs: jobsModule, APIKeys: keys, Health: healthModule, pool: pool}, nil
 }
 
 // Start launches background work (the job workers). It returns at once.
@@ -124,6 +162,9 @@ func (s *Server) Start(ctx context.Context) {
 func (s *Server) Shutdown(ctx context.Context) {
 	s.Hub.Close(ctx)
 	s.Jobs.Service.Wait()
+	if s.pool != nil {
+		s.pool.Close()
+	}
 }
 
 type saturated struct{}

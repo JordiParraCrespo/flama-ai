@@ -123,9 +123,12 @@ socket with `1001 Going Away` before the HTTP drain.
 
 ## Next steps this template leaves open
 
-- **Persistence**: implement the two `Repository` ports on Postgres (`pgx` +
-  `goose`) or embedded SQLite (`modernc.org/sqlite`). The memory adapters are
-  the reference behaviour.
+- **Persistence**: done for Postgres — `internal/{apikeys,jobs}/adapters/postgres`
+  implement the two `Repository` ports on `pgx` behind `RUNNER_DATABASE_URL`,
+  with the shared pool and migrator in `packages/go/postgres`; the memory
+  adapters remain the default and the reference behaviour. Embedded SQLite
+  (`modernc.org/sqlite`) is the same pattern if a zero-dependency store is
+  ever wanted.
 - **OpenAPI**: write `api/openapi.yaml` by hand or generate it with
   `oapi-codegen`, then point `pnpm generate:api-client` at it so the NestJS
   side talks through a typed client.

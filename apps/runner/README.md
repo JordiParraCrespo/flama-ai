@@ -15,6 +15,7 @@ with real ones, or the whole context with yours, and keep the shell.
 | Concern           | Where                                      | How                                                                                      |
 | ----------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | Configuration     | `internal/config` on `packages/go/config`   | Root `.env` outside production, real env vars always win, required secrets fail boot     |
+| Persistence       | `internal/*/adapters/postgres` on `packages/go/postgres` | Optional: `RUNNER_DATABASE_URL` swaps the in-memory stores for Postgres (keys, jobs) |
 | Errors            | `packages/go/core/problem`                  | RFC 7807 `application/problem+json`, same members and `type` scheme as the NestJS API    |
 | HTTP              | `packages/go/httpx`                         | `net/http` 1.22 routing, middleware groups, error-returning handlers, JSON helpers        |
 | Authentication    | `packages/go/auth` + `internal/apikeys`     | API keys (`flr_…`, SHA-256 at rest) and HS256 service tokens; one `Principal` for both   |

@@ -56,8 +56,9 @@ runner:
     limits:
       cpu: 500m
       memory: 256Mi
-  # RUNNER_BOOTSTRAP_API_KEY and RUNNER_JWT_SECRET come from the
-  # <release>-runner-secrets Secret, never from values.
+  # RUNNER_BOOTSTRAP_API_KEY, RUNNER_JWT_SECRET and (optionally)
+  # RUNNER_DATABASE_URL come from the <release>-runner-secrets Secret, never
+  # from values. Without RUNNER_DATABASE_URL the runner stays stateless.
   env:
     RUNNER_ENV: production
     ERROR_TYPE_BASE_URL: https://docs.flama.dev/errors

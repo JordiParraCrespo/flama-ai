@@ -42,6 +42,7 @@ concern, tied together by a `go.work` at the repo root:
 | `auth`   | `@flama/go-auth`   | Bearer middleware, `Principal`, scope grammar, JWT         |
 | `health` | `@flama/go-health` | Liveness, readiness, capabilities                          |
 | `ws`     | `@flama/go-ws`     | WebSocket hub with backpressure and keepalive              |
+| `postgres` | `@flama/go-postgres` | Pooled pgx connection, advisory-locked SQL migrator, readiness checker |
 
 Each module has a `package.json` whose scripts call `go` directly and which
 declares the sibling modules it imports as workspace dependencies. That is
