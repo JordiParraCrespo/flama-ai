@@ -45,6 +45,23 @@ adminWeb:
       cpu: 300m
       memory: 256Mi
 
+runner:
+  image: ghcr.io/your-org/flama-runner:latest
+  replicas: 1
+  port: 3006
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  # RUNNER_BOOTSTRAP_API_KEY and RUNNER_JWT_SECRET come from the
+  # <release>-runner-secrets Secret, never from values.
+  env:
+    RUNNER_ENV: production
+    ERROR_TYPE_BASE_URL: https://docs.flama.dev/errors
+
 docs:
   image: ghcr.io/your-org/flama-docs:latest
   replicas: 1

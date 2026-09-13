@@ -84,6 +84,22 @@ services:
     ports:
       - "3002:80"
 
+  runner:
+    image: ${RUNNER_IMAGE:-ghcr.io/your-org/flama-runner:latest}
+    restart: always
+    environment:
+      RUNNER_ENV: production
+      RUNNER_PORT: 3006
+      # Required. The API authenticates to the runner with this key or one
+      # minted from it; nothing else in the stack needs to know it.
+      RUNNER_BOOTSTRAP_API_KEY: ${RUNNER_BOOTSTRAP_API_KEY}
+      # Empty keeps service tokens off (see GET /health/capabilities).
+      RUNNER_JWT_SECRET: ${RUNNER_JWT_SECRET:-}
+      ERROR_TYPE_BASE_URL: ${ERROR_TYPE_BASE_URL:-https://flama.dev/errors}
+    # Not published: only the API (on the compose network) talks to it.
+    expose:
+      - "3006"
+
 volumes:
   postgres_data:
   redis_data:

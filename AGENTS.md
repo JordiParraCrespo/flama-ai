@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 10 apps and 14 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 11 apps and 14 shared packages.
 
 ## Monorepo structure
 
@@ -17,6 +17,7 @@ flama/
 │   ├── mcp/              # MCP server (stdio + Streamable HTTP)
 │   ├── mobile/           # Consumer Expo app
 │   ├── mobile-showcase/  # Expo app showcasing the mobile design system
+│   ├── runner/           # Go service template (REST + WS, API keys) the API delegates to
 │   ├── web/              # Consumer Vite + TanStack Router SPA
 │   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
@@ -36,6 +37,7 @@ flama/
 │   │   └── mobile/       # NativeWind + rn-primitives (@flama/design-system-mobile)
 │   ├── env/              # Root .env loader (@flama/env)
 │   ├── frontend/         # Clean architecture, InversifyJS DI, Zustand stores
+│   ├── go/               # Shared Go modules (@flama/go-*): core, config, httpx, auth, health, ws
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files
 ├── docker/               # Docker Compose (dev + prod)
@@ -93,6 +95,8 @@ the global `AllExceptionsFilter`; the catalog message is the stable problem
 `title` and per-request specifics go in `AppError`'s `detail`. New error codes
 need a row in `apps/docs/docs/errors.md` — see `nestjs-architecture.md`.
 
+- `go.md` — the Go service template (`apps/runner`): layout, ports, errors,
+  auth, what to reach for instead of a framework
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens, OAuth for MCP clients
 
@@ -122,6 +126,23 @@ behalf, and effective access is the intersection — see
 - `apps/mcp` — one tool registry in `src/tools/`, two entrypoints in `src/bin/`.
   Every tool declares `requiredScopes`; the tool list is filtered by the
   credential's effective scopes.
+
+### Go services (`apps/runner` + `packages/go/*`)
+
+The product backend is NestJS. Go is for the one-off service that needs a
+static binary, long-lived connections or process orchestration (runners, VMs,
+containers) — `apps/runner` is the template, and the API talks to it with an
+API key. The cross-cutting toolkit is `packages/go/*`, the Go counterpart of
+`packages/backend/*`: one Go module each (`core`, `config`, `httpx`, `auth`,
+`health`, `ws`), tied together by the root `go.work`, each also published to
+Turborepo as `@flama/go-<name>` so the task graph and `--affected` see them.
+The app is the same hexagon as `apps/api` in idiomatic Go: standard
+`net/http` routing, `slog`, interfaces as ports, constructor injection, one
+composition root (`internal/server`). Errors are the same RFC 7807 documents
+with their own catalog (`RUNNER_*`, `APIKEY_*`, `JOB_*`). Boundaries are
+enforced by `internal/arch/arch_test.go`. Rules in `.agents/rules/go.md`;
+layer model in `apps/runner/ARCHITECTURE.md`; module list and "add a
+module" steps in `packages/go/README.md`.
 
 ### Shared (packages/shared)
 
@@ -210,6 +231,8 @@ packages/design-system/web    → used by web, web-showcase
 packages/design-system/mobile → used by mobile, mobile-showcase
 packages/api-client           → used by frontend
 packages/frontend             → used by web, mobile
+packages/go/core              → used by every other packages/go module and runner
+packages/go/{config,httpx,auth,health,ws} → used by runner (auth ← ws, httpx ← health, auth)
 ```
 
 ## Commands

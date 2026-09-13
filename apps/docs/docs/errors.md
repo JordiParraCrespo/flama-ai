@@ -247,6 +247,30 @@ operation, its code is folded onto the catalog, and the original survives as
 | `ADMIN_008` <a id="admin_008" /> | The admin service failed to handle this request                   | 502  |
 | `ADMIN_009` <a id="admin_009" /> | No such session for that user                                     | 404  |
 
+## Runner service
+
+The Go runner (`apps/runner`) emits the same document shape with its own
+catalog. `RUNNER_*` codes are the generic layer shared by every route;
+`APIKEY_*` and `JOB_*` belong to their bounded contexts.
+
+| Code                                   | Title                                        | HTTP |
+| -------------------------------------- | -------------------------------------------- | ---- |
+| `RUNNER_001` <a id="runner_001" />     | Validation failed                            | 400  |
+| `RUNNER_002` <a id="runner_002" />     | Authentication required                      | 401  |
+| `RUNNER_003` <a id="runner_003" />     | Insufficient scope                           | 403  |
+| `RUNNER_004` <a id="runner_004" />     | Resource not found                           | 404  |
+| `RUNNER_005` <a id="runner_005" />     | Conflict                                     | 409  |
+| `RUNNER_006` <a id="runner_006" />     | Payload too large                            | 413  |
+| `RUNNER_500` <a id="runner_500" />     | Internal server error                        | 500  |
+| `APIKEY_001` <a id="apikey_001" />     | API key not found                            | 404  |
+| `APIKEY_002` <a id="apikey_002" />     | API key already revoked                      | 409  |
+| `APIKEY_003` <a id="apikey_003" />     | Cannot grant scopes you do not hold          | 403  |
+| `APIKEY_004` <a id="apikey_004" />     | Service tokens are not enabled               | 501  |
+| `JOB_001` <a id="job_001" />           | Job not found                                | 404  |
+| `JOB_002` <a id="job_002" />           | Job is not in a state that allows this       | 409  |
+| `JOB_003` <a id="job_003" />           | Job queue is full                            | 429  |
+| `JOB_004` <a id="job_004" />           | No runner registered for this job kind       | 400  |
+
 ## Domain invariants
 
 Exceptions raised by the DDD building blocks in `@flama/backend-ddd` surface
