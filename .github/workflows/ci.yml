@@ -21,10 +21,42 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # `pnpm arch` runs through Turborepo, whose ^build edge now reaches
+      # the Go packages, so the toolchain has to be present here as well.
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            apps/runner/go.sum
+            packages/go/*/go.sum
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - name: Architecture boundaries
         run: pnpm arch
+
+  go:
+    name: Go (go.work)
+    runs-on: gha-vm
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            apps/runner/go.sum
+            packages/go/*/go.sum
+      # The workspace root is not a module, so `./...` does not resolve
+      # there; the module-path pattern spans every module in go.work.
+      - run: go vet github.com/jordiparracrespo/flama-ai/...
+      # golangci-lint needs directory patterns, one per module; `go list -m`
+      # in workspace mode lists exactly the modules go.work declares.
+      - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.5.0
+      - run: golangci-lint run $(go list -m -f '{{.Dir}}/...')
+      # The gha-vm runners ship no C compiler, and -race needs cgo; run the
+      # race detector locally (make test-race) and plain tests here.
+      - run: go test -count=1 github.com/jordiparracrespo/flama-ai/...
+      - run: go build -trimpath ./cmd/server
+        working-directory: apps/runner
 
   test:
     name: Test
@@ -37,6 +69,14 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # Turborepo builds and tests apps/runner through its package.json
+      # scripts, so the Go toolchain has to be present here too.
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            apps/runner/go.sum
+            packages/go/*/go.sum
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
@@ -52,6 +92,12 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            apps/runner/go.sum
+            packages/go/*/go.sum
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test:integration
@@ -59,13 +105,13 @@ jobs:
   build-images:
     name: Build Docker Images
     runs-on: gha-vm
-    needs: [test, test-integration]
+    needs: [test, test-integration, go]
     permissions:
       contents: read
       packages: write
     strategy:
       matrix:
-        app: [api, web, admin-web, docs, mcp]
+        app: [api, web, admin-web, docs, mcp, runner]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Lowercase repository name
@@ -82,6 +128,10 @@ jobs:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
+          # Consumed by apps/runner (embedded as the reported version);
+          # the Node images ignore it.
+          build-args: |
+            VERSION=${{ github.sha }}
           tags: |
             ghcr.io/${{ env.REPO_LC }}/flama-${{ matrix.app }}:latest
             ghcr.io/${{ env.REPO_LC }}/flama-${{ matrix.app }}:${{ github.sha }}

@@ -3,5 +3,6 @@ packages:
   - "qa"
   - "apps/*"
   - "packages/*"
+  - "packages/go/*"
   - "packages/backend/*"
   - "packages/design-system/*"
