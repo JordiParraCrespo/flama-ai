@@ -48,3 +48,9 @@ scratchpad/
 /Alpaca Labs Design System.zip
 /CRM SaaS Design Pages.zip
 /Adri Rodrigo - Design System.html
+
+# QA pack run output. The curated copy under docs/screenshots/ is committed.
+qa/artifacts/
+
+# Redis snapshot, written when a local redis-server is used instead of docker.
+dump.rdb
