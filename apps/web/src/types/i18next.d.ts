@@ -1,4 +1,4 @@
-import type { Messages } from '@flama/translations';
+import type { Messages } from '@flama/translations/locales';
 import 'i18next';
 
 // Gives `t()` and <Trans> full type-safety / autocompletion over our keys.

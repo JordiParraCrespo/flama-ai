@@ -19,6 +19,10 @@ Consequences:
 
 - `src/client.ts` is excluded from `tsconfig.json`'s build; it is type-checked
   by the consuming apps (`apps/web` runs `tsc -b` in its build).
+- `src/session-preload.ts` is excluded for a second reason: it touches `window`,
+  and the root build compiles against `lib: ES2022` with no DOM. It is browser
+  code, reached only through `./client`. Anything else that needs `window`
+  belongs there too, or in the app.
 - Anything exported from the root entry must keep literal types
   (`as const satisfies ...`), or Better Auth's inference on the server degrades.
 

@@ -80,6 +80,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      # What a first-time visitor downloads before anything renders, against a
+      # committed budget. Vite's own chunk warning prints and passes.
+      - name: First-load budgets
+        run: pnpm check:bundle
 
   test-integration:
     name: Integration Tests
@@ -101,6 +105,58 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test:integration
+
+  test-e2e:
+    name: End-to-End Tests
+    runs-on: gha-vm
+    needs: lint
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # `pnpm build` walks the whole task graph, apps/runner included.
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            apps/runner/go.sum
+            packages/go/*/go.sum
+      - run: pnpm install --frozen-lockfile
+      # The suite reads verification and reset tokens out of Postgres and the
+      # API log rather than a mailbox, which is what `EMAIL_PROVIDER=console`
+      # in .env.example gives it. `support/db.ts` reads the same root .env as
+      # the API, so both necessarily agree on the database.
+      - run: cp .env.example .env
+      - run: pnpm docker:up
+      - run: pnpm build
+      - run: pnpm --filter @flama/api migration:run
+      - name: Start the API
+        run: |
+          node apps/api/dist/main.js > /tmp/api.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:3001/api/v1/health > /dev/null && exit 0
+            sleep 1
+          done
+          echo "API never became healthy"; cat /tmp/api.log; exit 1
+      # The web project drives the dev server, whose `/api` proxy keeps the
+      # browser same-origin with the API exactly as nginx does in production.
+      - name: Start the web app
+        run: |
+          pnpm --filter @flama/web dev > /tmp/web.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:3000 > /dev/null && exit 0
+            sleep 1
+          done
+          echo "Web app never came up"; cat /tmp/web.log; exit 1
+      - run: pnpm --filter @flama/e2e exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      # Playwright keeps traces, screenshots and video for failures under
+      # e2e/playwright-report and e2e/test-results. Upload them with
+      # actions/upload-artifact if this job starts failing on CI-only flakes —
+      # left out here rather than pinned to an unverified action SHA.
 
   build-images:
     name: Build Docker Images

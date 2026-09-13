@@ -8,5 +8,5 @@
     "ignoreDeprecations": "6.0"
   },
   "include": ["src"],
-  "exclude": ["src/client.ts", "src/**/*.spec.ts", "src/**/__tests__/**"]
+  "exclude": ["src/client.ts", "src/session-preload.ts", "src/**/*.spec.ts", "src/**/__tests__/**"]
 }

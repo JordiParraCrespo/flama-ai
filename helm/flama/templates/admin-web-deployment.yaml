@@ -20,6 +20,12 @@ spec:
           env:
             - name: API_UPSTREAM
               value: {{ printf "%s-api:%v" .Release.Name .Values.api.port | quote }}
+            {{- with .Values.adminWeb.cspExtraOrigins }}
+            # Origins the nginx Content-Security-Policy admits beyond 'self'.
+            # Unset leaves the image default (the PostHog EU endpoints).
+            - name: CSP_EXTRA_ORIGINS
+              value: {{ . | quote }}
+            {{- end }}
           ports:
             - containerPort: {{ .Values.adminWeb.port }}
           resources:

@@ -10,8 +10,26 @@ Shared i18n resources used by `apps/web` (react-i18next) and `apps/mobile`
 ```
 en/index.json         # English locale
 es/index.json         # Spanish locale
-index.ts              # exports the locale bundles
+locales.ts            # locale list, default, namespace, Messages type — no catalogs
+lazy.ts               # one dynamic import per catalog, for the browsers
+index.ts              # the eager barrel: every catalog, for the API and Expo
 ```
+
+**Three entrypoints, and which one you want matters.** `index.ts` imports every
+catalog, which is right for the API (it renders email in the recipient's locale)
+and for the Expo apps (bundled ahead of time, no network). It is wrong for the
+web apps: pulling `locales` or `Messages` from the root used to put the Spanish
+catalog in the entry chunk an English reader downloads before anything renders.
+So:
+
+- metadata (`locales`, `defaultLocale`, `defaultNS`, `Locale`, `Messages`) →
+  `@flama/translations/locales`
+- a catalog, on demand, in a browser → `@flama/translations/lazy`
+- every catalog at once → `@flama/translations`
+
+Adding a locale means a directory, an entry in `locales.ts`, and a line in
+`lazy.ts`'s loader map — written out longhand, because a bundler cannot split a
+template-string import.
 
 ## Conventions
 

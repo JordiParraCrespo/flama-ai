@@ -1,6 +1,6 @@
 import { LayoutDashboard, type LucideIcon, Settings } from '@flama/design-system-web/icons';
 import type { ScreenPolicy } from '@flama/shared/navigation';
-import type { Messages } from '@flama/translations';
+import type { Messages } from '@flama/translations/locales';
 
 /**
  * A CASL rule a row requires to be shown. A row lists the rules its

@@ -1,10 +1,13 @@
 {
   "name": "@flama/translations",
   "version": "0.2.0",
+  "sideEffects": false,
   "private": true,
   "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
+    "./locales": "./locales.ts",
+    "./lazy": "./lazy.ts",
     "./en": "./en/index.json",
     "./es": "./es/index.json",
     "./en/index.json": "./en/index.json",

@@ -8,6 +8,13 @@ stack. Two projects share one runner:
 - **`web`** — drives `apps/web` in Chromium, exercising the same journeys
   through the UI a user actually sees.
 
+## Where it runs
+
+CI runs this suite on every pull request, in the `End-to-End Tests` job — it
+brings up Postgres and Redis with `pnpm docker:up`, migrates, starts the API and
+the web dev server, then runs both projects. A spec that only passes locally is
+a broken spec.
+
 ## Running it
 
 ```bash

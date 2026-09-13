@@ -22,8 +22,20 @@ RUN pnpm --filter @flama/admin-web... build
 
 FROM nginx:alpine AS runner
 COPY --from=builder /app/apps/admin-web/dist /usr/share/nginx/html
+# Precompress every text asset once, at level 9, so `gzip_static` can serve a
+# ready-made .gz instead of compressing the same bytes on every request. woff2
+# is already compressed and is deliberately skipped.
+RUN find /usr/share/nginx/html -type f \
+      \( -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.json' \
+         -o -name '*.html' -o -name '*.txt' \) \
+      -exec sh -c 'gzip -9c "$1" > "$1.gz"' _ {} \;
 ENV API_UPSTREAM=api:3001
-ENV NGINX_ENVSUBST_FILTER=API_UPSTREAM
+# Origins the Content-Security-Policy in nginx.conf admits beyond 'self'.
+# Defaults to the PostHog EU endpoints, matching VITE_POSTHOG_HOST's default;
+# widen it when the analytics project is in another region or VITE_API_URL
+# points the app at a different origin.
+ENV CSP_EXTRA_ORIGINS="https://eu.i.posthog.com https://eu-assets.i.posthog.com"
+ENV NGINX_ENVSUBST_FILTER='(API_UPSTREAM|CSP_EXTRA_ORIGINS)'
 COPY apps/admin-web/nginx.conf /etc/nginx/templates/default.conf.template
 EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]

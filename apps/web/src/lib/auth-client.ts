@@ -1,4 +1,9 @@
-import { sharedClientPlugins, toAuthSession, unwrap } from '@flama/auth/client';
+import {
+  consumeSessionPreload,
+  sharedClientPlugins,
+  toAuthSession,
+  unwrap,
+} from '@flama/auth/client';
 import type { IAuthClient } from '@flama/frontend';
 import { createAuthClient } from 'better-auth/react';
 
@@ -92,6 +97,15 @@ export const webAuthClient: IAuthClient = {
   },
 
   async getSession() {
+    // `public/session-preload.js` starts this request from <head>, so on app
+    // start the answer is usually already in hand. Only for a same-origin API:
+    // with VITE_API_URL pointing elsewhere, the preload would have asked a
+    // different backend than this client talks to.
+    if (!apiBaseUrl) {
+      const preloaded = await consumeSessionPreload();
+      if (preloaded !== undefined) return preloaded;
+    }
+
     return toAuthSession(await authClient.getSession());
   },
 

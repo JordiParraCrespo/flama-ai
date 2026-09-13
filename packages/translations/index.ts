@@ -1,18 +1,20 @@
 import en from './en/index.json';
 import es from './es/index.json';
+import { defaultNS } from './locales';
 
-export const locales = ['en', 'es'] as const;
-export type Locale = (typeof locales)[number];
-export const defaultLocale: Locale = 'en';
-
-/** Default i18next namespace used across apps. */
-export const defaultNS = 'translation' as const;
+/**
+ * The eager barrel: importing anything from here pulls in *every* catalog.
+ *
+ * That is what the API (which renders email in whichever locale the recipient
+ * chose) and the Expo apps (bundled ahead of time, no network) want. Browsers
+ * want one catalog, so the web apps import metadata from
+ * `@flama/translations/locales` and catalogs from `@flama/translations/lazy`
+ * instead — see the note in `locales.ts`.
+ */
+export { defaultLocale, defaultNS, type Locale, locales, type Messages } from './locales';
 
 /** Raw messages keyed by locale. */
 export const messages = { en, es } as const;
-
-/** Shape of a single locale's message catalog (English is the source of truth). */
-export type Messages = typeof en;
 
 /**
  * Resources ready to be passed to `i18next.init({ resources })`.

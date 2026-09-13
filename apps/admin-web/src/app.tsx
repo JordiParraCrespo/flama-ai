@@ -17,6 +17,15 @@ const router = createRouter({
   context: {
     auth: { isAuthenticated: false },
   },
+  // Fetch a route's chunk when the pointer or focus lands on a link to it, so
+  // the navigation itself has nothing left to download. `autoCodeSplitting`
+  // puts every route in its own file, which otherwise means a click is always
+  // a request; the routes carry no `loader`, so this prefetches code only.
+  defaultPreload: 'intent',
+  // TanStack Query owns data freshness here — every screen reads through it,
+  // not through a route loader. Leaving the router's own preload cache at 30s
+  // would give a second, disagreeing staleness rule the day a loader appears.
+  defaultPreloadStaleTime: 0,
 });
 
 declare module '@tanstack/react-router' {

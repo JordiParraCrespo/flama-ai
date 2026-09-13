@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from '@flama/design-system-web';
 import { Languages } from '@flama/design-system-web/icons';
-import { locales } from '@flama/translations';
+import { locales } from '@flama/translations/locales';
 import { useTranslation } from 'react-i18next';
 
 export function LanguageSwitcher({ className }: { className?: string }) {

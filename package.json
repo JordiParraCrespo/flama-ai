@@ -12,6 +12,7 @@
     "arch": "turbo run arch",
     "format": "biome format --write .",
     "check": "biome check --write --unsafe .",
+    "check:bundle": "node scripts/check-bundle-size.mjs",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "test:e2e": "pnpm --filter @flama/e2e e2e",
