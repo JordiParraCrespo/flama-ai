@@ -8,9 +8,9 @@ tags: [security, sessions]
 coverage:
   primary:
     - session.revocation-on-sign-out
+    - session.revocation-on-password-reset
     - session.cookie-hardening
   secondary:
-    - session.revocation-on-password-reset
     - auth.sign-out
 
 intent: >-
@@ -30,8 +30,9 @@ preconditions:
 steps:
   - Sign in on two independent browser contexts.
   - Sign out on the first, and try its dashboard again.
-  - Reset the password from the mail sink.
-  - Try the second context's dashboard.
+  - Go back to the second context: it should still be signed in.
+  - Reset the password from the first, through the link in the mail sink.
+  - Go back to the second context again.
 
 expected:
   - Sign-out removes the session row, not only the cookie.
@@ -41,4 +42,5 @@ expected:
 
 artifacts:
   - auth-07-signed-out.png
+  - auth-07-other-device-survives-sign-out.png
   - auth-07-other-device-revoked.png

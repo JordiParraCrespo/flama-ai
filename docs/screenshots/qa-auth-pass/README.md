@@ -39,6 +39,7 @@ of them from being an account-enumeration oracle.
 | `auth-03-invitation-accepted-admin.png` / `-member.png`        | Two invitations at two roles, each landing signed in, with the membership role and the application role both read back from Postgres.   |
 | `auth-05-onboarding.png`, `auth-05-first-dashboard.png`        | A self-service registration sent to onboarding, told plainly it is in no workspace yet, then landed on its first dashboard.             |
 | `auth-06-tenant-isolation.png`                                 | The owner of an empty workspace, shown their own tenant while another holds two thousand members.                                       |
-| `auth-07-signed-out.png`, `auth-07-other-device-revoked.png`   | Signing out removes the session row, and the second device keeps its own.                                                               |
+| `auth-07-signed-out.png`, `auth-07-other-device-survives-sign-out.png` | Signing out removes the session row, and the second device rightly keeps its own — the two promises are separate.              |
+| `auth-07-other-device-revoked.png`                             | The same second device after a password reset, now signed out: 0 session rows remain.                                                  |
 | `admin-auth-08-owner.png`, `-admin.png`, `-plain-member.png`   | The control plane refusing three kinds of person by name, with a way out — not a blank shell, a spinner, or a bounce to the login form.  |
 | `admin-auth-08-platform-admin.png`                             | The one person it admits.                                                                                                              |

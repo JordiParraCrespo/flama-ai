@@ -1,6 +1,10 @@
 import { findUser, sessionsOf, withDb } from '../../src/db.js';
 import { scenario, signIn, WEB_URL } from '../../src/harness.js';
+import { mailCount, waitForMailLink } from '../../src/mail-sink.js';
 import { signUpThroughApi, TRANSIENT } from './accounts.js';
+
+/** What the reset sets the password to. Never the one the account signed in with. */
+const RESET_PASSWORD = 'QaRevokedChanged123';
 
 scenario('AUTH-07', async ({ page, qa }) => {
   const account = TRANSIENT.revokedMember;
@@ -88,8 +92,45 @@ scenario('AUTH-07', async ({ page, qa }) => {
     );
     await qa.shot(
       other,
+      'auth-07-other-device-survives-sign-out',
+      'The second device, still signed in after the first signed out',
+    );
+
+    // The second promise, and the one the scenario is named for. A reset exists
+    // because the reader believes their credential is compromised, so the
+    // session on the device they no longer trust has to end — and the only way
+    // to see that is to reset, then go back to that device.
+    const seen = mailCount('PASSWORD RESET', account.email);
+    await page.goto('/forgot-password');
+    await page.locator('#email').fill(account.email);
+    await page.getByRole('button', { name: /send|reset|continue/i }).click();
+    const link = await waitForMailLink('PASSWORD RESET', account.email, { after: seen });
+    qa.note(`the mail sink delivered ${link}`);
+
+    await page.goto(link);
+    await page.waitForLoadState('networkidle').catch(() => {});
+    const submit = page.getByRole('button', { name: /reset|save|change|continue/i }).first();
+    await page.locator('#password').first().fill(RESET_PASSWORD);
+    const confirmField = page.locator('#confirmPassword');
+    if (await confirmField.isVisible().catch(() => false)) await confirmField.fill(RESET_PASSWORD);
+    await page.waitForTimeout(500);
+    await submit.click();
+    await page.waitForTimeout(3000);
+
+    const afterReset = user ? await withDb((pool) => sessionsOf(pool, user.id)) : 0;
+    qa.note(`${afterReset} session row(s) after the reset`);
+
+    await other.goto('/dashboard');
+    await other.waitForLoadState('networkidle').catch(() => {});
+    qa.check(
+      'a password reset signs the other device out too',
+      other.url().includes('/login'),
+      `${other.url()} — the device the reader no longer trusts must lose its session`,
+    );
+    await qa.shot(
+      other,
       'auth-07-other-device-revoked',
-      'The second device, after the first signed out',
+      'The second device, after the password was reset from the first',
     );
     await second?.close();
   }

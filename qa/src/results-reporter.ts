@@ -37,15 +37,6 @@ export default class QaResultsReporter implements Reporter {
           .sort((a, b) => a.id.localeCompare(b.id))
       : [];
 
-    const results: RunResults = {
-      startedAt: this.startedAt,
-      finishedAt: new Date().toISOString(),
-      scenarios,
-    };
-    mkdirSync(ARTIFACTS_DIR, { recursive: true });
-    writeFileSync(RESULTS_FILE, JSON.stringify(results, null, 2));
-    writeFileSync(REPORT_FILE, renderReport(loadPack(), results));
-
     // Every scenario names the screenshots it promises to produce, and the
     // pack's standing rule is that a scenario which passes without its
     // evidence has been asserted rather than verified. So a missing artifact
@@ -67,6 +58,20 @@ export default class QaResultsReporter implements Reporter {
         detail: `missing: ${missing.join(', ')}`,
       });
     }
+
+    // Written only now, after the evidence loop has had its say. Writing them
+    // first left the verdict on disk disagreeing with the verdict in the exit
+    // code: `qa report` re-rendered the stale JSON and `qa publish` could carry
+    // a scenario marked passed into `docs/screenshots/` while the run that
+    // produced it had failed for missing evidence.
+    const results: RunResults = {
+      startedAt: this.startedAt,
+      finishedAt: new Date().toISOString(),
+      scenarios,
+    };
+    mkdirSync(ARTIFACTS_DIR, { recursive: true });
+    writeFileSync(RESULTS_FILE, JSON.stringify(results, null, 2));
+    writeFileSync(REPORT_FILE, renderReport(pack, results));
 
     const failed = scenarios.filter((scenario) => scenario.status === 'failed');
     console.log(

@@ -63,10 +63,52 @@ start_datastores() {
 # stdout to $ARTIFACTS/api.log, and it was started with the console email
 # provider. Neither is visible over HTTP, so `up` checks them here rather than
 # letting AUTH-02 and AUTH-03 discover it as a timeout twenty minutes later.
+#
+# "A log file exists" is not the check. A previous run leaves one behind, so a
+# developer's own `pnpm dev` on this port would satisfy it while writing its
+# mail to a terminal nobody is reading — the stack reports ready and the
+# mail-driven scenarios then poll a stale file until they time out. What has to
+# be true is that the process *currently answering on this port* has this file
+# as its stdout, so the check follows the listener to its file descriptor.
+
+# The pid listening on the API port, via whichever tool this image ships.
+api_listener_pid() {
+  local pid=''
+  if command -v ss >/dev/null 2>&1; then
+    pid=$(ss -lptnH "sport = :${API_URL##*:}" 2>/dev/null | grep -oE 'pid=[0-9]+' | head -1 | cut -d= -f2)
+  fi
+  if [ -z "$pid" ] && command -v lsof >/dev/null 2>&1; then
+    pid=$(lsof -tiTCP:"${API_URL##*:}" -sTCP:LISTEN 2>/dev/null | head -1)
+  fi
+  printf '%s' "$pid"
+}
+
+# Whether that process, or any of its children, writes stdout to the sink. The
+# API is started through pnpm, so the file descriptor belongs to a descendant.
+writes_to_sink() {
+  local pid=$1 target
+  target=$(readlink -f "$ARTIFACTS/api.log" 2>/dev/null) || return 1
+  [ -n "$pid" ] || return 1
+  local candidates
+  candidates=$(pgrep -P "$pid" 2>/dev/null; printf '%s\n' "$pid")
+  for candidate in $candidates; do
+    [ "$(readlink -f "/proc/$candidate/fd/1" 2>/dev/null)" = "$target" ] && return 0
+  done
+  return 1
+}
+
 mail_sink_ready() {
   [ -s "$ARTIFACTS/api.log" ] || return 1
   grep -qE '^EMAIL_PROVIDER=console[[:space:]]*$' "$ROOT/.env" 2>/dev/null || return 1
-  return 0
+  local pid
+  pid=$(api_listener_pid)
+  if [ -z "$pid" ]; then
+    # No way to identify the listener on this image. Refuse to claim the sink
+    # is ready on the strength of a file that may be last week's.
+    log 'cannot identify the process listening on the API port — treating the mail sink as not ready'
+    return 1
+  fi
+  writes_to_sink "$pid"
 }
 
 ensure_env() {

@@ -1,6 +1,6 @@
 # QA run — flama-ai — authentication QA
 
-2026-09-12T08:25:38.364Z → 2026-09-12T08:28:11.627Z
+2026-09-13T19:55:42.723Z → 2026-09-13T19:58:09.707Z
 
 **7 passed, 1 failed** across 8 scenarios.
 
@@ -12,12 +12,12 @@
 | 🔴 | `AUTH-04` Bad credentials, bad links and bad input all fail legibly | high | 19/20 | 6 |
 | 🟢 | `AUTH-05` A self-service registration is told where it stands | critical | 9/9 | 3 |
 | 🟢 | `AUTH-06` An owner of one workspace cannot read another workspace's data | critical | 7/7 | 1 |
-| 🟢 | `AUTH-07` Signing out, and resetting a password, close every door they should | high | 9/9 | 2 |
+| 🟢 | `AUTH-07` Signing out, and resetting a password, close every door they should | high | 10/10 | 3 |
 | 🟢 | `AUTH-08` The control plane refuses everyone who is not a platform administrator | critical | 32/32 | 4 |
 
 ## 🟢 AUTH-01 — A super admin exists, signs in, and reaches the control plane
 
-*auth · critical · 7925ms*
+*auth · critical · 6686ms*
 
 > the API reports 12 rule(s) for the super admin
 > admin-auth-01-superadmin-users: 120px of this screen sat below the fold at 1440×900
@@ -35,10 +35,10 @@
 
 ## 🟢 AUTH-02 — A member resets a forgotten password and signs in with the new one
 
-*auth · critical · 50131ms*
+*auth · critical · 47036ms*
 
 > 2 session(s) open before the reset
-> the mail sink delivered http://localhost:3001/api/auth/reset-password/wt3pzlEJU3uLD0J1LWaU7WoR?callbackURL=http%3A%2F%2Flocalhost%3A3000%2Freset-password
+> the mail sink delivered http://localhost:3001/api/auth/reset-password/KqEJaMM7WDQOHuZkj5oHnZZg?callbackURL=http%3A%2F%2Flocalhost%3A3000%2Freset-password
 > 1 session(s) open after the reset
 
 - ✅ the member can be created
@@ -80,7 +80,7 @@ Terms
 
 ## 🟢 AUTH-03 — An invited person joins at the role they were invited as, and lands signed in
 
-*auth · critical · 14493ms*
+*auth · critical · 13684ms*
 
 > the admin invitee holds membership role "admin" and application role(s) owner, user
 > the member invitee holds membership role "member" and application role(s) user, user
@@ -110,7 +110,7 @@ Terms
 
 ## 🔴 AUTH-04 — Bad credentials, bad links and bad input all fail legibly
 
-*auth · high · 21617ms*
+*auth · high · 17992ms*
 
 > the account used for the transient cases is reset.member@qa.flama.dev
 
@@ -162,7 +162,7 @@ Onl
 
 ## 🟢 AUTH-05 — A self-service registration is told where it stands
 
-*auth · critical · 12984ms*
+*auth · critical · 12314ms*
 
 > registering landed on /onboarding
 > the new account holds 0 membership(s) and the application role(s) user
@@ -197,7 +197,7 @@ Crea
 
 ## 🟢 AUTH-06 — An owner of one workspace cannot read another workspace's data
 
-*auth · critical · 3789ms*
+*auth · critical · 3382ms*
 
 > the reader's workspace holds 1 members and 0 teams; the other holds 2000 members and 60 teams
 > the members endpoint returned 1 row(s)
@@ -214,10 +214,12 @@ Crea
 
 ## 🟢 AUTH-07 — Signing out, and resetting a password, close every door they should
 
-*auth · high · 12773ms*
+*auth · high · 19844ms*
 
 > 3 session row(s) after signing in on two devices
 > the other device is at http://localhost:3000/onboarding after the first signed out
+> the mail sink delivered http://localhost:3001/api/auth/reset-password/U3ATFkf6rMhr9ow4VlFugFuh?callbackURL=http%3A%2F%2Flocalhost%3A3000%2Freset-password
+> 0 session row(s) after the reset
 
 - ✅ the member can be created
 - ✅ the first device signs in
@@ -228,14 +230,17 @@ Crea
 - ✅ signing out removes the session row, not only the cookie — 3 before, 2 after
 - ✅ the signed-out device can no longer open the dashboard — http://localhost:3000/login?redirect=%2Fdashboard
 - ✅ signing out on one device leaves the other's own session alone — http://localhost:3000/onboarding
+- ✅ a password reset signs the other device out too — http://localhost:3000/login?redirect=%2Fdashboard — the device the reader no longer trusts must lose its session
 
 ![The dashboard, asked for after signing out](./auth-07-signed-out.png)
 
-![The second device, after the first signed out](./auth-07-other-device-revoked.png)
+![The second device, still signed in after the first signed out](./auth-07-other-device-survives-sign-out.png)
+
+![The second device, after the password was reset from the first](./auth-07-other-device-revoked.png)
 
 ## 🟢 AUTH-08 — The control plane refuses everyone who is not a platform administrator
 
-*auth · critical · 24222ms*
+*auth · critical · 21744ms*
 
 > admin-auth-08-platform-admin: 120px of this screen sat below the fold at 1440×900
 
