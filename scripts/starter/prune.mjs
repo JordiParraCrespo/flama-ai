@@ -275,6 +275,9 @@ function check(manifest) {
 // prune
 // ---------------------------------------------------------------------------
 
+/** Files rewritten by the current prune, formatted at the end. */
+const edited = [];
+
 function editJson(file, mutate, dryRun) {
   const path = join(ROOT, file);
   if (!existsSync(path)) return;
@@ -282,6 +285,7 @@ function editJson(file, mutate, dryRun) {
   const changed = mutate(json);
   if (!changed) return;
   console.log(`  edit   ${file}`);
+  edited.push(file);
   if (!dryRun) writeFileSync(path, `${JSON.stringify(json, null, 2)}\n`);
 }
 
@@ -332,6 +336,7 @@ function prune(manifest, removedIds, options) {
     }
     if (!touched) continue;
     console.log(`  edit   ${file}`);
+    edited.push(file);
     if (!dryRun) writeFileSync(join(ROOT, file), collapseBlankRuns(out.join('\n')));
   }
 
@@ -395,10 +400,22 @@ function prune(manifest, removedIds, options) {
     return;
   }
 
-  // 4. Lockfile.
+  // 4. Lockfile, then the repo's formatter over what was edited (a marker
+  // block removed from a list often leaves it on one line for Biome).
   if (install) {
     console.log('\npnpm install (refreshing the lockfile)...');
     execFileSync('pnpm', ['install'], { cwd: ROOT, stdio: 'inherit' });
+  }
+  if (edited.length) {
+    try {
+      execFileSync(
+        'pnpm',
+        ['exec', 'biome', 'format', '--write', '--files-ignore-unknown=true', ...edited],
+        { cwd: ROOT, stdio: 'ignore' },
+      );
+    } catch {
+      // Biome is a dev dependency; without an install there is nothing to run.
+    }
   }
 
   // 5. What is left for a human (or the skill) to reconcile by hand.
@@ -408,6 +425,7 @@ function prune(manifest, removedIds, options) {
   ].map(identifierRegex);
   const leftovers = [];
   for (const file of trackedFiles()) {
+    if (/CHANGELOG\.md$|^\.changeset\//.test(file)) continue; // history stays history
     const buffer = readFileSync(join(ROOT, file));
     if (!isText(buffer)) continue;
     buffer
