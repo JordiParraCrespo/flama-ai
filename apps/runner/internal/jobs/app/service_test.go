@@ -143,3 +143,62 @@ func TestCancelWinsOverLateCompletion(t *testing.T) {
 		t.Fatalf("late completion overwrote the cancellation: %s", final.Status)
 	}
 }
+
+// A restart recovery must run persisted queued jobs and fail interrupted
+// running ones, so persistence makes job processing survive a restart, not
+// just the rows.
+func TestRecoverRequeuesQueuedAndFailsInterrupted(t *testing.T) {
+	repo := newMemRepo()
+	now := time.Now()
+
+	// A job left queued by the previous run.
+	q, _ := domain.New("q1", "r", nil, "k", now)
+	if err := repo.Save(context.Background(), q); err != nil {
+		t.Fatal(err)
+	}
+	// A job left running (its worker died with the old process).
+	r, _ := domain.New("r1", "r", nil, "k", now)
+	_ = r.Start(now)
+	if err := repo.Save(context.Background(), r); err != nil {
+		t.Fatal(err)
+	}
+
+	ran := make(chan struct{}, 1)
+	svc := newService(repo, RunnerFunc(func(context.Context, domain.Job) error {
+		select {
+		case ran <- struct{}{}:
+		default:
+		}
+		return nil
+	}), 4)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	svc.Start(ctx)
+	if err := svc.Recover(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	// The queued job runs.
+	select {
+	case <-ran:
+	case <-time.After(2 * time.Second):
+		t.Fatal("recovered queued job never ran")
+	}
+
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		q1, _ := repo.FindByID(context.Background(), "q1")
+		r1, _ := repo.FindByID(context.Background(), "r1")
+		if q1.Status == domain.StatusSucceeded && r1.Status == domain.StatusFailed {
+			if r1.Error == "" {
+				t.Fatal("interrupted job should carry a reason")
+			}
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("recovery incomplete: q1=%s r1=%s", q1.Status, r1.Status)
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+}

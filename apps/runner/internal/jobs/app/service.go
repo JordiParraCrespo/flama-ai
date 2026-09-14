@@ -192,6 +192,65 @@ func (s *Service) Start(ctx context.Context) {
 	}
 }
 
+// Recover reconciles jobs a previous run left non-terminal, which only the
+// persistent store can hold across a restart (the in-memory store starts
+// empty, so this is a cheap no-op there):
+//
+//   - queued jobs are pushed back onto the worker queue, so work submitted
+//     before the restart still runs;
+//   - running jobs were interrupted mid-flight — their worker goroutine died
+//     with the old process and cannot be resumed — so they are failed with a
+//     clear reason. That keeps the record honest and lets the submitter
+//     resubmit; requeuing them instead would risk running a side effect twice.
+//
+// It runs after Start so the workers are already draining the queue, and it
+// feeds queued ids asynchronously so a backlog larger than the channel does
+// not block startup — the send respects the same backpressure as Submit.
+func (s *Service) Recover(ctx context.Context) error {
+	now := s.now()
+
+	running := domain.StatusRunning
+	stuck, err := s.repo.List(ctx, ListFilter{Status: &running})
+	if err != nil {
+		return fmt.Errorf("list interrupted jobs: %w", err)
+	}
+	for _, j := range stuck {
+		updated, err := s.repo.Update(ctx, j.ID, func(job *domain.Job) error {
+			if job.Status != domain.StatusRunning {
+				return ErrSkip
+			}
+			return job.Fail("interrupted: runner restarted before completion", now)
+		})
+		if errors.Is(err, ErrSkip) {
+			continue
+		}
+		if err != nil {
+			return fmt.Errorf("fail interrupted job %s: %w", j.ID, err)
+		}
+		s.logger.InfoContext(ctx, "failed interrupted job on startup", slog.String("jobId", j.ID))
+		s.pub.Publish(ctx, domain.Event{Name: domain.EventFinished, Job: updated})
+	}
+
+	queued := domain.StatusQueued
+	pending, err := s.repo.List(ctx, ListFilter{Status: &queued})
+	if err != nil {
+		return fmt.Errorf("list pending jobs: %w", err)
+	}
+	if len(pending) > 0 {
+		s.logger.InfoContext(ctx, "re-enqueuing persisted jobs on startup", slog.Int("count", len(pending)))
+	}
+	go func() {
+		for _, j := range pending {
+			select {
+			case s.queue <- j.ID:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	return nil
+}
+
 // Wait blocks until every worker has exited.
 func (s *Service) Wait() { s.wg.Wait() }
 

@@ -42,7 +42,8 @@ type Server struct {
 	APIKeys *apikeys.Module
 	Health  *health.Module
 	// pool is non-nil when RUNNER_DATABASE_URL is set; closed on Shutdown.
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	logger *slog.Logger
 }
 
 // New builds the application. Nothing starts running until Start.
@@ -150,12 +151,16 @@ func New(ctx context.Context, cfg *config.Config, logger *slog.Logger) (*Server,
 		api.Handle("GET /v1/ws", ws.Handler(hub, problems, logger, jobsModule.Authorize()))
 	})
 
-	return &Server{Handler: root, Hub: hub, Jobs: jobsModule, APIKeys: keys, Health: healthModule, pool: pool}, nil
+	return &Server{Handler: root, Hub: hub, Jobs: jobsModule, APIKeys: keys, Health: healthModule, pool: pool, logger: logger}, nil
 }
 
 // Start launches background work (the job workers). It returns at once.
 func (s *Server) Start(ctx context.Context) {
 	s.Jobs.Start(ctx)
+	// Reconcile jobs a previous run left behind (persistent store only).
+	if err := s.Jobs.Recover(ctx); err != nil {
+		s.logger.Error("job recovery failed", slog.Any("error", err))
+	}
 }
 
 // Shutdown closes long-lived connections and waits for workers.

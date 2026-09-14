@@ -126,7 +126,11 @@ socket with `1001 Going Away` before the HTTP drain.
 - **Persistence**: done for Postgres — `internal/{apikeys,jobs}/adapters/postgres`
   implement the two `Repository` ports on `pgx` behind `RUNNER_DATABASE_URL`,
   with the shared pool and migrator in `packages/go/postgres`; the memory
-  adapters remain the default and the reference behaviour. Embedded SQLite
+  adapters remain the default and the reference behaviour. On startup the
+  jobs service reconciles persisted non-terminal jobs (`Service.Recover`):
+  `queued` jobs are re-enqueued so they still run, and `running` jobs left by
+  a crashed process are failed with a reason, since their worker goroutine
+  cannot be resumed and requeuing could repeat a side effect. Embedded SQLite
   (`modernc.org/sqlite`) is the same pattern if a zero-dependency store is
   ever wanted.
 - **OpenAPI**: write `api/openapi.yaml` by hand or generate it with
