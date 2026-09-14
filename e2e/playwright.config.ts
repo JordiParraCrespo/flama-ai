@@ -49,6 +49,7 @@ export default defineConfig({
       testDir: './tests/api',
       use: { baseURL: API_URL },
     },
+    // flama:begin web
     {
       name: 'web',
       testDir: './tests/web',
@@ -60,5 +61,6 @@ export default defineConfig({
         ignoreHTTPSErrors: true,
       },
     },
+    // flama:end web
   ],
 });

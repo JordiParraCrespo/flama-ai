@@ -22,19 +22,36 @@ const sidebars: SidebarsConfig = {
         'architecture/frontend-architecture',
         'architecture/query-keys',
         'architecture/analytics',
+        // flama:begin runner
         'architecture/go-services',
+        // flama:end runner
       ],
     },
     'errors',
+    // flama:begin cli|mcp
     {
       type: 'category',
       label: 'CLI & MCP',
-      items: ['tooling/permissions', 'tooling/cli', 'tooling/mcp'],
+      items: [
+        'tooling/permissions',
+        // flama:begin cli
+        'tooling/cli',
+        // flama:end cli
+        // flama:begin mcp
+        'tooling/mcp',
+        // flama:end mcp
+      ],
     },
+    // flama:end cli|mcp
     {
       type: 'category',
       label: 'Deployment',
-      items: ['deployment/tier-1-cheap', 'deployment/tier-2-production'],
+      items: [
+        'deployment/tier-1-cheap',
+        // flama:begin helm
+        'deployment/tier-2-production',
+        // flama:end helm
+      ],
     },
   ],
 };

@@ -46,9 +46,15 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       FRONTEND_URL: ${FRONTEND_URL}
+      # flama:begin admin-web
       ADMIN_FRONTEND_URL: ${ADMIN_FRONTEND_URL:-http://localhost:3003}
+      # flama:end admin-web
+      # flama:begin mobile
       MOBILE_SCHEME: ${MOBILE_SCHEME:-flama}
+      # flama:end mobile
+      # flama:begin admin-mobile
       ADMIN_MOBILE_SCHEME: ${ADMIN_MOBILE_SCHEME:-flama-admin}
+      # flama:end admin-mobile
       # OAuth providers. The image does not ship the root `.env`, so anything
       # the API must read has to be forwarded here. Empty is the "not
       # configured" value — the provider simply stays off (see
@@ -60,6 +66,7 @@ services:
     ports:
       - "3001:3001"
 
+  # flama:begin web
   web:
     image: ${WEB_IMAGE:-ghcr.io/your-org/flama-web:latest}
     restart: always
@@ -74,7 +81,9 @@ services:
     # rather than adding to it — see apps/web/nginx.conf.
     ports:
       - "3000:3000"
+  # flama:end web
 
+  # flama:begin admin-web
   admin-web:
     image: ${ADMIN_WEB_IMAGE:-ghcr.io/your-org/flama-admin-web:latest}
     restart: always
@@ -82,13 +91,17 @@ services:
       - api
     ports:
       - "3003:3000"
+  # flama:end admin-web
 
+  # flama:begin docs
   docs:
     image: ${DOCS_IMAGE:-ghcr.io/your-org/flama-docs:latest}
     restart: always
     ports:
       - "3002:80"
+  # flama:end docs
 
+  # flama:begin runner
   runner:
     image: ${RUNNER_IMAGE:-ghcr.io/your-org/flama-runner:latest}
     restart: always
@@ -111,6 +124,7 @@ services:
     # Not published: only the API (on the compose network) talks to it.
     expose:
       - "3006"
+  # flama:end runner
 
 volumes:
   postgres_data:
