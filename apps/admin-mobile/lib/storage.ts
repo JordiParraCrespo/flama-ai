@@ -1,6 +1,7 @@
 import type { IStorageService } from '@flama/frontend';
 import * as SecureStore from 'expo-secure-store';
 
+/** Secrets only. Preferences live in MMKV (`lib/storage/mmkv.ts`). */
 const AUTH_KEYS = ['accessToken', 'refreshToken'] as const;
 
 export class ExpoSecureStoreService implements IStorageService {

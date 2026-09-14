@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -49,10 +49,10 @@ function localeCodes(locale: string): Set<string> {
 
 const codes = catalogCodes();
 const locales = readdirSync(TRANSLATIONS, { withFileTypes: true })
-  // Locales are the plain directories; `node_modules` and turbo's `.turbo` cache
-  // live alongside them and carry no bundle.
+  // Locale directories contain a compiled index bundle. Other package folders,
+  // such as scripts and caches, can live beside them.
   .filter(
-    (entry) => entry.isDirectory() && entry.name !== 'node_modules' && !entry.name.startsWith('.'),
+    (entry) => entry.isDirectory() && existsSync(join(TRANSLATIONS, entry.name, 'index.json')),
   )
   .map((entry) => entry.name);
 

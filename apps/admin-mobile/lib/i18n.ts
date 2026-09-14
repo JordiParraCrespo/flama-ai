@@ -1,10 +1,11 @@
+import 'intl-pluralrules';
 import { defaultLocale, defaultNS, type Locale, locales, resources } from '@flama/translations';
 import { getLocales } from 'expo-localization';
-import * as SecureStore from 'expo-secure-store';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { storage } from './storage/mmkv';
 
-/** SecureStore key used to persist the user's language choice. */
+/** Preference key — MMKV, not the keychain. */
 export const LOCALE_STORAGE_KEY = 'flama.locale';
 
 function isSupported(value: string | null | undefined): value is Locale {
@@ -17,33 +18,28 @@ function getDeviceLocale(): Locale {
   return isSupported(code) ? code : defaultLocale;
 }
 
+const storedLocale = storage.getItem<string>(LOCALE_STORAGE_KEY);
+
 i18n.use(initReactI18next).init({
-  resources,
+  resources: resources as typeof i18n.options.resources,
   defaultNS,
-  lng: getDeviceLocale(),
+  lng: isSupported(storedLocale) ? storedLocale : getDeviceLocale(),
   fallbackLng: defaultLocale,
   supportedLngs: [...locales],
+  react: { useSuspense: false },
+  returnNull: false,
   interpolation: {
     // React already escapes values, so i18next must not double-escape.
+    // Number/date formatting uses `{{val, number}}` / `{{val, datetime}}` via
+    // i18next's built-in Intl formatter (enabled by intl-pluralrules above).
     escapeValue: false,
   },
 });
 
-// Apply a previously persisted choice once SecureStore resolves.
-SecureStore.getItemAsync(LOCALE_STORAGE_KEY)
-  .then((stored) => {
-    if (isSupported(stored) && stored !== i18n.language) {
-      return i18n.changeLanguage(stored);
-    }
-  })
-  .catch(() => {
-    // Ignore storage errors and keep the detected locale.
-  });
-
 /** Change the active language and persist it for future launches. */
 export async function setLocale(locale: Locale): Promise<void> {
   await i18n.changeLanguage(locale);
-  await SecureStore.setItemAsync(LOCALE_STORAGE_KEY, locale);
+  storage.setItem(LOCALE_STORAGE_KEY, locale);
 }
 
 export default i18n;

@@ -13,19 +13,22 @@ Expo (React Native) app using expo-router.
 - **i18next** for i18n (translations from `@flama/translations`)
 - **React Hook Form** + `zodResolver` for forms (`Controller` per field — the
   DOM-ref `register()` path does not work in React Native)
-- **expo-secure-store** for secure token storage
-- **TanStack Query** for server state, persisted to `AsyncStorage` (policy from
-  `@flama/frontend/react`, wired in `lib/query.ts`)
+- **expo-dev-client** — Expo Go is not supported (Nitro, MMKV, Sentry, sheets)
+- **expo-secure-store** for secrets only; **MMKV** for preferences and the query cache
+- **TanStack Query** persisted to MMKV (policy from `@flama/frontend/react`)
+- **nitro-fetch** polyfill in `index.ts` (must stay the first import)
+- Overlays: gorhom bottom-sheet (KaikuLabs forks), `MobileRoot`, `toast()`
 
 ## Layout
 
 ```
+index.ts              # polyfills first, then expo-router/entry
 app/                  # expo-router screens/routes
 components/            # app-local components
-lib/                  # helpers
+lib/                  # helpers (storage, config, sentry, query)
 types/
-app.config.ts         # Expo config
-metro.config.js       # Metro bundler (monorepo-aware)
+app.config.ts         # Expo config (source of truth for native)
+metro.config.js       # Metro (Sentry + NativeWind + gorhom source)
 ```
 
 ## Where code goes
@@ -55,7 +58,8 @@ short version:
 ## Commands
 
 ```bash
-pnpm --filter @flama/mobile dev       # start Expo dev server
+pnpm --filter @flama/mobile prebuild  # regenerate ios/ android/
+pnpm --filter @flama/mobile dev       # Expo dev client
 pnpm --filter @flama/mobile ios
 pnpm --filter @flama/mobile android
 pnpm --filter @flama/mobile build:dev # EAS build (dev profile)

@@ -22,8 +22,8 @@ export type Catalog = Record<string, unknown>;
  * the chunk it produces is simply never requested.
  */
 const LOADERS: Record<Locale, () => Promise<{ default: Catalog }>> = {
-  en: () => import('./en/index.json'),
-  es: () => import('./es/index.json'),
+  en: () => import('./en'),
+  es: () => import('./es'),
 };
 
 /** Whether a string is a locale this package ships a catalog for. */

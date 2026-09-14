@@ -1,4 +1,4 @@
-import type en from './en/index.json';
+import type en from './en';
 
 /**
  * Locale metadata, deliberately free of catalog imports.

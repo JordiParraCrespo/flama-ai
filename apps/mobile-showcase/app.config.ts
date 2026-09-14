@@ -5,7 +5,6 @@ const config: ExpoConfig = {
   slug: 'flama-showcase',
   version: '0.1.0',
   scheme: 'flama-showcase',
-  newArchEnabled: true,
   platforms: ['ios', 'android'],
   userInterfaceStyle: 'automatic',
   ios: {
@@ -15,7 +14,17 @@ const config: ExpoConfig = {
   android: {
     package: 'com.flama.showcase',
   },
-  plugins: ['expo-router'],
+  plugins: [
+    'expo-router',
+    'expo-dev-client',
+    'expo-image',
+    [
+      'react-native-nano-icons',
+      {
+        iconSets: [{ inputDir: '../../packages/design-system/mobile/assets/icons/ui' }],
+      },
+    ],
+  ],
 };
 
 export default config;

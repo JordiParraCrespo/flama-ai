@@ -1,4 +1,4 @@
-import { OpenAPI } from '@flama/api-client';
+import { applyApiClientConfig, OpenAPI, rememberHeaders } from '@flama/api-client';
 import { ContainerModule } from 'inversify';
 import { TOKENS } from '../../di/tokens';
 import type { IAnalyticsClient } from '../analytics/analytics.client';
@@ -28,6 +28,12 @@ export function createCoreModule(config: CoreModuleConfig): ContainerModule {
     OpenAPI.WITH_CREDENTIALS = true;
     OpenAPI.CREDENTIALS = 'include';
     OpenAPI.HEADERS = () => config.authClient.getAuthHeaders();
+    rememberHeaders(() => config.authClient.getAuthHeaders());
+    void applyApiClientConfig({
+      baseUrl: config.apiBaseUrl,
+      credentials: 'include',
+      headers: () => config.authClient.getAuthHeaders(),
+    });
 
     bind<IStorageService>(TOKENS.StorageService).toConstantValue(config.storage);
     bind<IAuthClient>(TOKENS.AuthClient).toConstantValue(config.authClient);

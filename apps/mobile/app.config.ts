@@ -7,6 +7,30 @@ import type { ExpoConfig } from 'expo/config';
 // for the bundler to inline them. Real environment variables still win.
 loadEnv();
 
+const plugins: ExpoConfig['plugins'] = [
+  'expo-router',
+  'expo-secure-store',
+  'expo-localization',
+  'expo-dev-client',
+  'expo-image',
+  [
+    'react-native-nano-icons',
+    {
+      iconSets: [{ inputDir: '../../packages/design-system/mobile/assets/icons/ui' }],
+    },
+  ],
+];
+
+if (process.env.SENTRY_ORG && process.env.SENTRY_PROJECT) {
+  plugins.push([
+    '@sentry/react-native/expo',
+    {
+      organization: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+    },
+  ]);
+}
+
 const config: ExpoConfig = {
   name: 'Flama',
   slug: 'flama',
@@ -14,7 +38,6 @@ const config: ExpoConfig = {
   // Deep-link scheme; the public variable is bundled into the client and must
   // agree with the API's MOBILE_SCHEME trusted origin.
   scheme: process.env.EXPO_PUBLIC_MOBILE_SCHEME ?? process.env.MOBILE_SCHEME ?? 'flama',
-  newArchEnabled: true,
   platforms: ['ios', 'android'],
   userInterfaceStyle: 'automatic',
   ios: {
@@ -27,7 +50,7 @@ const config: ExpoConfig = {
       backgroundColor: '#ffffff',
     },
   },
-  plugins: ['expo-router', 'expo-secure-store', 'expo-localization'],
+  plugins,
 };
 
 export default config;

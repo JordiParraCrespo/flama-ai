@@ -69,9 +69,8 @@ export function useSocialLogin(
 ) {
   const app = useFlamaApp();
 
-  return useMutation({
-    mutationFn: ({ provider, intent }: SocialLoginVariables) =>
-      app.auth.socialLogin(provider, intent),
+  return useMutation<void, Error, SocialLoginVariables>({
+    mutationFn: ({ provider, intent }) => app.auth.socialLogin(provider, intent),
     ...options,
   });
 }

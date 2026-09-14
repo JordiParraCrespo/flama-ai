@@ -7,18 +7,24 @@ import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-rean
 configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 
 import { Button } from '@flama/design-system-mobile/button';
+import { MobileRoot } from '@flama/design-system-mobile/mobile-root';
 import { Text } from '@flama/design-system-mobile/text';
 import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend/react';
 import { ThemeProvider } from '@react-navigation/native';
-import { PortalHost } from '@rn-primitives/portal';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, vars } from 'nativewind';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
+import { ErrorBoundary } from '../components/error-boundary';
+import { AppErrorFallback, ScreenErrorFallback } from '../components/error-fallback';
 import { ScreenViewTracker } from '../lib/analytics';
+import { configManager } from '../lib/config/config-manager';
+import { ConfigManagerContext } from '../lib/config/use-config';
 import { app } from '../lib/flama';
+import { initPurchases } from '../lib/purchases';
 import { persistOptions, queryClient } from '../lib/query';
 import { NAV_THEME } from '../lib/theme';
 
@@ -27,22 +33,34 @@ export default function RootLayout() {
   const theme = colorScheme === 'dark' ? darkVars : lightVars;
   const isDark = colorScheme === 'dark';
 
+  useEffect(() => {
+    void configManager.load();
+    void initPurchases();
+  }, []);
+
   return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
-      <FlamaProvider app={app}>
-        <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
-          <View
-            style={vars(theme)}
-            className={isDark ? 'dark flex-1 bg-background' : 'flex-1 bg-background'}
-          >
-            <StatusBar style={isDark ? 'light' : 'dark'} />
-            <ScreenViewTracker />
-            <AuthGate />
-            <PortalHost />
-          </View>
-        </ThemeProvider>
-      </FlamaProvider>
-    </PersistQueryClientProvider>
+    <ErrorBoundary fallback={() => <AppErrorFallback />}>
+      <MobileRoot>
+        <ConfigManagerContext.Provider value={configManager}>
+          <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions as never}>
+            <FlamaProvider app={app}>
+              <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
+                <View
+                  style={vars(theme)}
+                  className={isDark ? 'dark flex-1 bg-background' : 'flex-1 bg-background'}
+                >
+                  <StatusBar style={isDark ? 'light' : 'dark'} />
+                  <ScreenViewTracker />
+                  <ErrorBoundary fallback={(reset) => <ScreenErrorFallback onReset={reset} />}>
+                    <AuthGate />
+                  </ErrorBoundary>
+                </View>
+              </ThemeProvider>
+            </FlamaProvider>
+          </PersistQueryClientProvider>
+        </ConfigManagerContext.Provider>
+      </MobileRoot>
+    </ErrorBoundary>
   );
 }
 

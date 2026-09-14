@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "sideEffects": false,
   "private": true,
-  "//": "Generated, self-contained client (uses platform fetch). Intentionally has no runtime `dependencies` \u2014 do not add an HTTP library here. See README.md.",
+  "//": "The generated SDK uses platform fetch through @hey-api/client-fetch. Do not add axios or another HTTP library.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -12,15 +12,20 @@
     "./services": "./src/data-access/api/openapi/services/index.ts"
   },
   "scripts": {
-    "generate": "openapi -i ../../apps/api/openapi.json -o src/data-access/api/openapi --exportSchemas=true --exportModels=true --useUnionTypes --postfixServices=Api && node scripts/openapi-postprocess.mjs",
+    "generate": "openapi-ts && node scripts/openapi-postprocess.mjs",
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
     "lint": "biome check src/"
   },
+  "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1"
+  },
   "devDependencies": {
     "@flama/config": "workspace:^",
-    "openapi-typescript-codegen": "^0.30.0",
+    "@hey-api/client-fetch": "^0.13.1",
+    "@hey-api/openapi-ts": "^0.99.0",
+    "@tanstack/react-query": "^5.102.8",
     "typescript": "^6.0.3"
   }
 }

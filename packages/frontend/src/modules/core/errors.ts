@@ -81,8 +81,14 @@ export function toAppError(error: unknown, fallback: ErrorDefinition): AppError 
     status?: number;
     code?: unknown;
     body?: unknown;
+    error?: unknown;
+    response?: { status?: number; data?: unknown };
   } | null;
-  const body = candidate?.body;
+  const body =
+    candidate?.body ??
+    candidate?.error ??
+    candidate?.response?.data ??
+    (typeof candidate?.error === 'object' ? candidate.error : undefined);
 
   if (isProblemDetails(body)) {
     return new AppError(fallback, {

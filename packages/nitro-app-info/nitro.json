@@ -1,0 +1,22 @@
+{
+  "cxxNamespace": ["flama", "appinfo"],
+  "ios": {
+    "iosModuleName": "FlamaAppInfo"
+  },
+  "android": {
+    "androidNamespace": ["flama", "appinfo"],
+    "androidCxxLibName": "FlamaAppInfo"
+  },
+  "autolinking": {
+    "AppInfo": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridAppInfo"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridAppInfo"
+      }
+    }
+  }
+}

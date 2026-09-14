@@ -8,8 +8,9 @@ Shared i18n resources used by `apps/web` (react-i18next) and `apps/mobile`
 ## Layout
 
 ```
-en/index.json         # English locale
-es/index.json         # Spanish locale
+en/{area}.json        # English, one file per product area (source of truth)
+es/{area}.json        # Spanish, same keys
+en/index.json         # assembled merge (`pnpm --filter @flama/translations assemble`)
 locales.ts            # locale list, default, namespace, Messages type — no catalogs
 lazy.ts               # one dynamic import per catalog, for the browsers
 index.ts              # the eager barrel: every catalog, for the API and Expo
@@ -33,8 +34,9 @@ template-string import.
 
 ## Conventions
 
-- **New translations go in `packages/translations/{locale}/index.json`** — not
-  inline in app code.
+- **New translations go in `packages/translations/{locale}/{area}.json`** — not
+  inline in app code. Run `pnpm --filter @flama/translations assemble` so
+  `{locale}/index.json` matches. Call sites keep `t('auth.login')`.
 - Keep the key structure identical across every locale; add a key to _all_
   locales when introducing new copy so nothing falls back silently.
 - Both web and mobile consume the same bundles, so keys must stay

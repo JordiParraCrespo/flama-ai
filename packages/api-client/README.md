@@ -10,9 +10,14 @@ on every regeneration.
 pnpm generate:api-client   # from the repo root
 ```
 
-This runs `openapi-typescript-codegen` against `apps/api/openapi.json` and then a
-post-process step (`scripts/openapi-postprocess.mjs`). Regenerate after any change
-to an API endpoint or its Swagger decorators.
+This runs `@hey-api/openapi-ts` against `apps/api/openapi.json` (config in
+`openapi-ts.config.ts`). Output lands in `src/generated/` (SDK, types, TanStack
+Query `queryOptions` / `queryKeys`). Screens still go through `@flama/frontend`
+wrappers so persist policy and entity mapping stay in one place.
+
+Regenerate after any change to an API endpoint or its Swagger decorators. The
+legacy class client under `src/data-access/` remains until call sites finish
+moving to the SDK.
 
 ## What's inside
 

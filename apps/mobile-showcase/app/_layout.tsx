@@ -4,8 +4,8 @@ import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-rean
 
 configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 
+import { MobileRoot } from '@flama/design-system-mobile/mobile-root';
 import { ThemeProvider } from '@react-navigation/native';
-import { PortalHost } from '@rn-primitives/portal';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, vars } from 'nativewind';
@@ -19,6 +19,7 @@ export default function RootLayout() {
   const isDark = colorScheme === 'dark';
 
   return (
+    <MobileRoot>
     <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
       <View
         style={vars(theme)}
@@ -56,9 +57,9 @@ export default function RootLayout() {
           <Stack.Screen name="buttons" options={{ headerTitle: 'Buttons' }} />
           <Stack.Screen name="components/[slug]" options={{ headerTitle: 'Component' }} />
         </Stack>
-        <PortalHost />
       </View>
     </ThemeProvider>
+    </MobileRoot>
   );
 }
 

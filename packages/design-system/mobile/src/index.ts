@@ -36,13 +36,19 @@ export { AspectRatio } from './components/ui/aspect-ratio';
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 export type { BadgeProps } from './components/ui/badge';
 export { Badge, badgeTextVariants, badgeVariants } from './components/ui/badge';
+export type { BottomSheetModalProps } from './components/ui/bottom-sheet-modal';
+export {
+  BottomSheetModal,
+  BottomSheetModalContent,
+  BottomSheetModalProvider,
+  BottomSheetScrollView,
+} from './components/ui/bottom-sheet-modal';
 export type { ButtonProps } from './components/ui/button';
 export {
   Button,
   buttonTextVariants,
   buttonVariants,
 } from './components/ui/button';
-
 export {
   Card,
   CardContent,
@@ -51,7 +57,6 @@ export {
   CardHeader,
   CardTitle,
 } from './components/ui/card';
-
 export { ChatMarkdown } from './components/ui/chat-markdown';
 export { Checkbox } from './components/ui/checkbox';
 export {
@@ -61,7 +66,6 @@ export {
 } from './components/ui/collapsible';
 export type { ComboboxOption } from './components/ui/combobox';
 export { Combobox } from './components/ui/combobox';
-
 export {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -78,7 +82,6 @@ export {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from './components/ui/context-menu';
-
 export {
   Dialog,
   DialogClose,
@@ -91,7 +94,6 @@ export {
   DialogTitle,
   DialogTrigger,
 } from './components/ui/dialog';
-
 export {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -118,6 +120,8 @@ export {
   EmptyTitle,
 } from './components/ui/empty';
 export { EmptyState } from './components/ui/empty-state';
+export type { ExpoImageProps } from './components/ui/expo-image';
+export { ExpoImage } from './components/ui/expo-image';
 export type { FilterMenuOption } from './components/ui/filter-menu';
 export { FilterMenu } from './components/ui/filter-menu';
 export {
@@ -127,9 +131,9 @@ export {
 } from './components/ui/hover-card';
 export { Icon } from './components/ui/icon';
 export { Input } from './components/ui/input';
-
 export { Label } from './components/ui/label';
-
+export type { LegendListProps, LegendListRef } from './components/ui/legend-list';
+export { LegendList } from './components/ui/legend-list';
 export { MailboxChip, MailboxTag } from './components/ui/mailbox-tag';
 export {
   Menubar,
@@ -160,15 +164,20 @@ export {
   MessageReaderMeta,
   MessageReaderSubject,
 } from './components/ui/message-reader';
-
+export { MobileRoot } from './components/ui/mobile-root';
+export type { OverlayAnimation, OverlayProps } from './components/ui/overlay';
+export {
+  OVERLAY_PORTAL_NAME,
+  Overlay,
+  OverlayProvider,
+  PortalProvider,
+} from './components/ui/overlay';
 export {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from './components/ui/popover';
-
 export { Progress } from './components/ui/progress';
-
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
 export { ReplyBox } from './components/ui/reply-box';
 export type { Option } from './components/ui/select';
@@ -184,9 +193,7 @@ export {
   SelectTrigger,
   SelectValue,
 } from './components/ui/select';
-
 export { Separator } from './components/ui/separator';
-
 export { Skeleton } from './components/ui/skeleton';
 export type {
   StageBreakdownItem,
@@ -198,6 +205,8 @@ export { Switch } from './components/ui/switch';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 export { Text, TextClassContext } from './components/ui/text';
 export { Textarea } from './components/ui/textarea';
+export type { ShowToastProps, ToastVariant } from './components/ui/toast';
+export { Toast, toast } from './components/ui/toast';
 export { Toggle, ToggleIcon, toggleVariants } from './components/ui/toggle';
 export {
   ToggleGroup,
@@ -215,11 +224,11 @@ export {
   ToolCallSummary,
   ToolCallTrigger,
 } from './components/ui/tool-call';
-
 export {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from './components/ui/tooltip';
+export { useHardwareBack } from './hooks/use-hardware-back';
 
 export { cn } from './lib/utils';
