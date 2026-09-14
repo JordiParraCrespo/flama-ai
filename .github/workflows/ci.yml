@@ -279,6 +279,9 @@ jobs:
     runs-on: gha-vm
     needs:
       - changes
+      # Lint no longer gates the test jobs, so it is listed here on its own:
+      # an image still waits for Biome, the architecture rules and the
+      # starter manifest to pass.
       - lint
       - test
       - test-integration

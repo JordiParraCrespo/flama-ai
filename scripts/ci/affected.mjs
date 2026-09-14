@@ -81,7 +81,19 @@ function baseRef() {
   const flag = process.argv.indexOf('--base');
   if (flag !== -1) return process.argv[flag + 1];
   // Set by GitHub on pull_request events only; a push has no base to diff against.
-  return process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : null;
+  const branch = process.env.GITHUB_BASE_REF;
+  if (!branch) return null;
+  // Make the remote-tracking ref exist and be current, whatever the checkout
+  // fetched: both the diff and Turbo's SCM base read it, and a missing ref
+  // would fail the job rather than fall back to a full run.
+  execFileSync(
+    'git',
+    ['fetch', '--no-tags', 'origin', `+refs/heads/${branch}:refs/remotes/origin/${branch}`],
+    {
+      stdio: 'inherit',
+    },
+  );
+  return `origin/${branch}`;
 }
 
 const base = baseRef();

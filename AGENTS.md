@@ -79,7 +79,9 @@ When you add a file that mentions an optional app (CI, compose, Helm,
   (a change in `packages/shared` reaches every app that imports it), and the
   jobs build, test and package only those. A push to `main`, or a change to a
   file no package owns (the workflow, the lockfile, `docker/`, `scripts/`),
-  runs everything. A new Docker image or a new global file goes in that script
+  runs everything. A new Docker image is a row in that script's `IMAGES`; a
+  new root-level file every package relies on is a pattern in its
+  `GLOBAL_PATHS`
 
 ### Backend (`apps/api` + `packages/backend/*`)
 
