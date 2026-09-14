@@ -49,7 +49,7 @@
   "dependencies": {
     "@flama/api-client": "workspace:*",
     "@flama/shared": "workspace:*",
-    "@tanstack/query-core": "^5.101.4",
+    "@tanstack/query-core": "^5.102.8",
     "better-auth": "^1.6.25",
     "inversify": "^8.2.3",
     "reflect-metadata": "^0.2.2",
@@ -58,11 +58,12 @@
   },
   "devDependencies": {
     "@flama/config": "workspace:^",
-    "@testing-library/react": "^16",
-    "@types/react": "19.2.14",
+    "@tanstack/react-query": "^5.102.8",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "19.3.0",
     "jsdom": "^29.1.1",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "typescript": "^6.0.3",
     "vitest": "^3.2.7"
   }

@@ -126,7 +126,7 @@
     "@rn-primitives/toggle-group": "1.4.0",
     "@rn-primitives/tooltip": "1.4.0",
     "@rn-primitives/types": "1.4.0",
-    "@types/react": "19.2.14",
+    "@types/react": "19.3.0",
     "typescript": "^5.9.3"
   }
 }
