@@ -33,6 +33,14 @@ jobs:
       # flama:end runner
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      # flama:begin web
+      # The design-system linter (`@shadcn/lint` through oxlint, scoped to its
+      # own rules — Biome keeps correctness). Every rule is at `warn` while the
+      # existing findings are worked off, so this step reports and never fails;
+      # promote a rule to `error` in apps/web/.oxlintrc.json once it is clean.
+      - name: Design-system lint (apps/web)
+        run: pnpm --filter @flama/web lint:design
+      # flama:end web
       - name: Architecture boundaries
         run: pnpm arch
       # flama:begin starter
