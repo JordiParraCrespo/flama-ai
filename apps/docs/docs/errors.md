@@ -247,6 +247,7 @@ operation, its code is folded onto the catalog, and the original survives as
 | `ADMIN_008` <a id="admin_008" /> | The admin service failed to handle this request                   | 502  |
 | `ADMIN_009` <a id="admin_009" /> | No such session for that user                                     | 404  |
 
+<!-- flama:begin runner -->
 ## Runner service
 
 The Go runner (`apps/runner`) emits the same document shape with its own
@@ -271,6 +272,7 @@ catalog. `RUNNER_*` codes are the generic layer shared by every route;
 | `JOB_003` <a id="job_003" />           | Job queue is full                            | 429  |
 | `JOB_004` <a id="job_004" />           | No runner registered for this job kind       | 400  |
 
+<!-- flama:end runner -->
 ## Domain invariants
 
 Exceptions raised by the DDD building blocks in `@flama/backend-ddd` surface

@@ -11,9 +11,15 @@ spec:
   tls:
     - hosts:
         - {{ .Values.ingress.hosts.api }}
+        # flama:begin web
         - {{ .Values.ingress.hosts.web }}
+        # flama:end web
+        # flama:begin admin-web
         - {{ .Values.ingress.hosts.adminWeb }}
+        # flama:end admin-web
+        # flama:begin docs
         - {{ .Values.ingress.hosts.docs }}
+        # flama:end docs
       secretName: {{ .Release.Name }}-tls
   {{- end }}
   rules:
@@ -27,6 +33,7 @@ spec:
                 name: {{ .Release.Name }}-api
                 port:
                   number: {{ .Values.api.port }}
+    # flama:begin web
     - host: {{ .Values.ingress.hosts.web }}
       http:
         paths:
@@ -37,6 +44,8 @@ spec:
                 name: {{ .Release.Name }}-web
                 port:
                   number: {{ .Values.web.port }}
+    # flama:end web
+    # flama:begin admin-web
     - host: {{ .Values.ingress.hosts.adminWeb }}
       http:
         paths:
@@ -47,6 +56,8 @@ spec:
                 name: {{ .Release.Name }}-admin-web
                 port:
                   number: {{ .Values.adminWeb.port }}
+    # flama:end admin-web
+    # flama:begin docs
     - host: {{ .Values.ingress.hosts.docs }}
       http:
         paths:
@@ -57,4 +68,5 @@ spec:
                 name: {{ .Release.Name }}-docs
                 port:
                   number: 80
+    # flama:end docs
 {{- end }}

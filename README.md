@@ -41,6 +41,25 @@ cp .env.example .env
 pnpm dev
 ```
 
+<!-- flama:begin starter -->
+## Starting your own project
+
+The starter ships every app it knows how to build; a real project keeps a few.
+Ask your coding agent to initialize the project (the `/starter-init` skill):
+it asks what you are building, proposes which apps and tools to keep, then
+removes the rest with `scripts/starter/prune.mjs` and rewrites the docs so no
+dead reference survives. Without an agent:
+
+```bash
+pnpm starter:prune --list                       # what can go
+pnpm starter:prune --without mobile,runner,mcp  # remove some, refresh the lockfile
+```
+
+Every optional app is a feature in `scripts/starter/features.json`, and every
+file that mentions one wraps those lines in `flama:begin`/`flama:end` markers.
+`pnpm starter:check` (run in CI) fails when a reference escapes them.
+<!-- flama:end starter -->
+
 ## Services
 
 | App                | URL                            |

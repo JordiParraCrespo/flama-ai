@@ -1,0 +1,186 @@
+{
+  "$comment": "Read by scripts/starter/prune.mjs and the /starter-init skill. Every optional piece of the starter is a feature here; the paths are what goes when it is dropped, and every other place that mentions it is wrapped in `flama:begin <id>` / `flama:end <id>` markers. `pnpm starter:check` (CI) fails when a feature is referenced outside its paths and markers, so this file cannot go stale silently.",
+  "features": {
+    "web": {
+      "title": "Consumer web app",
+      "summary": "apps/web \u2014 Vite + TanStack Router SPA for end users",
+      "identifiers": ["apps/web", "@flama/web", "flama-web"],
+      "paths": ["apps/web", "e2e/tests/web", "helm/flama/templates/web-deployment.yaml"]
+    },
+    "mobile": {
+      "title": "Consumer mobile app",
+      "summary": "apps/mobile \u2014 Expo app for end users (NativeWind, expo-router)",
+      "identifiers": ["apps/mobile", "@flama/mobile"],
+      "paths": ["apps/mobile"]
+    },
+    "admin-web": {
+      "title": "Admin control plane (web)",
+      "summary": "apps/admin-web \u2014 Vite control plane for users, roles and permissions",
+      "identifiers": ["apps/admin-web", "@flama/admin-web", "flama-admin-web"],
+      "paths": ["apps/admin-web", "helm/flama/templates/admin-web-deployment.yaml"]
+    },
+    "admin-mobile": {
+      "title": "Admin control plane (mobile)",
+      "summary": "apps/admin-mobile \u2014 Expo control plane for users and roles",
+      "identifiers": ["apps/admin-mobile", "@flama/admin-mobile"],
+      "paths": ["apps/admin-mobile"]
+    },
+    "web-showcase": {
+      "title": "Web design-system showcase",
+      "summary": "apps/web-showcase \u2014 Next.js gallery of @flama/design-system-web",
+      "identifiers": ["apps/web-showcase", "@flama/web-showcase"],
+      "paths": [
+        "apps/web-showcase",
+        ".agents/skills/next-best-practices",
+        ".agents/skills/next-cache-components",
+        ".agents/skills/next-upgrade",
+        "packages/config/tsconfig.nextjs.json"
+      ],
+      "json": [
+        {
+          "file": "turbo.json",
+          "path": "tasks.build.outputs",
+          "remove": [".next/**", "!.next/cache/**"]
+        },
+        {
+          "file": "biome.json",
+          "path": "files.includes",
+          "remove": ["!**/.next"]
+        }
+      ]
+    },
+    "mobile-showcase": {
+      "title": "Mobile design-system showcase",
+      "summary": "apps/mobile-showcase \u2014 Expo gallery of @flama/design-system-mobile",
+      "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
+      "paths": ["apps/mobile-showcase"]
+    },
+    "docs": {
+      "title": "Documentation site",
+      "summary": "apps/docs \u2014 Docusaurus site (architecture, deployment, error catalog)",
+      "identifiers": ["apps/docs", "@flama/docs", "flama-docs"],
+      "paths": [
+        "apps/docs",
+        "helm/flama/templates/docs-deployment.yaml",
+        "apps/api/src/__tests__/error-catalog-coverage.spec.ts"
+      ]
+    },
+    "cli": {
+      "title": "Command-line interface",
+      "summary": "apps/cli \u2014 `flama` CLI driven by scoped API tokens",
+      "identifiers": ["apps/cli", "@flama/cli"],
+      "paths": ["apps/cli", "apps/docs/docs/tooling/cli.md"]
+    },
+    "mcp": {
+      "title": "MCP server",
+      "summary": "apps/mcp \u2014 Model Context Protocol server (stdio + Streamable HTTP) over the API",
+      "identifiers": ["apps/mcp", "@flama/mcp", "flama-mcp"],
+      "paths": ["apps/mcp", "apps/docs/docs/tooling/mcp.md"]
+    },
+    "runner": {
+      "title": "Go runner service",
+      "summary": "apps/runner + packages/go/* \u2014 Go service template (REST + WS, API keys) the API delegates long-lived work to",
+      "identifiers": [
+        "apps/runner",
+        "@flama/runner",
+        "packages/go",
+        "@flama/go-",
+        "go.work",
+        "golangci",
+        "flama-runner",
+        "RUNNER_"
+      ],
+      "paths": [
+        "apps/runner",
+        "packages/go",
+        "go.work",
+        ".golangci.yml",
+        ".agents/rules/go.md",
+        "apps/docs/docs/architecture/go-services.md",
+        "helm/flama/templates/runner-deployment.yaml"
+      ]
+    },
+    "e2e": {
+      "title": "End-to-end tests",
+      "summary": "e2e/ \u2014 Playwright suites against the running API and web app",
+      "identifiers": ["@flama/e2e", "e2e/"],
+      "paths": ["e2e"],
+      "scripts": ["test:e2e"]
+    },
+    "qa": {
+      "title": "QA scenario pack",
+      "summary": "qa/ \u2014 scenario-driven Playwright QA pack with maturity tracking and screenshots",
+      "identifiers": ["@flama/qa", "qa/"],
+      "paths": ["qa", "plans", "docs/screenshots"],
+      "requires": ["web", "admin-web", "e2e"],
+      "scripts": ["qa", "qa:suite", "qa:coverage"],
+      "$comment": "plans/ holds only the QA pack's implementation plans and docs/screenshots is the curated QA run output, so both belong to it."
+    },
+    "helm": {
+      "title": "Kubernetes Helm chart",
+      "summary": "helm/ \u2014 chart for the Tier 2 (Kubernetes) deployment",
+      "identifiers": ["helm/"],
+      "paths": ["helm", "apps/docs/docs/deployment/tier-2-production.md"]
+    }
+  },
+  "shared": {
+    "packages/design-system/web": {
+      "identifiers": ["packages/design-system/web", "@flama/design-system-web"],
+      "neededBy": ["web", "admin-web", "web-showcase"]
+    },
+    "packages/design-system/mobile": {
+      "identifiers": ["packages/design-system/mobile", "@flama/design-system-mobile"],
+      "neededBy": ["mobile", "admin-mobile", "mobile-showcase"]
+    },
+    "packages/frontend": {
+      "identifiers": ["packages/frontend", "@flama/frontend"],
+      "neededBy": ["web", "mobile", "admin-web", "admin-mobile"]
+    },
+    "packages/api-client": {
+      "identifiers": ["packages/api-client", "@flama/api-client"],
+      "neededBy": ["web", "mobile", "admin-web", "admin-mobile"],
+      "scripts": ["generate:api-client"]
+    },
+    "apps/docs/docs/tooling/permissions.md": {
+      "identifiers": [],
+      "neededBy": ["cli", "mcp"]
+    },
+    "scripts/check-bundle-size.mjs": {
+      "identifiers": ["check-bundle-size", "check:bundle"],
+      "neededBy": ["web", "admin-web"],
+      "scripts": ["check:bundle"]
+    },
+    "packages/config/tsconfig.expo.json": {
+      "$comment": "Everything Expo leaves in the kept apps: the Better Auth expo plugin in apps/api, the EXPO_PUBLIC_* pass-through in turbo.json, the react-native override.",
+      "identifiers": ["tsconfig.expo", "EXPO_PUBLIC_", "@better-auth/expo", "react-native"],
+      "neededBy": ["mobile", "admin-mobile", "mobile-showcase"],
+      "json": [
+        {
+          "file": "turbo.json",
+          "path": "tasks.build.env",
+          "remove": ["EXPO_PUBLIC_*"]
+        },
+        {
+          "file": "package.json",
+          "path": "pnpm.overrides",
+          "deleteKeys": ["react-native"]
+        },
+        {
+          "file": "apps/api/package.json",
+          "path": "dependencies",
+          "deleteKeys": ["@better-auth/expo"]
+        },
+        {
+          "file": "biome.json",
+          "path": "files.includes",
+          "remove": ["!**/.expo"]
+        }
+      ]
+    }
+  },
+  "tooling": {
+    "$comment": "The starter apparatus itself, removed at the end of a one-shot prune.",
+    "paths": ["scripts/starter", ".agents/skills/starter-init"],
+    "scripts": ["starter:prune", "starter:check"]
+  }
+}

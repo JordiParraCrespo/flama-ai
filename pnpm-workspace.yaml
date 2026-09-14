@@ -1,8 +1,14 @@
 packages:
+  # flama:begin e2e
   - "e2e"
+  # flama:end e2e
+  # flama:begin qa
   - "qa"
+  # flama:end qa
   - "apps/*"
   - "packages/*"
+  # flama:begin runner
   - "packages/go/*"
+  # flama:end runner
   - "packages/backend/*"
   - "packages/design-system/*"

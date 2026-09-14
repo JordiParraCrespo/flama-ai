@@ -13,14 +13,21 @@ api:
     NODE_ENV: production
     BETTER_AUTH_URL: https://flama.dev
     FRONTEND_URL: https://flama.dev
+    # flama:begin admin-web
     ADMIN_FRONTEND_URL: https://control.flama.dev
+    # flama:end admin-web
+    # flama:begin mobile
     MOBILE_SCHEME: flama
+    # flama:end mobile
+    # flama:begin admin-mobile
     ADMIN_MOBILE_SCHEME: flama-admin
+    # flama:end admin-mobile
     DB_HOST: flama-postgres
     DB_PORT: "5432"
     REDIS_HOST: flama-redis
     REDIS_PORT: "6379"
 
+# flama:begin web
 web:
   # Extra origins for the nginx Content-Security-Policy (space separated).
   # Empty keeps the image default: the PostHog EU endpoints. Widen it when
@@ -37,7 +44,9 @@ web:
     limits:
       cpu: 300m
       memory: 256Mi
+# flama:end web
 
+# flama:begin admin-web
 adminWeb:
   # Extra origins for the nginx Content-Security-Policy (space separated).
   # Empty keeps the image default: the PostHog EU endpoints. Widen it when
@@ -54,7 +63,9 @@ adminWeb:
     limits:
       cpu: 300m
       memory: 256Mi
+# flama:end admin-web
 
+# flama:begin runner
 runner:
   image: ghcr.io/your-org/flama-runner:latest
   replicas: 1
@@ -72,7 +83,9 @@ runner:
   env:
     RUNNER_ENV: production
     ERROR_TYPE_BASE_URL: https://docs.flama.dev/errors
+# flama:end runner
 
+# flama:begin docs
 docs:
   image: ghcr.io/your-org/flama-docs:latest
   replicas: 1
@@ -84,6 +97,7 @@ docs:
     limits:
       cpu: 100m
       memory: 128Mi
+# flama:end docs
 
 postgres:
   enabled: true
@@ -104,8 +118,14 @@ ingress:
   className: nginx
   hosts:
     api: api.flama.dev
+    # flama:begin web
     web: flama.dev
+    # flama:end web
+    # flama:begin admin-web
     adminWeb: control.flama.dev
+    # flama:end admin-web
+    # flama:begin docs
     docs: docs.flama.dev
+    # flama:end docs
   tls:
     enabled: false

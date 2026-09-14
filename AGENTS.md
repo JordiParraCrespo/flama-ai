@@ -24,6 +24,7 @@ flama/
 │   ├── api-client/       # Auto-generated typed client from Swagger
 │   ├── auth/             # Shared Better Auth config + client helpers (@flama/auth)
 │   ├── backend/
+│   │   ├── authz/        # Authorization kernel: grants, policies (@flama/backend-authz)
 │   │   ├── cache/        # Redis cache abstraction (@flama/backend-cache)
 │   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
 │   │   ├── ddd/          # DDD/hexagon building blocks (@flama/backend-ddd)
@@ -47,6 +48,17 @@ flama/
 
 Each app and package has its own `README.md` covering its purpose, exports, and
 usage.
+
+<!-- flama:begin starter -->
+Every app above except `api` is optional. `scripts/starter/features.json`
+lists them with the paths and marked config blocks that go with each one, and
+`/starter-init` is the skill that turns the starter into a project: a short
+dialog about what the user is building, a proposal of what to keep, then
+`scripts/starter/prune.mjs` removes the rest and the skill rewrites the prose.
+When you add a file that mentions an optional app (CI, compose, Helm,
+`.env.example`, a sidebar), wrap the lines in `# flama:begin <id>` /
+`# flama:end <id>`; `pnpm starter:check` fails otherwise.
+<!-- flama:end starter -->
 
 ## Key conventions
 

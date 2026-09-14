@@ -21,6 +21,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # flama:begin runner
       # `pnpm arch` runs through Turborepo, whose ^build edge now reaches
       # the Go packages, so the toolchain has to be present here as well.
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
@@ -29,11 +30,19 @@ jobs:
           cache-dependency-path: |
             apps/runner/go.sum
             packages/go/*/go.sum
+      # flama:end runner
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - name: Architecture boundaries
         run: pnpm arch
+      # flama:begin starter
+      # The starter's feature manifest must keep describing the repo: every
+      # optional app referenced only inside its own paths or a marker block.
+      - name: Starter manifest
+        run: pnpm starter:check
+      # flama:end starter
 
+  # flama:begin runner
   go:
     name: Go (go.work)
     runs-on: gha-vm
@@ -57,6 +66,7 @@ jobs:
       - run: go test -count=1 github.com/jordiparracrespo/flama-ai/...
       - run: go build -trimpath ./cmd/server
         working-directory: apps/runner
+  # flama:end runner
 
   test:
     name: Test
@@ -69,6 +79,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # flama:begin runner
       # Turborepo builds and tests apps/runner through its package.json
       # scripts, so the Go toolchain has to be present here too.
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
@@ -77,13 +88,16 @@ jobs:
           cache-dependency-path: |
             apps/runner/go.sum
             packages/go/*/go.sum
+      # flama:end runner
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      # flama:begin web|admin-web
       # What a first-time visitor downloads before anything renders, against a
       # committed budget. Vite's own chunk warning prints and passes.
       - name: First-load budgets
         run: pnpm check:bundle
+      # flama:end web|admin-web
 
   test-integration:
     name: Integration Tests
@@ -96,16 +110,19 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # flama:begin runner
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.work
           cache-dependency-path: |
             apps/runner/go.sum
             packages/go/*/go.sum
+      # flama:end runner
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test:integration
 
+  # flama:begin e2e
   test-e2e:
     name: End-to-End Tests (API)
     runs-on: gha-vm
@@ -195,17 +212,42 @@ jobs:
           grep -nE 'Invalid (callbackURL|origin|redirectURL)|Current list of trustedOrigins|Better Auth' /tmp/api.log | head -n 20
           echo "--- api log (head)"
           head -n 60 /tmp/api.log
+  # flama:end e2e
 
   build-images:
     name: Build Docker Images
     runs-on: gha-vm
-    needs: [test, test-integration, test-e2e, go]
+    needs:
+      - test
+      - test-integration
+      # flama:begin e2e
+      - test-e2e
+      # flama:end e2e
+      # flama:begin runner
+      - go
+      # flama:end runner
     permissions:
       contents: read
       packages: write
     strategy:
       matrix:
-        app: [api, web, admin-web, docs, mcp, runner]
+        app:
+          - api
+          # flama:begin web
+          - web
+          # flama:end web
+          # flama:begin admin-web
+          - admin-web
+          # flama:end admin-web
+          # flama:begin docs
+          - docs
+          # flama:end docs
+          # flama:begin mcp
+          - mcp
+          # flama:end mcp
+          # flama:begin runner
+          - runner
+          # flama:end runner
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Lowercase repository name
@@ -222,8 +264,8 @@ jobs:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          # Consumed by apps/runner (embedded as the reported version);
-          # the Node images ignore it.
+          # Consumed by the Go runner image (embedded as the reported
+          # version); the Node images ignore it.
           build-args: |
             VERSION=${{ github.sha }}
           tags: |

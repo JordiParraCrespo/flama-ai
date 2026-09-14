@@ -23,6 +23,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Budget in KB of gzipped bytes on the critical path. */
 const APPS = [
+  // flama:begin web
   {
     name: '@flama/web',
     dist: 'apps/web/dist',
@@ -31,12 +32,15 @@ const APPS = [
     // screens, not shaving app code.
     budgetKB: 385,
   },
+  // flama:end web
+  // flama:begin admin-web
   {
     name: '@flama/admin-web',
     dist: 'apps/admin-web/dist',
     // 359KB measured — the same stack over fewer screens.
     budgetKB: 375,
   },
+  // flama:end admin-web
 ];
 
 /** Script and stylesheet URLs the entry HTML pulls in, as site-root paths. */

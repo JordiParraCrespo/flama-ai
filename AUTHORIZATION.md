@@ -932,6 +932,7 @@ builder is an admin surface and stays web-only.
 
 ---
 
+<!-- flama:begin cli|mcp -->
 ## Part 12 — CLI and MCP
 
 **CLI (`apps/cli`).** New `flama roles` command group: `list`, `show`, `create`,
@@ -953,6 +954,7 @@ convenience. Reads first; revisit with the audit log in place.
 
 ---
 
+<!-- flama:end cli|mcp -->
 ## Part 13 — Testing
 
 Five layers. The kernel is not done until all five exist.

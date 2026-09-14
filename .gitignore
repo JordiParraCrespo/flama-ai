@@ -4,8 +4,12 @@ node_modules/
 # Build outputs
 dist/
 build/
+# flama:begin web-showcase
 .next/
+# flama:end web-showcase
+# flama:begin mobile|admin-mobile|mobile-showcase
 .expo/
+# flama:end mobile|admin-mobile|mobile-showcase
 .docusaurus/
 *.tsbuildinfo
 node-compile-cache/
@@ -49,8 +53,13 @@ scratchpad/
 /CRM SaaS Design Pages.zip
 /Adri Rodrigo - Design System.html
 
+# flama:begin qa
 # QA pack run output. The curated copy under docs/screenshots/ is committed.
 qa/artifacts/
+# flama:end qa
 
 # Redis snapshot, written when a local redis-server is used instead of docker.
 dump.rdb
+
+# Claude Code agent worktrees (isolated checkouts, never repo content)
+.claude/worktrees/
