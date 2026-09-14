@@ -41,6 +41,7 @@ cp .env.example .env
 pnpm dev
 ```
 
+<!-- flama:begin starter -->
 ## Starting your own project
 
 The starter ships every app it knows how to build; a real project keeps a few.
@@ -57,6 +58,7 @@ pnpm starter:prune --without mobile,runner,mcp  # remove some, refresh the lockf
 Every optional app is a feature in `scripts/starter/features.json`, and every
 file that mentions one wraps those lines in `flama:begin`/`flama:end` markers.
 `pnpm starter:check` (run in CI) fails when a reference escapes them.
+<!-- flama:end starter -->
 
 ## Services
 
