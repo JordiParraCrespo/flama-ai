@@ -210,6 +210,66 @@ three that deliberately do not invert — add it to
 `packages/design-system/web/src/styles/globals.css` as a named token with a
 comment saying why. A brand-wide change has to be able to find it.
 
+## The design-system linter enforces the two rules above
+
+`pnpm lint:design` runs [`@shadcn/lint`](https://github.com/shadcn-ui/lint)
+through oxlint over every web and mobile app; each app's own `lint:design`
+script points at the configuration its design system ships
+(`packages/design-system/web/oxlint.design.json`,
+`packages/design-system/mobile/oxlint.design.json`) — the package that owns
+the components owns the rules for using them. On the web it reads
+the real theme from `globals.css`, so it knows which colours exist, and it
+knows which imports are design-system components, so it can tell a layout
+class from a restyle. Biome still owns correctness; oxlint's own rule
+categories are switched off so the two never overlap.
+
+The mobile configuration is the same rules minus two. The plugin only reads a
+Tailwind v4 theme and the mobile apps are NativeWind on Tailwind 3, so
+`no-unknown-classes` would judge against v4's class set (`flex-grow` is valid
+in 3, flagged in 4) and `no-inline-styles` would flag React Native's `style`
+prop — NativeWind's `vars()`, Expo's `<StatusBar style>` — which is not CSS.
+Both are off there. `no-raw-colors` still catches the stock palette
+(`text-blue-500` in `login.tsx`); it just cannot list the theme's tokens.
+`apps/mobile-showcase` lints `app` and `lib` only: `registry/` holds demo
+copies of component sources, which restyle primitives by design.
+
+What each rule catches, and how it is set:
+
+- `no-raw-colors` / `no-unknown-classes` — a colour utility the theme does not
+  declare. **These are always bugs**: Tailwind generates nothing for them, so
+  the element silently gets no colour.
+- `no-arbitrary-values` — `size-[17px]` when `size-4.25` is the same value on
+  the scale, or an off-scale value that should become a token.
+- `no-restyle` — spacing, colour, shape or typography overriding a component
+  that owns it (`gap-0 py-0` on `<Card>`; a `<Badge>` recoloured by hand).
+  Layout classes on a component are allowed; so is colouring an icon, which
+  the design system deliberately leaves to the caller.
+- `no-inline-styles` — a `style` attribute. The three that exist are
+  data-driven (`width: column.width`, a role's colour from the database) and
+  cannot be classes; disable the rule on those lines rather than move them.
+- `require-static-classes` is **off**: it cannot read through a shared class
+  constant like `className={authInputClass}`, and shared constants are the
+  convention here (see "The second time you write a helper, move it to
+  `lib/`" below).
+
+Every rule is at `warn` while the findings it inherited are worked off — at
+integration: web 234, admin-web 118, web-showcase 69, mobile 75, admin-mobile
+80, mobile-showcase 7. Promote a rule to `error` in the design system's
+`oxlint.design.json` once its count reaches zero; from then on it fails CI.
+Do not lower a rule
+back to `warn` to land a change. One known false positive to keep in mind
+before promoting `no-raw-colors`: the plugin reads `shadow-panel` as a shadow
+*colour* and reports it undeclared, though `--shadow-panel` is a real shadow
+token.
+
+The failure this prevents: on its first run the linter found four colour
+classes that had never existed — `text-ink-500`, `hover:text-ink-700`,
+`bg-surface-50` and `bg-chrome-bg` — each rendering nothing, across both web
+apps. `--chrome-bg` was a real variable feeding `--popover` and `--sidebar`,
+but it had never been exposed as `--color-chrome-bg`, so the top bar's
+background class was inert. Nothing in the type checker, the tests or the
+bundle budget can see a class that Tailwind quietly drops.
+
 ## Every component export belongs in the barrel
 
 `packages/design-system/web/src/index.ts` must re-export everything a file in

@@ -60,6 +60,16 @@ jobs:
       # flama:end runner
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      # flama:begin web|admin-web|web-showcase|mobile|admin-mobile|mobile-showcase
+      # The design-system linter (`@shadcn/lint` through oxlint, scoped to its
+      # own rules — Biome keeps correctness) over every web and mobile app that
+      # has a `lint:design` script. Every rule is at `warn` while the findings
+      # it inherited are worked off, so this step reports and never fails;
+      # promote a rule to `error` in the design system's oxlint.design.json
+      # once it is clean.
+      - name: Design-system lint
+        run: pnpm lint:design
+      # flama:end web|admin-web|web-showcase|mobile|admin-mobile|mobile-showcase
       # Empty filters mean "every package" to Turborepo, so an empty affected
       # list has to skip the step rather than pass nothing.
       - name: Architecture boundaries

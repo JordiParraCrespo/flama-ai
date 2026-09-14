@@ -65,6 +65,24 @@ pnpm build   # tsup -> dist
 pnpm dev     # tsup --watch
 ```
 
+## Design-system lint
+
+`oxlint.design.json` is this package's configuration for
+[`@shadcn/lint`](https://github.com/shadcn-ui/lint): the rules for using its
+components, owned by the package that ships them. It reads the theme from
+`src/styles/globals.css`, so it knows which colours exist, and recognises
+`@flama/design-system-web` imports as components, so it can tell a layout
+class from a restyle. Icons are excluded — colouring a glyph is the caller's
+job. Every consuming app points its `lint:design` script here:
+
+```json
+{ "lint:design": "oxlint -c ../../packages/design-system/web/oxlint.design.json src" }
+```
+
+Rules are at `warn` until an app's count for one reaches zero; then promote it
+to `error` here and it fails CI for every consumer. The rationale for each rule
+and the findings it inherited are in `.agents/rules/frontend-ui.md`.
+
 ## Consumed by
 
 `apps/web`, `apps/web-showcase`.
