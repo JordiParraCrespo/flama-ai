@@ -15,7 +15,17 @@ const config: ExpoConfig = {
   android: {
     package: 'com.flama.showcase',
   },
-  plugins: ['expo-router'],
+  plugins: [
+    'expo-router',
+    'expo-dev-client',
+    'expo-image',
+    [
+      'react-native-nano-icons',
+      {
+        iconSets: [{ inputDir: '../../packages/design-system/mobile/assets/icons/ui' }],
+      },
+    ],
+  ],
 };
 
 export default config;

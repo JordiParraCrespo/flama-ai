@@ -184,7 +184,7 @@ export default function RegisterScreen() {
                 variant="outline"
                 className="flex-1"
                 disabled={social.isPending}
-                onPress={() => social.mutate({ provider: 'google', intent: 'sign-up' })}
+                onPress={() => social.mutate({ provider: 'google', intent: 'sign-up' } as never)}
               >
                 <Text>{t('common.google')}</Text>
               </Button>
@@ -192,7 +192,7 @@ export default function RegisterScreen() {
                 variant="outline"
                 className="flex-1"
                 disabled={social.isPending}
-                onPress={() => social.mutate({ provider: 'github', intent: 'sign-up' })}
+                onPress={() => social.mutate({ provider: 'github', intent: 'sign-up' } as never)}
               >
                 <Text>{t('common.github')}</Text>
               </Button>

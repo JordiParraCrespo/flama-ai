@@ -1,0 +1,9 @@
+{
+  "cxxNamespace": ["flama", "appinfo"],
+  "ios": {
+    "iosModuleName": "FlamaAppInfo"
+  },
+  "android": {
+    "androidCxxLibName": "FlamaAppInfo"
+  }
+}

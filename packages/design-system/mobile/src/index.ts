@@ -36,6 +36,28 @@ export { AspectRatio } from './components/ui/aspect-ratio';
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 export type { BadgeProps } from './components/ui/badge';
 export { Badge, badgeTextVariants, badgeVariants } from './components/ui/badge';
+export {
+  BottomSheetModal,
+  BottomSheetModalContent,
+  BottomSheetModalProvider,
+  BottomSheetScrollView,
+} from './components/ui/bottom-sheet-modal';
+export type { BottomSheetModalProps } from './components/ui/bottom-sheet-modal';
+export { ExpoImage } from './components/ui/expo-image';
+export type { ExpoImageProps } from './components/ui/expo-image';
+export { LegendList } from './components/ui/legend-list';
+export type { LegendListProps, LegendListRef } from './components/ui/legend-list';
+export { MobileRoot } from './components/ui/mobile-root';
+export {
+  Overlay,
+  OverlayProvider,
+  OVERLAY_PORTAL_NAME,
+  PortalProvider,
+} from './components/ui/overlay';
+export type { OverlayAnimation, OverlayProps } from './components/ui/overlay';
+export { toast, Toast } from './components/ui/toast';
+export type { ShowToastProps, ToastVariant } from './components/ui/toast';
+export { useHardwareBack } from './hooks/use-hardware-back';
 export type { ButtonProps } from './components/ui/button';
 export {
   Button,

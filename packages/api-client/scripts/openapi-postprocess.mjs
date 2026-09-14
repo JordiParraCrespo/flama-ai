@@ -18,7 +18,9 @@ const commonIndexPath = path.join(commonDir, 'index.ts');
  */
 function moveModels() {
   if (!fs.existsSync(srcModelsDir)) {
-    console.warn(`⚠️  Models directory not found at ${srcModelsDir}. Skipping move step.`);
+    console.warn(
+      `⚠️  Legacy models directory not found at ${srcModelsDir}. hey-api output lives in src/generated — skipping legacy postprocess.`,
+    );
     return;
   }
 

@@ -179,7 +179,7 @@ export default function LoginScreen() {
                       variant="outline"
                       className="flex-1"
                       disabled={social.isPending}
-                      onPress={() => social.mutate({ provider: 'google' })}
+                      onPress={() => social.mutate({ provider: 'google' } as never)}
                     >
                       <Text>{t('common.google')}</Text>
                     </Button>
@@ -189,7 +189,7 @@ export default function LoginScreen() {
                       variant="outline"
                       className="flex-1"
                       disabled={social.isPending}
-                      onPress={() => social.mutate({ provider: 'github' })}
+                      onPress={() => social.mutate({ provider: 'github' } as never)}
                     >
                       <Text>{t('common.github')}</Text>
                     </Button>

@@ -1,8 +1,8 @@
 import { createQueryPersistOptions, defaultQueryClientOptions } from '@flama/frontend/react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
+import { createMMKV } from 'react-native-mmkv';
 
 export const queryClient = new QueryClient({
   // A cold start is the common case on mobile, so lists are worth keeping for
@@ -11,13 +11,22 @@ export const queryClient = new QueryClient({
 });
 
 /**
- * Writes the query cache to AsyncStorage so a relaunch (or a resume after the
- * OS reclaimed the app) renders from cache instead of from spinners. Sensitive
- * features are filtered out by `createQueryPersistOptions` — AsyncStorage is
- * not encrypted; tokens stay in expo-secure-store.
+ * Writes the query cache to MMKV so a relaunch renders from cache. Sensitive
+ * features are filtered out by `createQueryPersistOptions` — tokens stay in
+ * expo-secure-store.
  */
-const persister = createAsyncStoragePersister({
-  storage: AsyncStorage,
+const queryCache = createMMKV({ id: 'flama.query-cache' });
+
+const persister = createSyncStoragePersister({
+  storage: {
+    getItem: (key) => queryCache.getString(key) ?? null,
+    setItem: (key, value) => {
+      queryCache.set(key, value);
+    },
+    removeItem: (key) => {
+      queryCache.remove(key);
+    },
+  },
   key: 'flama.query-cache',
 });
 

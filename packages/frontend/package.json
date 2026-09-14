@@ -24,6 +24,10 @@
     "./validation": {
       "types": "./dist/validation/index.d.ts",
       "import": "./dist/validation/index.js"
+    },
+    "./config": {
+      "types": "./src/config/index.ts",
+      "import": "./src/config/index.ts"
     }
   },
   "peerDependencies": {
@@ -61,8 +65,8 @@
     "@testing-library/react": "^16",
     "@types/react": "19.2.14",
     "jsdom": "^29.1.1",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "typescript": "^6.0.3",
     "vitest": "^3.2.7"
   }

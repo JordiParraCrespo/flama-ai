@@ -101,6 +101,7 @@ export {
   useUserRoles,
   useUsersRoles,
 } from './roles.queries';
+export { withFeaturePrefix } from './query-keys';
 export {
   profileQueryKey,
   useDeleteUser,

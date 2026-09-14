@@ -15,7 +15,6 @@ const config: ExpoConfig = {
   // agree with the API's ADMIN_MOBILE_SCHEME trusted origin.
   scheme:
     process.env.EXPO_PUBLIC_ADMIN_MOBILE_SCHEME ?? process.env.ADMIN_MOBILE_SCHEME ?? 'flama-admin',
-  newArchEnabled: true,
   platforms: ['ios', 'android'],
   userInterfaceStyle: 'automatic',
   ios: {
@@ -28,7 +27,27 @@ const config: ExpoConfig = {
       backgroundColor: '#ffffff',
     },
   },
-  plugins: ['expo-router', 'expo-secure-store', 'expo-localization'],
+  plugins: [
+    'expo-router',
+    'expo-secure-store',
+    'expo-localization',
+    'expo-dev-client',
+    'expo-image',
+    [
+      'react-native-nano-icons',
+      {
+        iconSets: [{ inputDir: '../../packages/design-system/mobile/assets/icons/ui' }],
+      },
+    ],
+    [
+      '@sentry/react-native/expo',
+      {
+        organization: process.env.SENTRY_ORG ?? '',
+        project: process.env.SENTRY_PROJECT ?? '',
+      },
+    ],
+  ],
 };
+
 
 export default config;
