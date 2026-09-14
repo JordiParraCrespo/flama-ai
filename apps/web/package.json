@@ -28,7 +28,7 @@
     "i18next": "^26.4.2",
     "i18next-browser-languagedetector": "^8.2.1",
     "nuqs": "^2.10.1",
-    "posthog-js": "^1.431.8",
+    "posthog-js": "^1.432.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.88.0",
