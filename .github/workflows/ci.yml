@@ -110,6 +110,33 @@ jobs:
     name: End-to-End Tests
     runs-on: gha-vm
     needs: lint
+    # The same Postgres and Redis `pnpm docker:up` starts locally, as service
+    # containers: this runner has the Docker daemon but not the `docker
+    # compose` plugin, and the ports and credentials below are the ones
+    # docker/docker-compose.dev.yml and .env.example already agree on.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: flama
+          POSTGRES_PASSWORD: flama
+          POSTGRES_DB: flama
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U flama"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -130,7 +157,6 @@ jobs:
       # in .env.example gives it. `support/db.ts` reads the same root .env as
       # the API, so both necessarily agree on the database.
       - run: cp .env.example .env
-      - run: pnpm docker:up
       - run: pnpm build
       - run: pnpm --filter @flama/api migration:run
       - name: Start the API
@@ -151,7 +177,13 @@ jobs:
             sleep 1
           done
           echo "Web app never came up"; cat /tmp/web.log; exit 1
-      - run: pnpm --filter @flama/e2e exec playwright install --with-deps chromium
+      # `--with-deps` apt-gets the browser's shared libraries, which needs root.
+      # Where it cannot escalate, fall back to fetching just the browser — a VM
+      # image that has already run a browser has the libraries.
+      - name: Install Chromium
+        run: |
+          pnpm --filter @flama/e2e exec playwright install --with-deps chromium \
+            || pnpm --filter @flama/e2e exec playwright install chromium
       - run: pnpm test:e2e
       # Playwright keeps traces, screenshots and video for failures under
       # e2e/playwright-report and e2e/test-results. Upload them with
@@ -161,7 +193,7 @@ jobs:
   build-images:
     name: Build Docker Images
     runs-on: gha-vm
-    needs: [test, test-integration, go]
+    needs: [test, test-integration, test-e2e, go]
     permissions:
       contents: read
       packages: write

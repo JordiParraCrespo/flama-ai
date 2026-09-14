@@ -24,13 +24,19 @@ const tree = (
   </StrictMode>
 );
 
+const render = () => root.render(tree);
+
 /**
  * Rendering waits for the reader's message catalog, which is now loaded rather
- * than bundled for every locale but the default. `finally` rather than `then`:
- * a catalog that fails to load must still render the app — i18next falls back
- * to the bundled default locale, and a blank page would be a far worse outcome
+ * than bundled for every locale but the default. Both settlements render: a
+ * catalog that fails to load must still show the app — i18next falls back to
+ * the bundled default locale, and a blank page would be a far worse outcome
  * than English copy.
+ *
+ * Both handlers passed to one `then`, rather than `finally`, because `finally`
+ * re-throws: the promise it returns stays rejected, so the catalog failure this
+ * exists to survive would surface as an unhandled rejection anyway.
  *
  * For the default locale nothing is fetched, so this settles in a microtask.
  */
-void i18nReady.finally(() => root.render(tree));
+i18nReady.then(render, render);
