@@ -56,3 +56,6 @@ qa/artifacts/
 
 # Redis snapshot, written when a local redis-server is used instead of docker.
 dump.rdb
+
+# Claude Code agent worktrees (isolated checkouts, never repo content)
+.claude/worktrees/
