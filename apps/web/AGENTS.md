@@ -11,7 +11,10 @@ Vite SPA (React) built to static assets, served by nginx in Docker.
 - **TanStack Query** for server state, persisted to `localStorage` (policy from
   `@flama/frontend/react`, wired in `src/providers/query-provider.tsx`)
 - **Tailwind CSS v4** + **shadcn/ui** (from `@flama/design-system-web`)
-- **react-i18next** for i18n (translations from `@flama/translations`)
+- **react-i18next** for i18n. Only the default locale is bundled; every other
+  catalog is a chunk fetched on demand, so import locale *metadata* from
+  `@flama/translations/locales` and never from the package root — the root
+  barrel pulls in every catalog
 - **React Hook Form** + `zodResolver` for forms
 - Config via Vite env vars (`import.meta.env`, `VITE_`-prefixed), loaded from
   the root `.env` (`envDir` points at the repo root — a `.env` in this app
@@ -29,6 +32,10 @@ src/
 ├── lib/              # helpers
 ├── styles/
 └── types/
+
+public/
+├── theme-init.js     # applies the stored theme before first paint
+└── session-preload.js  # starts the session lookup before the bundle parses
 ```
 
 ## Where code goes
@@ -121,6 +128,46 @@ message, in every locale. Import `toast` from the design system rather than
 from `sonner` — the app does not depend on `sonner` directly, and the barrel is
 where UI comes from.
 
+## Delivery and first load
+
+The build is static assets served by nginx (`nginx.conf`, which the Dockerfile
+installs as a template so `API_UPSTREAM` and `CSP_EXTRA_ORIGINS` are substituted
+at container start). That file — not this app's code — is where compression,
+caching and the Content-Security-Policy live:
+
+- assets are **precompressed** at image build time and served with
+  `gzip_static`; the entry graph is ~1.3MB raw and ~370KB gzipped, so the
+  difference is the whole download
+- `/assets/*` is content-hashed and served `immutable` for a year. `index.html`
+  and the two `public/` bootstrap scripts are **not** hashed, so they are
+  `no-cache` — do not add a hashed-asset cache header for anything outside
+  `/assets/`
+- the policy is `script-src 'self'` with no inline exception. That is why both
+  bootstrap scripts are files in `public/` rather than inline `<script>` blocks
+  in `index.html`. Keep them that way. Any new third-party origin the app talks
+  to has to be added to `CSP_EXTRA_ORIGINS` (Dockerfile default, overridable per
+  deployment in `helm/flama/values.yaml`) or the browser will block it silently
+
+Two things run before React does, both deliberately:
+
+- `public/theme-init.js` — stops a returning dark-mode reader seeing a white
+  flash
+- `public/session-preload.js` — issues `GET /api/auth/get-session` from `<head>`
+  so it overlaps bundle parse rather than following it. `consumeSessionPreload`
+  in `@flama/auth` takes the answer once; anything unusable falls back to the
+  auth client, so the worst case is a wasted request and never a reader treated
+  as signed out. It only applies same-origin: with `VITE_API_URL` set, the app
+  ignores the preload
+
+**First load is budgeted.** `pnpm check:bundle` measures every script and
+stylesheet `index.html` references, gzipped, and fails past the number in
+`scripts/check-bundle-size.mjs`; CI runs it after `pnpm build`. Vite's own 500KB
+chunk warning is advisory and passes, which is how a 1.1MB entry chunk went
+unnoticed. If a change pushes the budget over, find the regression before
+raising the number — `npx vite build` prints per-chunk sizes, and
+`@flama/config/vite-chunks.mjs` explains why the vendor chunks are split the way
+they are.
+
 ## End-to-end tests
 
 The repo-root `e2e/` package holds Playwright specs that drive the **real
@@ -129,6 +176,12 @@ is stubbed: a spec that passed against a mock would say nothing about whether a
 screen is wired to the API, which is the only thing these tests exist to answer.
 The browser specs live in `e2e/tests/web/`; how to run them is in
 [`e2e/README.md`](../../e2e/README.md).
+
+**The browser project does not run in CI and does not currently pass** — 15 of
+its 64 specs fail on `main`, several of them driving a `/team` route this app no
+longer has. Only the `api` project is gated. Until that is repaired, run
+`pnpm --filter @flama/e2e e2e:web` yourself when you touch a screen, and read the
+state of play in `e2e/README.md` before trusting a green PR.
 
 Conventions:
 

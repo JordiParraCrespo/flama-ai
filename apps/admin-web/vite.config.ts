@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { vendorChunks } from '@flama/config/vite-chunks.mjs';
 import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
@@ -49,6 +50,12 @@ export default defineConfig({
     ],
   },
   build: {
+    rollupOptions: {
+      // One chunk per library instead of one chunk for all of them, so a
+      // release invalidates app code and leaves the dependencies cached. See
+      // the note in `@flama/config/vite-chunks.mjs`.
+      output: { manualChunks: vendorChunks },
+    },
     commonjsOptions: {
       // `@flama/shared` builds to CommonJS for the API's sake. Its `dist` sits
       // outside `node_modules`, so the interop plugin skips it by default and

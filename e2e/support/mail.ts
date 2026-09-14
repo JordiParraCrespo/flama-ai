@@ -10,9 +10,23 @@ import { readFile } from 'node:fs/promises';
  */
 const API_LOG = process.env.API_LOG ?? '/tmp/api.log';
 
+/**
+ * SGR colour sequences, stripped before anything is matched.
+ *
+ * The API's logger colourises when it thinks something is watching — which on
+ * GitHub Actions it does, and in a plain local run it does not. That put an
+ * `ESC[39m` reset immediately after the URL at the end of the line, and `\S+`
+ * happily swallowed it: the verification link was then fetched with a
+ * `callbackURL` of `/` plus three junk characters, which Better Auth refused as
+ * untrusted with a 403. One test, only on CI, and nothing in the diff to
+ * explain it. A log parser reads the text, not the colours.
+ */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: the escape character is what this matches
+const ANSI_SGR = /\u001B\[[0-9;]*m/g;
+
 async function readLog(): Promise<string> {
   try {
-    return await readFile(API_LOG, 'utf8');
+    return (await readFile(API_LOG, 'utf8')).replace(ANSI_SGR, '');
   } catch {
     return '';
   }
@@ -29,8 +43,14 @@ export async function waitForEmailUrl(
   timeoutMs = 15_000,
 ): Promise<string> {
   const deadline = Date.now() + timeoutMs;
+  // Anything between the address and the URL is skipped rather than spelled
+  // out: the line carries the recipient's locale today
+  // (`To: … | Locale: en | URL: …`), and when that segment was added this
+  // pattern still demanded `To: … | URL:` and silently matched nothing —
+  // every emailed-link test failed on a mailbox that was in fact working.
+  // `[^\n]*?` keeps the match on the one log line.
   const pattern = new RegExp(
-    `\\[${kind}\\] To: ${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\| URL: (\\S+)`,
+    `\\[${kind}\\] To: ${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\|[^\\n]*?URL: (\\S+)`,
     'g',
   );
 

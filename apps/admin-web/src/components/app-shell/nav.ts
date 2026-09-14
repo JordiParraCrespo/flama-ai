@@ -1,5 +1,5 @@
 import { type LucideIcon, Shield, Users } from '@flama/design-system-web/icons';
-import type { Messages } from '@flama/translations';
+import type { Messages } from '@flama/translations/locales';
 
 export interface NavItem {
   to: '/users' | '/roles';

@@ -22,6 +22,11 @@ api:
     REDIS_PORT: "6379"
 
 web:
+  # Extra origins for the nginx Content-Security-Policy (space separated).
+  # Empty keeps the image default: the PostHog EU endpoints. Widen it when
+  # analytics lives in another region, or VITE_API_URL points the bundle at an
+  # origin other than the one serving it.
+  cspExtraOrigins: ""
   image: ghcr.io/your-org/flama-web:latest
   replicas: 1
   port: 3000
@@ -34,6 +39,11 @@ web:
       memory: 256Mi
 
 adminWeb:
+  # Extra origins for the nginx Content-Security-Policy (space separated).
+  # Empty keeps the image default: the PostHog EU endpoints. Widen it when
+  # analytics lives in another region, or VITE_API_URL points the bundle at an
+  # origin other than the one serving it.
+  cspExtraOrigins: ""
   image: ghcr.io/your-org/flama-admin-web:latest
   replicas: 1
   port: 3000

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "files": [
-    "tsconfig.*.json"
+    "tsconfig.*.json",
+    "vite-chunks.mjs",
+    "vite-chunks.d.mts"
   ]
 }

@@ -1,6 +1,9 @@
 {
   "name": "@flama/design-system-web",
   "version": "0.1.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "private": true,
   "exports": {
     ".": "./src/index.ts",

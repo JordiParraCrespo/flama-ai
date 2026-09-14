@@ -122,6 +122,16 @@ message, in every locale. Import `toast` from the design system rather than
 from `sonner` — the app does not depend on `sonner` directly, and the barrel is
 where UI comes from.
 
+## Delivery and first load
+
+Identical to `apps/web`, down to the same `nginx.conf`, the same two `public/`
+bootstrap scripts and the same budget check — read
+[`apps/web/AGENTS.md`](../web/AGENTS.md#delivery-and-first-load) for the rules
+and the reasoning. A change to one of those files almost always belongs in both
+apps; the shared parts (`@flama/config/vite-chunks.mjs`, `consumeSessionPreload`
+in `@flama/auth`, the lazy catalogs in `@flama/translations`) are shared exactly
+so the two cannot drift apart silently.
+
 ## End-to-end tests
 
 The repo-root `e2e/` package holds Playwright specs that drive the **real

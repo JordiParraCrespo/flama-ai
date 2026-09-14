@@ -66,7 +66,12 @@ services:
     depends_on:
       - api
     # No runtime environment: the web image is a static Vite build served by
-    # nginx — VITE_* values are baked in at image build time.
+    # nginx — VITE_* values are baked in at image build time. The one runtime
+    # knob is CSP_EXTRA_ORIGINS, the origins nginx's Content-Security-Policy
+    # admits beyond 'self'. The image defaults it to the PostHog EU endpoints;
+    # add it here only to widen that (another analytics region, or a
+    # VITE_API_URL that is not this origin). Setting it replaces the default
+    # rather than adding to it — see apps/web/nginx.conf.
     ports:
       - "3000:3000"
 

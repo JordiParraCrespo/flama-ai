@@ -14,7 +14,7 @@ import {
 } from '@flama/design-system-web';
 import { ChevronsUpDown, LogOut } from '@flama/design-system-web/icons';
 import { useLogout, useProfile } from '@flama/frontend/react';
-import { locales } from '@flama/translations';
+import { locales } from '@flama/translations/locales';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 

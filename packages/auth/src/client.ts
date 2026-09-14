@@ -30,5 +30,6 @@ export type {
   AuthSessionUser,
 } from './session';
 export { toAuthSession } from './session';
+export { consumeSessionPreload } from './session-preload';
 export { type AuthErrorResult, AuthRequestError, unwrap } from './unwrap';
 export { userAdditionalFields } from './user-fields';
