@@ -171,18 +171,30 @@ jobs:
             sleep 1
           done
           echo "API never became healthy"; cat /tmp/api.log; exit 1
+      # The origins Better Auth will trust, as the API process resolves them —
+      # `@flama/env` lets a real environment variable win over the root .env, so
+      # a runner that defines one of these generic names silently changes the
+      # trusted set. Printed always, not just on failure: it is one line and it
+      # is the first thing worth knowing when an auth route answers 403.
+      - name: Resolved origins
+        run: |
+          pnpm --filter @flama/e2e exec node -e "require('@flama/env/load');console.log(JSON.stringify({FRONTEND_URL:process.env.FRONTEND_URL,ADMIN_FRONTEND_URL:process.env.ADMIN_FRONTEND_URL,BETTER_AUTH_URL:process.env.BETTER_AUTH_URL,NODE_ENV:process.env.NODE_ENV,API_URL:process.env.API_URL,WEB_URL:process.env.WEB_URL},null,2))"
       - run: pnpm --filter @flama/e2e e2e:api
       # The API log is this suite's mailbox, and it is also where Better Auth
-      # writes why it refused a request ("Invalid origin: …"). Without it a
-      # CI-only failure is a status code and nothing else.
+      # writes why it refused a request. Grepped rather than tailed: the first
+      # spec is the one that fails, so its request is at the top of a two-minute
+      # log. The token is stripped before printing — what matters is the rest of
+      # the query, and `/verify-email` answers 403 for exactly one reason, an
+      # untrusted `callbackURL`.
       - name: What the API saw
         if: failure()
         run: |
-          echo "--- origins"
-          grep -E '^(FRONTEND_URL|ADMIN_FRONTEND_URL|BETTER_AUTH_URL|NODE_ENV)=' .env || true
-          echo "API_URL=$API_URL WEB_URL=$WEB_URL"
-          echo "--- api log (tail)"
-          tail -n 200 /tmp/api.log
+          echo "--- verification links (token stripped)"
+          grep -o 'verify-email?[^ ]*' /tmp/api.log | sed 's/token=[^&]*/token=REDACTED/' | sort -u | head -n 5
+          echo "--- refusals"
+          grep -nE 'Invalid (callbackURL|origin|redirectURL)|Current list of trustedOrigins|Better Auth' /tmp/api.log | head -n 20
+          echo "--- api log (head)"
+          head -n 60 /tmp/api.log
 
   build-images:
     name: Build Docker Images
