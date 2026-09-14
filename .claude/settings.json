@@ -6,9 +6,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_response.filePath // .tool_input.file_path // .file_path' | { read -r f; npx prettier --write --ignore-unknown \"$f\"; } 2>/dev/null || true",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path // .file_path' | { read -r f; pnpm exec biome format --write --files-ignore-unknown=true \"$f\"; } 2>/dev/null || true",
             "timeout": 30,
-            "statusMessage": "Formatting with Prettier..."
+            "statusMessage": "Formatting with Biome..."
           }
         ]
       }
