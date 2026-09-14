@@ -76,7 +76,7 @@ function loadManifest() {
 }
 
 /** Everything that goes when `removed` goes: dependants and orphaned shared paths. */
-function resolveRemoval(manifest, removed) {
+export function resolveRemoval(manifest, removed) {
   const set = new Set(removed);
   let grew = true;
   while (grew) {
@@ -134,7 +134,7 @@ function isText(buffer) {
  * first) and `marker` is true for the begin/end lines themselves. Blocks may
  * nest. Fails on unbalanced markers.
  */
-function annotate(file, content) {
+export function annotate(file, content) {
   const open = [];
   const result = content.split('\n').map((line, index) => {
     const match = MARKER_RE.exec(line);
@@ -160,7 +160,7 @@ function annotate(file, content) {
 }
 
 /** Word-boundary match for an identifier such as `apps/web` or `@flama/web`. */
-function identifierRegex(identifier) {
+export function identifierRegex(identifier) {
   const escaped = identifier.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
   const tail = identifier.endsWith('-') || identifier.endsWith('/') ? '' : '(?![\\w-])';
   return new RegExp(`(?<![\\w@/-])${escaped}${tail}`);
@@ -437,6 +437,11 @@ function prune(manifest, removedIds, options) {
       });
   }
   console.log('\nDone.');
+  if (!keepTooling) {
+    console.log(
+      'Every flama:begin/end marker is gone, kept features included: the markers only served this prune.',
+    );
+  }
   if (leftovers.length) {
     console.log(
       `\n${leftovers.length} remaining mention(s) of removed features (prose to rewrite by hand):`,
@@ -549,4 +554,4 @@ function main() {
   prune(manifest, removed, options);
 }
 
-main();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

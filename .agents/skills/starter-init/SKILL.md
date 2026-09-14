@@ -66,8 +66,9 @@ The script deletes the feature paths, drops the marked blocks in every config
 file, edits the JSON files that cannot carry markers (root `package.json`
 scripts, `biome.json`, `.changeset/config.json`), refreshes the lockfile, and
 prints every remaining mention of the removed features. It also removes
-itself and this skill; pass `--keep-tooling` only when the user wants a
-second pass later.
+itself and this skill, and strips every marker, kept features included:
+markers exist only to serve the prune and are not meant to survive it. Pass
+`--keep-tooling` only when the user wants a second pass later.
 
 Then prove the trimmed repo is whole:
 

@@ -14,7 +14,7 @@
     "check": "biome check --write --unsafe .",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "starter:prune": "node scripts/starter/prune.mjs",
-    "starter:check": "node scripts/starter/prune.mjs --check",
+    "starter:check": "node scripts/starter/prune.mjs --check && node --test scripts/starter/prune.test.mjs",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "test:e2e": "pnpm --filter @flama/e2e e2e",
