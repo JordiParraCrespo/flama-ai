@@ -29,8 +29,14 @@ export async function waitForEmailUrl(
   timeoutMs = 15_000,
 ): Promise<string> {
   const deadline = Date.now() + timeoutMs;
+  // Anything between the address and the URL is skipped rather than spelled
+  // out: the line carries the recipient's locale today
+  // (`To: … | Locale: en | URL: …`), and when that segment was added this
+  // pattern still demanded `To: … | URL:` and silently matched nothing —
+  // every emailed-link test failed on a mailbox that was in fact working.
+  // `[^\n]*?` keeps the match on the one log line.
   const pattern = new RegExp(
-    `\\[${kind}\\] To: ${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\| URL: (\\S+)`,
+    `\\[${kind}\\] To: ${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\|[^\\n]*?URL: (\\S+)`,
     'g',
   );
 

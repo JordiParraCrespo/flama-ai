@@ -177,6 +177,12 @@ screen is wired to the API, which is the only thing these tests exist to answer.
 The browser specs live in `e2e/tests/web/`; how to run them is in
 [`e2e/README.md`](../../e2e/README.md).
 
+**The browser project does not run in CI and does not currently pass** — 15 of
+its 64 specs fail on `main`, several of them driving a `/team` route this app no
+longer has. Only the `api` project is gated. Until that is repaired, run
+`pnpm --filter @flama/e2e e2e:web` yourself when you touch a screen, and read the
+state of play in `e2e/README.md` before trusting a green PR.
+
 Conventions:
 
 - Start from `provisionedUser()` in `e2e/support/web.ts` — an account that

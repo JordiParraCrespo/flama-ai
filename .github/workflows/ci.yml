@@ -107,7 +107,7 @@ jobs:
       - run: pnpm test:integration
 
   test-e2e:
-    name: End-to-End Tests
+    name: End-to-End Tests (API)
     runs-on: gha-vm
     needs: lint
     # The same Postgres and Redis `pnpm docker:up` starts locally, as service
@@ -144,20 +144,16 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      # `pnpm build` walks the whole task graph, apps/runner included.
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
-        with:
-          go-version-file: go.work
-          cache-dependency-path: |
-            apps/runner/go.sum
-            packages/go/*/go.sum
       - run: pnpm install --frozen-lockfile
       # The suite reads verification and reset tokens out of Postgres and the
       # API log rather than a mailbox, which is what `EMAIL_PROVIDER=console`
       # in .env.example gives it. `support/db.ts` reads the same root .env as
       # the API, so both necessarily agree on the database.
       - run: cp .env.example .env
-      - run: pnpm build
+      # Only what the API needs: the `api` project drives HTTP, so there is no
+      # browser and no web build in this job — and therefore no Go toolchain
+      # either, since nothing here reaches apps/runner.
+      - run: pnpm turbo run build --filter=@flama/api...
       - run: pnpm --filter @flama/api migration:run
       - name: Start the API
         run: |
@@ -167,28 +163,7 @@ jobs:
             sleep 1
           done
           echo "API never became healthy"; cat /tmp/api.log; exit 1
-      # The web project drives the dev server, whose `/api` proxy keeps the
-      # browser same-origin with the API exactly as nginx does in production.
-      - name: Start the web app
-        run: |
-          pnpm --filter @flama/web dev > /tmp/web.log 2>&1 &
-          for _ in $(seq 1 60); do
-            curl -sf http://localhost:3000 > /dev/null && exit 0
-            sleep 1
-          done
-          echo "Web app never came up"; cat /tmp/web.log; exit 1
-      # `--with-deps` apt-gets the browser's shared libraries, which needs root.
-      # Where it cannot escalate, fall back to fetching just the browser — a VM
-      # image that has already run a browser has the libraries.
-      - name: Install Chromium
-        run: |
-          pnpm --filter @flama/e2e exec playwright install --with-deps chromium \
-            || pnpm --filter @flama/e2e exec playwright install chromium
-      - run: pnpm test:e2e
-      # Playwright keeps traces, screenshots and video for failures under
-      # e2e/playwright-report and e2e/test-results. Upload them with
-      # actions/upload-artifact if this job starts failing on CI-only flakes —
-      # left out here rather than pinned to an unverified action SHA.
+      - run: pnpm --filter @flama/e2e e2e:api
 
   build-images:
     name: Build Docker Images

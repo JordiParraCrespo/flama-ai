@@ -50,5 +50,9 @@ On the critical path itself:
 And so it stays fixed: `pnpm check:bundle` gzips everything the built
 `index.html` references and fails past a committed budget, in CI after
 `pnpm build`. Vite's own 500KB warning prints and passes, which is how a 1.1MB
-entry chunk went unnoticed. The Playwright suite now runs in CI too — it existed,
-and no job ran it.
+entry chunk went unnoticed. The Playwright `api` project runs in CI too — 69
+specs that existed and that no job ran, five of which had been failing since the
+console mailbox line gained a `Locale:` segment the e2e helper never learned
+about. The `web` project stays out until it is repaired: it drives a `/team`
+route `apps/web` no longer has, and 15 of its 64 specs fail on `main`. See
+`e2e/README.md`.

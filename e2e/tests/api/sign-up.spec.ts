@@ -48,28 +48,30 @@ test.describe('sign-up', () => {
     await expect.poll(async () => findRoleNames(userId), { timeout: 10_000 }).toContain('user');
   });
 
-  test('provisions a personal organization with an owner membership', async () => {
-    const { userId, user } = await signedUpContext('org');
+  /**
+   * The inverse of what this file used to assert.
+   *
+   * Sign-up provisioned a personal organization and a "General" workspace until
+   * the account got them by creating one instead — the hook handed out an
+   * organization the default `user` role could not open, so registering landed
+   * on a dashboard that answered 403 (see the note in
+   * `apps/api/src/auth/auth.ts`). These two specs kept asserting the old
+   * behaviour and had been failing ever since; nothing ran them. Re-pointed at
+   * the contract that replaced it, so re-introducing the hook fails here.
+   *
+   * The other half — onboarding turning a bare account into a workspace — is
+   * `e2e/tests/web/onboarding.spec.ts`.
+   */
+  test('provisions nothing: an account belongs nowhere until onboarding', async () => {
+    const { userId } = await signedUpContext('org');
 
-    await expect
-      .poll(async () => (await findOrganizationsForUser(userId)).length, {
-        timeout: 10_000,
-      })
-      .toBe(1);
+    // The provisioning under test ran in an after-create database hook, a beat
+    // behind the response. Wait that beat out before reading, or this would
+    // pass just as happily with the hook back in place.
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
 
-    const [organization] = await findOrganizationsForUser(userId);
-    expect(organization.role).toBe('owner');
-    expect(organization.orgName).toContain(user.firstName);
-  });
-
-  test('provisions a default workspace', async () => {
-    const { userId } = await signedUpContext('team');
-
-    await expect
-      .poll(async () => (await findTeamsForUser(userId)).map((team) => team.name), {
-        timeout: 10_000,
-      })
-      .toContain('General');
+    expect(await findOrganizationsForUser(userId)).toEqual([]);
+    expect(await findTeamsForUser(userId)).toEqual([]);
   });
 
   test('sends verification and welcome email on sign-up', async () => {

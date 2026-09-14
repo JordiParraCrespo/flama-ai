@@ -10,10 +10,28 @@ stack. Two projects share one runner:
 
 ## Where it runs
 
-CI runs this suite on every pull request, in the `End-to-End Tests` job — it
-brings up Postgres and Redis with `pnpm docker:up`, migrates, starts the API and
-the web dev server, then runs both projects. A spec that only passes locally is
-a broken spec.
+CI runs the **`api` project** on every pull request, in the `End-to-End Tests
+(API)` job: Postgres and Redis as service containers, migrations, the API
+started from its build, then `e2e:api`. No browser is involved, so that job
+needs none.
+
+The **`web` project does not run in CI yet, and does not pass.** On `main` it is
+15 failures out of 64, and they are not flakes — the suite drifted while nothing
+ran it:
+
+- six `team.spec.ts` specs, and the profile spec that opens the team page, drive
+  a `/team` route that `apps/web` no longer has (there is no `components/team/`
+  either, though the root `CLAUDE.md` still refers to one). The surface moved
+  when the consumer and control-plane apps were split; the specs did not
+- `nav-permissions.spec.ts` asserts a nav catalog that has the same problem
+- the rest — an avatar upload, a password change signing other devices out, a
+  wrong-password error, the language switch — are individually stale or broken
+  and need diagnosing one at a time
+
+Fixing that is its own piece of work: port the specs to whichever app owns each
+surface now, then add `--project=web` to the CI job. Until then a green CI says
+nothing about the browser journeys, so run `pnpm --filter @flama/e2e e2e:web`
+locally when you touch them.
 
 ## Running it
 
