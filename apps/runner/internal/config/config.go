@@ -38,6 +38,11 @@ type Config struct {
 	// holds every scope; use it to mint narrower keys, then keep it in a vault.
 	BootstrapAPIKey string
 
+	// DatabaseURL is the optional Postgres DSN. Empty keeps the in-memory
+	// stores (the default); when set, the api-key and job repositories are
+	// Postgres-backed and a `postgres` readiness check and capability turn on.
+	DatabaseURL string
+
 	// JWT is present when service tokens are enabled. Nil disables the
 	// service-token verifier and issuing endpoint; /capabilities says so.
 	JWT *JWTConfig
@@ -97,6 +102,7 @@ func Parse(lookup config.Lookup) (*Config, error) {
 		ShutdownTimeout:  env.Duration("RUNNER_SHUTDOWN_TIMEOUT", 15*time.Second),
 		MaxBodyBytes:     int64(env.Int("RUNNER_MAX_BODY_BYTES", 1<<20)),
 		BootstrapAPIKey:  env.Secret("RUNNER_BOOTSTRAP_API_KEY", 32),
+		DatabaseURL:      env.Optional("RUNNER_DATABASE_URL"),
 		Jobs: JobsConfig{
 			Workers:   env.Int("RUNNER_JOB_WORKERS", 4),
 			QueueSize: env.Int("RUNNER_JOB_QUEUE_SIZE", 1024),

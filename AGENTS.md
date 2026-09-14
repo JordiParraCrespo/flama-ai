@@ -134,7 +134,7 @@ static binary, long-lived connections or process orchestration (runners, VMs,
 containers) — `apps/runner` is the template, and the API talks to it with an
 API key. The cross-cutting toolkit is `packages/go/*`, the Go counterpart of
 `packages/backend/*`: one Go module each (`core`, `config`, `httpx`, `auth`,
-`health`, `ws`), tied together by the root `go.work`, each also published to
+`health`, `ws`, `postgres`), tied together by the root `go.work`, each also published to
 Turborepo as `@flama/go-<name>` so the task graph and `--affected` see them.
 The app is the same hexagon as `apps/api` in idiomatic Go: standard
 `net/http` routing, `slog`, interfaces as ports, constructor injection, one
@@ -232,7 +232,7 @@ packages/design-system/mobile → used by mobile, mobile-showcase
 packages/api-client           → used by frontend
 packages/frontend             → used by web, mobile
 packages/go/core              → used by every other packages/go module and runner
-packages/go/{config,httpx,auth,health,ws} → used by runner (auth ← ws, httpx ← health, auth)
+packages/go/{config,httpx,auth,health,ws,postgres} → used by runner (auth ← ws, httpx ← health, auth)
 ```
 
 ## Commands

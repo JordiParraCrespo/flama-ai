@@ -64,3 +64,7 @@ func (m *Module) Authorize() ws.Authorizer { return wsadapter.Authorize }
 
 // Start runs the worker pool until ctx ends.
 func (m *Module) Start(ctx context.Context) { m.Service.Start(ctx) }
+
+// Recover re-enqueues persisted queued jobs and fails interrupted running
+// jobs left by a previous run. A no-op for the in-memory store.
+func (m *Module) Recover(ctx context.Context) error { return m.Service.Recover(ctx) }

@@ -33,7 +33,7 @@ func newTestServer(t *testing.T, extra map[string]string) *httptest.Server {
 		t.Fatal(err)
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	srv, err := New(cfg, logger)
+	srv, err := New(context.Background(), cfg, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
