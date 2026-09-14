@@ -75,6 +75,21 @@ function loadManifest() {
   return manifest;
 }
 
+/** `kept` plus everything it requires, transitively: what `--keep` really keeps. */
+export function expandKeep(manifest, kept) {
+  const set = new Set(kept);
+  const queue = [...kept];
+  while (queue.length) {
+    for (const dep of manifest.features[queue.pop()].requires ?? []) {
+      if (set.has(dep)) continue;
+      console.warn(`  keeping ${dep} too: a kept feature requires it`);
+      set.add(dep);
+      queue.push(dep);
+    }
+  }
+  return [...set];
+}
+
 /** Everything that goes when `removed` goes: dependants and orphaned shared paths. */
 export function resolveRemoval(manifest, removed) {
   const set = new Set(removed);
@@ -541,7 +556,8 @@ function main() {
   if (options.keep) {
     for (const id of options.keep)
       if (!ids.includes(id)) fail(`unknown feature "${id}" (see --list)`);
-    removed = ids.filter((id) => !options.keep.includes(id));
+    const kept = expandKeep(manifest, options.keep);
+    removed = ids.filter((id) => !kept.includes(id));
   } else if (options.without.length) {
     for (const id of options.without)
       if (!ids.includes(id)) fail(`unknown feature "${id}" (see --list)`);

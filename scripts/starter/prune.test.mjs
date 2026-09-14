@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { annotate, identifierRegex, resolveRemoval } from './prune.mjs';
+import { annotate, expandKeep, identifierRegex, resolveRemoval } from './prune.mjs';
 
 const manifest = {
   features: {
@@ -19,6 +19,13 @@ const manifest = {
 test('resolveRemoval cascades through requires', () => {
   const { features } = resolveRemoval(manifest, ['web']);
   assert.deepEqual(features.sort(), ['qa', 'web']);
+});
+
+test('expandKeep pulls in what a kept feature requires, so --keep never removes it', () => {
+  assert.deepEqual(expandKeep(manifest, ['qa']).sort(), ['e2e', 'qa', 'web']);
+  const kept = expandKeep(manifest, ['qa']);
+  const removed = Object.keys(manifest.features).filter((id) => !kept.includes(id));
+  assert.ok(!resolveRemoval(manifest, removed).features.includes('qa'));
 });
 
 test('resolveRemoval drops a shared path only when every dependant is gone', () => {
