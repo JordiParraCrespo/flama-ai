@@ -1,22 +1,21 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
   "jsPlugins": ["@shadcn/lint"],
   "categories": {
     "correctness": "off"
   },
   "settings": {
     "shadcn": {
-      "ui": "@flama/design-system-web",
-      "ignoreImports": ["^@flama/design-system-web/icons(/|$)"],
+      "ui": "@flama/design-system-mobile",
       "note": "Rules and rationale: .agents/rules/frontend-ui.md"
     }
   },
   "rules": {
     "shadcn/no-restyle": ["warn", { "allow": ["layout"] }],
     "shadcn/no-raw-colors": "warn",
-    "shadcn/no-unknown-classes": "warn",
     "shadcn/no-arbitrary-values": "warn",
-    "shadcn/no-inline-styles": "warn",
+    "shadcn/no-unknown-classes": "off",
+    "shadcn/no-inline-styles": "off",
     "shadcn/require-static-classes": "off"
   }
 }

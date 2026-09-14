@@ -71,10 +71,10 @@ When you add a file that mentions an optional app (CI, compose, Helm,
   win); the web apps read it through Vite's `envDir`; the mobile apps load it in
   `app.config.ts`
 - Biome for linting and formatting (not ESLint/Prettier). The one exception is
-  `apps/web`'s design-system linter, `@shadcn/lint`, which only ships as an
-  ESLint/oxlint plugin: it runs through oxlint with oxlint's own rules switched
-  off, so it enforces design-system rules and nothing Biome already covers —
-  see `.agents/rules/frontend-ui.md`
+  the apps' design-system linter, `@shadcn/lint`, which only ships as an
+  ESLint/oxlint plugin: `pnpm lint:design` runs it through oxlint with oxlint's
+  own rules switched off, so it enforces design-system rules and nothing Biome
+  already covers — see `.agents/rules/frontend-ui.md`
 - Conventional commits enforced via commitlint
 - Independent versioning per package via Changesets
 - No git hooks — CI enforces quality
