@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.22.2"
   },
   "scripts": {
     "build": "turbo run build",
@@ -43,9 +43,9 @@
   },
   "pnpm": {
     "overrides": {
-      "react": "19.3.0",
-      "react-dom": "19.3.0",
-      "@types/react": "19.3.0",
+      "react": "19.1.0",
+      "react-dom": "19.1.0",
+      "@types/react": "19.2.14",
       "react-native": "0.81.5",
       "@nestjs/swagger": "11.4.2"
     }
