@@ -33,7 +33,20 @@
         "apps/web-showcase",
         ".agents/skills/next-best-practices",
         ".agents/skills/next-cache-components",
-        ".agents/skills/next-upgrade"
+        ".agents/skills/next-upgrade",
+        "packages/config/tsconfig.nextjs.json"
+      ],
+      "json": [
+        {
+          "file": "turbo.json",
+          "path": "tasks.build.outputs",
+          "remove": [".next/**", "!.next/cache/**"]
+        },
+        {
+          "file": "biome.json",
+          "path": "files.includes",
+          "remove": ["!**/.next"]
+        }
       ]
     },
     "mobile-showcase": {
@@ -74,7 +87,8 @@
         "@flama/go-",
         "go.work",
         "golangci",
-        "flama-runner"
+        "flama-runner",
+        "RUNNER_"
       ],
       "paths": [
         "apps/runner",
@@ -99,7 +113,8 @@
       "identifiers": ["@flama/qa", "qa/"],
       "paths": ["qa", "plans", "docs/screenshots"],
       "requires": ["web", "admin-web", "e2e"],
-      "scripts": ["qa", "qa:suite", "qa:coverage"]
+      "scripts": ["qa", "qa:suite", "qa:coverage"],
+      "$comment": "plans/ holds only the QA pack's implementation plans and docs/screenshots is the curated QA run output, so both belong to it."
     },
     "helm": {
       "title": "Kubernetes Helm chart",
@@ -134,6 +149,33 @@
       "identifiers": ["check-bundle-size", "check:bundle"],
       "neededBy": ["web", "admin-web"],
       "scripts": ["check:bundle"]
+    },
+    "packages/config/tsconfig.expo.json": {
+      "$comment": "Everything Expo leaves in the kept apps: the Better Auth expo plugin in apps/api, the EXPO_PUBLIC_* pass-through in turbo.json, the react-native override.",
+      "identifiers": ["tsconfig.expo", "EXPO_PUBLIC_", "@better-auth/expo", "react-native"],
+      "neededBy": ["mobile", "admin-mobile", "mobile-showcase"],
+      "json": [
+        {
+          "file": "turbo.json",
+          "path": "tasks.build.env",
+          "remove": ["EXPO_PUBLIC_*"]
+        },
+        {
+          "file": "package.json",
+          "path": "pnpm.overrides",
+          "deleteKeys": ["react-native"]
+        },
+        {
+          "file": "apps/api/package.json",
+          "path": "dependencies",
+          "deleteKeys": ["@better-auth/expo"]
+        },
+        {
+          "file": "biome.json",
+          "path": "files.includes",
+          "remove": ["!**/.expo"]
+        }
+      ]
     }
   },
   "tooling": {

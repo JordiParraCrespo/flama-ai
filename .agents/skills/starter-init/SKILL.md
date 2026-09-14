@@ -11,15 +11,17 @@ repo reading as if it had always been that shape.
 
 The mechanical part is `scripts/starter/prune.mjs` and its manifest
 `scripts/starter/features.json`. **Never delete an app by hand** — the
-manifest knows every place in CI, compose, Helm, `.env.example` and the docs
-that mentions it. Your job is the part a script cannot do: the conversation,
-the decision, and the prose.
+manifest knows the machine-read places (CI, compose, Helm, `.env.example`,
+the JSON configs, the code the API carries for a deleted app) that mention
+each feature. Your job is the part a script cannot do: the conversation, the
+decision, and the prose.
 
 ## 1. Understand the project (dialog)
 
 Ask, one question at a time, and stop as soon as you can answer the rest
 yourself. Do not run the interview as a checklist; skip anything the user
-already told you. Aim for three or four questions.
+already told you. Most briefs answer half of these up front; aim to ask four
+or five.
 
 1. **What are you building?** One or two sentences: the product, who uses it.
 2. **Where will people use it?** Browser, phone, both, or only through an API
@@ -35,6 +37,11 @@ already told you. Aim for three or four questions.
    need the scope catalog, which stays in the API either way.
 6. **Where does it deploy?** Docker Compose on one box (Tier 1) needs no
    Helm chart. Kubernetes keeps `helm`.
+7. **Project hygiene.** A docs site (`docs`), API and browser end-to-end
+   tests (`e2e`), and the scenario-driven QA pack (`qa`). Most projects keep
+   the first two and drop `qa`; the design-system showcases
+   (`web-showcase`, `mobile-showcase`) go unless the user will evolve the
+   design system itself.
 
 Then `node scripts/starter/prune.mjs --list` shows the exact ids; read
 `scripts/starter/features.json` for what each one drags along
@@ -58,23 +65,30 @@ question that must block: a prune is a large deletion, and undoing it is a
 ## 3. Prune
 
 ```bash
-node scripts/starter/prune.mjs --without <ids> --dry-run   # show the plan
-node scripts/starter/prune.mjs --without <ids>             # do it (runs pnpm install)
+node scripts/starter/prune.mjs --keep <ids> --dry-run   # show the plan
+node scripts/starter/prune.mjs --keep <ids>             # do it (runs pnpm install)
 ```
 
+Prefer `--keep`: it names what the user asked for and pulls in what those
+features require (`qa` keeps `web`, `admin-web` and `e2e`). `--without` is
+for the rare "everything but X" prune.
+
 The script deletes the feature paths, drops the marked blocks in every config
-file, edits the JSON files that cannot carry markers (root `package.json`
-scripts, `biome.json`, `.changeset/config.json`), refreshes the lockfile, and
-prints every remaining mention of the removed features. It also removes
-itself and this skill, and strips every marker, kept features included:
-markers exist only to serve the prune and are not meant to survive it. Pass
-`--keep-tooling` only when the user wants a second pass later.
+file and in the API code that existed for a removed app, edits the JSON files
+that cannot carry markers (root `package.json` scripts and overrides,
+`turbo.json`, `biome.json`, `apps/api/package.json`, `.changeset/config.json`),
+rewrites pending changesets that name a removed package, refreshes the
+lockfile, and prints the remaining mentions of the removed features. It also
+removes itself and this skill, and strips every marker, kept features
+included: markers exist only to serve the prune and are not meant to survive
+it. Pass `--keep-tooling` only when the user wants a second pass later.
 
 Then prove the trimmed repo is whole:
 
 ```bash
 pnpm build && pnpm check && pnpm test
-pnpm arch          # if apps/api is kept (it always is)
+pnpm arch                      # the API is always kept
+pnpm exec changeset status     # the one thing the build does not catch
 ```
 
 Fix what fails before going on. A failure here is the script's bug or a
@@ -84,19 +98,34 @@ manifest was wrong, say so in the final message so it gets upstreamed.
 ## 4. Rewrite the prose
 
 The script's closing report lists the lines that still mention removed
-features. All of them are prose and all of them must go. Work through:
+features by path or package name. It is a floor, not a ceiling: after
+working through it, grep for each removed app's plain nouns (`mobile`,
+`Expo`, `native`, `MCP`, `CLI`, `Helm`, `Kubernetes`, `Go`, `runner`) and
+for anything only that app used (`@better-auth/expo`, `EXPO_PUBLIC_`,
+`react-native`, `RUNNER_`), excluding changelogs. Work through:
 
 - `AGENTS.md` (also `CLAUDE.md`, a symlink): the monorepo tree, the
   conventions sections for removed apps, the dependency flow, the commands,
   the "when modifying code" bullets that name removed apps. Redraw the tree
   so the `├──`/`└──` connectors are right.
 - `README.md`: the "what's included" table, the services table, the scripts.
-- `apps/docs/docs/intro.md` and `getting-started/project-structure.md` when
-  `docs` is kept; `deployment/tier-1-cheap.md` if it names removed services.
+- `AUTHORIZATION.md`: the design document names every app in its diagrams
+  and phase plans.
+- `apps/docs/docs/**` when `docs` is kept: `intro.md`,
+  `getting-started/*.md` (the Google sign-in page has a whole mobile
+  section), every `architecture/*.md`, `deployment/tier-1-cheap.md`, and
+  `errors.md`.
 - `.agents/rules/*.md`: a `paths:` glob or a sentence pointing at a removed
   app. Delete the rule if nothing it governs remains.
-- Per-package `README.md` / `AGENTS.md` files that list consumers.
+- Per-package `README.md` / `AGENTS.md` files that list consumers, including
+  `packages/config`, `packages/auth`, `packages/env`, `packages/frontend`,
+  `packages/translations`, `packages/design-system/*`, and the kept apps'
+  own `AGENTS.md`.
 - `.env.example`: the header comment lists what each section serves.
+- Code comments that name a removed app (`apps/web/nginx.conf`,
+  `packages/design-system/web/src/components/icons.tsx`, and whatever the
+  grep finds): reword, do not leave a pointer to a path that no longer
+  exists.
 
 Do not leave a sentence that says "web and mobile" when only web exists.
 Do not add a "removed by init" note anywhere: the repo should read as if it
@@ -105,10 +134,19 @@ were born this way.
 ## 5. Make it theirs
 
 Only if the user gave a project name: rename the brand. `flama` appears in
-package names (`@flama/*`), the Docker image names, `MOBILE_SCHEME`, the
-Helm release, the docs title and `packages/translations`. Search for it
-case-insensitively and change it everywhere at once, or leave it entirely —
-a half-renamed repo is worse than either.
+package names (`@flama/*`), Docker image names, the deep-link schemes, the
+Helm release, the docs title, `packages/translations`, seed accounts
+(`superadmin@flama.dev`), Postgres credential defaults, the API-token prefix
+(`flama_pat_`, a wire-visible contract), the session preload global, and in
+**filenames** (`flama.ts`, `flama-provider.tsx`, `flama-app.ts`: `git mv`
+them). Change it everywhere at once, case-preserving, or leave it entirely —
+a half-renamed repo is worse than either. Rename `CHANGELOG.md` headings and
+pending `.changeset/*.md` frontmatter too: they are keyed by package name and
+`changeset version` breaks otherwise. Afterwards `pnpm install` (the lockfile
+carries the package names) and `pnpm generate:api-client` (the OpenAPI
+examples carry the token prefix), and check that no second brand survives:
+the design system's own `AGENTS.md` names the visual language it was built
+on.
 
 ## 6. Finish
 

@@ -1,6 +1,8 @@
 import '@flama/env/load';
 import { randomUUID } from 'node:crypto';
+// flama:begin mobile|admin-mobile
 import { expo } from '@better-auth/expo';
+// flama:end mobile|admin-mobile
 import { organizationSharedOptions, userAdditionalFields } from '@flama/auth';
 import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
 import { Logger } from '@nestjs/common';
@@ -39,8 +41,12 @@ const OAUTH_SCOPES_SUPPORTED = ['openid', 'profile', 'email', 'offline_access', 
 
 const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 const adminFrontendUrl = process.env.ADMIN_FRONTEND_URL ?? 'http://localhost:3003';
+// flama:begin mobile
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
+// flama:end mobile
+// flama:begin admin-mobile
 const adminMobileScheme = process.env.ADMIN_MOBILE_SCHEME ?? 'flama-admin';
+// flama:end admin-mobile
 
 // Read through `orUndefined` so a blank `DB_X=` means "unset" here exactly as
 // it does in `database.config.ts`. Better Auth owns its own pool rather than
@@ -96,7 +102,16 @@ export const auth = betterAuth({
   basePath: '/api/auth',
   secret: process.env.BETTER_AUTH_SECRET,
   database: pool,
-  trustedOrigins: [frontendUrl, adminFrontendUrl, `${mobileScheme}://`, `${adminMobileScheme}://`],
+  trustedOrigins: [
+    frontendUrl,
+    adminFrontendUrl,
+    // flama:begin mobile
+    `${mobileScheme}://`,
+    // flama:end mobile
+    // flama:begin admin-mobile
+    `${adminMobileScheme}://`,
+    // flama:end admin-mobile
+  ],
   // Brute-force protection on the auth surface. `/api/auth/*` is mounted on the
   // HTTP adapter before Nest binds middleware, so the NestJS ThrottlerGuard
   // never sees these routes — Better Auth's own limiter is the only thing that
@@ -377,7 +392,9 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    // flama:begin mobile|admin-mobile
     expo(),
+    // flama:end mobile|admin-mobile
     admin({
       // Users whose `role` is one of these can call the admin plugin endpoints
       // (list/ban/impersonate/set-role/...). CASL still governs the app's own

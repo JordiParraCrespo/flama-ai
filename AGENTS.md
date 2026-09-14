@@ -24,6 +24,7 @@ flama/
 │   ├── api-client/       # Auto-generated typed client from Swagger
 │   ├── auth/             # Shared Better Auth config + client helpers (@flama/auth)
 │   ├── backend/
+│   │   ├── authz/        # Authorization kernel: grants, policies (@flama/backend-authz)
 │   │   ├── cache/        # Redis cache abstraction (@flama/backend-cache)
 │   │   ├── core/         # Errors, filters, pipes, interceptors (@flama/backend-core)
 │   │   ├── ddd/          # DDD/hexagon building blocks (@flama/backend-ddd)

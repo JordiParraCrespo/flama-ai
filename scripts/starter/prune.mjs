@@ -28,7 +28,15 @@
  * by default a prune strips every marker and removes the starter apparatus).
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, lstatSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -116,10 +124,10 @@ export function resolveRemoval(manifest, removed) {
 // Files and markers
 // ---------------------------------------------------------------------------
 
-function trackedFiles() {
+function trackedFiles({ untracked = true } = {}) {
   const out = execFileSync(
     'git',
-    ['ls-files', '-z', '--cached', '--others', '--exclude-standard'],
+    ['ls-files', '-z', '--cached', ...(untracked ? ['--others', '--exclude-standard'] : [])],
     {
       cwd: ROOT,
       maxBuffer: 64 * 1024 * 1024,
@@ -225,6 +233,18 @@ function check(manifest) {
     ...manifest.tooling.scripts,
   ]);
   const scriptLineRe = /^\s*"([^"]+)":/;
+  // A JSON value or key the manifest removes itself counts as covered.
+  const jsonEdits = [
+    ...Object.values(manifest.features).flatMap((feature) => feature.json ?? []),
+    ...Object.values(manifest.shared).flatMap((entry) => entry.json ?? []),
+  ];
+  const editedJsonLine = (file, line) =>
+    jsonEdits.some(
+      (edit) =>
+        edit.file === file &&
+        ((edit.remove ?? []).some((value) => line.includes(`"${value}"`)) ||
+          (edit.deleteKeys ?? []).some((key) => line.includes(`"${key}":`))),
+    );
 
   const files = trackedFiles();
   for (const file of files) {
@@ -275,6 +295,7 @@ function check(manifest) {
         );
         if (covered) return;
         if (file === 'package.json' && manifestScripts.has(scriptLineRe.exec(line)?.[1])) return;
+        if (editedJsonLine(file, line)) return;
         if (regexes.some((re) => re.test(line))) {
           problems.push(
             `${file}:${index + 1}: mentions ${owner.id} outside a "flama:begin ${owner.neededBy ? owner.neededBy.join('|') : owner.id}" block: ${line.trim().slice(0, 100)}`,
@@ -355,11 +376,26 @@ function prune(manifest, removedIds, options) {
     if (!dryRun) writeFileSync(join(ROOT, file), collapseBlankRuns(out.join('\n')));
   }
 
-  // 2. Paths.
+  // 2. Paths, then any directory the deletions left empty.
   for (const path of pathsToDelete) {
     if (!existsSync(join(ROOT, path))) continue;
     console.log(`  delete ${path}`);
     if (!dryRun) rmSync(join(ROOT, path), { recursive: true, force: true });
+  }
+  if (!dryRun) {
+    for (const path of pathsToDelete) {
+      let dir = dirname(path);
+      while (
+        dir !== '.' &&
+        dir !== '' &&
+        existsSync(join(ROOT, dir)) &&
+        readdirSync(join(ROOT, dir)).length === 0
+      ) {
+        console.log(`  delete ${dir}/ (empty)`);
+        rmSync(join(ROOT, dir), { recursive: true });
+        dir = dirname(dir);
+      }
+    }
   }
 
   // 3. JSON files that cannot carry markers.
@@ -409,6 +445,75 @@ function prune(manifest, removedIds, options) {
     },
     dryRun,
   );
+  // Manifest-declared edits: an array value or an object key that exists only
+  // for a removed feature (turbo env pass-throughs, a pnpm override, a
+  // dependency the kept API carried for a deleted app).
+  const jsonEdits = [
+    ...features.flatMap((id) => manifest.features[id].json ?? []),
+    ...shared.flatMap((path) => manifest.shared[path].json ?? []),
+  ];
+  for (const edit of jsonEdits) {
+    editJson(
+      edit.file,
+      (json) => {
+        const segments = edit.path.split('.');
+        const parent = segments.slice(0, -1).reduce((node, key) => node?.[key], json);
+        const key = segments.at(-1);
+        const target = parent?.[key];
+        if (target === undefined) return false;
+        if (Array.isArray(target) && edit.remove) {
+          const kept = target.filter((value) => !edit.remove.includes(value));
+          if (kept.length === target.length) return false;
+          parent[key] = kept;
+          return true;
+        }
+        if (edit.deleteKeys && typeof target === 'object') {
+          let changed = false;
+          for (const name of edit.deleteKeys) {
+            if (name in target) {
+              delete target[name];
+              changed = true;
+            }
+          }
+          return changed;
+        }
+        return false;
+      },
+      dryRun,
+    );
+  }
+  // Pending changesets are a queued release, not history: one that names a
+  // removed package breaks `changeset version`. Drop the package line, and the
+  // whole changeset when nothing is left.
+  for (const file of trackedFiles().filter(
+    (f) => /^\.changeset\/.*\.md$/.test(f) && !f.endsWith('README.md'),
+  )) {
+    const content = readFileSync(join(ROOT, file), 'utf8');
+    const match = /^---\n([\s\S]*?)\n---\n/.exec(content);
+    if (!match) continue;
+    const lines = match[1].split('\n');
+    const kept = lines.filter(
+      (line) =>
+        !packageNames.some(
+          (name) =>
+            line.startsWith(`"${name}"`) ||
+            line.startsWith(`'${name}'`) ||
+            line.startsWith(`${name}:`),
+        ),
+    );
+    if (kept.length === lines.length) continue;
+    if (kept.every((line) => !line.trim())) {
+      console.log(`  delete ${file} (only named removed packages)`);
+      if (!dryRun) rmSync(join(ROOT, file));
+      continue;
+    }
+    console.log(`  edit   ${file}`);
+    if (!dryRun)
+      writeFileSync(
+        join(ROOT, file),
+        `---\n${kept.join('\n')}\n---\n${content.slice(match[0].length)}`,
+      );
+  }
 
   if (dryRun) {
     console.log('\nDry run: nothing was changed.');
@@ -439,8 +544,8 @@ function prune(manifest, removedIds, options) {
     ...shared.flatMap((path) => manifest.shared[path].identifiers),
   ].map(identifierRegex);
   const leftovers = [];
-  for (const file of trackedFiles()) {
-    if (/CHANGELOG\.md$|^\.changeset\//.test(file)) continue; // history stays history
+  for (const file of trackedFiles({ untracked: false })) {
+    if (/CHANGELOG\.md$/.test(file)) continue; // history stays history
     const buffer = readFileSync(join(ROOT, file));
     if (!isText(buffer)) continue;
     buffer
