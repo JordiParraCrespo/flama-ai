@@ -137,6 +137,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    # Pinned rather than left to `playwright.config.ts`'s defaults, which read
+    # these names from the environment — generic enough for a self-hosted runner
+    # to already define, and `WEB_URL` is the `Origin` every request context
+    # sends, which Better Auth checks against `trustedOrigins`. Same values as
+    # the defaults; the point is that the runner cannot change them.
+    env:
+      API_URL: http://localhost:3001
+      WEB_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -164,6 +172,17 @@ jobs:
           done
           echo "API never became healthy"; cat /tmp/api.log; exit 1
       - run: pnpm --filter @flama/e2e e2e:api
+      # The API log is this suite's mailbox, and it is also where Better Auth
+      # writes why it refused a request ("Invalid origin: …"). Without it a
+      # CI-only failure is a status code and nothing else.
+      - name: What the API saw
+        if: failure()
+        run: |
+          echo "--- origins"
+          grep -E '^(FRONTEND_URL|ADMIN_FRONTEND_URL|BETTER_AUTH_URL|NODE_ENV)=' .env || true
+          echo "API_URL=$API_URL WEB_URL=$WEB_URL"
+          echo "--- api log (tail)"
+          tail -n 200 /tmp/api.log
 
   build-images:
     name: Build Docker Images
