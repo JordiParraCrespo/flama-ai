@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { downloadCsv, downloadCsvRows, toCsv } from './download-csv';
 
 /**
@@ -60,13 +60,15 @@ describe('toCsv', () => {
 describe('downloadCsv', () => {
   const createObjectURL = vi.fn((_blob: Blob) => 'blob:fake');
   const revokeObjectURL = vi.fn();
-  let click: ReturnType<typeof vi.fn>;
+  // A bare `vi.fn()` widens to `Mock<Procedure | Constructable>` in Vitest 5,
+  // which `mockImplementation` will not accept. Name the signature instead.
+  let click: Mock<() => void>;
 
   beforeEach(() => {
     createObjectURL.mockClear();
     revokeObjectURL.mockClear();
     vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL });
-    click = vi.fn();
+    click = vi.fn<() => void>();
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(click);
   });
 

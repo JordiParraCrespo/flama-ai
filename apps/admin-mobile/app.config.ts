@@ -7,6 +7,30 @@ import type { ExpoConfig } from 'expo/config';
 // for the bundler to inline them. Real environment variables still win.
 loadEnv();
 
+const plugins: ExpoConfig['plugins'] = [
+  'expo-router',
+  'expo-secure-store',
+  'expo-localization',
+  'expo-dev-client',
+  'expo-image',
+  [
+    'react-native-nano-icons',
+    {
+      iconSets: [{ inputDir: '../../packages/design-system/mobile/assets/icons/ui' }],
+    },
+  ],
+];
+
+if (process.env.SENTRY_ORG && process.env.SENTRY_PROJECT) {
+  plugins.push([
+    '@sentry/react-native/expo',
+    {
+      organization: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+    },
+  ]);
+}
+
 const config: ExpoConfig = {
   name: 'Flama Control',
   slug: 'flama-control',
@@ -27,27 +51,7 @@ const config: ExpoConfig = {
       backgroundColor: '#ffffff',
     },
   },
-  plugins: [
-    'expo-router',
-    'expo-secure-store',
-    'expo-localization',
-    'expo-dev-client',
-    'expo-image',
-    [
-      'react-native-nano-icons',
-      {
-        iconSets: [{ inputDir: '../../packages/design-system/mobile/assets/icons/ui' }],
-      },
-    ],
-    [
-      '@sentry/react-native/expo',
-      {
-        organization: process.env.SENTRY_ORG ?? '',
-        project: process.env.SENTRY_PROJECT ?? '',
-      },
-    ],
-  ],
+  plugins,
 };
-
 
 export default config;

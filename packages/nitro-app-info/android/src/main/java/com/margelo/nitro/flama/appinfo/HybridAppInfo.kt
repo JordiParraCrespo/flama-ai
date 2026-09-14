@@ -1,6 +1,4 @@
-package com.flama.appinfo
-
-import com.margelo.nitro.appinfo.HybridAppInfoSpec
+package com.margelo.nitro.flama.appinfo
 
 class HybridAppInfo : HybridAppInfoSpec() {
   override fun getNativeModuleName(): String = "AppInfo"

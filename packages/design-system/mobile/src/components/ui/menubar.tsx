@@ -22,12 +22,15 @@ const MenubarRadioGroup = MenubarPrimitive.RadioGroup;
 
 const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
 
+type MenubarProps = Omit<React.ComponentProps<typeof MenubarPrimitive.Root>, 'value' | 'onValueChange'> &
+  Partial<Pick<React.ComponentProps<typeof MenubarPrimitive.Root>, 'value' | 'onValueChange'>>;
+
 function Menubar({
   className,
   value: valueProp,
   onValueChange: onValueChangeProp,
   ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Root>) {
+}: MenubarProps) {
   const id = React.useId();
   const [value, setValue] = React.useState<string | undefined>(undefined);
 

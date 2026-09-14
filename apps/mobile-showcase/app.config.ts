@@ -5,7 +5,6 @@ const config: ExpoConfig = {
   slug: 'flama-showcase',
   version: '0.1.0',
   scheme: 'flama-showcase',
-  newArchEnabled: true,
   platforms: ['ios', 'android'],
   userInterfaceStyle: 'automatic',
   ios: {

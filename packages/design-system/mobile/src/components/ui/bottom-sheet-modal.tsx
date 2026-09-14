@@ -7,7 +7,7 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { cssInterop } from 'nativewind';
-import { useCallback, useEffect, useRef } from 'react';
+import { type ComponentPropsWithRef, type ComponentType, useCallback, useEffect, useRef } from 'react';
 import type { ViewProps } from 'react-native';
 import { useHardwareBack } from '../../hooks/use-hardware-back';
 import { cn } from '../../lib/utils';
@@ -17,6 +17,13 @@ cssInterop(LibraryBottomSheetModal, {
   backgroundClassName: 'backgroundStyle',
   handleIndicatorClassName: 'handleIndicatorStyle',
 });
+
+const StyledBottomSheetModal = LibraryBottomSheetModal as ComponentType<
+  ComponentPropsWithRef<typeof LibraryBottomSheetModal> & {
+    backgroundClassName?: string;
+    handleIndicatorClassName?: string;
+  }
+>;
 cssInterop(BottomSheetView, { className: 'style' });
 cssInterop(BottomSheetScrollView, {
   className: 'style',
@@ -42,7 +49,7 @@ export function BottomSheetModal({
   children,
   className,
 }: BottomSheetModalProps) {
-  const ref = useRef<LibraryBottomSheetModal>(null);
+  const ref = useRef<LibraryBottomSheetModal<unknown>>(null);
 
   useEffect(() => {
     if (open) ref.current?.present();
@@ -66,7 +73,7 @@ export function BottomSheetModal({
   );
 
   return (
-    <LibraryBottomSheetModal
+    <StyledBottomSheetModal
       ref={ref}
       onDismiss={onClose}
       backdropComponent={renderBackdrop}
@@ -79,7 +86,7 @@ export function BottomSheetModal({
       keyboardBlurBehavior="restore"
     >
       {children}
-    </LibraryBottomSheetModal>
+    </StyledBottomSheetModal>
   );
 }
 
