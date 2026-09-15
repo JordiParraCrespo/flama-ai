@@ -11,9 +11,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: What changed
+    runs-on: gha-vm
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+      packages: ${{ steps.scope.outputs.packages }}
+      filters: ${{ steps.scope.outputs.filters }}
+      images: ${{ steps.scope.outputs.images }}
+    steps:
+      # The whole history, so Turborepo can diff a pull request against its
+      # base branch. The repository is small enough for this to cost seconds.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Which packages a pull request touches, and therefore which tests and
+      # images it needs. A push to main, or a change to a file no package owns
+      # (this workflow, the lockfile, docker/), runs everything; see the script.
+      - id: scope
+        run: node scripts/ci/affected.mjs
+
   lint:
     name: Lint
     runs-on: gha-vm
+    needs: changes
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -43,8 +70,11 @@ jobs:
       - name: Design-system lint
         run: pnpm lint:design
       # flama:end web|admin-web|web-showcase|mobile|admin-mobile|mobile-showcase
+      # Empty filters mean "every package" to Turborepo, so an empty affected
+      # list has to skip the step rather than pass nothing.
       - name: Architecture boundaries
-        run: pnpm arch
+        if: needs.changes.outputs.packages != '[]'
+        run: pnpm turbo run arch ${{ needs.changes.outputs.filters }}
       # flama:begin starter
       # The starter's feature manifest must keep describing the repo: every
       # optional app referenced only inside its own paths or a marker block.
@@ -56,6 +86,10 @@ jobs:
   go:
     name: Go (go.work)
     runs-on: gha-vm
+    needs: changes
+    # Every Go module is a workspace package, so Turborepo's affected list
+    # names them; nothing here can change without one of them changing.
+    if: contains(needs.changes.outputs.packages, '"@flama/go-') || contains(needs.changes.outputs.packages, '"@flama/runner"')
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
@@ -81,7 +115,10 @@ jobs:
   test:
     name: Test
     runs-on: gha-vm
-    needs: lint
+    needs: changes
+    # Runs beside Lint rather than behind it: nothing here depends on Biome
+    # passing, and the gate cost every run two and a half serial minutes.
+    if: needs.changes.outputs.packages != '[]'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -100,19 +137,36 @@ jobs:
             packages/go/*/go.sum
       # flama:end runner
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm test
+      # The filters name the affected packages; `dependsOn: ["^build"]` still
+      # builds what they import. Empty on main, where everything runs.
+      - run: pnpm turbo run build ${{ needs.changes.outputs.filters }}
+      - run: pnpm turbo run test ${{ needs.changes.outputs.filters }}
       # flama:begin web|admin-web
       # What a first-time visitor downloads before anything renders, against a
-      # committed budget. Vite's own chunk warning prints and passes.
+      # committed budget. Vite's own chunk warning prints and passes. The
+      # check reads both SPAs' dist folders, so build both when either changed;
+      # the one already built above is a local cache hit.
       - name: First-load budgets
-        run: pnpm check:bundle
+        if: contains(needs.changes.outputs.packages, '"@flama/web"') || contains(needs.changes.outputs.packages, '"@flama/admin-web"')
+        run: |
+          filters=()
+          # flama:begin web
+          filters+=(--filter=@flama/web)
+          # flama:end web
+          # flama:begin admin-web
+          filters+=(--filter=@flama/admin-web)
+          # flama:end admin-web
+          pnpm turbo run build "${filters[@]}"
+          pnpm check:bundle
       # flama:end web|admin-web
 
   test-integration:
     name: Integration Tests
     runs-on: gha-vm
-    needs: lint
+    needs: changes
+    # apps/api is the only package with an integration suite, and Turborepo's
+    # affected list already includes it whenever one of its dependencies moved.
+    if: contains(needs.changes.outputs.packages, '"@flama/api"')
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -129,14 +183,20 @@ jobs:
             packages/go/*/go.sum
       # flama:end runner
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      # Only the API and what it imports; the full build spent most of its
+      # two minutes on apps this job never runs.
+      - run: pnpm turbo run build --filter=@flama/api...
       - run: pnpm test:integration
 
   # flama:begin e2e
   test-e2e:
     name: End-to-End Tests (API)
     runs-on: gha-vm
-    needs: lint
+    needs: changes
+    # The suite drives the API over HTTP and depends on nothing else in the
+    # workspace, so it runs when the API (or one of its dependencies, which
+    # the affected list folds into it) or the suite itself changed.
+    if: contains(needs.changes.outputs.packages, '"@flama/api"') || contains(needs.changes.outputs.packages, '"@flama/e2e"')
     # The same Postgres and Redis `pnpm docker:up` starts locally, as service
     # containers: this runner has the Docker daemon but not the `docker
     # compose` plugin, and the ports and credentials below are the ones
@@ -228,6 +288,11 @@ jobs:
     name: Build Docker Images
     runs-on: gha-vm
     needs:
+      - changes
+      # Lint no longer gates the test jobs, so it is listed here on its own:
+      # an image still waits for Biome, the architecture rules and the
+      # starter manifest to pass.
+      - lint
       - test
       - test-integration
       # flama:begin e2e
@@ -236,28 +301,22 @@ jobs:
       # flama:begin runner
       - go
       # flama:end runner
+    # `needs` alone would skip this job whenever one of the test jobs was
+    # skipped for having nothing to do; wait for them all, then require that
+    # none failed and that some image is affected at all.
+    if: |
+      !cancelled()
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && needs.changes.outputs.images != '[]'
     permissions:
       contents: read
       packages: write
     strategy:
+      # The apps whose package (or a dependency of it) changed, from the
+      # mapping in scripts/ci/affected.mjs; every app on main.
       matrix:
-        app:
-          - api
-          # flama:begin web
-          - web
-          # flama:end web
-          # flama:begin admin-web
-          - admin-web
-          # flama:end admin-web
-          # flama:begin docs
-          - docs
-          # flama:end docs
-          # flama:begin mcp
-          - mcp
-          # flama:end mcp
-          # flama:begin runner
-          - runner
-          # flama:end runner
+        app: ${{ fromJSON(needs.changes.outputs.images) }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Lowercase repository name

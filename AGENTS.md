@@ -78,6 +78,14 @@ When you add a file that mentions an optional app (CI, compose, Helm,
 - Conventional commits enforced via commitlint
 - Independent versioning per package via Changesets
 - No git hooks — CI enforces quality
+- CI runs what a pull request touches, not the whole pipeline:
+  `scripts/ci/affected.mjs` asks Turborepo which packages the diff affects
+  (a change in `packages/shared` reaches every app that imports it), and the
+  jobs build, test and package only those. A push to `main`, or a change to a
+  file no package owns (the workflow, the lockfile, `docker/`, `scripts/`),
+  runs everything. A new Docker image is a row in that script's `IMAGES`; a
+  new root-level file every package relies on is a pattern in its
+  `GLOBAL_PATHS`
 
 ### Backend (`apps/api` + `packages/backend/*`)
 
