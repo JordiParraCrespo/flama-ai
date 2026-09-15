@@ -37,6 +37,7 @@ below is optional except the API — keep what you're building, prune the rest
 | `packages/api-client`             | Auto-generated typed client from Swagger                           |
 | `packages/translations`           | Shared i18n (en/es)                                                |
 | `packages/config`                 | Shared TypeScript configs                                          |
+| `packages/nitro-app-info`         | Nitro native module (Swift/Kotlin) exposing native app info to the mobile apps |
 
 ### Testing
 
