@@ -4,14 +4,14 @@
     {
       "id": 1,
       "prompt": "I'm building a Next.js app with shadcn/ui (base-nova preset, lucide icons). Create a settings form component with fields for: full name, email address, and notification preferences (email, SMS, push notifications as toggle options). Add validation states for required fields.",
-      "expected_output": "A React component using FieldGroup, Field, ToggleGroup, data-invalid/aria-invalid validation, gap-* spacing, and semantic colors.",
+      "expected_output": "A React component using FieldGroup, Field, ToggleGroup, data-invalid/aria-invalid validation, gap-* spacing, and brand colour tokens.",
       "files": [],
       "expectations": [
         "Uses FieldGroup and Field components for form layout instead of raw div with space-y",
         "Uses Switch for independent on/off notification toggles (not looping Button with manual active state)",
         "Uses data-invalid on Field and aria-invalid on the input control for validation states",
         "Uses gap-* (e.g. gap-4, gap-6) instead of space-y-* or space-x-* for spacing",
-        "Uses semantic color tokens (e.g. bg-background, text-muted-foreground, text-destructive) instead of raw colors like bg-red-500",
+        "Uses the repo's brand colour tokens (text-ink-*, bg-surface-*, --status-*) instead of raw colors like bg-red-500 or shadcn aliases like text-muted-foreground",
         "No manual dark: color overrides"
       ]
     },
@@ -32,13 +32,13 @@
     {
       "id": 3,
       "prompt": "Create a dashboard component that shows 4 stat cards in a grid. Each card has a title, large number, percentage change badge, and a loading skeleton state. Using shadcn/ui with base-nova preset and lucide icons.",
-      "expected_output": "A React component with full Card composition, Skeleton for loading, Badge for changes, semantic colors, gap-* spacing.",
+      "expected_output": "A React component with full Card composition, Skeleton for loading, Badge for changes, brand colour tokens, gap-* spacing.",
       "files": [],
       "expectations": [
         "Uses full Card composition with CardHeader, CardTitle, CardContent (not dumping everything into CardContent)",
         "Uses Skeleton component for loading placeholders instead of custom animate-pulse divs",
         "Uses Badge component for percentage change instead of custom styled spans",
-        "Uses semantic color tokens instead of raw color values like bg-green-500 or text-red-600",
+        "Uses the repo's brand colour tokens (text-ink-*, bg-surface-*, --status-*) instead of raw color values like bg-green-500 or shadcn aliases like text-muted-foreground",
         "Uses gap-* instead of space-y-* or space-x-* for spacing",
         "Uses size-* when width and height are equal instead of separate w-* h-*"
       ]

@@ -126,15 +126,9 @@ need a row in `apps/docs/docs/errors.md` — see `nestjs-architecture.md`.
 
 #### Authorization (roles & permissions)
 
-Authorization is **database-backed dynamic RBAC** — roles and their permissions
-live in the `role` table and are managed by admins through the API, not hardcoded.
-A user can hold **multiple roles** (`user_role` join); their effective CASL
-ability is the union of those roles' permissions. Protect routes with
-`@UseGuards(AuthGuard, PoliciesGuard)` + `@CheckPolicies({ action, subject })`;
-the guard resolves the ability via `AbilityFactory` and exposes it on
-`request.ability` for resource-scoped checks. The `roles` module
-(`apps/api/src/roles/`) exposes CRUD + `PUT /roles/:id/permissions` and
-`GET|PUT /users/:userId/roles`. See `rbac-roles.md` for the full guide.
+Database-backed dynamic RBAC: roles and permissions live in the `role` table,
+a user holds many, and routes are guarded with `@CheckPolicies`. The full
+guide is `.agents/rules/rbac-roles.md`.
 
 ### CLI (`apps/cli`) and MCP server (`apps/mcp`)
 
@@ -215,26 +209,16 @@ module" steps in `packages/go/README.md`.
 
 #### Forms (both apps)
 
-Every form uses **React Hook Form** validated by a Zod schema from
-`@flama/shared`, with the resolver wired through the app's `useZodResolver` so
-messages stay translated. No `useState` per field, no `FormData` reads, no
-`safeParse` in a submit handler. Zod schemas therefore carry **no message
-strings** — an explicit message defeats the translation layer. The full
-convention, including the web/mobile patterns and how to add a message, is in
-[`.agents/rules/forms.md`](.agents/rules/forms.md).
+React Hook Form over a Zod schema from `@flama/shared`, resolver wired through
+the app's `useZodResolver`. The convention is `.agents/rules/forms.md`.
 
 ### Design system (packages/design-system)
 
-Split into two independently versioned packages that share a mirrored component API:
-
-- `@flama/design-system-web` (`packages/design-system/web`) — shadcn/ui-style
-  components on Base UI primitives + Tailwind CSS v4. Tokens/base layer live in
-  `src/styles/globals.css`; built with tsup. Used by `apps/web` and
-  `apps/web-showcase`.
-- `@flama/design-system-mobile` (`packages/design-system/mobile`) — shadcn-style
-  React Native components on NativeWind + `@rn-primitives`. Used by `apps/mobile`
-  and `apps/mobile-showcase`.
-- The shadcn component API is mirrored across web and mobile for consistency.
+Two independently versioned packages with a mirrored component API:
+`@flama/design-system-web` (Base UI + Tailwind v4, tokens in
+`src/styles/globals.css`) for `apps/web` and `apps/web-showcase`, and
+`@flama/design-system-mobile` (NativeWind + `@rn-primitives`) for `apps/mobile`
+and `apps/mobile-showcase`. Usage rules are `.agents/rules/frontend-ui.md`.
 
 ## Dependency flow
 
@@ -284,43 +268,36 @@ pnpm changeset          # Create a changeset for versioning
 - Shared types/schemas go in `packages/shared`, not duplicated in apps
 - New env vars go in the root `.env.example` with a note on what they do; never
   add a per-package `.env` (see `.agents/rules/api-config.md`)
-- New API endpoints need Swagger decorators for auto-generated client
-- After API changes, regenerate client: `pnpm generate:api-client`
-- New translations go in `packages/translations/{locale}/index.json`
-- New web design tokens go in `packages/design-system/web/src/styles/globals.css`
+- New API endpoints need Swagger decorators and `@RequireScopes`; without the
+  scope they are unreachable by API tokens and MCP clients. Afterwards run
+  `pnpm generate:api-client`
+- New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
+- Keep the pluggable service pattern: abstract class → concrete implementations → factory in module
+- New translations go in `packages/translations/{locale}/index.json`; a new
+  `validation.*` message also needs a case in `createZodErrorMap` and a key in
+  `ValidationMessageKey`
 - Frontend business logic goes in `packages/frontend`, not in app components
-- Before writing markup in `apps/web`, check whether `@flama/design-system-web`
-  already ships it — read `packages/design-system/web/src/index.ts`, do not go
-  from memory. Errors are `Alert`, successes are `toast`, field validation is
-  `FieldError`, "nothing here" is `EmptyState`, a paged list is `DataTable`.
-  See `.agents/rules/frontend-ui.md`
-- A field picking one value out of a list the **workspace** grows — a teammate,
-  a tracked resource — is a `Combobox`, not a `Select`, and its `onQueryChange`
-  goes to the endpoint so the search is the API's to answer. `Select` is for
-  fixed product lists; `AsyncMultiSelect` for several values out of thousands;
-  `SelectMenu` / `FilterMenu` for toolbar chrome. The table in
-  `.agents/rules/frontend-ui.md` decides the rest
-- Colours in `apps/web` come from the brand primitives (`text-ink-600`,
-  `bg-surface-sunken`, `--status-*`), not shadcn's aliases and never a raw hex.
-  A value genuinely outside the palette becomes a named token in `globals.css`
-- Everything a file in `packages/design-system/web/src/components/` exports must
-  be re-exported from `index.ts`; `pnpm test` fails otherwise. A component
-  nobody can import is a component somebody will rewrite by hand
-- A helper used by a second screen moves to `apps/web/src/lib/`. A route file
-  composes — its dialogs, cells and tabs belong in `components/<feature>/`,
-  as `components/team/` does
-- Never render a placeholder number. If the real value is not available yet,
-  render nothing: no badge is honest, a wrong badge is not
+- UI in `apps/web`: the design system first, brand colour primitives, helpers
+  in `lib/`, route files that compose, no placeholder numbers. The rules and
+  their tables are `.agents/rules/frontend-ui.md`
+- Forms: React Hook Form + `zodResolver` through the app's `useZodResolver`;
+  Zod schemas in `packages/shared` carry no message strings. See
+  `.agents/rules/forms.md`
 - Sign-up creates an account, not a workspace: an org-less account is sent to
   `/onboarding`, which creates the first organization or accepts a pending
   invitation. Only `/register` passes the social `sign-up` intent
-- Keep pluggable service pattern: abstract class → concrete implementations → factory in module
-- New API endpoints need `@RequireScopes` or they are unreachable by API tokens and MCP clients
-- New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
-- `apps/web` must not import runtime values from the `@flama/shared` **root**: its CJS build is not tree-shakeable by Rollup, so the whole graph (CASL, the scope catalog) lands in the bundle. Import a narrow subpath instead — `@flama/shared/schemas/auth` pulls in nothing but Zod — or fetch the data from the API, as the permission catalog does. Workspace `dist` folders sit outside `node_modules`, so anything newly imported this way needs adding to `optimizeDeps.include` in `apps/web/vite.config.ts` for dev
-- The same applies to `@flama/translations`: the root barrel holds every locale's catalog, so `apps/web` and `apps/admin-web` import metadata from `@flama/translations/locales` and catalogs from `@flama/translations/lazy`. Only the default locale is bundled; the rest are chunks fetched on demand
-- What the web apps put on the **critical path** is budgeted: `pnpm check:bundle` gzips every script and stylesheet the built `index.html` references and fails past the number in `scripts/check-bundle-size.mjs`. CI runs it after `pnpm build`. Vite's own 500KB chunk warning prints and passes, so it is not a guardrail. Raise a budget only deliberately, in its own diff
-- Compression, cache headers and the Content-Security-Policy for the SPAs live in `apps/web/nginx.conf` and `apps/admin-web/nginx.conf`, not in app code. A new third-party origin needs adding to `CSP_EXTRA_ORIGINS`, and anything the browser must run before React (theme, session preload) is a file in `public/` — the policy admits no inline script
-- Forms in `apps/web` and `apps/mobile` use **React Hook Form** with `zodResolver` over the `@flama/shared` schemas; wire the resolver through each app's `useZodResolver` so validation messages stay translated. See `.agents/rules/forms.md`
-- Zod schemas in `packages/shared` state the constraint only — **never** a message string (`z.string().email()`, not `z.string().email('Invalid email address')`). Zod ignores the error map whenever a check carries its own message, which silently pins every consumer to English
-- A new `validation.*` message needs a case in `createZodErrorMap`, a key in `ValidationMessageKey`, and an entry in every locale; the apps' typed `t()` turns a missing locale entry into a compile error
+- `apps/web` must not import runtime values from the `@flama/shared` **root**:
+  its CJS build is not tree-shakeable, so the whole graph lands in the bundle.
+  Import a narrow subpath (`@flama/shared/schemas/auth`) or fetch from the API.
+  Anything newly imported this way needs adding to `optimizeDeps.include` in
+  `apps/web/vite.config.ts` for dev
+- The same applies to `@flama/translations`: `apps/web` and `apps/admin-web`
+  import metadata from `@flama/translations/locales` and catalogs from
+  `@flama/translations/lazy`; only the default locale is bundled
+- The web apps' critical path is budgeted: `pnpm check:bundle` fails past the
+  number in `scripts/check-bundle-size.mjs`. Raise a budget only deliberately,
+  in its own diff
+- Compression, cache headers and the Content-Security-Policy for the SPAs live
+  in `apps/web/nginx.conf` and `apps/admin-web/nginx.conf`. A new third-party
+  origin goes in `CSP_EXTRA_ORIGINS`; anything the browser must run before
+  React is a file in `public/`, the policy admits no inline script

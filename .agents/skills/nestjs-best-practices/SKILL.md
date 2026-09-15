@@ -9,6 +9,10 @@ metadata:
 
 # NestJS Best Practices
 
+> **In this repo:** `apps/api` follows Domain-Driven Hexagon. Where a rule here
+> conflicts with `.agents/rules/nestjs-architecture.md` or `nestjs-di.md`, the
+> repo rule wins.
+
 Comprehensive best practices guide for NestJS applications. Contains 40 rules across 10 categories, prioritized by impact to guide automated refactoring and code generation.
 
 ## When to Apply

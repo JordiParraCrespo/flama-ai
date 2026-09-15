@@ -11,6 +11,9 @@ point inward: the domain depends on nothing, the application orchestrates the
 domain, and infrastructure/interface adapters depend on the inside. The shared
 building blocks live in `@flama/backend-ddd`.
 
+Where the vendored `nestjs-best-practices` skill disagrees with this file or
+`nestjs-di.md`, this file wins; dependency-cruiser enforces it.
+
 ## Module layout (vertical slices)
 
 Each feature module is organised by use case, not by technical layer:
