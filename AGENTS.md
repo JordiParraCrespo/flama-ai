@@ -103,8 +103,7 @@ loads only for the code it governs. Two are frontend:
   `apps/mobile` and the shared schemas
 - `frontend-ui.md` — reaching for the design system before writing markup, the
   colour vocabulary, where helpers and route files live, placeholder data,
-  translating exports, and e2e coverage. Every rule in it names the duplication
-  or bug it was written after finding
+  translating exports, and e2e coverage
 
 The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
 
@@ -273,16 +272,11 @@ pnpm changeset          # Create a changeset for versioning
   `pnpm generate:api-client`
 - New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
 - Keep the pluggable service pattern: abstract class → concrete implementations → factory in module
-- New translations go in `packages/translations/{locale}/index.json`; a new
-  `validation.*` message also needs a case in `createZodErrorMap` and a key in
-  `ValidationMessageKey`
+- New translations go in `packages/translations/{locale}/index.json`
 - Frontend business logic goes in `packages/frontend`, not in app components
-- UI in `apps/web`: the design system first, brand colour primitives, helpers
-  in `lib/`, route files that compose, no placeholder numbers. The rules and
-  their tables are `.agents/rules/frontend-ui.md`
-- Forms: React Hook Form + `zodResolver` through the app's `useZodResolver`;
-  Zod schemas in `packages/shared` carry no message strings. See
-  `.agents/rules/forms.md`
+- UI in `apps/web`, `apps/web-showcase` and the web design system:
+  `.agents/rules/frontend-ui.md`
+- Forms and Zod schemas: `.agents/rules/forms.md`
 - Sign-up creates an account, not a workspace: an org-less account is sent to
   `/onboarding`, which creates the first organization or accepts a pending
   invitation. Only `/register` passes the social `sign-up` intent

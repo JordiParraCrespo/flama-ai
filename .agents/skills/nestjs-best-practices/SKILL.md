@@ -9,11 +9,7 @@ metadata:
 
 # NestJS Best Practices
 
-> **In this repo:** `apps/api` follows Domain-Driven Hexagon. Where a rule here
-> conflicts with `.agents/rules/nestjs-architecture.md` or `nestjs-di.md`, the
-> repo rule wins.
-
-Comprehensive best practices guide for NestJS applications. Contains 40 rules across 10 categories, prioritized by impact to guide automated refactoring and code generation.
+Comprehensive best practices guide for NestJS applications. Contains 37 rules across 10 categories, prioritized by impact to guide automated refactoring and code generation.
 
 ## When to Apply
 
@@ -21,6 +17,8 @@ Reference these guidelines when:
 
 - Writing new NestJS modules, controllers, or services
 - Implementing authentication and authorization
+
+Errors in this repo are `AppError` problem documents, request DTOs are Zod via `createZodDto`, and responses go through a mapper; those topics are covered by `.agents/rules/nestjs-architecture.md`, not here.
 - Reviewing code for architecture and security issues
 - Refactoring existing NestJS codebases
 - Optimizing performance or database queries
@@ -49,7 +47,7 @@ Reference these guidelines when:
 - `arch-feature-modules` - Organize by feature, not technical layer
 - `arch-module-sharing` - Proper module exports/imports, avoid duplicate providers
 - `arch-single-responsibility` - Focused services over "god services"
-- `arch-use-repository-pattern` - Abstract database logic for testability
+- `arch-use-repository-pattern` - Data access behind a repository port injected by DI token (`.agents/rules/nestjs-di.md`)
 - `arch-use-events` - Event-driven architecture for decoupling
 
 ### 2. Dependency Injection (CRITICAL)
@@ -64,13 +62,11 @@ Reference these guidelines when:
 ### 3. Error Handling (HIGH)
 
 - `error-use-exception-filters` - Centralized exception handling
-- `error-throw-http-exceptions` - Use NestJS HTTP exceptions
 - `error-handle-async-errors` - Handle async errors properly
 
 ### 4. Security (HIGH)
 
 - `security-auth-jwt` - Secure JWT authentication
-- `security-validate-all-input` - Validate with class-validator
 - `security-use-guards` - Authentication and authorization guards
 - `security-sanitize-output` - Prevent XSS attacks
 - `security-rate-limiting` - Implement rate limiting
@@ -96,7 +92,6 @@ Reference these guidelines when:
 
 ### 8. API Design (MEDIUM)
 
-- `api-use-dto-serialization` - DTO and response serialization
 - `api-use-interceptors` - Cross-cutting concerns
 - `api-versioning` - API versioning strategies
 - `api-use-pipes` - Input transformation with pipes
@@ -119,7 +114,7 @@ Read individual rule files for detailed explanations and code examples:
 
 ```
 rules/arch-avoid-circular-deps.md
-rules/security-validate-all-input.md
+rules/security-use-guards.md
 rules/_sections.md
 ```
 
@@ -128,7 +123,3 @@ Each rule file contains:
 - Incorrect code example with explanation
 - Correct code example with explanation
 - Additional context and references
-
-## Full Compiled Document
-
-For the complete guide with all rules expanded: `AGENTS.md`

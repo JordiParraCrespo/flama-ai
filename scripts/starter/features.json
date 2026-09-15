@@ -5,7 +5,12 @@
       "title": "Consumer web app",
       "summary": "apps/web \u2014 Vite + TanStack Router SPA for end users",
       "identifiers": ["apps/web", "@flama/web", "flama-web"],
-      "paths": ["apps/web", "e2e/tests/web", "helm/flama/templates/web-deployment.yaml"]
+      "paths": [
+        "apps/web",
+        "e2e/tests/web",
+        "helm/flama/templates/web-deployment.yaml",
+        ".agents/skills/shadcn/evals/evals.json"
+      ]
     },
     "mobile": {
       "title": "Consumer mobile app",

@@ -8,18 +8,13 @@ paths:
 # Frontend UI Rules
 
 Each rule below was written after finding the thing it forbids in this repo.
-The rules in this file win over any vendored skill (`shadcn`, Vercel, Next)
-where the two disagree.
+The linter is the check; this file is the list.
 
 ## Reach for the design system before writing markup
 
 Before styling a `div`, check whether `@flama/design-system-web` already ships
-it. Read the whole barrel, `packages/design-system/web/src/index.ts`; most of
-its exports are multi-line, so a grep for `export` misses them. To list names:
-
-```bash
-node -e "console.log(require('fs').readFileSync('packages/design-system/web/src/index.ts','utf8').replace(/\s+/g,' ').match(/\{[^}]*\}/g).join('\n'))"
-```
+it. Read `packages/design-system/web/src/index.ts` in full; its exports are
+multi-line, so a grep for `export` misses most of them.
 
 | Need                                  | Use                           | Not                                                   |
 | ------------------------------------- | ----------------------------- | ----------------------------------------------------- |
@@ -34,8 +29,8 @@ node -e "console.log(require('fs').readFileSync('packages/design-system/web/src/
 | A dialog taller than the viewport | `DialogBody` around its middle | `overflow-y-auto` on `DialogContent` |
 
 Why: an error callout was hand-rolled in nineteen places while `Alert` sat
-exported; `Breadcrumb` shipped but was missing from the barrel, so a page
-rewrote it.
+exported, empty and loading states in five while `EmptyState` was used by one,
+and a whole second table was built beside `DataTable`.
 
 `DataTable` lives in `apps/web/src/components/`, so that row is the product
 app's only; `apps/web-showcase` builds on the `Table` primitives. In `apps/web`
@@ -105,12 +100,16 @@ the `_authenticated` layout.
 
 ## One colour vocabulary: the brand primitives
 
-Use `text-ink-900/600/400`, `bg-surface-*`, `border-border-*`, `--accent-*`,
-`--status-*`. Not shadcn's aliases (`text-muted-foreground`, `bg-muted`,
-`text-foreground`), not a raw hex, not a stock Tailwind colour
-(`text-amber-600`), and no `dark:` overrides. A colour genuinely outside the
-palette becomes a named token in
+In the apps, use `text-ink-900/600/400`, `bg-surface-*`, `border-border-*`,
+`--accent-*`, `--status-*`. Not shadcn's aliases (`text-muted-foreground`,
+`bg-muted`, `text-foreground`), not a raw hex, not a stock Tailwind colour
+(`text-amber-600`), and no `dark:` colour overrides: the tokens already invert.
+A colour genuinely outside the palette becomes a named token in
 `packages/design-system/web/src/styles/globals.css` with a comment saying why.
+
+Primitives in `packages/design-system/web` are the exception on `dark:`. A
+variant that is not a colour swap (`avatar.tsx` switches blend modes,
+`chart.tsx` selects the dark chart theme) belongs there and nowhere else.
 
 ## The design-system linter enforces the two rules above
 
@@ -140,7 +139,8 @@ back to `warn` to land a change. Known false positive before promoting
 `packages/design-system/web/src/index.ts` re-exports everything a file in
 `src/components/` exports; `pnpm --filter @flama/design-system-web test` fails
 otherwise. `apps/web` imports components from the root only, so a missing
-barrel entry is a component that does not exist. Something internal is not
+barrel entry is a component that does not exist: `Breadcrumb` shipped, styled
+and building, and a detail page hand-rolled one. Something internal is not
 exported from its own module either.
 
 ## The second time you write a helper, move it to `lib/`

@@ -4,7 +4,7 @@ See [customization.md](../customization.md) for theming, CSS variables, and addi
 
 ## Contents
 
-- Semantic colors
+- Brand colour tokens
 - Built-in variants first
 - className for layout only
 - No space-x-* / space-y-*
@@ -16,21 +16,28 @@ See [customization.md](../customization.md) for theming, CSS variables, and addi
 
 ---
 
-## Semantic colors
+## Brand colour tokens
+
+Colours are the brand primitives from `packages/design-system/web/src/styles/globals.css`:
+`text-ink-900/600/400`, `bg-surface-*`, `border-border-*`, `--accent-*`,
+`--status-*`. Not raw Tailwind colours, and not shadcn's semantic aliases
+(`text-muted-foreground`, `bg-muted`, `text-foreground`) even though they
+resolve to the same values. The full vocabulary is `.agents/rules/frontend-ui.md`.
 
 **Incorrect:**
 
 ```tsx
 <div className="bg-blue-500 text-white">
   <p className="text-gray-600">Secondary text</p>
+  <p className="text-muted-foreground">Also secondary</p>
 </div>
 ```
 
 **Correct:**
 
 ```tsx
-<div className="bg-primary text-primary-foreground">
-  <p className="text-muted-foreground">Secondary text</p>
+<div className="bg-surface-card text-ink-900">
+  <p className="text-ink-600">Secondary text</p>
 </div>
 ```
 
@@ -38,7 +45,7 @@ See [customization.md](../customization.md) for theming, CSS variables, and addi
 
 ## No raw color values for status/state indicators
 
-For positive, negative, or status indicators, use Badge variants, semantic tokens like `text-destructive`, or define custom CSS variables — don't reach for raw Tailwind colors.
+For positive, negative, or status indicators, use Badge variants or the `--status-*` tokens — don't reach for raw Tailwind colors.
 
 **Incorrect:**
 
@@ -51,12 +58,12 @@ For positive, negative, or status indicators, use Badge variants, semantic token
 **Correct:**
 
 ```tsx
-<Badge variant="secondary">+20.1%</Badge>
-<Badge>Active</Badge>
-<span className="text-destructive">-3.2%</span>
+<Badge variant="neutral">+20.1%</Badge>
+<Badge variant="active">Active</Badge>
+<Badge variant="paused">-3.2%</Badge>
 ```
 
-If you need a success/positive color that doesn't exist as a semantic token, use a Badge variant or ask the user about adding a custom CSS variable to the theme (see [customization.md](../customization.md)).
+A colour genuinely outside the palette becomes a named token in `globals.css` with a comment saying why.
 
 ---
 
@@ -80,7 +87,7 @@ If you need a success/positive color that doesn't exist as a semantic token, use
 
 ## className for layout only
 
-Use `className` for layout (e.g. `max-w-md`, `mx-auto`, `mt-4`), **not** for overriding component colors or typography. To change colors, use semantic tokens, built-in variants, or CSS variables.
+Use `className` for layout (e.g. `max-w-md`, `mx-auto`, `mt-4`), **not** for overriding component colors or typography. To change colors, use built-in variants or the brand tokens.
 
 **Incorrect:**
 
@@ -100,8 +107,8 @@ Use `className` for layout (e.g. `max-w-md`, `mx-auto`, `mt-4`), **not** for ove
 
 To customize a component's appearance, prefer these approaches in order:
 1. **Built-in variants** — `variant="outline"`, `variant="destructive"`, etc.
-2. **Semantic color tokens** — `bg-primary`, `text-muted-foreground`.
-3. **CSS variables** — define custom colors in the global CSS file (see [customization.md](../customization.md)).
+2. **Brand colour tokens** — `text-ink-*`, `bg-surface-*`, `--status-*`.
+3. **A new named token** in `globals.css`, with a comment saying why.
 
 ---
 
@@ -133,7 +140,7 @@ Use `gap-*` instead. `space-y-4` → `flex flex-col gap-4`. `space-x-2` → `fle
 
 ## No manual dark: color overrides
 
-Use semantic tokens — they handle light/dark via CSS variables. `bg-background text-foreground` not `bg-white dark:bg-gray-950`.
+The brand tokens already invert with the theme. `bg-surface-canvas text-ink-900` not `bg-white dark:bg-gray-950`. Only a design-system primitive that switches something other than a colour (a blend mode, a chart theme) uses `dark:`.
 
 ---
 
@@ -144,7 +151,7 @@ Use the `cn()` utility from the project for conditional or merged class names. D
 **Incorrect:**
 
 ```tsx
-<div className={`flex items-center ${isActive ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+<div className={`flex items-center ${isActive ? "text-ink-900" : "text-ink-400"}`}>
 ```
 
 **Correct:**
@@ -152,7 +159,7 @@ Use the `cn()` utility from the project for conditional or merged class names. D
 ```tsx
 import { cn } from "@/lib/utils"
 
-<div className={cn("flex items-center", isActive ? "bg-primary text-primary-foreground" : "bg-muted")}>
+<div className={cn("flex items-center", isActive ? "text-ink-900" : "text-ink-400")}>
 ```
 
 ---

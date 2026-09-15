@@ -18,7 +18,7 @@ Components reference semantic CSS variable tokens. Change the variables to chang
 ## How It Works
 
 1. CSS variables defined in `:root` (light) and `.dark` (dark mode).
-2. Tailwind maps them to utilities: `bg-primary`, `text-muted-foreground`, etc.
+2. Tailwind maps them to utilities. In this repo the ones to write are the brand tokens (`text-ink-*`, `bg-surface-*`), not the shadcn aliases.
 3. Components use these utilities — changing a variable changes all components that reference it.
 
 ---
