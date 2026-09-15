@@ -34,23 +34,6 @@ npx skills add Kadajett/agent-nestjs-skills -a claude-code -a cursor
   - `_sections.md` - Section metadata (titles, impacts, descriptions)
   - `_template.md` - Template for creating new rules
   - `area-description.md` - Individual rule files
-- `scripts/` - Build scripts and utilities
-- `metadata.json` - Document metadata (version, organization, abstract)
-- __`AGENTS.md`__ - Compiled output (generated)
-
-## Getting Started
-
-1. Install dependencies:
-   ```bash
-   cd scripts && npm install
-   ```
-
-2. Build AGENTS.md from rules:
-   ```bash
-   npm run build
-   # or
-   ./scripts/build.sh
-   ```
 
 ## Creating a New Rule
 
@@ -68,7 +51,6 @@ npx skills add Kadajett/agent-nestjs-skills -a claude-code -a cursor
    - `devops-` for DevOps & Deployment (Section 10)
 3. Fill in the frontmatter and content
 4. Ensure you have clear examples with explanations
-5. Run the build script to regenerate AGENTS.md
 
 ## Rule File Structure
 
@@ -121,10 +103,6 @@ Reference: [NestJS Documentation](https://docs.nestjs.com)
 | MEDIUM | Moderate impact on code quality and best practices |
 | LOW-MEDIUM | Minor improvements for consistency and maintainability |
 
-## Scripts
-
-- `npm run build` (in scripts/) - Compile rules into AGENTS.md
-
 ## Contributing
 
 When adding or modifying rules:
@@ -133,7 +111,6 @@ When adding or modifying rules:
 2. Follow the `_template.md` structure
 3. Include clear bad/good examples with explanations
 4. Add appropriate tags
-5. Run the build script to regenerate AGENTS.md
 6. Rules are automatically sorted by title - no need to manage numbers!
 
 ## Documentation Website

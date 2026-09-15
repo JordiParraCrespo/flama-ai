@@ -4,7 +4,7 @@
 
 - Items always inside their Group component
 - Callouts use Alert
-- Empty states use Empty component
+- Empty states use EmptyState component
 - Toast notifications use sonner
 - Choosing between overlay components
 - Dialog, Sheet, and Drawer always need a Title
@@ -65,20 +65,12 @@ This applies to all group-based components:
 
 ---
 
-## Empty states use Empty component
+## Empty states use EmptyState component
 
-```tsx
-<Empty>
-  <EmptyHeader>
-    <EmptyMedia variant="icon"><FolderIcon /></EmptyMedia>
-    <EmptyTitle>No projects yet</EmptyTitle>
-    <EmptyDescription>Get started by creating a new project.</EmptyDescription>
-  </EmptyHeader>
-  <EmptyContent>
-    <Button>Create Project</Button>
-  </EmptyContent>
-</Empty>
-```
+`EmptyState` from `@flama/design-system-web` is the house empty state (read
+`packages/design-system/web/src/components/empty-state.tsx` for its props).
+Don't build custom markup, and don't reach for the lower-level `Empty` parts
+when `EmptyState` fits.
 
 ---
 

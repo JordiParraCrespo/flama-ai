@@ -24,7 +24,7 @@ The JSON above contains the project config and installed components. Use `npx sh
 1. **Use existing components first.** Use `npx shadcn@latest search` to check registries before writing custom UI. Check community registries too.
 2. **Compose, don't reinvent.** Settings page = Tabs + Card + form controls. Dashboard = Sidebar + Card + Chart + Table.
 3. **Use built-in variants before custom styles.** `variant="outline"`, `size="sm"`, etc.
-4. **Use semantic colors.** `bg-primary`, `text-muted-foreground` — never raw values like `bg-blue-500`.
+4. **Use the brand colour tokens.** `text-ink-*`, `bg-surface-*`, `border-border-*`, `--status-*` — never raw values like `bg-blue-500` and never shadcn's aliases (`text-muted-foreground`, `bg-muted`). The vocabulary is in `.agents/rules/frontend-ui.md`.
 
 ## Critical Rules
 
@@ -36,7 +36,7 @@ These rules are **always enforced**. Each links to a file with Incorrect/Correct
 - **No `space-x-*` or `space-y-*`.** Use `flex` with `gap-*`. For vertical stacks, `flex flex-col gap-*`.
 - **Use `size-*` when width and height are equal.** `size-10` not `w-10 h-10`.
 - **Use `truncate` shorthand.** Not `overflow-hidden text-ellipsis whitespace-nowrap`.
-- **No manual `dark:` color overrides.** Use semantic tokens (`bg-background`, `text-muted-foreground`).
+- **No manual `dark:` color overrides.** The brand tokens already invert with the theme.
 - **Use `cn()` for conditional classes.** Don't write manual template literal ternaries.
 - **No manual `z-index` on overlay components.** Dialog, Sheet, Popover, etc. handle their own stacking.
 
@@ -63,7 +63,7 @@ These rules are **always enforced**. Each links to a file with Incorrect/Correct
 
 - **Use existing components before custom markup.** Check if a component exists before writing a styled `div`.
 - **Callouts use `Alert`.** Don't build custom styled divs.
-- **Empty states use `Empty`.** Don't build custom empty state markup.
+- **Empty states use `EmptyState`.** Don't build custom empty state markup.
 - **Toast via `sonner`.** Use `toast()` from `sonner`.
 - **Use `Separator`** instead of `<hr>` or `<div className="border-t">`.
 - **Use `Skeleton`** for loading placeholders. No custom `animate-pulse` divs.
@@ -113,8 +113,8 @@ These are the most common patterns that differentiate correct shadcn/ui code. Fo
 <Avatar className="size-10">   // correct
 <Avatar className="w-10 h-10"> // wrong
 
-// Status colors: Badge variants or semantic tokens, not raw colors.
-<Badge variant="secondary">+20.1%</Badge>    // correct
+// Status colors: Badge variants or brand tokens, not raw colors.
+<Badge variant="neutral">+20.1%</Badge>      // correct
 <span className="text-emerald-600">+20.1%</span> // wrong
 ```
 
@@ -125,14 +125,14 @@ These are the most common patterns that differentiate correct shadcn/ui code. Fo
 | Button/action              | `Button` with appropriate variant                                                                   |
 | Form inputs                | `Input`, `Select`, `Combobox`, `Switch`, `Checkbox`, `RadioGroup`, `Textarea`, `InputOTP`, `Slider` |
 | Toggle between 2–5 options | `ToggleGroup` + `ToggleGroupItem`                                                                   |
-| Data display               | `Table`, `Card`, `Badge`, `Avatar`                                                                  |
+| Data display               | `DataTable` for a paged list in `apps/web`, else `Table`; `Card`, `Badge`, `Avatar`                 |
 | Navigation                 | `Sidebar`, `NavigationMenu`, `Breadcrumb`, `Tabs`, `Pagination`                                     |
 | Overlays                   | `Dialog` (modal), `Sheet` (side panel), `Drawer` (bottom sheet), `AlertDialog` (confirmation)       |
 | Feedback                   | `sonner` (toast), `Alert`, `Progress`, `Skeleton`, `Spinner`                                        |
 | Command palette            | `Command` inside `Dialog`                                                                           |
 | Charts                     | `Chart` (wraps Recharts)                                                                            |
 | Layout                     | `Card`, `Separator`, `Resizable`, `ScrollArea`, `Accordion`, `Collapsible`                          |
-| Empty states               | `Empty`                                                                                             |
+| Empty states               | `EmptyState`                                                                                        |
 | Menus                      | `DropdownMenu`, `ContextMenu`, `Menubar`                                                            |
 | Tooltips/info              | `Tooltip`, `HoverCard`, `Popover`                                                                   |
 
@@ -238,9 +238,9 @@ npx shadcn@latest view @shadcn/button
 ## Detailed References
 
 - [rules/forms.md](./rules/forms.md) — FieldGroup, Field, InputGroup, ToggleGroup, FieldSet, validation states
-- [rules/composition.md](./rules/composition.md) — Groups, overlays, Card, Tabs, Avatar, Alert, Empty, Toast, Separator, Skeleton, Badge, Button loading
+- [rules/composition.md](./rules/composition.md) — Groups, overlays, Card, Tabs, Avatar, Alert, EmptyState, Toast, Separator, Skeleton, Badge, Button loading
 - [rules/icons.md](./rules/icons.md) — data-icon, icon sizing, passing icons as objects
-- [rules/styling.md](./rules/styling.md) — Semantic colors, variants, className, spacing, size, truncate, dark mode, cn(), z-index
+- [rules/styling.md](./rules/styling.md) — Brand colour tokens, variants, className, spacing, size, truncate, dark mode, cn(), z-index
 - [rules/base-vs-radix.md](./rules/base-vs-radix.md) — asChild vs render, Select, ToggleGroup, Slider, Accordion
 - [cli.md](./cli.md) — Commands, flags, presets, templates
 - [customization.md](./customization.md) — Theming, CSS variables, extending components

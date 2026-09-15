@@ -41,7 +41,8 @@ describe('Users API', () => {
 ```typescript
 // Proper E2E test setup
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
+import { ZodValidationPipe } from 'nestjs-zod';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 
@@ -56,13 +57,7 @@ describe('UsersController (e2e)', () => {
     app = moduleFixture.createNestApplication();
 
     // Apply same config as production
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
+    app.useGlobalPipes(new ZodValidationPipe());
 
     await app.init();
   });
@@ -115,7 +110,7 @@ describe('Protected Routes (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.useGlobalPipes(new ZodValidationPipe());
     await app.init();
 
     // Get auth token

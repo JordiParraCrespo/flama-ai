@@ -130,48 +130,18 @@ export class SanitizeHtmlPipe implements PipeTransform<string, string> {
   }
 }
 
-// Global validation pipe with transformation
-app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true, // Strip non-DTO properties
-    transform: true, // Auto-transform to DTO types
-    transformOptions: {
-      enableImplicitConversion: true, // Convert query strings to numbers
-    },
-    forbidNonWhitelisted: true, // Throw on extra properties
-  }),
-);
+// Global validation: Zod, through nestjs-zod (the shape apps/api/src/main.ts uses)
+app.useGlobalPipes(new SanitizePipe(), new ZodValidationPipe());
 
-// DTO with transformation decorators
-export class FindProductsDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
+// Request DTO: the Zod schema from @flama/shared is the single source of truth
+import { createZodDto } from 'nestjs-zod';
+import { findProductsSchema } from '@flama/shared';
 
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  limit?: number = 10;
-
-  @IsOptional()
-  @Transform(({ value }) => value?.toLowerCase())
-  @IsString()
-  search?: string;
-
-  @IsOptional()
-  @Transform(({ value }) => value?.split(','))
-  @IsArray()
-  @IsString({ each: true })
-  categories?: string[];
-}
+export class FindProductsDto extends createZodDto(findProductsSchema) {}
 
 @Get()
 async findAll(@Query() dto: FindProductsDto): Promise<Product[]> {
-  // dto is already transformed and validated
+  // dto is already parsed and validated by the schema
   return this.productsService.findAll(dto);
 }
 
