@@ -117,9 +117,9 @@ pnpm build                # Build all apps and packages
 pnpm test                 # Run unit tests
 pnpm test:integration     # Run integration tests
 pnpm test:e2e             # Run the Playwright e2e suite
-pnpm qa                   # Run the QA scenario pack
+pnpm qa:suite             # Run the QA scenario pack
 pnpm lint                 # Lint all code
-pnpm arch                 # Check architecture boundaries (apps/api, apps/runner)
+pnpm arch                 # Check architecture boundaries (apps/api, via dependency-cruiser)
 pnpm check                # Biome check + fix
 pnpm docker:dev           # Start dev infrastructure
 pnpm docker:dev:down      # Stop dev infrastructure
