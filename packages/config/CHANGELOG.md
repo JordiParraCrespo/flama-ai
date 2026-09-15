@@ -1,4 +1,4 @@
-# @flama/admin-web
+# @flama/config
 
 ## 0.2.0
 
@@ -52,31 +52,3 @@
   about. The `web` project stays out until it is repaired: it drives a `/team`
   route `apps/web` no longer has, and 15 of its 64 specs fail on `main`. See
   `e2e/README.md`.
-
-### Patch Changes
-
-- Updated dependencies [97f6f1e]
-- Updated dependencies [23e7181]
-- Updated dependencies [755b293]
-- Updated dependencies [7fdcefc]
-- Updated dependencies [af46e89]
-- Updated dependencies [28b2d1b]
-- Updated dependencies [c27a7f4]
-- Updated dependencies [510fb79]
-- Updated dependencies [6bf67a5]
-- Updated dependencies [07eb972]
-- Updated dependencies [d532ef4]
-- Updated dependencies [e6895ae]
-- Updated dependencies [48d1b41]
-  - @flama/design-system-web@0.2.0
-  - @flama/frontend@0.3.0
-  - @flama/shared@1.0.0
-  - @flama/api-client@1.0.0
-  - @flama/translations@0.3.0
-  - @flama/auth@0.2.0
-
-## 0.1.0
-
-### Minor Changes
-
-- Add the web control plane for platform users, roles, and permissions.

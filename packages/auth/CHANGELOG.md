@@ -1,9 +1,10 @@
-# @flama/admin-web
+# @flama/auth
 
 ## 0.2.0
 
 ### Minor Changes
 
+- 28b2d1b: Extract the Better Auth configuration both sides must agree on into a new `@flama/auth` package: the user-fields schema (consumed by the server's `user.additionalFields` and the clients' `inferAdditionalFields`), the shared client plugin set (`admin`, `organization` with the `teams` flag), and the `unwrap()` / `toAuthSession()` helpers previously copy-pasted into both client adapters. The `./client` entry ships TypeScript sources to preserve Better Auth's type inference; the root entry is compiled CJS for the NestJS API.
 - 48d1b41: Make the web delivery path carry its weight: compression, caching, a real CSP,
   and a budget that keeps first load honest.
 
@@ -55,28 +56,9 @@
 
 ### Patch Changes
 
-- Updated dependencies [97f6f1e]
-- Updated dependencies [23e7181]
 - Updated dependencies [755b293]
 - Updated dependencies [7fdcefc]
-- Updated dependencies [af46e89]
-- Updated dependencies [28b2d1b]
-- Updated dependencies [c27a7f4]
-- Updated dependencies [510fb79]
 - Updated dependencies [6bf67a5]
 - Updated dependencies [07eb972]
 - Updated dependencies [d532ef4]
-- Updated dependencies [e6895ae]
-- Updated dependencies [48d1b41]
-  - @flama/design-system-web@0.2.0
-  - @flama/frontend@0.3.0
   - @flama/shared@1.0.0
-  - @flama/api-client@1.0.0
-  - @flama/translations@0.3.0
-  - @flama/auth@0.2.0
-
-## 0.1.0
-
-### Minor Changes
-
-- Add the web control plane for platform users, roles, and permissions.
