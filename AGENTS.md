@@ -276,8 +276,12 @@ pnpm changeset          # Create a changeset for versioning
 - Frontend business logic goes in `packages/frontend`, not in app components
 - UI in `apps/web`, `apps/web-showcase` and the web design system:
   `.agents/rules/frontend-ui.md`
-- Porting a Claude Design export (tokens, fonts, the components its screens
-  need, the showcase) is the `/design-export-port` skill
+- Porting a design export onto the design system is the
+  `/design-export-port` skill (`.agents/skills/design-export-port/`): the
+  export's values go onto the token vocabulary in `globals.css` and the
+  component rules in `packages/design-system/AGENTS.md` and
+  `.agents/rules/frontend-ui.md`; it does not replace them. Fonts are system
+  stacks
 - Forms and Zod schemas: `.agents/rules/forms.md`
 - Sign-up creates an account, not a workspace: an org-less account is sent to
   `/onboarding`, which creates the first organization or accepts a pending
