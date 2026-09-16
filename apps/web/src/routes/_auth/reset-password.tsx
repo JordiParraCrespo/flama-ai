@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { useAuthLegalNote } from '@/components/auth/auth-legal-note';
 import {
   AuthBackLink,
   AuthEmailChip,
@@ -51,6 +50,7 @@ export const Route = createFileRoute('/_auth/reset-password')({
     email: (search.email as string) || undefined,
   }),
   component: ResetPasswordPage,
+  staticData: { legalNoteKey: 'auth.resetPassword.legal' },
 });
 
 function ResetPasswordPage() {
@@ -59,8 +59,6 @@ function ResetPasswordPage() {
   const { token, error: linkError, email } = Route.useSearch();
   const { mutate, isPending, error } = useResetPassword();
   const [done, setDone] = useState(false);
-
-  useAuthLegalNote(t('auth.resetPassword.legal'));
 
   const {
     register,

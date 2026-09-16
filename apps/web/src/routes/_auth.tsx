@@ -1,11 +1,22 @@
-import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router';
-import { useState } from 'react';
+import { createFileRoute, Link, Outlet, redirect, useMatches } from '@tanstack/react-router';
+import type { ParseKeys } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { AuthArtPanel } from '@/components/auth/auth-art-panel';
-import { AuthLegalNoteProvider } from '@/components/auth/auth-legal-note';
 import { BrandLogo } from '@/components/auth/brand-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { sanitizeRedirect } from '@/lib/sanitize-redirect';
+
+declare module '@tanstack/react-router' {
+  interface StaticDataRouteOption {
+    /**
+     * The translation key of the legal one-liner pinned to the bottom of the
+     * auth panel, outside the centred form column where the page itself
+     * renders. A page declares it here and the layout reads it off the match,
+     * so no page has to reach up into the layout's state to register a line.
+     */
+    legalNoteKey?: ParseKeys;
+  }
+}
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: ({ context, location }) => {
@@ -39,7 +50,17 @@ export const Route = createFileRoute('/_auth')({
  */
 function AuthLayout() {
   const { t } = useTranslation();
-  const [legalNote, setLegalNote] = useState<string | null>(null);
+  // The innermost match that declares a note wins, so a page overrides its
+  // layout and a page without one shows nothing.
+  const legalNoteKey = useMatches({
+    select: (matches) => {
+      for (let i = matches.length - 1; i >= 0; i -= 1) {
+        const key = matches[i]?.staticData.legalNoteKey;
+        if (key) return key;
+      }
+      return undefined;
+    },
+  });
 
   return (
     <div className="grid h-svh w-full bg-background min-[900px]:grid-cols-2">
@@ -51,13 +72,11 @@ function AuthLayout() {
         <BrandLogo />
 
         <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center py-6">
-          <AuthLegalNoteProvider value={setLegalNote}>
-            <Outlet />
-          </AuthLegalNoteProvider>
+          <Outlet />
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-400">
-          {legalNote && <p className="basis-full">{legalNote}</p>}
+          {legalNoteKey && <p className="basis-full">{t(legalNoteKey)}</p>}
           <Link to="/privacy" className="hover:text-ink-700">
             {t('public.navigation.privacy')}
           </Link>

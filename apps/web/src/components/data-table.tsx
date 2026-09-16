@@ -31,8 +31,9 @@ import {
   Ellipsis,
   Filter,
 } from '@flama/design-system-web/icons';
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useClampedPage } from '@/lib/use-clamped-page';
 
 /**
  * The workspace's table block: a card whose header carries search, filters and
@@ -61,6 +62,9 @@ import { useTranslation } from 'react-i18next';
  * reason.
  */
 export const TABLE_HEADER_CONTROL_SIZE = 'default';
+
+/** One frozen empty set, so an untouched selection has a stable identity. */
+const NO_SELECTION: ReadonlySet<string> = new Set();
 
 export interface DataTableColumn<TRow> {
   key: string;
@@ -182,13 +186,6 @@ export function DataTable<TRow>({
   selectable = true,
 }: DataTableProps<TRow>) {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
-
-  const pageKeys = useMemo(() => rows.map(getKey), [rows, getKey]);
-  const allSelected = pageKeys.length > 0 && pageKeys.every((key) => selected.has(key));
-  const someSelected = !allSelected && pageKeys.some((key) => selected.has(key));
-
-  const clearSelection = useCallback(() => setSelected(new Set()), []);
 
   /**
    * The selection belongs to the rows on screen, and only to them.
@@ -196,9 +193,13 @@ export function DataTable<TRow>({
    * These rows are one page of a server-side query, so a key ticked under a
    * different page, search or filter is no longer something the reader can see
    * — and a bulk action carrying it would change a lead they were never shown.
-   * Two things keep that from happening: the selection is dropped whenever the
-   * query moves, and what the bulk callbacks receive is intersected with the
-   * current page regardless.
+   * Two things keep that from happening: the selection is stored together with
+   * the query it was made under and reads as empty under any other, and what
+   * the bulk callbacks receive is intersected with the current page regardless.
+   *
+   * Storing the identity beside the keys is what makes "drop it when the query
+   * moves" a derivation rather than an effect: there is no moment where the
+   * old selection renders against the new rows.
    */
   const queryIdentity = JSON.stringify([
     pagination.page,
@@ -207,10 +208,24 @@ export function DataTable<TRow>({
     sort ? [sort.key, sort.order] : null,
   ]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the identity string is the dependency; `clearSelection` is stable
-  useEffect(() => {
-    clearSelection();
-  }, [queryIdentity]);
+  const [selection, setSelection] = useState<{
+    identity: string;
+    keys: ReadonlySet<string>;
+  }>(() => ({ identity: queryIdentity, keys: NO_SELECTION }));
+  const selected = selection.identity === queryIdentity ? selection.keys : NO_SELECTION;
+
+  /** Applies `update` to the selection made under the current query. */
+  const updateSelection = (update: (current: ReadonlySet<string>) => ReadonlySet<string>) =>
+    setSelection((current) => ({
+      identity: queryIdentity,
+      keys: update(current.identity === queryIdentity ? current.keys : NO_SELECTION),
+    }));
+
+  const pageKeys = useMemo(() => rows.map(getKey), [rows, getKey]);
+  const allSelected = pageKeys.length > 0 && pageKeys.every((key) => selected.has(key));
+  const someSelected = !allSelected && pageKeys.some((key) => selected.has(key));
+
+  const clearSelection = () => updateSelection(() => NO_SELECTION);
 
   const selectedOnPage = useMemo(
     () => pageKeys.filter((key) => selected.has(key)),
@@ -218,7 +233,7 @@ export function DataTable<TRow>({
   );
 
   function toggleAll() {
-    setSelected((current) => {
+    updateSelection((current) => {
       const next = new Set(current);
       for (const key of pageKeys) {
         if (allSelected) next.delete(key);
@@ -229,7 +244,7 @@ export function DataTable<TRow>({
   }
 
   function toggleOne(key: string) {
-    setSelected((current) => {
+    updateSelection((current) => {
       const next = new Set(current);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -240,24 +255,7 @@ export function DataTable<TRow>({
   const selectedCount = selectable ? selectedOnPage.length : 0;
   const { page, pageSize, total, totalPages, onPageChange } = pagination;
   const lastPage = Math.max(1, totalPages);
-
-  /**
-   * A page past the end of the list is reachable now that the page lives in
-   * the URL: a link shared before rows were deleted, or a hand-typed
-   * `?page=100`. The server answers it with nothing, and the footer reads
-   * "595–12 of 12" under "Page 100 of 2" — while the only way back to real
-   * rows is clicking Previous ninety-eight times.
-   *
-   * So once the answer is in, the page is corrected to the last one that
-   * exists. Not while loading: `totalPages` is then either the previous
-   * query's or the caller's fallback of 1, and clamping to that would throw
-   * the reader to page 1 on every refetch. `lastPage` never goes below 1,
-   * which is what stops an empty result (`totalPages: 0`) from setting a page
-   * the floor immediately raises again, forever.
-   */
-  useEffect(() => {
-    if (!isLoading && page > lastPage) onPageChange(lastPage);
-  }, [isLoading, page, lastPage, onPageChange]);
+  useClampedPage({ page, lastPage, isLoading, onPageChange });
 
   const first = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const last = Math.min(page * pageSize, total);

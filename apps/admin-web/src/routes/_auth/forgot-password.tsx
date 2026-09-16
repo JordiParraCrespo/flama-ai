@@ -6,7 +6,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
-import { useAuthLegalNote } from '@/components/auth/auth-legal-note';
 import {
   AuthBackLink,
   AuthField,
@@ -34,8 +33,6 @@ function ForgotPasswordPage() {
   // email" can walk the screen back to the request state without the success
   // flag dragging it forward again.
   const [sentTo, setSentTo] = useState<string | null>(null);
-
-  useAuthLegalNote(t('auth.forgotPassword.legal'));
 
   const {
     register,

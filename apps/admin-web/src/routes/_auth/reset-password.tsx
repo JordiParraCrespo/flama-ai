@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { useAuthLegalNote } from '@/components/auth/auth-legal-note';
 import {
   AuthBackLink,
   AuthEmailChip,
@@ -59,8 +58,6 @@ function ResetPasswordPage() {
   const { token, error: linkError, email } = Route.useSearch();
   const { mutate, isPending, error } = useResetPassword();
   const [done, setDone] = useState(false);
-
-  useAuthLegalNote(t('auth.resetPassword.legal'));
 
   const {
     register,

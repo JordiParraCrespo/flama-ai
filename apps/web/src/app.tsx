@@ -1,9 +1,10 @@
 import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@flama/design-system-web';
 import { useAuthState, useSessionRestore } from '@flama/frontend/react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/components/theme-provider';
+import { app } from '@/lib/flama';
 import { routeTree } from './routeTree.gen';
 
 export interface RouterContext {
@@ -34,6 +35,14 @@ declare module '@tanstack/react-router' {
   }
 }
 
+// Guarded routes read `context.auth` in `beforeLoad`, which only re-runs when
+// the router is invalidated. The auth store is the thing that changes, so it
+// tells the router directly — one subscription at module scope, instead of a
+// component watching the flag and invalidating from an effect a render late.
+app.auth.store.subscribe((state, previous) => {
+  if (state.isAuthenticated !== previous.isAuthenticated) router.invalidate();
+});
+
 /**
  * The single `Toaster` mount for the app. Sonner renders every `toast()` into
  * *every* mounted `<Toaster>`, so a second one anywhere in the tree shows each
@@ -61,11 +70,6 @@ function AppRoutes() {
   const { isLoading, isError, isFetching, refetch } = useSessionRestore();
 
   const context = useMemo(() => ({ auth: { isAuthenticated } }), [isAuthenticated]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-invalidate the router whenever auth state flips so guarded routes re-run
-  useEffect(() => {
-    router.invalidate();
-  }, [isAuthenticated]);
 
   if (isLoading) {
     return (

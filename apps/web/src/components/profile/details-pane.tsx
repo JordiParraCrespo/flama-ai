@@ -2,7 +2,6 @@ import { Alert, AlertDescription, Button, FieldError, Input } from '@flama/desig
 import type { ProfileEntity } from '@flama/frontend';
 import { useUpdateMyProfile } from '@flama/frontend/react';
 import { updateProfileSchema } from '@flama/shared/schemas/profile';
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -47,16 +46,13 @@ export function DetailsPane({ profile }: { profile: ProfileEntity }) {
     formState: { errors, isDirty },
   } = useForm<DetailsFormValues>({
     resolver: useZodResolver(detailsFormSchema),
-    defaultValues: toFormValues(profile),
+    // A save answers with the saved document, and so does anything else that
+    // refreshes it (another tab, an avatar upload). `values` re-seeds the form
+    // from it whenever it changes, which keeps "dirty" honest instead of
+    // leaving the card looking unsaved — and does so without an effect calling
+    // `reset` a render late.
+    values: toFormValues(profile),
   });
-
-  // A save answers with the saved document, and so does anything else that
-  // refreshes it (another tab, an avatar upload). Re-seeding the form from it
-  // keeps "dirty" honest instead of leaving the card looking unsaved.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable, and the form re-seeds only when the saved profile changes.
-  useEffect(() => {
-    reset(toFormValues(profile));
-  }, [profile]);
 
   const onSubmit = handleSubmit((values) => {
     update.mutate({

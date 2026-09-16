@@ -7,9 +7,9 @@ import {
   CommandList,
 } from '@flama/design-system-web';
 import { useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthorizedNav } from '@/components/app-shell/use-authorized-nav';
+import { useHotkey } from '@/lib/use-hotkey';
 
 /**
  * ⌘K. Today it navigates — the destinations come from the same nav model the
@@ -26,17 +26,7 @@ export function CommandPalette({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        onOpenChange(!open);
-      }
-    };
-
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [open, onOpenChange]);
+  useHotkey(() => onOpenChange(!open));
 
   // Same authorized set the sidebar renders, so the palette can never jump to a
   // route the user is not allowed to open.
