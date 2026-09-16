@@ -1,8 +1,5 @@
+import { AuthArtPanel, BrandLogo, sanitizeRedirect, ThemeToggle } from '@flama/frontend-web';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { AuthArtPanel } from '@/components/auth/auth-art-panel';
-import { BrandLogo } from '@/components/auth/brand-logo';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { sanitizeRedirect } from '@/lib/sanitize-redirect';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: ({ context, location }) => {

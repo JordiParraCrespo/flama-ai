@@ -2,11 +2,6 @@ import { AuthRequestError } from '@flama/auth/client';
 import { Avatar, AvatarFallback, Button, cn, FieldGroup, Input } from '@flama/design-system-web';
 import { useConsumerApp } from '@flama/frontend-consumer/react';
 import { useAuthState } from '@flama/frontend-core/react';
-import { type AcceptInvitationDto, acceptInvitationSchema } from '@flama/shared/schemas/auth';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useForm, useWatch } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import {
   AuthEyebrow,
   AuthField,
@@ -16,15 +11,18 @@ import {
   AuthTitle,
   authControlClass,
   authInputClass,
-} from '@/components/auth/auth-primitives';
-import { PasswordInput } from '@/components/auth/password-input';
-import {
   checkPassword,
   meetsRequirements,
+  PasswordInput,
   PasswordRequirements,
   type PasswordRule,
-} from '@/components/auth/password-requirements';
-import { useZodResolver } from '@/lib/use-zod-resolver';
+  useZodResolver,
+} from '@flama/frontend-web';
+import { type AcceptInvitationDto, acceptInvitationSchema } from '@flama/shared/schemas/auth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useForm, useWatch } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number'];
 

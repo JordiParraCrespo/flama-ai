@@ -23,6 +23,7 @@ import {
   useUnbanAdminUser,
   useUsersRoles,
 } from '@flama/frontend-admin/react';
+import { FormField, useZodResolver } from '@flama/frontend-mobile';
 import {
   type AdminAssignRolesDto,
   type AdminCreateUserDto,
@@ -40,8 +41,6 @@ import {
   ScrollView,
   View,
 } from 'react-native';
-import { FormField } from '../../components/form-field';
-import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function UsersScreen() {
   const { t } = useTranslation();

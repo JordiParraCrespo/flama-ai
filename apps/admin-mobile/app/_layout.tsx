@@ -1,5 +1,5 @@
 import '../global.css';
-import '../lib/i18n';
+import '@flama/frontend-mobile/i18n';
 import 'react-native-gesture-handler';
 import 'reflect-metadata';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
@@ -10,6 +10,16 @@ import { Button } from '@flama/design-system-mobile/button';
 import { MobileRoot } from '@flama/design-system-mobile/mobile-root';
 import { Text } from '@flama/design-system-mobile/text';
 import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend-core/react';
+import {
+  AppErrorFallback,
+  ConfigManagerContext,
+  configManager,
+  ErrorBoundary,
+  initPurchases,
+  NAV_THEME,
+  ScreenErrorFallback,
+  ScreenViewTracker,
+} from '@flama/frontend-mobile';
 import { ThemeProvider } from '@react-navigation/native';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';
@@ -18,15 +28,8 @@ import { useColorScheme, vars } from 'nativewind';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
-import { ErrorBoundary } from '../components/error-boundary';
-import { AppErrorFallback, ScreenErrorFallback } from '../components/error-fallback';
-import { ScreenViewTracker } from '../lib/analytics';
-import { configManager } from '../lib/config/config-manager';
-import { ConfigManagerContext } from '../lib/config/use-config';
 import { app } from '../lib/flama';
-import { initPurchases } from '../lib/purchases';
 import { persistOptions, queryClient } from '../lib/query';
-import { NAV_THEME } from '../lib/theme';
 
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();

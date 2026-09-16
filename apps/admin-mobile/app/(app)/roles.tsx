@@ -20,6 +20,7 @@ import {
   useRoles,
   useUpdateRole,
 } from '@flama/frontend-admin/react';
+import { FormField, useZodResolver } from '@flama/frontend-mobile';
 import { type RoleEditorDto, roleEditorSchema } from '@flama/shared/schemas/role';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -32,8 +33,6 @@ import {
   ScrollView,
   View,
 } from 'react-native';
-import { FormField } from '../../components/form-field';
-import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function RolesScreen() {
   const { t } = useTranslation();

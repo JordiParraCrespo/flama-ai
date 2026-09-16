@@ -1,13 +1,18 @@
 import { Alert, AlertDescription, Button, FieldError, Input } from '@flama/design-system-web';
 import type { ProfileEntity } from '@flama/frontend-consumer';
 import { useUpdateMyProfile } from '@flama/frontend-consumer/react';
+import {
+  CardFoot,
+  FieldRow,
+  SectionCard,
+  SectionHead,
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
 import { updateProfileSchema } from '@flama/shared/schemas/profile';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { CardFoot, FieldRow, SectionCard, SectionHead } from '@/components/section-ui';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
 
 /**
  * The card submits every field at once, so the shared PATCH schema's

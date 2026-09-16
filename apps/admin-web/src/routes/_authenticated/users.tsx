@@ -16,6 +16,15 @@ import {
   useUnbanAdminUser,
   useUsersRoles,
 } from '@flama/frontend-admin/react';
+import {
+  ConfirmDialog,
+  DataTable,
+  type DataTableColumn,
+  formatMediumDate,
+  PageHead,
+  RolePill,
+  useTableQuery,
+} from '@flama/frontend-web';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,12 +33,6 @@ import {
   CreateUserDialog,
   SetPasswordDialog,
 } from '@/components/admin-users/user-dialogs';
-import { ConfirmDialog } from '@/components/confirm-dialog';
-import { DataTable, type DataTableColumn } from '@/components/data-table';
-import { PageHead } from '@/components/page-head';
-import { RolePill } from '@/components/role-pill';
-import { formatMediumDate } from '@/lib/format-date';
-import { useTableQuery } from '@/lib/use-table-query';
 
 export const Route = createFileRoute('/_authenticated/users')({ component: UsersPage });
 

@@ -10,13 +10,12 @@ import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
 import { useRegister } from '@flama/frontend-consumer/react';
 import { useSocialLogin } from '@flama/frontend-core/react';
+import { FormField, useZodResolver } from '@flama/frontend-mobile';
 import { type RegisterDto, registerSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { FormField } from '../../components/form-field';
-import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function RegisterScreen() {
   const { t } = useTranslation();

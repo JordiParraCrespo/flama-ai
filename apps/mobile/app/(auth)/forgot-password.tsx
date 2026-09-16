@@ -9,14 +9,13 @@ import {
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
 import { useForgotPassword } from '@flama/frontend-core/react';
+import { FormField, useZodResolver } from '@flama/frontend-mobile';
 import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared';
 import { Link } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { FormField } from '../../components/form-field';
-import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();

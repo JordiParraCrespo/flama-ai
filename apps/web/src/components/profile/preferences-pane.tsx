@@ -11,6 +11,17 @@ import {
 } from '@flama/design-system-web';
 import { useUpdateUserSettings, useUserSettings } from '@flama/frontend-core/react';
 import {
+  FieldRow,
+  RowControl,
+  RowMeta,
+  SectionCard,
+  SectionHead,
+  SectionRow,
+  useErrorMessage,
+  useTheme,
+  useZodResolver,
+} from '@flama/frontend-web';
+import {
   DEFAULT_USER_SETTINGS,
   LOCALES,
   type Locale,
@@ -20,17 +31,6 @@ import {
 } from '@flama/shared/schemas/profile';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import {
-  FieldRow,
-  RowControl,
-  RowMeta,
-  SectionCard,
-  SectionHead,
-  SectionRow,
-} from '@/components/section-ui';
-import { useTheme } from '@/components/theme-provider';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
 
 /**
  * Preferences save on change, one `PUT` per control — the reference design has

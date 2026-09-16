@@ -1,9 +1,9 @@
 import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@flama/design-system-web';
 import { useAuthState, useSessionRestore } from '@flama/frontend-core/react';
+import { useTheme } from '@flama/frontend-web';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '@/components/theme-provider';
 import { app } from '@/lib/flama';
 import { routeTree } from './routeTree.gen';
 

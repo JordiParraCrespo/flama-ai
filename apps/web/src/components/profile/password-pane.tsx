@@ -11,11 +11,6 @@ import {
 import { ShieldCheck } from '@flama/design-system-web/icons';
 import type { ProfileEntity } from '@flama/frontend-consumer';
 import { useChangeOwnPassword } from '@flama/frontend-consumer/react';
-import { changeOwnPasswordSchema } from '@flama/shared/schemas/profile';
-import { useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
 import {
   CardFoot,
   FieldRow,
@@ -25,9 +20,14 @@ import {
   SectionCard,
   SectionHead,
   SectionRow,
-} from '@/components/section-ui';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
+import { changeOwnPasswordSchema } from '@flama/shared/schemas/profile';
+import { useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 const passwordFormBase = changeOwnPasswordSchema
   .pick({ currentPassword: true, newPassword: true })

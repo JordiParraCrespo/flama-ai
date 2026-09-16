@@ -150,6 +150,14 @@
       "identifiers": ["packages/frontend/admin", "@flama/frontend-admin"],
       "neededBy": ["admin-web", "admin-mobile"]
     },
+    "packages/frontend/web": {
+      "identifiers": ["packages/frontend/web", "@flama/frontend-web"],
+      "neededBy": ["web", "admin-web"]
+    },
+    "packages/frontend/mobile": {
+      "identifiers": ["packages/frontend/mobile", "@flama/frontend-mobile"],
+      "neededBy": ["mobile", "admin-mobile"]
+    },
     "packages/frontend/api-client": {
       "identifiers": ["packages/frontend/api-client", "@flama/api-client"],
       "neededBy": ["web", "mobile", "admin-web", "admin-mobile"],

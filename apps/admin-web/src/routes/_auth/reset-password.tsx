@@ -1,12 +1,6 @@
 import { Button, FieldGroup } from '@flama/design-system-web';
 import { Mail, ShieldAlert, ShieldCheck } from '@flama/design-system-web/icons';
 import { useResetPassword } from '@flama/frontend-core/react';
-import { resetPasswordSchema } from '@flama/shared/schemas/auth';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
 import {
   AuthBackLink,
   AuthEmailChip,
@@ -16,16 +10,20 @@ import {
   AuthSubtitle,
   AuthTitle,
   authControlClass,
-} from '@/components/auth/auth-primitives';
-import { PasswordInput } from '@/components/auth/password-input';
-import {
   checkPassword,
   meetsRequirements,
+  PasswordInput,
   PasswordRequirements,
   type PasswordRule,
-} from '@/components/auth/password-requirements';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
+import { resetPasswordSchema } from '@flama/shared/schemas/auth';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 
 /**
  * The token rides in the URL, so only the two password fields are user input.

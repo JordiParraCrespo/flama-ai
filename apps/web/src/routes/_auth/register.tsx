@@ -1,9 +1,5 @@
 import { Button, FieldGroup, Input } from '@flama/design-system-web';
 import { useRegister } from '@flama/frontend-consumer/react';
-import { type RegisterDto, registerSchema } from '@flama/shared/schemas/auth';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useForm, useWatch } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import {
   AuthField,
   AuthFooterNote,
@@ -12,18 +8,20 @@ import {
   AuthTitle,
   authControlClass,
   authInputClass,
-} from '@/components/auth/auth-primitives';
-import { OAuthCallbackNotice } from '@/components/auth/oauth-callback-notice';
-import { PasswordInput } from '@/components/auth/password-input';
-import {
   checkPassword,
   meetsRequirements,
+  OAuthCallbackNotice,
+  PasswordInput,
   PasswordRequirements,
   type PasswordRule,
-} from '@/components/auth/password-requirements';
-import { SocialLoginButtons } from '@/components/social-login-buttons';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
+  SocialLoginButtons,
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
+import { type RegisterDto, registerSchema } from '@flama/shared/schemas/auth';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useForm, useWatch } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number'];
 

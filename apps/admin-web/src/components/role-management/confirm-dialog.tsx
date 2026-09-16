@@ -1,7 +1,7 @@
 import type { RoleEntity } from '@flama/frontend-admin';
 import { useDeleteRole } from '@flama/frontend-admin/react';
+import { ConfirmDialog } from '@flama/frontend-web';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from '@/components/confirm-dialog';
 
 export function DeleteRoleDialog({ role, onClose }: { role: RoleEntity; onClose: () => void }) {
   const { t } = useTranslation();

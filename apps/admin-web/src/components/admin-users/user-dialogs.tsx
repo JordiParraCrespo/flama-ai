@@ -24,6 +24,7 @@ import {
   useCreateAdminUser,
   useSetAdminUserPassword,
 } from '@flama/frontend-admin/react';
+import { useErrorMessage, useZodResolver } from '@flama/frontend-web';
 import {
   type AdminAssignRolesDto,
   type AdminCreateUserDto,
@@ -34,8 +35,6 @@ import {
 } from '@flama/shared/schemas/admin';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
 
 export function CreateUserDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();

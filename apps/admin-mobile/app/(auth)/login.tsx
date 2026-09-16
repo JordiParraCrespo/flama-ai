@@ -5,6 +5,7 @@ import { Icon } from '@flama/design-system-mobile/icon';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
 import { useDeploymentCapabilities, useLogin, useSocialLogin } from '@flama/frontend-core/react';
+import { FormField, LanguageSwitcher, useZodResolver } from '@flama/frontend-mobile';
 import { type LoginDto, loginSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
 import { Asterisk, Info, Moon, Sun } from 'lucide-react-native';
@@ -21,9 +22,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FormField } from '../../components/form-field';
-import { LanguageSwitcher } from '../../components/language-switcher';
-import { useZodResolver } from '../../lib/use-zod-resolver';
 
 export default function LoginScreen() {
   const { t } = useTranslation();

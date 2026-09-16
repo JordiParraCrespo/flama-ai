@@ -13,18 +13,18 @@ import {
   useRevokeProfileSession,
 } from '@flama/frontend-consumer/react';
 import { useProfile } from '@flama/frontend-core/react';
-import { useTranslation } from 'react-i18next';
 import {
+  dateFormatter,
   GroupHeading,
   RowControl,
   RowMeta,
   SectionCard,
   SectionHead,
   SectionRow,
-} from '@/components/section-ui';
-import { dateFormatter } from '@/lib/format-date';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useLocale } from '@/lib/use-locale';
+  useErrorMessage,
+  useLocale,
+} from '@flama/frontend-web';
+import { useTranslation } from 'react-i18next';
 
 /**
  * The reader's own security: every device signed in to their account, with a

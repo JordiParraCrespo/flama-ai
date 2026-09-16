@@ -9,11 +9,9 @@ import {
 import { Camera } from '@flama/design-system-web/icons';
 import type { ProfileEntity } from '@flama/frontend-consumer';
 import { useUploadAvatar } from '@flama/frontend-consumer/react';
+import { formatMonthYear, RolePill, useErrorMessage } from '@flama/frontend-web';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RolePill } from '@/components/role-pill';
-import { formatMonthYear } from '@/lib/format-date';
-import { useErrorMessage } from '@/lib/use-error-message';
 
 /**
  * The card above the settings panes: who you are, at a glance. The camera

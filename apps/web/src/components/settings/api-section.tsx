@@ -29,22 +29,22 @@ import {
   usePermissionCatalog,
   useRevokeApiToken,
 } from '@flama/frontend-consumer/react';
-import type { Scope } from '@flama/shared';
-import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { PermissionPicker } from '@/components/permission-picker';
 import {
   CodeBox,
+  dateFormatter,
   GroupHeading,
   RowControl,
   SectionCard,
   SectionHead,
   SectionRow,
-} from '@/components/section-ui';
-import { dateFormatter } from '@/lib/format-date';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useLocale } from '@/lib/use-locale';
+  useErrorMessage,
+  useLocale,
+} from '@flama/frontend-web';
+import type { Scope } from '@flama/shared';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { PermissionPicker } from '@/components/permission-picker';
 
 export function ApiSection() {
   const { t } = useTranslation();

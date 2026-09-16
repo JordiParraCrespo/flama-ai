@@ -7,16 +7,15 @@ import {
   UserRound,
 } from '@flama/design-system-web/icons';
 import { useMyProfile } from '@flama/frontend-consumer/react';
+import { PageHead, useErrorMessage } from '@flama/frontend-web';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PageHead } from '@/components/page-head';
 import { DetailsPane } from '@/components/profile/details-pane';
 import { PasswordPane } from '@/components/profile/password-pane';
 import { PreferencesPane } from '@/components/profile/preferences-pane';
 import { ProfileHero } from '@/components/profile/profile-hero';
 import { SessionsPane } from '@/components/profile/sessions-pane';
-import { useErrorMessage } from '@/lib/use-error-message';
 
 export const Route = createFileRoute('/_authenticated/profile')({
   component: ProfilePage,

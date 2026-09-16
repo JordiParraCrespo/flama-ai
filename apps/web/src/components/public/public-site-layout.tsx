@@ -1,10 +1,8 @@
 import { Button } from '@flama/design-system-web';
+import { BrandLogo, LanguageSwitcher, ThemeToggle } from '@flama/frontend-web';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BrandLogo } from '@/components/auth/brand-logo';
-import { LanguageSwitcher } from '@/components/language-switcher';
-import { ThemeToggle } from '@/components/theme-toggle';
 
 export function PublicSiteLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();

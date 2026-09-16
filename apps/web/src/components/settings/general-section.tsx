@@ -13,14 +13,19 @@ import {
 } from '@flama/design-system-web';
 import type { OrganizationEntity } from '@flama/frontend-consumer';
 import { useUpdateOrganization } from '@flama/frontend-consumer/react';
+import {
+  CardFoot,
+  FieldRow,
+  SectionCard,
+  SectionHead,
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
 import { updateOrganizationSchema } from '@flama/shared/schemas/organization';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { CardFoot, FieldRow, SectionCard, SectionHead } from '@/components/section-ui';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
 
 /**
  * What the card edits: the organization's name and its mark. Both are required

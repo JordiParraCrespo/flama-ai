@@ -2,15 +2,15 @@ import { Badge, Button, DropdownMenuItem, DropdownMenuSeparator } from '@flama/d
 import { Download, Plus, Shield, Trash2 } from '@flama/design-system-web/icons';
 import type { RoleEntity } from '@flama/frontend-admin';
 import { useRoles } from '@flama/frontend-admin/react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   DataTable,
   type DataTableColumn,
+  downloadCsvRows,
   TABLE_HEADER_CONTROL_SIZE,
-} from '@/components/data-table';
-import { downloadCsvRows } from '@/lib/download-csv';
-import { useTableQuery } from '@/lib/use-table-query';
+  useTableQuery,
+} from '@flama/frontend-web';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DeleteRoleDialog } from './confirm-dialog';
 import { RoleEditorDialog } from './role-editor-dialog';
 

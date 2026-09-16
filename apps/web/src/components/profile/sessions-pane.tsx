@@ -6,17 +6,17 @@ import {
   useRevokeOtherProfileSessions,
   useRevokeProfileSession,
 } from '@flama/frontend-consumer/react';
-import { useTranslation } from 'react-i18next';
 import {
+  formatRelativeTime,
   RowControl,
   RowMedia,
   RowMeta,
   SectionCard,
   SectionHead,
   SectionRow,
-} from '@/components/section-ui';
-import { formatRelativeTime } from '@/lib/format-date';
-import { useErrorMessage } from '@/lib/use-error-message';
+  useErrorMessage,
+} from '@flama/frontend-web';
+import { useTranslation } from 'react-i18next';
 
 export function SessionsPane() {
   const { t } = useTranslation();

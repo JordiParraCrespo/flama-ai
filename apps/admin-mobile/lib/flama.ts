@@ -1,8 +1,7 @@
 import { adminModules } from '@flama/frontend-admin';
 import { FlamaApp } from '@flama/frontend-core/di';
-import { createMobileAnalyticsClient } from './analytics';
+import { createMobileAnalyticsClient, ExpoSecureStoreService } from '@flama/frontend-mobile';
 import { mobileAuthClient } from './auth-client';
-import { ExpoSecureStoreService } from './storage';
 
 export const app = FlamaApp.create({
   apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001',

@@ -33,21 +33,24 @@ import {
   usePermissionCatalog,
   useRevokeApiToken,
 } from '@flama/frontend-consumer/react';
+import {
+  DataTable,
+  type DataTableColumn,
+  formatMediumDate,
+  GroupHeading,
+  PageHead,
+  paginateRows,
+  useCopy,
+  useErrorMessage,
+  useLocale,
+  useTableQuery,
+} from '@flama/frontend-web';
 import type { Scope } from '@flama/shared';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { DataTable, type DataTableColumn } from '@/components/data-table';
-import { PageHead } from '@/components/page-head';
 import { PermissionPicker } from '@/components/permission-picker';
-import { GroupHeading } from '@/components/section-ui';
-import { formatMediumDate } from '@/lib/format-date';
-import { paginateRows } from '@/lib/paginate-rows';
-import { useCopy } from '@/lib/use-copy';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useLocale } from '@/lib/use-locale';
-import { useTableQuery } from '@/lib/use-table-query';
 
 export const Route = createFileRoute('/_authenticated/settings/api-tokens')({
   component: ApiTokensPage,

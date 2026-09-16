@@ -24,12 +24,11 @@ import {
 import { Shield } from '@flama/design-system-web/icons';
 import type { RoleEntity } from '@flama/frontend-admin';
 import { useAuthorizationCatalog, useCreateRole, useUpdateRole } from '@flama/frontend-admin/react';
+import { useErrorMessage, useZodResolver } from '@flama/frontend-web';
 import { type RoleEditorDto, roleEditorSchema } from '@flama/shared/schemas/role';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
 import { PERMISSION_AREAS, type PermissionLevel, permissionLevel } from './permission-areas';
 
 export function RoleEditorDialog({

@@ -1,10 +1,5 @@
 import { Button, Checkbox, FieldGroup, Input } from '@flama/design-system-web';
 import { useLogin } from '@flama/frontend-core/react';
-import { type LoginDto, loginSchema } from '@flama/shared/schemas/auth';
-import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import {
   AuthField,
   AuthFormError,
@@ -12,12 +7,17 @@ import {
   AuthTitle,
   authControlClass,
   authInputClass,
-} from '@/components/auth/auth-primitives';
-import { OAuthCallbackNotice } from '@/components/auth/oauth-callback-notice';
-import { SocialLoginButtons } from '@/components/social-login-buttons';
-import { sanitizeRedirect } from '@/lib/sanitize-redirect';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
+  OAuthCallbackNotice,
+  SocialLoginButtons,
+  sanitizeRedirect,
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
+import { type LoginDto, loginSchema } from '@flama/shared/schemas/auth';
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/_auth/login')({
   validateSearch: (

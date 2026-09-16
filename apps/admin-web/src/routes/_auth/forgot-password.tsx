@@ -1,11 +1,6 @@
 import { Button, FieldGroup, Input } from '@flama/design-system-web';
 import { MailCheck } from '@flama/design-system-web/icons';
 import { useForgotPassword } from '@flama/frontend-core/react';
-import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared/schemas/auth';
-import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Trans, useTranslation } from 'react-i18next';
 import {
   AuthBackLink,
   AuthField,
@@ -16,9 +11,14 @@ import {
   AuthTitle,
   authControlClass,
   authInputClass,
-} from '@/components/auth/auth-primitives';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
+import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared/schemas/auth';
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/_auth/forgot-password')({
   component: ForgotPasswordPage,

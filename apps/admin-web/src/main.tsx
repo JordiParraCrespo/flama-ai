@@ -1,10 +1,9 @@
+import { i18nReady, ThemeProvider } from '@flama/frontend-web';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ThemeProvider } from '@/components/theme-provider';
 import { FlamaAppProvider } from '@/providers/flama-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { App } from './app';
-import { i18nReady } from './lib/i18n';
 import './styles/globals.css';
 
 const container = document.getElementById('root');

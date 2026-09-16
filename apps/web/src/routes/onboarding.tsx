@@ -7,13 +7,6 @@ import {
 } from '@flama/frontend-consumer/react';
 import { useLogout } from '@flama/frontend-core/react';
 import {
-  type CreateOrganizationDto,
-  createOrganizationSchema,
-} from '@flama/shared/schemas/organization';
-import { createFileRoute, Navigate, redirect, useNavigate } from '@tanstack/react-router';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import {
   AuthDivider,
   AuthEyebrow,
   AuthField,
@@ -21,11 +14,18 @@ import {
   AuthTitle,
   authControlClass,
   authInputClass,
-} from '@/components/auth/auth-primitives';
-import { BrandLogo } from '@/components/auth/brand-logo';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { useErrorMessage } from '@/lib/use-error-message';
-import { useZodResolver } from '@/lib/use-zod-resolver';
+  BrandLogo,
+  ThemeToggle,
+  useErrorMessage,
+  useZodResolver,
+} from '@flama/frontend-web';
+import {
+  type CreateOrganizationDto,
+  createOrganizationSchema,
+} from '@flama/shared/schemas/organization';
+import { createFileRoute, Navigate, redirect, useNavigate } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Where a signed-in account with no workspace starts.

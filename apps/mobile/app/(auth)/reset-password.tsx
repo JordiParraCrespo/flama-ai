@@ -9,14 +9,13 @@ import {
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
 import { useResetPassword } from '@flama/frontend-core/react';
+import { FormField, useZodResolver } from '@flama/frontend-mobile';
 import { resetPasswordSchema } from '@flama/shared';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import type { z } from 'zod';
-import { FormField } from '../../components/form-field';
-import { useZodResolver } from '../../lib/use-zod-resolver';
 
 /** The token arrives in the deep link, so only the password is user input. */
 const newPasswordSchema = resetPasswordSchema.pick({ password: true });

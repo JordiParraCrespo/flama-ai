@@ -12,10 +12,10 @@ import { Separator } from '@flama/design-system-mobile/separator';
 import { Skeleton } from '@flama/design-system-mobile/skeleton';
 import { Text } from '@flama/design-system-mobile/text';
 import { useLogout, useProfile } from '@flama/frontend-core/react';
+import { LanguageSwitcher } from '@flama/frontend-mobile';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
-import { LanguageSwitcher } from '../../components/language-switcher';
 
 export default function HomeScreen() {
   const { t } = useTranslation();

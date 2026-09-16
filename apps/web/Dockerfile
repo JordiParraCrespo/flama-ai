@@ -12,6 +12,7 @@ COPY packages/design-system/web/package.json ./packages/design-system/web/
 COPY packages/frontend/core/package.json ./packages/frontend/core/
 COPY packages/frontend/consumer/package.json ./packages/frontend/consumer/
 COPY packages/frontend/api-client/package.json ./packages/frontend/api-client/
+COPY packages/frontend/web/package.json ./packages/frontend/web/
 COPY packages/translations/package.json ./packages/translations/
 RUN pnpm install --frozen-lockfile --filter @flama/web...
 
