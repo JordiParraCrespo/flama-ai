@@ -1,4 +1,4 @@
-import type { VersionedConfig } from '@flama/frontend/config';
+import type { VersionedConfig } from '@flama/frontend-core/config';
 
 export type AppConfig = VersionedConfig & {
   featureFlags: {

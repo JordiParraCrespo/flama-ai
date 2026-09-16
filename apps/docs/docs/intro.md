@@ -18,7 +18,7 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 - **packages/shared** — Zod schemas, types, CASL permissions
 - **packages/frontend** — Clean architecture with InversifyJS DI
 - **packages/design-system** — Shared tokens, web and mobile components
-- **packages/api-client** — Auto-generated typed API client
+- **packages/frontend/api-client** — Auto-generated typed API client
 - **packages/translations** — Shared i18n files
 - **packages/config** — Shared TypeScript and tooling configs
 

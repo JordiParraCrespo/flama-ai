@@ -1,4 +1,4 @@
-import { useMyPermissions } from '@flama/frontend/react';
+import { useMyPermissions } from '@flama/frontend-core/react';
 import { type AppAbility, defineAbilitiesFromPermissions } from '@flama/shared/permissions';
 import { useMemo } from 'react';
 

@@ -1,4 +1,4 @@
-import type { IStorageService } from '@flama/frontend';
+import type { IStorageService } from '@flama/frontend-core';
 
 export class LocalStorageService implements IStorageService {
   async get(key: string): Promise<string | null> {

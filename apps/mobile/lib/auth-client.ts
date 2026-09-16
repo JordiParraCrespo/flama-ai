@@ -1,6 +1,6 @@
 import { expoClient } from '@better-auth/expo/client';
 import { sharedClientPlugins, toAuthSession, unwrap } from '@flama/auth/client';
-import type { IAuthClient } from '@flama/frontend';
+import type { IAuthClient } from '@flama/frontend-core';
 import { createAuthClient } from 'better-auth/react';
 import * as SecureStore from 'expo-secure-store';
 

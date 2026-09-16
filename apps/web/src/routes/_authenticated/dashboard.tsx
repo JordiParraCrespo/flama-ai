@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@flama/design-system-web';
-import { useProfile } from '@flama/frontend/react';
+import { useProfile } from '@flama/frontend-core/react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Trans, useTranslation } from 'react-i18next';
 

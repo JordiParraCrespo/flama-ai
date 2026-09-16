@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@flama/design-system-web';
-import { useOrganizations } from '@flama/frontend/react';
+import { useOrganizations } from '@flama/frontend-consumer/react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthorizedNav } from '@/components/app-shell/use-authorized-nav';

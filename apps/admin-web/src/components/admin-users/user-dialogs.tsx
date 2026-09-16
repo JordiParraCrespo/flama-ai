@@ -18,12 +18,12 @@ import {
   Input,
 } from '@flama/design-system-web';
 import { KeyRound, Shield, UserPlus } from '@flama/design-system-web/icons';
-import type { AdminUserEntity, RoleEntity } from '@flama/frontend';
+import type { AdminUserEntity, RoleEntity } from '@flama/frontend-admin';
 import {
   useAssignAdminUserRoles,
   useCreateAdminUser,
   useSetAdminUserPassword,
-} from '@flama/frontend/react';
+} from '@flama/frontend-admin/react';
 import {
   type AdminAssignRolesDto,
   type AdminCreateUserDto,

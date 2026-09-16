@@ -6,7 +6,7 @@ import {
   DropdownMenuSeparator,
 } from '@flama/design-system-web';
 import { KeyRound, Plus, Trash2, UserCog, Users } from '@flama/design-system-web/icons';
-import type { AdminUserEntity } from '@flama/frontend';
+import type { AdminUserEntity } from '@flama/frontend-admin';
 import {
   useAdminUsers,
   useBanAdminUser,
@@ -15,7 +15,7 @@ import {
   useRoles,
   useUnbanAdminUser,
   useUsersRoles,
-} from '@flama/frontend/react';
+} from '@flama/frontend-admin/react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';

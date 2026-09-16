@@ -8,7 +8,7 @@ import {
 } from '@flama/design-system-mobile/card';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { useForgotPassword } from '@flama/frontend/react';
+import { useForgotPassword } from '@flama/frontend-core/react';
 import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared';
 import { Link } from 'expo-router';
 import * as React from 'react';

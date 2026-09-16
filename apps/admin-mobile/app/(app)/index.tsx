@@ -12,7 +12,7 @@ import {
 } from '@flama/design-system-mobile/dialog';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import type { AdminUserEntity, RoleEntity } from '@flama/frontend';
+import type { AdminUserEntity, RoleEntity } from '@flama/frontend-admin';
 import {
   useAdminUsers,
   useAssignAdminUserRoles,
@@ -22,7 +22,7 @@ import {
   useRoles,
   useUnbanAdminUser,
   useUsersRoles,
-} from '@flama/frontend/react';
+} from '@flama/frontend-admin/react';
 import {
   type AdminAssignRolesDto,
   type AdminCreateUserDto,

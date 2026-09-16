@@ -12,7 +12,7 @@ patterns from TkDodo (a TanStack Query maintainer).
 
 This guide explains the rules and shows how to write a compliant **query key
 factory**. The reference implementations live in
-`packages/frontend/src/react/users.queries.ts` and `auth.queries.ts`.
+`packages/frontend/core/src/react/users.queries.ts` and `auth.queries.ts`.
 
 ## The rules
 
@@ -189,7 +189,7 @@ What that policy encodes:
     fetch would replay a failure the user has already moved past.
 
 Adding a feature whose data shouldn't outlive the session? Add its namespace to
-the non-persisted set in `packages/frontend/src/react/persistence.ts`.
+the non-persisted set in `packages/frontend/core/src/react/persistence.ts`.
 
 ## Whose cache is it?
 

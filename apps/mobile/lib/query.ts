@@ -1,4 +1,5 @@
-import { createQueryPersistOptions, defaultQueryClientOptions } from '@flama/frontend/react';
+import { CONSUMER_NON_PERSISTED_FEATURES } from '@flama/frontend-consumer/react';
+import { createQueryPersistOptions, defaultQueryClientOptions } from '@flama/frontend-core/react';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
@@ -34,5 +35,7 @@ export const persistOptions = {
   persister,
   // The runtime version of the binary, so an OTA update or a new build starts
   // from a clean cache rather than hydrating stale response shapes.
-  ...createQueryPersistOptions(Constants.expoConfig?.version ?? 'dev'),
+  ...createQueryPersistOptions(Constants.expoConfig?.version ?? 'dev', {
+    nonPersistedFeatures: CONSUMER_NON_PERSISTED_FEATURES,
+  }),
 };

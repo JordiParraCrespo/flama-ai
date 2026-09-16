@@ -45,6 +45,6 @@ packages/backend/storage  → api
 packages/backend/queue    → api
 packages/translations     → consumer and control-plane apps
 packages/design-system    → consumer and control-plane apps
-packages/api-client       → frontend
+packages/frontend/api-client       → frontend
 packages/frontend         → consumer and control-plane apps
 ```

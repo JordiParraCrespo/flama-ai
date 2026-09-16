@@ -1,6 +1,6 @@
 import { Button, FieldGroup } from '@flama/design-system-web';
 import { Mail, ShieldAlert, ShieldCheck } from '@flama/design-system-web/icons';
-import { useResetPassword } from '@flama/frontend/react';
+import { useResetPassword } from '@flama/frontend-core/react';
 import { resetPasswordSchema } from '@flama/shared/schemas/auth';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';

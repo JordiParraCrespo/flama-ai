@@ -138,12 +138,20 @@
       "identifiers": ["packages/design-system/mobile", "@flama/design-system-mobile"],
       "neededBy": ["mobile", "admin-mobile", "mobile-showcase"]
     },
-    "packages/frontend": {
-      "identifiers": ["packages/frontend", "@flama/frontend"],
+    "packages/frontend/core": {
+      "identifiers": ["packages/frontend/core", "@flama/frontend-core"],
       "neededBy": ["web", "mobile", "admin-web", "admin-mobile"]
     },
-    "packages/api-client": {
-      "identifiers": ["packages/api-client", "@flama/api-client"],
+    "packages/frontend/consumer": {
+      "identifiers": ["packages/frontend/consumer", "@flama/frontend-consumer"],
+      "neededBy": ["web", "mobile"]
+    },
+    "packages/frontend/admin": {
+      "identifiers": ["packages/frontend/admin", "@flama/frontend-admin"],
+      "neededBy": ["admin-web", "admin-mobile"]
+    },
+    "packages/frontend/api-client": {
+      "identifiers": ["packages/frontend/api-client", "@flama/api-client"],
       "neededBy": ["web", "mobile", "admin-web", "admin-mobile"],
       "scripts": ["generate:api-client"]
     },

@@ -2,7 +2,7 @@ import { Button } from '@flama/design-system-mobile/button';
 import { Icon } from '@flama/design-system-mobile/icon';
 import { Shield, Users } from '@flama/design-system-mobile/icons';
 import { Text } from '@flama/design-system-mobile/text';
-import { useLogout, useProfile } from '@flama/frontend/react';
+import { useLogout, useProfile } from '@flama/frontend-core/react';
 import { Redirect, Tabs, useRouter } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { useTranslation } from 'react-i18next';

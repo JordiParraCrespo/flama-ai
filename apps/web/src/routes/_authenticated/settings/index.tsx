@@ -1,6 +1,6 @@
 import { cn } from '@flama/design-system-web';
 import { Cpu, Settings, ShieldCheck } from '@flama/design-system-web/icons';
-import { useOrganizations } from '@flama/frontend/react';
+import { useOrganizations } from '@flama/frontend-consumer/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { PageHead } from '@/components/page-head';

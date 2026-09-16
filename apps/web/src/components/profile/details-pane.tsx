@@ -1,6 +1,6 @@
 import { Alert, AlertDescription, Button, FieldError, Input } from '@flama/design-system-web';
-import type { ProfileEntity } from '@flama/frontend';
-import { useUpdateMyProfile } from '@flama/frontend/react';
+import type { ProfileEntity } from '@flama/frontend-consumer';
+import { useUpdateMyProfile } from '@flama/frontend-consumer/react';
 import { updateProfileSchema } from '@flama/shared/schemas/profile';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';

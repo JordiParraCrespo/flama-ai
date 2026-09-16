@@ -1,5 +1,5 @@
-import type { ConfigManager } from '@flama/frontend/config';
-import { type ConfigPath, type ConfigPathValue, getAttribute } from '@flama/frontend/config';
+import type { ConfigManager } from '@flama/frontend-core/config';
+import { type ConfigPath, type ConfigPathValue, getAttribute } from '@flama/frontend-core/config';
 import { createContext, useCallback, useContext, useSyncExternalStore } from 'react';
 import type { AppConfig } from './app-config';
 import { configManager } from './config-manager';

@@ -3,7 +3,7 @@ import {
   ConfigManager,
   type IConfigProvider,
   type IConfigStorage,
-} from '@flama/frontend/config';
+} from '@flama/frontend-core/config';
 import { storage } from '../storage/mmkv';
 import { type AppConfig, staticConfig } from './app-config';
 

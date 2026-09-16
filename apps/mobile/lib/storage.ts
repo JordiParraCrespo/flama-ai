@@ -1,4 +1,4 @@
-import type { IStorageService } from '@flama/frontend';
+import type { IStorageService } from '@flama/frontend-core';
 import * as SecureStore from 'expo-secure-store';
 
 /** Secrets only. Preferences live in MMKV (`lib/storage/mmkv.ts`). */

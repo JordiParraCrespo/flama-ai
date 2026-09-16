@@ -22,13 +22,13 @@ import {
   SearchInput,
 } from '@flama/design-system-web';
 import { Cpu, KeyRound, Plus } from '@flama/design-system-web/icons';
-import type { ApiTokenEntity } from '@flama/frontend';
+import type { ApiTokenEntity } from '@flama/frontend-consumer';
 import {
   useApiTokens,
   useCreateApiToken,
   usePermissionCatalog,
   useRevokeApiToken,
-} from '@flama/frontend/react';
+} from '@flama/frontend-consumer/react';
 import type { Scope } from '@flama/shared';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';

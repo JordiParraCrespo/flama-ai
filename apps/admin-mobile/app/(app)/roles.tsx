@@ -12,14 +12,14 @@ import {
 } from '@flama/design-system-mobile/dialog';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import type { RoleEntity } from '@flama/frontend';
+import type { RoleEntity } from '@flama/frontend-admin';
 import {
   useAuthorizationCatalog,
   useCreateRole,
   useDeleteRole,
   useRoles,
   useUpdateRole,
-} from '@flama/frontend/react';
+} from '@flama/frontend-admin/react';
 import { type RoleEditorDto, roleEditorSchema } from '@flama/shared/schemas/role';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';

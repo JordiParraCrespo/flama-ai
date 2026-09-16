@@ -1,5 +1,5 @@
 import { Button, Checkbox, FieldGroup, Input } from '@flama/design-system-web';
-import { useLogin } from '@flama/frontend/react';
+import { useLogin } from '@flama/frontend-core/react';
 import { type LoginDto, loginSchema } from '@flama/shared/schemas/auth';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';

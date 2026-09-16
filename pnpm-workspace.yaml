@@ -15,4 +15,5 @@ packages:
   - "packages/go/*"
   # flama:end runner
   - "packages/backend/*"
+  - "packages/frontend/*"
   - "packages/design-system/*"

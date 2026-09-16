@@ -4,7 +4,7 @@ import { Checkbox } from '@flama/design-system-mobile/checkbox';
 import { Icon } from '@flama/design-system-mobile/icon';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { useDeploymentCapabilities, useLogin, useSocialLogin } from '@flama/frontend/react';
+import { useDeploymentCapabilities, useLogin, useSocialLogin } from '@flama/frontend-core/react';
 import { type LoginDto, loginSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
 import { Asterisk, Info, Moon, Sun } from 'lucide-react-native';

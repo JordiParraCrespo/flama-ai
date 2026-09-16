@@ -1,6 +1,7 @@
 import { AuthRequestError } from '@flama/auth/client';
 import { Avatar, AvatarFallback, Button, cn, FieldGroup, Input } from '@flama/design-system-web';
-import { useAuthState, useFlamaApp } from '@flama/frontend/react';
+import { useConsumerApp } from '@flama/frontend-consumer/react';
+import { useAuthState } from '@flama/frontend-core/react';
 import { type AcceptInvitationDto, acceptInvitationSchema } from '@flama/shared/schemas/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
@@ -68,7 +69,7 @@ export const Route = createFileRoute('/_auth/accept-invitation')({
 function AcceptInvitationPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const app = useFlamaApp();
+  const app = useConsumerApp();
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuthState();
   const { id, email, name, role, inviter } = Route.useSearch();

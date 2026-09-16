@@ -1,4 +1,4 @@
-import { useUserSettings } from '@flama/frontend/react';
+import { useUserSettings } from '@flama/frontend-core/react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hasStoredTheme, useTheme } from '@/components/theme-provider';

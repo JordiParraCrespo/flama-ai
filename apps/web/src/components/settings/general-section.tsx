@@ -11,8 +11,8 @@ import {
   Input,
   toast,
 } from '@flama/design-system-web';
-import type { OrganizationEntity } from '@flama/frontend';
-import { useUpdateOrganization } from '@flama/frontend/react';
+import type { OrganizationEntity } from '@flama/frontend-consumer';
+import { useUpdateOrganization } from '@flama/frontend-consumer/react';
 import { updateOrganizationSchema } from '@flama/shared/schemas/organization';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';

@@ -920,7 +920,7 @@ the header and `session.activeOrganizationId` cannot drift.
 
 ### 11.3 Frontend business logic
 
-Per the repo rule, logic goes in `packages/frontend/src/modules/` — add an
+Per the repo rule, logic goes in `packages/frontend/core/src/modules/` — add an
 `authz` module beside the existing `api-tokens` and `organizations`, exposing
 the catalog query, role mutations, and grant management. App components stay
 presentational. TanStack Query keys follow `apps/docs/docs/architecture/query-keys.md`.
@@ -1080,7 +1080,7 @@ a row.
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.1 | `pnpm generate:scope-catalog` + `catalog.generated.ts` + CI drift check                                                                                 |
 | 4.2 | Consistency test: registry ↔ `@RequireScopes` ↔ MCP `requiredScopes`                                                                                    |
-| 4.3 | Role builder UI + `packages/frontend/src/modules/authz`                                                                                                 |
+| 4.3 | Role builder UI + `packages/frontend/core/src/modules/authz`                                                                                                 |
 | 4.4 | Grants management UI                                                                                                                                    |
 | 4.5 | CLI `roles` + `grants` command groups                                                                                                                   |
 | 4.6 | MCP read-only authz tools                                                                                                                               |

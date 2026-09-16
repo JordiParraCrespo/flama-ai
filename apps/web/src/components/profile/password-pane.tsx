@@ -9,8 +9,8 @@ import {
   toast,
 } from '@flama/design-system-web';
 import { ShieldCheck } from '@flama/design-system-web/icons';
-import type { ProfileEntity } from '@flama/frontend';
-import { useChangeOwnPassword } from '@flama/frontend/react';
+import type { ProfileEntity } from '@flama/frontend-consumer';
+import { useChangeOwnPassword } from '@flama/frontend-consumer/react';
 import { changeOwnPasswordSchema } from '@flama/shared/schemas/profile';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';

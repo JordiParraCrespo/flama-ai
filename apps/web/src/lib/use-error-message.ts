@@ -1,4 +1,4 @@
-import { createErrorMessageResolver, type ResolvedErrorMessage } from '@flama/frontend';
+import { createErrorMessageResolver, type ResolvedErrorMessage } from '@flama/frontend-core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 

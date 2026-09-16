@@ -236,7 +236,7 @@ packages/backend/queue    → used by api
 packages/translations        → used by web, mobile, api (email copy via backend/i18n)
 packages/design-system/web    → used by web, web-showcase
 packages/design-system/mobile → used by mobile, mobile-showcase
-packages/api-client           → used by frontend
+packages/frontend/api-client           → used by frontend
 packages/frontend             → used by web, mobile
 packages/go/core              → used by every other packages/go module and runner
 packages/go/{config,httpx,auth,health,ws,postgres} → used by runner (auth ← ws, httpx ← health, auth)

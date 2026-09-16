@@ -3,7 +3,7 @@ import type {
   AnalyticsTraits,
   FeatureFlags,
   IAnalyticsClient,
-} from '@flama/frontend';
+} from '@flama/frontend-core';
 import PostHog from 'posthog-react-native';
 
 /**

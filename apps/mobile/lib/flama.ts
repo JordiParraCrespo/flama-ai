@@ -1,4 +1,5 @@
-import { FlamaApp } from '@flama/frontend/di';
+import { consumerModules } from '@flama/frontend-consumer';
+import { FlamaApp } from '@flama/frontend-core/di';
 import { createMobileAnalyticsClient } from './analytics';
 import { mobileAuthClient } from './auth-client';
 import { ExpoSecureStoreService } from './storage';
@@ -8,4 +9,6 @@ export const app = FlamaApp.create({
   storage: new ExpoSecureStoreService(),
   authClient: mobileAuthClient,
   analytics: createMobileAnalyticsClient(),
+  // Loading the consumer product's modules is what makes this app that product.
+  modules: consumerModules,
 });

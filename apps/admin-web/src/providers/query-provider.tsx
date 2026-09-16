@@ -1,4 +1,4 @@
-import { createQueryPersistOptions, defaultQueryClientOptions } from '@flama/frontend/react';
+import { createQueryPersistOptions, defaultQueryClientOptions } from '@flama/frontend-core/react';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
 import {

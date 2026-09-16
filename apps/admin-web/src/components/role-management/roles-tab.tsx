@@ -1,7 +1,7 @@
 import { Badge, Button, DropdownMenuItem, DropdownMenuSeparator } from '@flama/design-system-web';
 import { Download, Plus, Shield, Trash2 } from '@flama/design-system-web/icons';
-import type { RoleEntity } from '@flama/frontend';
-import { useRoles } from '@flama/frontend/react';
+import type { RoleEntity } from '@flama/frontend-admin';
+import { useRoles } from '@flama/frontend-admin/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {

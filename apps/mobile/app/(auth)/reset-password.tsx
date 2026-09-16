@@ -8,7 +8,7 @@ import {
 } from '@flama/design-system-mobile/card';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { useResetPassword } from '@flama/frontend/react';
+import { useResetPassword } from '@flama/frontend-core/react';
 import { resetPasswordSchema } from '@flama/shared';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';

@@ -6,7 +6,7 @@ import {
   SlidersHorizontal,
   UserRound,
 } from '@flama/design-system-web/icons';
-import { useMyProfile } from '@flama/frontend/react';
+import { useMyProfile } from '@flama/frontend-consumer/react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

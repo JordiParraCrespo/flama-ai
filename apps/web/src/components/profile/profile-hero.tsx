@@ -7,8 +7,8 @@ import {
   Card,
 } from '@flama/design-system-web';
 import { Camera } from '@flama/design-system-web/icons';
-import type { ProfileEntity } from '@flama/frontend';
-import { useUploadAvatar } from '@flama/frontend/react';
+import type { ProfileEntity } from '@flama/frontend-consumer';
+import { useUploadAvatar } from '@flama/frontend-consumer/react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RolePill } from '@/components/role-pill';

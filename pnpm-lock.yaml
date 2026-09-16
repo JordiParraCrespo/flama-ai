@@ -52,7 +52,7 @@ importers:
         version: 57.0.15(@expo/log-box@57.0.4)(expo@57.0.22)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
       '@flama/api-client':
         specifier: workspace:*
-        version: link:../../packages/api-client
+        version: link:../../packages/frontend/api-client
       '@flama/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -62,9 +62,12 @@ importers:
       '@flama/env':
         specifier: workspace:*
         version: link:../../packages/env
-      '@flama/frontend':
+      '@flama/frontend-admin':
         specifier: workspace:*
-        version: link:../../packages/frontend
+        version: link:../../packages/frontend/admin
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../../packages/frontend/core
       '@flama/nitro-app-info':
         specifier: workspace:*
         version: link:../../packages/nitro-app-info
@@ -239,16 +242,19 @@ importers:
     dependencies:
       '@flama/api-client':
         specifier: workspace:*
-        version: link:../../packages/api-client
+        version: link:../../packages/frontend/api-client
       '@flama/auth':
         specifier: workspace:*
         version: link:../../packages/auth
       '@flama/design-system-web':
         specifier: workspace:*
         version: link:../../packages/design-system/web
-      '@flama/frontend':
+      '@flama/frontend-admin':
         specifier: workspace:*
-        version: link:../../packages/frontend
+        version: link:../../packages/frontend/admin
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../../packages/frontend/core
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -625,7 +631,7 @@ importers:
         version: 57.0.15(@expo/log-box@57.0.4)(expo@57.0.22)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
       '@flama/api-client':
         specifier: workspace:*
-        version: link:../../packages/api-client
+        version: link:../../packages/frontend/api-client
       '@flama/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -635,9 +641,12 @@ importers:
       '@flama/env':
         specifier: workspace:*
         version: link:../../packages/env
-      '@flama/frontend':
+      '@flama/frontend-consumer':
         specifier: workspace:*
-        version: link:../../packages/frontend
+        version: link:../../packages/frontend/consumer
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../../packages/frontend/core
       '@flama/nitro-app-info':
         specifier: workspace:*
         version: link:../../packages/nitro-app-info
@@ -1014,16 +1023,19 @@ importers:
     dependencies:
       '@flama/api-client':
         specifier: workspace:*
-        version: link:../../packages/api-client
+        version: link:../../packages/frontend/api-client
       '@flama/auth':
         specifier: workspace:*
         version: link:../../packages/auth
       '@flama/design-system-web':
         specifier: workspace:*
         version: link:../../packages/design-system/web
-      '@flama/frontend':
+      '@flama/frontend-consumer':
         specifier: workspace:*
-        version: link:../../packages/frontend
+        version: link:../../packages/frontend/consumer
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../../packages/frontend/core
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1183,25 +1195,6 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-
-  packages/api-client:
-    dependencies:
-      '@hey-api/client-fetch':
-        specifier: ^0.13.1
-        version: 0.13.1(@hey-api/openapi-ts@0.99.0(typescript@6.0.3))
-    devDependencies:
-      '@flama/config':
-        specifier: workspace:^
-        version: link:../config
-      '@hey-api/openapi-ts':
-        specifier: ^0.99.0
-        version: 0.99.0(typescript@6.0.3)
-      '@tanstack/react-query':
-        specifier: 5.102.8
-        version: 5.102.8(react@19.2.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
 
   packages/auth:
     dependencies:
@@ -1751,14 +1744,66 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
 
-  packages/frontend:
+  packages/frontend/admin:
+    dependencies:
+      '@flama/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../core
+      '@flama/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@tanstack/query-core':
+        specifier: 5.102.8
+        version: 5.102.8
+      inversify:
+        specifier: ^8.2.3
+        version: 8.2.3(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../config
+      '@tanstack/react-query':
+        specifier: 5.102.8
+        version: 5.102.8(react@19.2.3)
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/react':
+        specifier: 19.2.14
+        version: 19.2.14
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1(@noble/hashes@2.2.0)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+
+  packages/frontend/core:
     dependencies:
       '@flama/api-client':
         specifier: workspace:*
         version: link:../api-client
       '@flama/shared':
         specifier: workspace:*
-        version: link:../shared
+        version: link:../../shared
       '@tanstack/query-core':
         specifier: 5.102.8
         version: 5.102.8
@@ -1780,7 +1825,78 @@ importers:
     devDependencies:
       '@flama/config':
         specifier: workspace:^
-        version: link:../config
+        version: link:../../config
+      '@tanstack/react-query':
+        specifier: 5.102.8
+        version: 5.102.8(react@19.2.3)
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/react':
+        specifier: 19.2.14
+        version: 19.2.14
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1(@noble/hashes@2.2.0)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+
+  packages/frontend/api-client:
+    dependencies:
+      '@hey-api/client-fetch':
+        specifier: ^0.13.1
+        version: 0.13.1(@hey-api/openapi-ts@0.99.0(typescript@6.0.3))
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../config
+      '@hey-api/openapi-ts':
+        specifier: ^0.99.0
+        version: 0.99.0(typescript@6.0.3)
+      '@tanstack/react-query':
+        specifier: 5.102.8
+        version: 5.102.8(react@19.2.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/frontend/consumer:
+    dependencies:
+      '@flama/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../core
+      '@flama/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@tanstack/query-core':
+        specifier: 5.102.8
+        version: 5.102.8
+      inversify:
+        specifier: ^8.2.3
+        version: 8.2.3(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../config
       '@tanstack/react-query':
         specifier: 5.102.8
         version: 5.102.8(react@19.2.3)

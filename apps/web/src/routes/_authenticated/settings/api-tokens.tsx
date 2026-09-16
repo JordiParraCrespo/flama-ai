@@ -25,14 +25,14 @@ import {
   Separator,
 } from '@flama/design-system-web';
 import { Cpu } from '@flama/design-system-web/icons';
-import type { ApiTokenEntity } from '@flama/frontend';
+import type { ApiTokenEntity } from '@flama/frontend-consumer';
 import {
   useApiTokens,
   useCreateApiToken,
   useOrganizations,
   usePermissionCatalog,
   useRevokeApiToken,
-} from '@flama/frontend/react';
+} from '@flama/frontend-consumer/react';
 import type { Scope } from '@flama/shared';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';

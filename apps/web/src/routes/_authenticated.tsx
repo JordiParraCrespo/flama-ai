@@ -1,5 +1,5 @@
 import { SidebarInset, SidebarProvider } from '@flama/design-system-web';
-import { useOrganizations } from '@flama/frontend/react';
+import { useOrganizations } from '@flama/frontend-consumer/react';
 import { createFileRoute, Navigate, Outlet, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
 import { AppSidebar } from '@/components/app-shell/app-sidebar';

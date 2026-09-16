@@ -1,4 +1,5 @@
-import { FlamaApp } from '@flama/frontend';
+import { adminModules } from '@flama/frontend-admin';
+import { FlamaApp } from '@flama/frontend-core';
 import { createWebAnalyticsClient } from './analytics';
 import { webAuthClient } from './auth-client';
 import { LocalStorageService } from './storage';
@@ -13,4 +14,6 @@ export const app = FlamaApp.create({
   storage: new LocalStorageService(),
   authClient: webAuthClient,
   analytics: createWebAnalyticsClient(),
+  // Loading the admin product's modules is what makes this app that product.
+  modules: adminModules,
 });

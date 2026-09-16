@@ -7,7 +7,7 @@ import {
   SidebarProvider,
   Skeleton,
 } from '@flama/design-system-web';
-import { useLogout, useProfile } from '@flama/frontend/react';
+import { useLogout, useProfile } from '@flama/frontend-core/react';
 import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

@@ -10,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@flama/design-system-web';
-import { usePermissionCatalog, useProfile } from '@flama/frontend/react';
+import { usePermissionCatalog } from '@flama/frontend-consumer/react';
+import { useProfile } from '@flama/frontend-core/react';
 import type { PermissionGroup, Scope } from '@flama/shared';
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useState } from 'react';

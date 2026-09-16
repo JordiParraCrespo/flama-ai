@@ -9,7 +9,7 @@ import {
   Skeleton,
   Switch,
 } from '@flama/design-system-web';
-import { useUpdateUserSettings, useUserSettings } from '@flama/frontend/react';
+import { useUpdateUserSettings, useUserSettings } from '@flama/frontend-core/react';
 import {
   DEFAULT_USER_SETTINGS,
   LOCALES,

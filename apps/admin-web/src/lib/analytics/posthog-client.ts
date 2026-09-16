@@ -3,8 +3,8 @@ import type {
   AnalyticsTraits,
   FeatureFlags,
   IAnalyticsClient,
-} from '@flama/frontend';
-import { sanitizeUrlProperties } from '@flama/frontend';
+} from '@flama/frontend-core';
+import { sanitizeUrlProperties } from '@flama/frontend-core';
 import type { CaptureResult, PostHog } from 'posthog-js';
 
 /**

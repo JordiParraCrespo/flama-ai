@@ -2,10 +2,10 @@ import { Alert, AlertDescription, Button, FieldGroup, Input } from '@flama/desig
 import {
   useAcceptInvitation,
   useCreateOrganization,
-  useLogout,
   useMyInvitations,
   useOrganizations,
-} from '@flama/frontend/react';
+} from '@flama/frontend-consumer/react';
+import { useLogout } from '@flama/frontend-core/react';
 import {
   type CreateOrganizationDto,
   createOrganizationSchema,

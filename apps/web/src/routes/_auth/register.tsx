@@ -1,5 +1,5 @@
 import { Button, FieldGroup, Input } from '@flama/design-system-web';
-import { useRegister } from '@flama/frontend/react';
+import { useRegister } from '@flama/frontend-consumer/react';
 import { type RegisterDto, registerSchema } from '@flama/shared/schemas/auth';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useForm, useWatch } from 'react-hook-form';

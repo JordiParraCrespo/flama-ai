@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@flama/design-system-web';
-import { useAuthState, useSessionRestore } from '@flama/frontend/react';
+import { useAuthState, useSessionRestore } from '@flama/frontend-core/react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';

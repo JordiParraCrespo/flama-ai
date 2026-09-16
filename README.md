@@ -34,7 +34,7 @@ below is optional except the API — keep what you're building, prune the rest
 | `packages/go/*`                   | Cross-cutting Go toolkit for `apps/runner`: `core`, `config`, `httpx`, `auth`, `health`, `ws`, `postgres` |
 | `packages/design-system/web`      | shadcn/ui + Base UI + Tailwind v4 components                       |
 | `packages/design-system/mobile`   | NativeWind + rn-primitives React Native components                 |
-| `packages/api-client`             | Auto-generated typed client from Swagger                           |
+| `packages/frontend/api-client`             | Auto-generated typed client from Swagger                           |
 | `packages/translations`           | Shared i18n (en/es)                                                |
 | `packages/config`                 | Shared TypeScript configs                                          |
 | `packages/nitro-app-info`         | Nitro native module (Swift/Kotlin) exposing native app info to the mobile apps |

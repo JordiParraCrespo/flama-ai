@@ -22,8 +22,8 @@ import {
   ToggleGroupItem,
 } from '@flama/design-system-web';
 import { Shield } from '@flama/design-system-web/icons';
-import type { RoleEntity } from '@flama/frontend';
-import { useAuthorizationCatalog, useCreateRole, useUpdateRole } from '@flama/frontend/react';
+import type { RoleEntity } from '@flama/frontend-admin';
+import { useAuthorizationCatalog, useCreateRole, useUpdateRole } from '@flama/frontend-admin/react';
 import { type RoleEditorDto, roleEditorSchema } from '@flama/shared/schemas/role';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';

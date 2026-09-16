@@ -8,11 +8,11 @@ import {
 } from '@flama/design-system-web';
 import { LogOut } from '@flama/design-system-web/icons';
 import {
-  useProfile,
   useProfileSessions,
   useRevokeOtherProfileSessions,
   useRevokeProfileSession,
-} from '@flama/frontend/react';
+} from '@flama/frontend-consumer/react';
+import { useProfile } from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
 import {
   GroupHeading,

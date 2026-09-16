@@ -8,7 +8,8 @@ import {
 } from '@flama/design-system-mobile/card';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { useRegister, useSocialLogin } from '@flama/frontend/react';
+import { useRegister } from '@flama/frontend-consumer/react';
+import { useSocialLogin } from '@flama/frontend-core/react';
 import { type RegisterDto, registerSchema } from '@flama/shared';
 import { Link, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';

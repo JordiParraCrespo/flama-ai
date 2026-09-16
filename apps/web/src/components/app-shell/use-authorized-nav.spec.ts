@@ -1,4 +1,4 @@
-import { useMyPermissions } from '@flama/frontend/react';
+import { useMyPermissions } from '@flama/frontend-core/react';
 import type { PermissionDefinition } from '@flama/shared/permissions';
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -14,7 +14,7 @@ import { useAuthorizedNav, useLandingRoute } from './use-authorized-nav';
  * open must not be routed in a circle.
  */
 
-vi.mock('@flama/frontend/react', () => ({ useMyPermissions: vi.fn() }));
+vi.mock('@flama/frontend-core/react', () => ({ useMyPermissions: vi.fn() }));
 
 function signedInWith(permissions: PermissionDefinition[]) {
   vi.mocked(useMyPermissions).mockReturnValue({

@@ -9,7 +9,7 @@ configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 import { Button } from '@flama/design-system-mobile/button';
 import { MobileRoot } from '@flama/design-system-mobile/mobile-root';
 import { Text } from '@flama/design-system-mobile/text';
-import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend/react';
+import { FlamaProvider, useAuthState, useSessionRestore } from '@flama/frontend-core/react';
 import { ThemeProvider } from '@react-navigation/native';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';

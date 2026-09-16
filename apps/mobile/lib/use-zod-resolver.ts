@@ -1,4 +1,4 @@
-import { createZodErrorMap } from '@flama/frontend/validation';
+import { createZodErrorMap } from '@flama/frontend-core/validation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import type { Resolver } from 'react-hook-form';

@@ -1,4 +1,4 @@
-import { usePageView } from '@flama/frontend/react';
+import { usePageView } from '@flama/frontend-core/react';
 import { usePathname } from 'expo-router';
 
 /**

@@ -1,6 +1,6 @@
 import { Alert, AlertDescription, Button, cn } from '@flama/design-system-web';
 import { Info } from '@flama/design-system-web/icons';
-import { useDeploymentCapabilities, useSocialLogin } from '@flama/frontend/react';
+import { useDeploymentCapabilities, useSocialLogin } from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
 import { AuthDivider, authControlClass } from '@/components/auth/auth-primitives';
 import { GithubIcon, GoogleIcon } from '@/components/auth/provider-icons';
