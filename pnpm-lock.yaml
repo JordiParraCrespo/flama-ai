@@ -58,7 +58,7 @@ importers:
         version: link:../../packages/auth
       '@flama/design-system-mobile':
         specifier: workspace:*
-        version: link:../../packages/design-system/mobile
+        version: link:../../packages/frontend/design-system/mobile
       '@flama/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -73,7 +73,7 @@ importers:
         version: link:../../packages/frontend/mobile
       '@flama/nitro-app-info':
         specifier: workspace:*
-        version: link:../../packages/nitro-app-info
+        version: link:../../packages/frontend/nitro-app-info
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -257,7 +257,7 @@ importers:
         version: link:../../packages/auth
       '@flama/design-system-web':
         specifier: workspace:*
-        version: link:../../packages/design-system/web
+        version: link:../../packages/frontend/design-system/web
       '@flama/frontend-admin':
         specifier: workspace:*
         version: link:../../packages/frontend/admin
@@ -652,7 +652,7 @@ importers:
         version: link:../../packages/auth
       '@flama/design-system-mobile':
         specifier: workspace:*
-        version: link:../../packages/design-system/mobile
+        version: link:../../packages/frontend/design-system/mobile
       '@flama/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -667,7 +667,7 @@ importers:
         version: link:../../packages/frontend/mobile
       '@flama/nitro-app-info':
         specifier: workspace:*
-        version: link:../../packages/nitro-app-info
+        version: link:../../packages/frontend/nitro-app-info
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -848,7 +848,7 @@ importers:
         version: 57.0.15(@expo/log-box@57.0.4)(expo@57.0.22)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
       '@flama/design-system-mobile':
         specifier: workspace:*
-        version: link:../../packages/design-system/mobile
+        version: link:../../packages/frontend/design-system/mobile
       '@gorhom/bottom-sheet':
         specifier: github:KaikuLabs/react-native-bottom-sheet#a7ef2476b8eeb1bb6861c733571d246a29e73bac
         version: https://codeload.github.com/KaikuLabs/react-native-bottom-sheet/tar.gz/a7ef2476b8eeb1bb6861c733571d246a29e73bac(@types/react@19.2.14)(react-native-gesture-handler@2.32.0(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native-reanimated@4.5.3(react-native-worklets@0.11.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
@@ -1053,7 +1053,7 @@ importers:
         version: link:../../packages/auth
       '@flama/design-system-web':
         specifier: workspace:*
-        version: link:../../packages/design-system/web
+        version: link:../../packages/frontend/design-system/web
       '@flama/frontend-consumer':
         specifier: workspace:*
         version: link:../../packages/frontend/consumer
@@ -1165,7 +1165,7 @@ importers:
     dependencies:
       '@flama/design-system-web':
         specifier: workspace:*
-        version: link:../../packages/design-system/web
+        version: link:../../packages/frontend/design-system/web
       lucide-react:
         specifier: ^1.46.0
         version: 1.46.0(react@19.2.3)
@@ -1540,7 +1540,7 @@ importers:
 
   packages/config: {}
 
-  packages/design-system/mobile:
+  packages/frontend/design-system/mobile:
     dependencies:
       '@gorhom/bottom-sheet':
         specifier: '*'
@@ -1688,7 +1688,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/design-system/web:
+  packages/frontend/design-system/web:
     dependencies:
       '@base-ui/react':
         specifier: ^1.8.0
@@ -1965,7 +1965,7 @@ importers:
     dependencies:
       '@flama/design-system-mobile':
         specifier: workspace:*
-        version: link:../../design-system/mobile
+        version: link:../design-system/mobile
       '@flama/frontend-core':
         specifier: workspace:*
         version: link:../core
@@ -2056,7 +2056,7 @@ importers:
     dependencies:
       '@flama/design-system-web':
         specifier: workspace:*
-        version: link:../../design-system/web
+        version: link:../design-system/web
       '@flama/frontend-core':
         specifier: workspace:*
         version: link:../core
@@ -2176,7 +2176,7 @@ importers:
         specifier: workspace:*
         version: link:../httpx
 
-  packages/nitro-app-info:
+  packages/frontend/nitro-app-info:
     devDependencies:
       nitrogen:
         specifier: 0.37.1

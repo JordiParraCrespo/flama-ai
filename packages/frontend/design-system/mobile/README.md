@@ -45,7 +45,7 @@ so `text-lg` on a `<Text>` is reported with the variants that exist instead.
 Every consuming app points its `lint:design` script here:
 
 ```json
-{ "lint:design": "oxlint -c ../../packages/design-system/mobile/oxlint.design.json app components lib" }
+{ "lint:design": "oxlint -c ../../packages/frontend/design-system/mobile/oxlint.design.json app components lib" }
 ```
 
 Two rules are off that the web configuration keeps. The plugin only reads a

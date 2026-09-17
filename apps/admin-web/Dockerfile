@@ -8,7 +8,7 @@ COPY apps/admin-web/package.json ./apps/admin-web/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/config/package.json ./packages/config/
-COPY packages/design-system/web/package.json ./packages/design-system/web/
+COPY packages/frontend/design-system/web/package.json ./packages/frontend/design-system/web/
 COPY packages/frontend/core/package.json ./packages/frontend/core/
 COPY packages/frontend/admin/package.json ./packages/frontend/admin/
 COPY packages/frontend/api-client/package.json ./packages/frontend/api-client/

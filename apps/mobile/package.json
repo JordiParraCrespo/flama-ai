@@ -12,7 +12,7 @@
     "build:preview": "eas build --profile preview",
     "build:prod": "eas build --profile production",
     "lint": "biome check app/ features/ lib/ app.config.ts && tsc --noEmit",
-    "lint:design": "oxlint -c ../../packages/design-system/mobile/oxlint.design.json app features lib",
+    "lint:design": "oxlint -c ../../packages/frontend/design-system/mobile/oxlint.design.json app features lib",
     "test": "vitest run --passWithNoTests",
     "clean": "rm -rf .expo node_modules",
     "postinstall": "npx tailwindcss -i ./global.css -o ./node_modules/.cache/nativewind/global.css",

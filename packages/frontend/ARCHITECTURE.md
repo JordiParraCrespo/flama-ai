@@ -49,7 +49,7 @@ packages/frontend/
 | Logic: entity, repository, service, query hook | both products | `core` |
 | Logic | one product | `consumer` or `admin` |
 | UI or glue | both apps of a platform | `web` or `mobile` |
-| A primitive with the same API on both platforms | | `packages/design-system/web` and `/mobile` |
+| A primitive with the same API on both platforms | | `packages/frontend/design-system/web` and `/mobile` |
 | Everything else | one app | `apps/<app>/features/<module>/<kind>/` |
 
 Two cells are never filled. **Logic in a platform kit**: mobile would have to

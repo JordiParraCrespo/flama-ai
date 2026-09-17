@@ -21,7 +21,7 @@ src/
 └── components/     # the gallery's own chrome (navigation, code panels)
 ```
 
-The design system itself lives in `packages/design-system/web`; a component is
+The design system itself lives in `packages/frontend/design-system/web`; a component is
 added there and then given a page here. The `/design-export-port` skill
 rebuilds this gallery from a design export.
 

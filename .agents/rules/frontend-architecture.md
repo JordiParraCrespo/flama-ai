@@ -27,7 +27,7 @@ built from this starter.
 | | used by one product | `packages/frontend/consumer` or `/admin` |
 | Is it UI or platform glue shared by both apps of a platform? | web | `packages/frontend/web` |
 | | mobile | `packages/frontend/mobile` |
-| Is it a primitive with the same API on both platforms? | | `packages/design-system/web` and `/mobile` |
+| Is it a primitive with the same API on both platforms? | | `packages/frontend/design-system/web` and `/mobile` |
 | Everything else | | `apps/<app>/features/<module>/<kind>/` |
 
 Two cells are never filled: logic in a platform kit (mobile would have to copy

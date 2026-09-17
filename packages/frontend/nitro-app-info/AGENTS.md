@@ -1,6 +1,6 @@
 # @flama/nitro-app-info — Agent Instructions
 
-> Read the root [`CLAUDE.md`](../../CLAUDE.md) first.
+> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first.
 
 ## Where things go
 
@@ -28,4 +28,4 @@ is no unit test to run here.
   app-level platform glue; the Expo apps import it, nothing shared does.
 - Assuming Expo Go: Nitro modules need `expo-dev-client`.
 
-See [`.agents/rules/frontend-architecture.md`](../../.agents/rules/frontend-architecture.md).
+See [`.agents/rules/frontend-architecture.md`](../../../.agents/rules/frontend-architecture.md).

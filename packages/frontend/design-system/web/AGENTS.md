@@ -3,7 +3,7 @@
 Web UI component library: shadcn/ui components + Tailwind, built with tsup.
 Consumed by `apps/web` and `apps/web-showcase`.
 
-> Read the root [`CLAUDE.md`](../../../CLAUDE.md) and the design-system overview
+> Read the root [`CLAUDE.md`](../../../../CLAUDE.md) and the design-system overview
 > in [`../AGENTS.md`](../AGENTS.md) first.
 
 ## Layout
@@ -46,4 +46,4 @@ pnpm --filter @flama/design-system-web dev
 pnpm --filter @flama/design-system-web test   # the barrel-export check
 ```
 
-See [`.agents/rules/frontend-ui.md`](../../../.agents/rules/frontend-ui.md) for how the apps consume these components.
+See [`.agents/rules/frontend-ui.md`](../../../../.agents/rules/frontend-ui.md) for how the apps consume these components.

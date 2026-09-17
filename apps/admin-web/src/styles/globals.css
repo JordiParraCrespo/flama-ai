@@ -2,7 +2,7 @@
 @import "@flama/design-system-web/styles";
 
 @source "../../src/**/*.{ts,tsx}";
-@source "../../../../packages/design-system/web/src/**/*.{ts,tsx}";
+@source "../../../../packages/frontend/design-system/web/src/**/*.{ts,tsx}";
 @source "../../../../packages/frontend/web/src/**/*.{ts,tsx}";
 
 /* Dark mode is class-driven. `[data-theme='dark']` is accepted too so markup

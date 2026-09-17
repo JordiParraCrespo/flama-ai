@@ -54,7 +54,7 @@ pnpm --filter @flama/e2e e2e:web  # a screen wired to the API gets a spec in e2e
 - Putting `useWatch` or a query in the page and threading the value down.
   Subscribe at the leaf — `src/features/auth/components/password-checklist.tsx`.
 - Hand-rolling a table or an error callout while `DataTable` and `Alert` sit
-  exported. Read `packages/design-system/web/src/index.ts` before styling a `div`.
+  exported. Read `packages/frontend/design-system/web/src/index.ts` before styling a `div`.
 
 Placement is [`.agents/rules/frontend-architecture.md`](../../.agents/rules/frontend-architecture.md);
 what the markup looks like is [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md).

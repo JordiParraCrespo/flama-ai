@@ -21,7 +21,7 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 - **packages/frontend/admin** — The control plane's domain: admin-users, roles
 - **packages/frontend/web** — What both Vite apps share below their routes
 - **packages/frontend/mobile** — What both Expo apps share below their routes
-- **packages/design-system** — Shared tokens, web and mobile components
+- **packages/frontend/design-system** — Shared tokens, web and mobile components
 - **packages/frontend/api-client** — Auto-generated typed API client
 - **packages/translations** — Shared i18n files
 - **packages/config** — Shared TypeScript and tooling configs

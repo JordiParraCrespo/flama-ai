@@ -226,7 +226,7 @@ const PACKAGE_ROOTS = [
   'apps',
   'packages',
   'packages/backend',
-  'packages/design-system',
+  'packages/frontend/design-system',
   'packages/frontend',
   // flama:begin runner
   'packages/go',

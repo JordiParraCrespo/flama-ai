@@ -23,7 +23,7 @@ app/          # expo-router screens, one per component family
 lib/          # the gallery's own helpers
 ```
 
-The design system itself lives in `packages/design-system/mobile`; a
+The design system itself lives in `packages/frontend/design-system/mobile`; a
 component is added there and then given a screen here.
 
 ## Depends on / used by

@@ -27,7 +27,7 @@ function workspacePackages(): Map<string, { path: string; manifest: PackageManif
   const roots = [
     'packages',
     'packages/backend',
-    'packages/design-system',
+    'packages/frontend/design-system',
     'packages/frontend',
     'apps',
   ];

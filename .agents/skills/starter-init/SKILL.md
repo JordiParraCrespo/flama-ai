@@ -119,11 +119,11 @@ for anything only that app used (`@better-auth/expo`, `EXPO_PUBLIC_`,
   app. Delete the rule if nothing it governs remains.
 - Per-package `README.md` / `AGENTS.md` files that list consumers, including
   `packages/config`, `packages/auth`, `packages/env`, `packages/frontend`,
-  `packages/translations`, `packages/design-system/*`, and the kept apps'
+  `packages/translations`, `packages/frontend/design-system/*`, and the kept apps'
   own `AGENTS.md`.
 - `.env.example`: the header comment lists what each section serves.
 - Code comments that name a removed app (`apps/web/nginx.conf`,
-  `packages/design-system/web/src/components/icons.tsx`, and whatever the
+  `packages/frontend/design-system/web/src/components/icons.tsx`, and whatever the
   grep finds): reword, do not leave a pointer to a path that no longer
   exists.
 

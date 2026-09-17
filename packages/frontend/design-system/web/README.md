@@ -76,7 +76,7 @@ class from a restyle. Icons are excluded — colouring a glyph is the caller's
 job. Every consuming app points its `lint:design` script here:
 
 ```json
-{ "lint:design": "oxlint -c ../../packages/design-system/web/oxlint.design.json src" }
+{ "lint:design": "oxlint -c ../../packages/frontend/design-system/web/oxlint.design.json src" }
 ```
 
 Rules are at `warn` until an app's count for one reaches zero; then promote it

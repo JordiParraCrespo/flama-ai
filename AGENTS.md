@@ -32,9 +32,6 @@ flama/
 │   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
 │   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
 │   ├── config/           # Shared TypeScript configs
-│   ├── design-system/
-│   │   ├── web/          # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
-│   │   └── mobile/       # NativeWind + rn-primitives (@flama/design-system-mobile)
 │   ├── env/              # Root .env loader (@flama/env)
 │   ├── frontend/         # The React tier: logic split by product, glue split by platform
 │   │   ├── core/         # Kernel every app loads: session, users, settings, DI (@flama/frontend-core)
@@ -42,7 +39,11 @@ flama/
 │   │   ├── admin/        # The control plane's domain: admin-users, roles (@flama/frontend-admin)
 │   │   ├── api-client/   # Auto-generated typed client from Swagger (@flama/api-client)
 │   │   ├── web/          # What both Vite apps share: shell, auth chrome, table, i18n… (@flama/frontend-web)
-│   │   └── mobile/       # What both Expo apps share: config, storage, analytics… (@flama/frontend-mobile)
+│   │   ├── mobile/       # What both Expo apps share: config, storage, analytics… (@flama/frontend-mobile)
+│   │   ├── design-system/
+│   │   │   ├── web/      # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
+│   │   │   └── mobile/   # NativeWind + rn-primitives (@flama/design-system-mobile)
+│   │   └── nitro-app-info/ # Nitro native module exposing app info to the Expo apps (@flama/nitro-app-info)
 │   ├── go/               # Shared Go modules (@flama/go-*): core, config, httpx, auth, health, ws
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files
@@ -52,7 +53,9 @@ flama/
 ```
 
 Each app and package has its own `README.md` covering its purpose, exports, and
-usage.
+usage, and an `AGENTS.md` with the rules an agent needs there. Every `CLAUDE.md`
+in the repo is a symlink to the `AGENTS.md` beside it: edit the `AGENTS.md`,
+never the link.
 
 <!-- flama:begin starter -->
 Every app above except `api` is optional. `scripts/starter/features.json`
@@ -237,7 +240,7 @@ cookbooks are `packages/frontend/ARCHITECTURE.md` and each app's
 React Hook Form over a Zod schema from `@flama/shared`, resolver wired through
 the app's `useZodResolver`. The convention is `.agents/rules/forms.md`.
 
-### Design system (packages/design-system)
+### Design system (packages/frontend/design-system)
 
 Two independently versioned packages with a mirrored component API:
 `@flama/design-system-web` (Base UI + Tailwind v4, tokens in
@@ -260,8 +263,8 @@ packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
 packages/translations        → used by web, mobile, api (email copy via backend/i18n)
-packages/design-system/web    → used by web, admin-web, web-showcase, frontend/web
-packages/design-system/mobile → used by mobile, admin-mobile, mobile-showcase, frontend/mobile
+packages/frontend/design-system/web    → used by web, admin-web, web-showcase, frontend/web
+packages/frontend/design-system/mobile → used by mobile, admin-mobile, mobile-showcase, frontend/mobile
 packages/frontend/api-client  → used by frontend/core, frontend/consumer, frontend/admin
 packages/frontend/core        → used by every frontend package and app
 packages/frontend/consumer    → used by web, mobile
@@ -313,7 +316,7 @@ pnpm changeset          # Create a changeset for versioning
 - Porting a design export onto the design system is the
   `/design-export-port` skill (`.agents/skills/design-export-port/`): the
   export's values go onto the token vocabulary in `globals.css` and the
-  component rules in `packages/design-system/AGENTS.md` and
+  component rules in `packages/frontend/design-system/AGENTS.md` and
   `.agents/rules/frontend-ui.md`; it does not replace them. Fonts are system
   stacks
 - Forms and Zod schemas: `.agents/rules/forms.md`

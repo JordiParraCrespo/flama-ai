@@ -3,7 +3,7 @@ paths:
   - "apps/web/**/*"
   - "apps/admin-web/**/*"
   - "apps/web-showcase/**/*"
-  - "packages/design-system/web/**/*"
+  - "packages/frontend/design-system/web/**/*"
   - "packages/frontend/web/**/*"
 ---
 
@@ -15,7 +15,7 @@ The linter is the check; this file is the list.
 ## Reach for the design system before writing markup
 
 Before styling a `div`, check whether `@flama/design-system-web` already ships
-it. Read `packages/design-system/web/src/index.ts` in full; its exports are
+it. Read `packages/frontend/design-system/web/src/index.ts` in full; its exports are
 multi-line, so a grep for `export` misses most of them.
 
 | Need                                  | Use                           | Not                                                   |
@@ -107,16 +107,16 @@ In the apps, use `text-ink-900/600/400`, `bg-surface-*`, `border-border-*`,
 `bg-muted`, `text-foreground`), not a raw hex, not a stock Tailwind colour
 (`text-amber-600`), and no `dark:` colour overrides: the tokens already invert.
 A colour genuinely outside the palette becomes a named token in
-`packages/design-system/web/src/styles/globals.css` with a comment saying why.
+`packages/frontend/design-system/web/src/styles/globals.css` with a comment saying why.
 
-Primitives in `packages/design-system/web` are the exception on `dark:`. A
+Primitives in `packages/frontend/design-system/web` are the exception on `dark:`. A
 variant that is not a colour swap (`avatar.tsx` switches blend modes,
 `chart.tsx` selects the dark chart theme) belongs there and nowhere else.
 
 ## The design-system linter enforces the two rules above
 
 `pnpm lint:design` runs `@shadcn/lint` through oxlint; each app points at the
-config its design system ships (`packages/design-system/{web,mobile}/oxlint.design.json`).
+config its design system ships (`packages/frontend/design-system/{web,mobile}/oxlint.design.json`).
 Biome owns correctness; oxlint's own categories are off.
 
 - `no-raw-colors` / `no-unknown-classes`: a class the theme does not declare.
@@ -138,7 +138,7 @@ back to `warn` to land a change. Known false positive before promoting
 
 ## Every component export belongs in the barrel
 
-`packages/design-system/web/src/index.ts` re-exports everything a file in
+`packages/frontend/design-system/web/src/index.ts` re-exports everything a file in
 `src/components/` exports; `pnpm --filter @flama/design-system-web test` fails
 otherwise. `apps/web` imports components from the root only, so a missing
 barrel entry is a component that does not exist: `Breadcrumb` shipped, styled

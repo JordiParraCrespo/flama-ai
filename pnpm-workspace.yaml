@@ -16,4 +16,4 @@ packages:
   # flama:end runner
   - "packages/backend/*"
   - "packages/frontend/*"
-  - "packages/design-system/*"
+  - "packages/frontend/design-system/*"

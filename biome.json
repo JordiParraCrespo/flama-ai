@@ -70,7 +70,7 @@
       "!**/*.gen.ts",
       "!**/packages/frontend/api-client/src/data-access",
       "!**/packages/frontend/api-client/src/common",
-      "!**/packages/design-system/*/src/components",
+      "!**/packages/frontend/design-system/*/src/components",
       "!**/apps/web-showcase",
       "!**/apps/mobile-showcase"
     ]

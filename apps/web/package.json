@@ -10,7 +10,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "lint": "biome check src/",
-    "lint:design": "oxlint -c ../../packages/design-system/web/oxlint.design.json src",
+    "lint:design": "oxlint -c ../../packages/frontend/design-system/web/oxlint.design.json src",
     "clean": "rimraf dist .turbo node_modules",
     "arch": "depcruise src --config .dependency-cruiser.cjs"
   },

@@ -3,7 +3,7 @@
 Mobile UI component library: React Native components styled with **NativeWind**
 (Tailwind for RN). Consumed by `apps/mobile` and `apps/mobile-showcase`.
 
-> Read the root [`CLAUDE.md`](../../../CLAUDE.md) and the design-system overview
+> Read the root [`CLAUDE.md`](../../../../CLAUDE.md) and the design-system overview
 > in [`../AGENTS.md`](../AGENTS.md) first.
 
 ## Layout
@@ -31,4 +31,4 @@ pnpm --filter @flama/design-system-mobile build
 pnpm --filter @flama/design-system-mobile dev
 ```
 
-See [`.agents/rules/frontend-ui.md`](../../../.agents/rules/frontend-ui.md) and [`.agents/rules/forms.md`](../../../.agents/rules/forms.md).
+See [`.agents/rules/frontend-ui.md`](../../../../.agents/rules/frontend-ui.md) and [`.agents/rules/forms.md`](../../../../.agents/rules/forms.md).

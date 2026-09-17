@@ -6,7 +6,7 @@ packages** plus shared tokens:
 - [`web/`](./web) → `@flama/design-system-web` — shadcn + Tailwind (used by `apps/web`, `apps/web-showcase`)
 - [`mobile/`](./mobile) → `@flama/design-system-mobile` — React Native + NativeWind (used by `apps/mobile`, `apps/mobile-showcase`)
 
-> Read the root [`CLAUDE.md`](../../CLAUDE.md) first. There is no package.json
+> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first. There is no package.json
 > at this level — work inside `web/` or `mobile/`.
 
 ## The brand

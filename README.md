@@ -36,12 +36,12 @@ below is optional except the API — keep what you're building, prune the rest
 | `packages/frontend/mobile`        | What both Expo apps share below their routes                       |
 | `packages/backend/*`              | Cross-cutting NestJS toolkit: errors/filters (`core`), DDD building blocks (`ddd`), authorization kernel (`authz`), Redis cache (`cache`), queues (`queue`), file storage (`storage`), email (`email`), i18n (`i18n`) |
 | `packages/go/*`                   | Cross-cutting Go toolkit for `apps/runner`: `core`, `config`, `httpx`, `auth`, `health`, `ws`, `postgres` |
-| `packages/design-system/web`      | shadcn/ui + Base UI + Tailwind v4 components                       |
-| `packages/design-system/mobile`   | NativeWind + rn-primitives React Native components                 |
+| `packages/frontend/design-system/web`      | shadcn/ui + Base UI + Tailwind v4 components                       |
+| `packages/frontend/design-system/mobile`   | NativeWind + rn-primitives React Native components                 |
 | `packages/frontend/api-client`    | Auto-generated typed client from Swagger                           |
 | `packages/translations`           | Shared i18n (en/es)                                                |
 | `packages/config`                 | Shared TypeScript configs                                          |
-| `packages/nitro-app-info`         | Nitro native module (Swift/Kotlin) exposing native app info to the mobile apps |
+| `packages/frontend/nitro-app-info`         | Nitro native module (Swift/Kotlin) exposing native app info to the mobile apps |
 
 ### Testing
 
