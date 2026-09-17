@@ -4,7 +4,7 @@
 
 Add a shared TanStack Query cache-persistence policy.
 
-`@flama/frontend/react` now exports `defaultQueryClientOptions`,
+`@flama/frontend-core/react` now exports `defaultQueryClientOptions`,
 `createQueryPersistOptions` and `shouldDehydrateQuery`, which `apps/web` and
 `apps/mobile` feed to `PersistQueryClientProvider` alongside their platform
 persister (`localStorage` / `AsyncStorage`). The policy pins `gcTime` to the

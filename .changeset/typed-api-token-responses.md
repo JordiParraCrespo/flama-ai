@@ -2,6 +2,7 @@
 "@flama/api": minor
 "@flama/api-client": minor
 "@flama/frontend-core": minor
+"@flama/frontend-consumer": minor
 ---
 
 Describe scope and permission-catalog responses properly in OpenAPI, so the
@@ -22,12 +23,13 @@ client lost the type and every consumer had to cast it back:
   the whole paginated list with it. It now returns `PaginatedUsersResponseDto`
   (with `PaginationMetaDto`).
 
-The wire format is unchanged — only its description. `@flama/frontend`'s
-repositories drop the casts this forced (including a `dto as never` that was
-disabling type checking on the create-token request body) and read the generated
-DTOs directly. `UsersRepository.findAll` / `UsersService.findAll` widen their
-`role` filter from `'admin' | 'user'` to `Role`, matching the database-backed
-roles the API actually accepts.
+The wire format is unchanged — only its description. `@flama/frontend-consumer`'s
+api-tokens repository drops the casts this forced (including a `dto as never`
+that was disabling type checking on the create-token request body) and reads
+the generated DTOs directly. In `@flama/frontend-core`,
+`UsersRepository.findAll` / `UsersService.findAll` widen their `role` filter
+from `'admin' | 'user'` to `Role`, matching the database-backed roles the API
+actually accepts.
 
 The root `generate:openapi` script ran `nest build` from the repo root, where
 there is no Nest workspace, so `pnpm generate:api-client` always failed; it now
