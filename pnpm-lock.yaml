@@ -228,6 +228,9 @@ importers:
       '@babel/core':
         specifier: ^7.29.7
         version: 7.29.7
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../packages/config
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
@@ -822,6 +825,9 @@ importers:
       '@babel/core':
         specifier: ^7.29.7
         version: 7.29.7
+      '@flama/config':
+        specifier: workspace:^
+        version: link:../../packages/config
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
