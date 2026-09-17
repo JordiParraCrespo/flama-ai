@@ -40,6 +40,10 @@ pnpm check:structure
   `admin-users` / `roles` are allowed; this app has no allowlist entry.
 - Writing a role's permission list into a component. It belongs in
   `src/features/roles/lib/permission-areas.ts`, which carries no JSX.
+- Growing a section until it holds the table, its columns, its bulk action and
+  its dialogs. `sections/` caps at 150 lines and `screens/` at 180; columns go
+  to `hooks/use-*-columns.tsx`, a cell to `components/`, a pure helper to
+  `lib/`.
 
 Placement is [`.agents/rules/frontend-architecture.md`](../../.agents/rules/frontend-architecture.md);
 what the markup looks like is [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md).

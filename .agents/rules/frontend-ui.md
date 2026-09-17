@@ -72,9 +72,12 @@ Search, filters, sort and page go through the kit's `useTableQuery` (nuqs).
 Never `useState` for any of the four. The hook resets to page one when the
 list narrows and debounces the URL write.
 
-- **Search is the server's job, and debounced.** Pass the debounced
-  `searchQuery` to the request and the immediate `search` to the input. No
-  screen filters rows in the browser to answer a search box.
+- **Search is the server's job, and debounced — by the field.** Pass
+  `search`/`searchQuery` (they are the same settled value) to `DataTable` and to
+  the request. `DataTableSearch` owns the half-typed word and calls `onChange`
+  once per burst, so a keystroke never reaches the rows; never hand the table a
+  live value, and never add a second debounce on top of it. No screen filters
+  rows in the browser to answer a search box.
 - **A search matches everything the row shows.** Widen the endpoint rather
   than narrow the table.
 - **A facet is the server's job too.** Send ids in the request (`?roleIds=`);

@@ -18,11 +18,25 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { PermissionPicker } from '@/features/api-tokens/components/permission-picker';
+import {
+  hasAnyScope,
+  type ScopeSelection,
+  scopesFromSelection,
+} from '@/features/api-tokens/lib/scope-selection';
 
 export interface CreateApiTokenFormValues {
   name: string;
   scopes: Scope[];
 }
+
+/**
+ * What the fields hold: permissions per resource, flattened to the `Scope[]`
+ * the API takes on submit. See `lib/scope-selection.ts`.
+ */
+type ApiTokenFormFields = {
+  name: string;
+  permissions: ScopeSelection;
+};
 
 /**
  * The body of the "Create API key" dialog: a name and the permissions the key
@@ -55,7 +69,7 @@ export function CreateApiTokenForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateApiTokenFormValues>({ defaultValues: { name: '', scopes: [] } });
+  } = useForm<ApiTokenFormFields>({ defaultValues: { name: '', permissions: {} } });
 
   const normalizedPermissionSearch = permissionSearch.trim().toLocaleLowerCase();
   const visiblePermissionGroups = groups.filter((group) =>
@@ -68,7 +82,9 @@ export function CreateApiTokenForm({
   return (
     <form
       id="create-api-key"
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit((values) =>
+        onSubmit({ name: values.name, scopes: scopesFromSelection(groups, values.permissions) }),
+      )}
       noValidate
       className="flex min-h-0 flex-auto flex-col gap-5"
     >
@@ -96,11 +112,12 @@ export function CreateApiTokenForm({
 
           <Controller
             control={control}
-            name="scopes"
-            rules={{
-              validate: (value) => value.length > 0 || t('validation.required'),
-            }}
-            render={({ field, fieldState }) => (
+            name="permissions"
+            rules={{ validate: (value) => hasAnyScope(value) || t('validation.required') }}
+            // For the validation and the error only: the picker writes through
+            // `control`, one field per row, so this does not re-render on a
+            // click.
+            render={({ fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel>{t('settings.api.keyPermissions')}</FieldLabel>
                 {loadingCatalog ? (
@@ -124,8 +141,8 @@ export function CreateApiTokenForm({
                       <PermissionPicker
                         groups={visiblePermissionGroups}
                         grantable={grantable}
-                        value={field.value}
-                        onChange={field.onChange}
+                        control={control}
+                        name="permissions"
                         disabled={isPending}
                       />
                     ) : (

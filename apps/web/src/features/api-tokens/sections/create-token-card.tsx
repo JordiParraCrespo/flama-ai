@@ -5,25 +5,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@flama/design-system-web';
-import { useCreateApiToken, useOrganizations } from '@flama/frontend-consumer/react';
+import {
+  useCreateApiToken,
+  useOrganizations,
+  usePermissionCatalog,
+} from '@flama/frontend-consumer/react';
 import { useErrorMessage } from '@flama/frontend-web';
-import type { PermissionGroup, Scope } from '@flama/shared';
 import { useTranslation } from 'react-i18next';
 import { CreateTokenForm } from '@/features/api-tokens/forms/create-token-form';
 
-export function CreateTokenCard({
-  groups,
-  grantable,
-  loadingCatalog,
-  onCreated,
-}: {
-  groups: readonly PermissionGroup[];
-  grantable: Scope[];
-  loadingCatalog: boolean;
-  onCreated: (secret: string) => void;
-}) {
+/**
+ * The create card, and every query it needs.
+ *
+ * The permission catalog is asked for here rather than on the screen: this is
+ * the only thing that renders it, and while the screen held it, its arrival —
+ * and every refetch of anything else the screen watched — went through the form
+ * and the permission picker below it.
+ */
+export function CreateTokenCard({ onCreated }: { onCreated: (secret: string) => void }) {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
+  const catalog = usePermissionCatalog();
   const organizations = useOrganizations();
   const create = useCreateApiToken();
 
@@ -35,9 +37,9 @@ export function CreateTokenCard({
       </CardHeader>
       <CardContent>
         <CreateTokenForm
-          groups={groups}
-          grantable={grantable}
-          loadingCatalog={loadingCatalog}
+          groups={catalog.data?.groups ?? []}
+          grantable={catalog.data?.grantable ?? []}
+          loadingCatalog={catalog.isLoading}
           organizations={organizations.data ?? []}
           isPending={create.isPending}
           error={create.error ? resolveError(create.error).message : undefined}

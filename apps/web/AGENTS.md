@@ -52,7 +52,10 @@ pnpm --filter @flama/e2e e2e:web  # a screen wired to the API gets a spec in e2e
 - Naming a feature after the page (`settings`, `team`) instead of the module it
   renders. `/settings` composes `api-tokens`, `organizations` and `profile`.
 - Putting `useWatch` or a query in the page and threading the value down.
-  Subscribe at the leaf — `src/features/auth/components/password-checklist.tsx`.
+  Subscribe at the leaf — `src/features/auth/components/password-checklist.tsx`
+  for a form value, `src/features/api-tokens/` for a query: the screen composes,
+  each section asks for what it renders. `pnpm check:structure` fails a query a
+  screen holds for one sibling, and a prop that is only forwarded.
 - Hand-rolling a table or an error callout while `DataTable` and `Alert` sit
   exported. Read `packages/frontend/design-system/web/src/index.ts` before styling a `div`.
 

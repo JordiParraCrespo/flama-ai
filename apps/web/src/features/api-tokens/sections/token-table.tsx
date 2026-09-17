@@ -1,11 +1,12 @@
 import { Badge, DropdownMenuItem } from '@flama/design-system-web';
 import { Cpu } from '@flama/design-system-web/icons';
 import type { ApiTokenEntity } from '@flama/frontend-consumer';
-import { useRevokeApiToken } from '@flama/frontend-consumer/react';
+import { useApiTokens, useRevokeApiToken } from '@flama/frontend-consumer/react';
 import {
   DataTable,
   type DataTableColumn,
   formatMediumDate,
+  GroupHeading,
   paginateRows,
   useLocale,
   useTableQuery,
@@ -14,15 +15,23 @@ import { useTranslation } from 'react-i18next';
 import { TokenStatusBadge } from '@/features/api-tokens/components/token-status-badge';
 import { TOKEN_PAGE_SIZE } from '@/features/api-tokens/lib/token-status';
 
-export function TokenTable({ tokens, loading }: { tokens: ApiTokenEntity[]; loading: boolean }) {
+/**
+ * Every token the workspace has, with its own subscription.
+ *
+ * The list is asked for here, not handed down: this is the only thing that
+ * renders it, and a refetch — after a create, after a revoke, on a window
+ * refocus — has no business re-rendering the form above.
+ */
+export function TokenTable() {
   const { t } = useTranslation();
   const locale = useLocale();
+  const tokens = useApiTokens();
   const revoke = useRevokeApiToken();
 
   // Only the page is in the URL here: the list is short, has no search and no
   // filter, and the one thing worth linking to is a row further down it.
   const query = useTableQuery({ prefix: 'tokens' });
-  const page = paginateRows(tokens, TOKEN_PAGE_SIZE, query);
+  const page = paginateRows(tokens.data ?? [], TOKEN_PAGE_SIZE, query);
 
   const columns: DataTableColumn<ApiTokenEntity>[] = [
     {
@@ -75,30 +84,38 @@ export function TokenTable({ tokens, loading }: { tokens: ApiTokenEntity[]; load
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      rows={page.rows}
-      pagination={page.pagination}
-      getKey={(token) => token.id}
-      isLoading={loading}
-      // A revoked token cannot be un-revoked, and revoking a handful at once is
-      // not something anyone asked for — so there is no selection here.
-      selectable={false}
-      emptyLabel={t('apiTokens.empty')}
-      emptyIcon={<Cpu />}
-      rowActions={(token) =>
-        // A revoked or expired token has nothing left to do to it, and a menu
-        // whose only item is disabled says less than no menu at all.
-        token.isActive ? (
-          <DropdownMenuItem
-            variant="destructive"
-            disabled={revoke.isPending}
-            onClick={() => revoke.mutate(token.id)}
-          >
-            {t('apiTokens.revoke')}
-          </DropdownMenuItem>
-        ) : null
-      }
-    />
+    <section>
+      {/* The heading sits above the table rather than inside a card of its own:
+          `DataTable` brings the card, and nesting one in another gave this list
+          a header two rows taller than every other table. */}
+      <GroupHeading description={t('apiTokens.yourTokensDescription')}>
+        {t('apiTokens.yourTokens')}
+      </GroupHeading>
+      <DataTable
+        columns={columns}
+        rows={page.rows}
+        pagination={page.pagination}
+        getKey={(token) => token.id}
+        isLoading={tokens.isLoading}
+        // A revoked token cannot be un-revoked, and revoking a handful at once is
+        // not something anyone asked for — so there is no selection here.
+        selectable={false}
+        emptyLabel={t('apiTokens.empty')}
+        emptyIcon={<Cpu />}
+        rowActions={(token) =>
+          // A revoked or expired token has nothing left to do to it, and a menu
+          // whose only item is disabled says less than no menu at all.
+          token.isActive ? (
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={revoke.isPending}
+              onClick={() => revoke.mutate(token.id)}
+            >
+              {t('apiTokens.revoke')}
+            </DropdownMenuItem>
+          ) : null
+        }
+      />
+    </section>
   );
 }

@@ -21,6 +21,11 @@ import type { PermissionGroup, Scope } from '@flama/shared';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { PermissionPicker } from '@/features/api-tokens/components/permission-picker';
+import {
+  hasAnyScope,
+  type ScopeSelection,
+  scopesFromSelection,
+} from '@/features/api-tokens/lib/scope-selection';
 import { LIFETIMES } from '@/features/api-tokens/lib/token-status';
 
 /**
@@ -35,9 +40,24 @@ export type CreateTokenFormValues = {
   organizationIds: string[];
 };
 
-const EMPTY_TOKEN_FORM: CreateTokenFormValues = {
+/**
+ * What the fields hold. Permissions are per resource here and flattened to the
+ * `Scope[]` the API takes on submit — see `lib/scope-selection.ts` for why.
+ *
+ * `permissions` starts empty and fills in as the rows mount, each registering
+ * its own `none`: the catalog is fetched, so there is nothing to seed from
+ * until it lands, and a row that has not rendered has granted nothing.
+ */
+type TokenFormFields = {
+  name: string;
+  permissions: ScopeSelection;
+  expiresInDays: number | null;
+  organizationIds: string[];
+};
+
+const EMPTY_TOKEN_FORM: TokenFormFields = {
   name: '',
-  scopes: [],
+  permissions: {},
   expiresInDays: 90,
   organizationIds: [],
 };
@@ -70,11 +90,16 @@ export function CreateTokenForm({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateTokenFormValues>({ defaultValues: EMPTY_TOKEN_FORM });
+  } = useForm<TokenFormFields>({ defaultValues: EMPTY_TOKEN_FORM });
 
   const submit = handleSubmit(async (values) => {
     try {
-      await onSubmit(values);
+      await onSubmit({
+        name: values.name,
+        scopes: scopesFromSelection(groups, values.permissions),
+        expiresInDays: values.expiresInDays,
+        organizationIds: values.organizationIds,
+      });
     } catch {
       // The failure is shown above the fields; the draft stays for another try.
       return;
@@ -112,11 +137,12 @@ export function CreateTokenForm({
 
         <Controller
           control={control}
-          name="scopes"
-          rules={{
-            validate: (value) => value.length > 0 || t('apiTokens.permissionsRequired'),
-          }}
-          render={({ field, fieldState }) => (
+          name="permissions"
+          rules={{ validate: (value) => hasAnyScope(value) || t('apiTokens.permissionsRequired') }}
+          // Rendered through a `Controller` for the validation and the error
+          // only: the picker writes through `control`, one field per row, so
+          // this never re-renders on a click.
+          render={({ fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>{t('apiTokens.permissions')}</FieldLabel>
               {loadingCatalog ? (
@@ -125,8 +151,8 @@ export function CreateTokenForm({
                 <PermissionPicker
                   groups={groups}
                   grantable={grantable}
-                  value={field.value}
-                  onChange={field.onChange}
+                  control={control}
+                  name="permissions"
                   disabled={isPending}
                 />
               )}
