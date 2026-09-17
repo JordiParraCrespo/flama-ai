@@ -31,7 +31,7 @@ module.exports = function frontendApp({ product, routes, features, platform }) {
   const kitEntry =
     platform === 'web'
       ? `${kit}index\\.ts$`
-      : `${kit}(index|[a-z]+/index|platform/lib/polyfills)\\.ts$`;
+      : `${kit}(index|[a-z0-9-]+/index|platform/lib/polyfills)\\.ts$`;
 
   return {
     forbidden: [
