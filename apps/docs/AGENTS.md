@@ -28,3 +28,5 @@ pnpm --filter @flama/docs dev     # local dev server
 pnpm --filter @flama/docs build   # static build
 pnpm --filter @flama/docs serve   # serve the build
 ```
+
+A new API error code needs a row in `docs/errors.md`; the convention is [`.agents/rules/nestjs-architecture.md`](../../.agents/rules/nestjs-architecture.md).

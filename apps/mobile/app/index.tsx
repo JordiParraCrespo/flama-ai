@@ -1,4 +1,4 @@
-import { useAuthState } from '@flama/frontend/react';
+import { useAuthState } from '@flama/frontend-core/react';
 import { Redirect } from 'expo-router';
 
 export default function Index() {

@@ -5,6 +5,7 @@
   "files": [
     "tsconfig.*.json",
     "vite-chunks.mjs",
-    "vite-chunks.d.mts"
+    "vite-chunks.d.mts",
+    "depcruise/*.cjs"
   ]
 }

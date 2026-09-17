@@ -1,12 +1,12 @@
 import { cn } from '@flama/design-system-web';
 import { Cpu, Settings, ShieldCheck } from '@flama/design-system-web/icons';
-import { useOrganizations } from '@flama/frontend/react';
+import { useOrganizations } from '@flama/frontend-consumer/react';
+import { PageHead } from '@flama/frontend-web';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { PageHead } from '@/components/page-head';
-import { ApiSection } from '@/components/settings/api-section';
-import { GeneralSection } from '@/components/settings/general-section';
-import { SecuritySection } from '@/components/settings/security-section';
+import { ApiKeysSection } from '@/features/api-tokens/sections/api-keys';
+import { GeneralSettingsSection } from '@/features/organizations/sections/general-settings';
+import { SecuritySection } from '@/features/profile/sections/security';
 
 /** The sub-nav's sections, in the design's order. */
 const SECTIONS = [
@@ -95,10 +95,10 @@ function SettingsPage() {
 
         <div className="min-w-0">
           {section === 'general' && (
-            <GeneralSection organization={organization} loading={organizations.isLoading} />
+            <GeneralSettingsSection organization={organization} loading={organizations.isLoading} />
           )}
           {section === 'security' && <SecuritySection />}
-          {section === 'api' && <ApiSection />}
+          {section === 'api' && <ApiKeysSection />}
         </div>
       </div>
     </>
