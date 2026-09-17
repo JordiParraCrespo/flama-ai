@@ -48,6 +48,7 @@
     "./skeleton": "./src/components/ui/skeleton.tsx",
     "./stage-breakdown": "./src/components/ui/stage-breakdown.tsx",
     "./switch": "./src/components/ui/switch.tsx",
+    "./tailwind-config": "./tailwind.config.js",
     "./tabs": "./src/components/ui/tabs.tsx",
     "./text": "./src/components/ui/text.tsx",
     "./textarea": "./src/components/ui/textarea.tsx",

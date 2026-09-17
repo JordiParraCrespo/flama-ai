@@ -33,6 +33,8 @@ From the root and from the matching subpath (`./analytics`, `./config`,
 - **theme** — `THEME`, `NAV_THEME`.
 - **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`.
 - **analytics** — `createMobileAnalyticsClient`, `ScreenViewTracker`.
+- **tailwind-config** — the package-owned NativeWind content glob, exported
+  separately for app Tailwind configs.
 
 ## How to use it
 
