@@ -15,7 +15,7 @@ concern map, the layering and the "add a concern" cookbook are
 - A new concern → `src/<concern>/` with the kind directories it needs, an
   `index.ts`, `export * from './<concern>'` in `src/index.ts`, a
   `"./<concern>"` entry in `package.json` `exports`, and the concern's name
-  in the `leaves` or `middle` list of
+  in the `leaves`, `middle` or `top` list of
   [`.dependency-cruiser.cjs`](.dependency-cruiser.cjs).
 - A file that runs code at import (a polyfill, an i18n bootstrap, an SDK
   init) → add it to `sideEffects` in `package.json`, or the bundler is free
@@ -43,5 +43,10 @@ pnpm --filter @flama/frontend-mobile arch
   are named through `nonPersistedFeatures`.
 - Writing a second copy of a helper in `apps/mobile` rather than promoting
   the first one here; `pnpm check:structure` compares basenames.
+- Styling a sign-in screen in the app instead of reaching for `auth`. The
+  chrome — the frame, the title ramp, the divider, the inline form error, the
+  password field and its checklist, the provider buttons — is shared with
+  `@flama/frontend-web` by design; a screen that invents its own drifts from
+  the web app immediately.
 
 See [`.agents/rules/frontend-architecture.md`](../../../.agents/rules/frontend-architecture.md).

@@ -89,6 +89,9 @@ module.exports = {
         'status-ended-bg': token('status-ended-bg'),
         'status-draft-bg': token('status-draft-bg'),
         'focus-ring': token('focus-ring'),
+        'theme-toggle-knob': token('theme-toggle-knob'),
+        'theme-toggle-icon': token('theme-toggle-icon'),
+        'theme-toggle-icon-idle': token('theme-toggle-icon-idle'),
       },
       fontSize: {
         xs: ['12px', { lineHeight: '16px' }],

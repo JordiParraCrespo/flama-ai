@@ -2,7 +2,14 @@ import { Button } from '@flama/design-system-mobile/button';
 import { Checkbox } from '@flama/design-system-mobile/checkbox';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { FormField, useZodResolver } from '@flama/frontend-mobile';
+import {
+  AuthFormError,
+  authControlClass,
+  authInputClass,
+  FormField,
+  PasswordInput,
+  useZodResolver,
+} from '@flama/frontend-mobile';
 import { type LoginDto, loginSchema } from '@flama/shared';
 import { type ReactNode, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -12,12 +19,18 @@ import { Pressable, View } from 'react-native';
 interface LoginFormProps {
   onSubmit: (values: LoginDto) => void;
   isPending: boolean;
+  /** The resolved failure message, if the last attempt failed. */
+  error?: string;
   /** The "forgot password" link, rendered next to the keep-signed-in toggle. */
   forgotPasswordLink: ReactNode;
 }
 
-export function LoginForm({ onSubmit, isPending, forgotPasswordLink }: LoginFormProps) {
+export function LoginForm({ onSubmit, isPending, error, forgotPasswordLink }: LoginFormProps) {
   const { t } = useTranslation();
+
+  // Session lifetime is decided by the API, so this is presentational for now:
+  // the control exists in the design and the preference has nowhere to go
+  // until the login endpoint accepts one.
   const [keepSignedIn, setKeepSignedIn] = useState(true);
 
   const { control, handleSubmit } = useForm<LoginDto>({
@@ -29,18 +42,21 @@ export function LoginForm({ onSubmit, isPending, forgotPasswordLink }: LoginForm
 
   return (
     <View className="gap-4">
+      {error ? <AuthFormError>{error}</AuthFormError> : null}
+
       <Controller
         control={control}
         name="email"
         render={({ field, fieldState }) => (
           <FormField label={t('auth.email')} nativeID="email" error={fieldState.error?.message}>
             <Input
-              className="h-12 rounded-xl px-4 text-base"
+              className={authInputClass}
               placeholder={t('auth.emailPlaceholder')}
               aria-labelledby="email"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
+              editable={!isPending}
               autoCapitalize="none"
               autoComplete="email"
               keyboardType="email-address"
@@ -58,14 +74,13 @@ export function LoginForm({ onSubmit, isPending, forgotPasswordLink }: LoginForm
             nativeID="password"
             error={fieldState.error?.message}
           >
-            <Input
-              className="h-12 rounded-xl px-4 text-base"
+            <PasswordInput
               placeholder={t('auth.passwordPlaceholder')}
               aria-labelledby="password"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              secureTextEntry
+              editable={!isPending}
               autoComplete="password"
               textContentType="password"
             />
@@ -86,12 +101,12 @@ export function LoginForm({ onSubmit, isPending, forgotPasswordLink }: LoginForm
             disabled={isPending}
             className="size-5"
           />
-          <Text className="text-sm text-muted-foreground">{t('auth.login.keepSignedIn')}</Text>
+          <Text className="text-sm text-ink-600">{t('auth.login.keepSignedIn')}</Text>
         </Pressable>
         {forgotPasswordLink}
       </View>
 
-      <Button onPress={submit} disabled={isPending} className="h-12 w-full">
+      <Button onPress={submit} disabled={isPending} className={authControlClass}>
         <Text>{isPending ? t('auth.login.submitting') : t('auth.login.submit')}</Text>
       </Button>
     </View>

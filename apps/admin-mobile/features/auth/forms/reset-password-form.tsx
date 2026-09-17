@@ -1,29 +1,42 @@
 import { Button } from '@flama/design-system-mobile/button';
-import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { FormField, useZodResolver } from '@flama/frontend-mobile';
+import {
+  AuthFormError,
+  authControlClass,
+  FormField,
+  PasswordChecklist,
+  PasswordInput,
+  type PasswordRule,
+  useZodResolver,
+} from '@flama/frontend-mobile';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { type NewPasswordValues, newPasswordSchema } from '../lib/reset-password';
 
+const RULES: readonly PasswordRule[] = ['length', 'case', 'number', 'match'];
+
 interface ResetPasswordFormProps {
   onSubmit: (values: NewPasswordValues) => void;
   isPending: boolean;
+  /** The resolved failure message, if the last attempt failed. */
+  error?: string;
 }
 
-export function ResetPasswordForm({ onSubmit, isPending }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ onSubmit, isPending, error }: ResetPasswordFormProps) {
   const { t } = useTranslation();
 
   const { control, handleSubmit } = useForm<NewPasswordValues>({
     resolver: useZodResolver(newPasswordSchema),
-    defaultValues: { password: '' },
+    defaultValues: { password: '', confirmPassword: '' },
   });
 
   const submit = handleSubmit((values) => onSubmit(values));
 
   return (
     <View className="gap-4">
+      {error ? <AuthFormError>{error}</AuthFormError> : null}
+
       <Controller
         control={control}
         name="password"
@@ -33,24 +46,57 @@ export function ResetPasswordForm({ onSubmit, isPending }: ResetPasswordFormProp
             nativeID="rp-password"
             error={fieldState.error?.message}
           >
-            <Input
+            <PasswordInput
               placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
               aria-labelledby="rp-password"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              secureTextEntry
+              editable={!isPending}
               autoComplete="new-password"
               textContentType="newPassword"
             />
           </FormField>
         )}
       />
-      <Button onPress={submit} disabled={isPending} className="mt-2">
-        <Text>
-          {isPending ? t('auth.resetPassword.submitting') : t('auth.resetPassword.submit')}
-        </Text>
-      </Button>
+      <Controller
+        control={control}
+        name="confirmPassword"
+        render={({ field, fieldState }) => (
+          <FormField
+            label={t('auth.resetPassword.confirmPassword')}
+            nativeID="rp-confirm"
+            error={fieldState.error?.message}
+          >
+            <PasswordInput
+              placeholder={t('auth.resetPassword.confirmPasswordPlaceholder')}
+              aria-labelledby="rp-confirm"
+              value={field.value}
+              onChangeText={field.onChange}
+              onBlur={field.onBlur}
+              editable={!isPending}
+              autoComplete="new-password"
+              textContentType="newPassword"
+            />
+          </FormField>
+        )}
+      />
+
+      <PasswordChecklist
+        control={control}
+        name="password"
+        confirmName="confirmPassword"
+        rules={RULES}
+        className="mb-1.5"
+      >
+        {(satisfied) => (
+          <Button onPress={submit} disabled={isPending || !satisfied} className={authControlClass}>
+            <Text>
+              {isPending ? t('auth.resetPassword.submitting') : t('auth.resetPassword.submit')}
+            </Text>
+          </Button>
+        )}
+      </PasswordChecklist>
     </View>
   );
 }
