@@ -26,8 +26,14 @@ import { join, relative } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const API_SRC = join(root, 'apps/api/src');
+/**
+ * A problem is identified by the file it is about and the *kind* of breach,
+ * not by the sentence describing it. The prose is output; `(path, kind)` is
+ * what the ledger below keys on, so rewording a message never silences a
+ * violation and never turns a paid-off one into a false alarm.
+ */
 const errors = [];
-const fail = (message) => errors.push(message);
+const fail = (path, kind, message) => errors.push({ path, kind, message });
 
 /**
  * Directories under `apps/api/src` that are not modules: the composition root,
@@ -105,6 +111,11 @@ const LAYERS = {
     files: [/\.interceptor\.ts$/],
     dirs: { __tests__: { files: [/\.spec\.ts$/] } },
   },
+  probes: {
+    what: 'liveness, readiness and capability probes — endpoints that report on the process itself and will never dispatch on the bus',
+    files: [/\.probe\.controller\.ts$/, /\.indicator\.ts$/],
+    dirs: { __tests__: { files: [/\.spec\.ts$/] } },
+  },
   __tests__: {
     what: "tests for the module's own wiring",
     files: [/\.spec\.ts$/],
@@ -148,43 +159,51 @@ const DISSOLVED_DIRS = {
 const HTTP_METHOD = /^\s*@(Get|Post|Put|Patch|Delete|All|Head|Options)\s*\(/m;
 
 /**
- * Known violations, waiting on a refactor. Each entry is the exact message the
- * check would print, so it names one file and one problem — a ledger, not a
- * carve-out: nothing else in these modules is excused, and a new violation in
- * them still fails.
+ * Known violations, waiting on a refactor. Each entry names one file and one
+ * *kind* of breach — never the sentence, so rewording a message cannot silence
+ * a violation or invent a stale one.
  *
- * An entry that no longer matches is itself an error. The list cannot outlive
- * the debt it describes.
+ * Nothing else in these modules is excused, a new violation in them still
+ * fails, and an entry that stops matching is itself an error: the list cannot
+ * outlive the debt it describes.
  *
- * `admin/` and `organizations/` are the pre-contract Better Auth façades:
- * a root-level service and multi-route controllers, from before a module that
- * owns no aggregate was expected to have a port and a slice per operation.
- * `health/` is the same shape at a much smaller scale. See
+ * `admin/` and `organizations/` are the pre-contract Better Auth façades — a
+ * root-level service behind multi-route controllers, from before a module that
+ * owns no aggregate was expected to have a port and a slice per operation. See
  * `apps/api/AGENTS.md` for what to do when you touch them.
  */
 const LEDGER = [
-  'apps/api/src/admin/admin.controller.ts: a controller serves exactly one use case and lives with it, as commands/<use-case>/<use-case>.http.controller.ts',
-  'apps/api/src/admin/admin.mappers.ts: one mapper per aggregate, named for it — admin.mapper.ts, not a bag of functions',
-  'apps/api/src/admin/admin.service.ts: a module has no service. Each thing it does is a use case under commands/<use-case>/ or queries/<use-case>/; what it calls out to is a port plus an adapter in infrastructure/',
-  'apps/api/src/admin/dtos/admin.request.dto.ts: not a name dtos/ admits. It holds the response contracts this module publishes',
-  'apps/api/src/admin/admin.controller.ts: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/',
-  'apps/api/src/health/health.controller.ts: a controller serves exactly one use case and lives with it, as commands/<use-case>/<use-case>.http.controller.ts',
-  'apps/api/src/health/health.controller.ts: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/',
-  'apps/api/src/organizations/invitations.controller.ts: a controller serves exactly one use case and lives with it, as commands/<use-case>/<use-case>.http.controller.ts',
-  'apps/api/src/organizations/members.controller.ts: a controller serves exactly one use case and lives with it, as commands/<use-case>/<use-case>.http.controller.ts',
-  'apps/api/src/organizations/organizations.controller.ts: a controller serves exactly one use case and lives with it, as commands/<use-case>/<use-case>.http.controller.ts',
-  'apps/api/src/organizations/workspaces.controller.ts: a controller serves exactly one use case and lives with it, as commands/<use-case>/<use-case>.http.controller.ts',
-  'apps/api/src/organizations/invitations.service.ts: a module has no service. Each thing it does is a use case under commands/<use-case>/ or queries/<use-case>/; what it calls out to is a port plus an adapter in infrastructure/',
-  'apps/api/src/organizations/organizations.service.ts: a module has no service. Each thing it does is a use case under commands/<use-case>/ or queries/<use-case>/; what it calls out to is a port plus an adapter in infrastructure/',
-  'apps/api/src/organizations/workspaces.service.ts: a module has no service. Each thing it does is a use case under commands/<use-case>/ or queries/<use-case>/; what it calls out to is a port plus an adapter in infrastructure/',
-  'apps/api/src/organizations/organization.mappers.ts: one mapper per aggregate, named for it — organization.mapper.ts, not a bag of functions',
-  'apps/api/src/organizations/dtos/organization.request.dto.ts: not a name dtos/ admits. It holds the response contracts this module publishes',
-  'apps/api/src/organizations/invitations.controller.ts: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/',
-  'apps/api/src/organizations/members.controller.ts: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/',
-  'apps/api/src/organizations/organizations.controller.ts: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/',
-  'apps/api/src/organizations/workspaces.controller.ts: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/',
+  { path: 'apps/api/src/admin/admin.controller.ts', kind: 'controller-at-module-root' },
+  { path: 'apps/api/src/admin/admin.controller.ts', kind: 'route-outside-slice' },
+  { path: 'apps/api/src/admin/admin.service.ts', kind: 'service-at-module-root' },
+  { path: 'apps/api/src/admin/admin.mappers.ts', kind: 'plural-mappers-file' },
+  { path: 'apps/api/src/admin/dtos/admin.request.dto.ts', kind: 'file-name-not-admitted' },
+  {
+    path: 'apps/api/src/organizations/organizations.controller.ts',
+    kind: 'controller-at-module-root',
+  },
+  { path: 'apps/api/src/organizations/organizations.controller.ts', kind: 'route-outside-slice' },
+  { path: 'apps/api/src/organizations/members.controller.ts', kind: 'controller-at-module-root' },
+  { path: 'apps/api/src/organizations/members.controller.ts', kind: 'route-outside-slice' },
+  {
+    path: 'apps/api/src/organizations/invitations.controller.ts',
+    kind: 'controller-at-module-root',
+  },
+  { path: 'apps/api/src/organizations/invitations.controller.ts', kind: 'route-outside-slice' },
+  {
+    path: 'apps/api/src/organizations/workspaces.controller.ts',
+    kind: 'controller-at-module-root',
+  },
+  { path: 'apps/api/src/organizations/workspaces.controller.ts', kind: 'route-outside-slice' },
+  { path: 'apps/api/src/organizations/organizations.service.ts', kind: 'service-at-module-root' },
+  { path: 'apps/api/src/organizations/invitations.service.ts', kind: 'service-at-module-root' },
+  { path: 'apps/api/src/organizations/workspaces.service.ts', kind: 'service-at-module-root' },
+  { path: 'apps/api/src/organizations/organization.mappers.ts', kind: 'plural-mappers-file' },
+  {
+    path: 'apps/api/src/organizations/dtos/organization.request.dto.ts',
+    kind: 'file-name-not-admitted',
+  },
 ];
-
 const tsFiles = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile());
 const subDirs = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());
 const lineCount = (path) => readFileSync(path, 'utf8').split('\n').length;
@@ -202,7 +221,11 @@ function* walk(dir) {
 function requireNonEmpty(dir, label) {
   const hasFile = [...walk(dir)].length > 0;
   if (!hasFile) {
-    fail(`${label}: empty. A directory appears once it has something to hold — delete it`);
+    fail(
+      label,
+      'empty-directory',
+      `${label}: empty. A directory appears once it has something to hold — delete it`,
+    );
     return false;
   }
   return true;
@@ -212,11 +235,17 @@ function requireNonEmpty(dir, label) {
 function checkFiles(dir, label, patterns, hint) {
   for (const entry of tsFiles(dir)) {
     if (entry.name === 'index.ts') {
-      fail(`${label}/index.ts: no barrels inside a module — importers name the file they need`);
+      fail(
+        `${label}/index.ts`,
+        'barrel-file',
+        `${label}/index.ts: no barrels inside a module — importers name the file they need`,
+      );
       continue;
     }
     if (!patterns.some((pattern) => pattern.test(entry.name))) {
       fail(
+        `${label}/${entry.name}`,
+        'file-name-not-admitted',
         `${label}/${entry.name}: not a name ${label.split('/').pop()}/ admits. It holds ${hint}`,
       );
     }
@@ -226,14 +255,18 @@ function checkFiles(dir, label, patterns, hint) {
 /** commands/<use-case>/ and queries/<use-case>/: the vertical slice. */
 function checkSlices(dir, label, kind) {
   const [message, handler] =
-    kind === 'command' ? ['.command.ts', '.service.ts'] : ['.query.ts', '.query-handler.ts'];
+    kind === 'command'
+      ? ['.command.ts', '.command-handler.ts']
+      : ['.query.ts', '.query-handler.ts'];
   const allowed =
     kind === 'command'
-      ? ['.command.ts', '.service.ts', '.http.controller.ts', '.request.dto.ts']
+      ? ['.command.ts', '.command-handler.ts', '.http.controller.ts', '.request.dto.ts']
       : ['.query.ts', '.query-handler.ts', '.http.controller.ts', '.request.dto.ts'];
 
   for (const entry of tsFiles(dir)) {
     fail(
+      `${label}/${entry.name}`,
+      'loose-file-in-slice-root',
       `${label}/${entry.name}: ${label.split('/').pop()}/ holds one directory per use case, not files. Move it into ${label}/<use-case>/`,
     );
   }
@@ -242,7 +275,11 @@ function checkSlices(dir, label, kind) {
     const sliceDir = join(dir, slice.name);
     const sliceLabel = `${label}/${slice.name}`;
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slice.name)) {
-      fail(`${sliceLabel}: a use case is named in kebab-case after what it does (verb first)`);
+      fail(
+        sliceLabel,
+        'slice-name-not-kebab',
+        `${sliceLabel}: a use case is named in kebab-case after what it does (verb first)`,
+      );
     }
     if (!requireNonEmpty(sliceDir, sliceLabel)) continue;
 
@@ -251,11 +288,15 @@ function checkSlices(dir, label, kind) {
     // A message and its handler come as a pair; either alone is a dead end.
     if (has(message) && !has(handler)) {
       fail(
+        sliceLabel,
+        'message-without-handler',
         `${sliceLabel}: has ${slice.name}${message} but no ${slice.name}${handler} to handle it`,
       );
     }
     if (has(handler) && !has(message)) {
       fail(
+        sliceLabel,
+        'handler-without-message',
         `${sliceLabel}: has ${slice.name}${handler} but no ${slice.name}${message} for it to handle`,
       );
     }
@@ -263,6 +304,8 @@ function checkSlices(dir, label, kind) {
     // something else dispatches. A slice that is neither is unreachable.
     if (!has('.http.controller.ts') && !has(handler)) {
       fail(
+        sliceLabel,
+        'unreachable-slice',
         `${sliceLabel}: neither a controller nor a handler — nothing can reach this slice. A controller-only slice is one that dispatches another slice's ${message.slice(1, -3)}`,
       );
     }
@@ -270,12 +313,16 @@ function checkSlices(dir, label, kind) {
       const suffix = allowed.find((s) => name.endsWith(s));
       if (!suffix) {
         fail(
+          `${sliceLabel}/${name}`,
+          'file-not-in-slice-contract',
           `${sliceLabel}/${name}: a ${kind} slice holds only ${allowed.join(', ')} (and __tests__/)`,
         );
         continue;
       }
       if (name !== `${slice.name}${suffix}`) {
         fail(
+          `${sliceLabel}/${name}`,
+          'file-not-named-after-slice',
           `${sliceLabel}/${name}: every file in a slice is named after the slice — expected ${slice.name}${suffix}`,
         );
       }
@@ -283,7 +330,11 @@ function checkSlices(dir, label, kind) {
 
     for (const sub of subDirs(sliceDir)) {
       if (sub.name !== '__tests__') {
-        fail(`${sliceLabel}/${sub.name}: a slice is flat; its only sub-directory is __tests__/`);
+        fail(
+          `${sliceLabel}/${sub.name}`,
+          'slice-not-flat',
+          `${sliceLabel}/${sub.name}: a slice is flat; its only sub-directory is __tests__/`,
+        );
         continue;
       }
       checkFiles(join(sliceDir, '__tests__'), `${sliceLabel}/__tests__`, [/\.spec\.ts$/], 'specs');
@@ -307,7 +358,11 @@ function checkLayer(dir, label, spec) {
     if (!requireNonEmpty(join(dir, sub.name), subLabel)) continue;
     checkFiles(join(dir, sub.name), subLabel, subSpec.files, subSpec.what ?? spec.what);
     for (const deeper of subDirs(join(dir, sub.name))) {
-      fail(`${subLabel}/${deeper.name}: the layer directories are two deep at most`);
+      fail(
+        `${subLabel}/${deeper.name}`,
+        'layer-too-deep',
+        `${subLabel}/${deeper.name}: the layer directories are two deep at most`,
+      );
     }
   }
 }
@@ -320,26 +375,42 @@ function checkModule(name) {
   const rootFiles = tsFiles(moduleDir).map((e) => e.name);
   const moduleFiles = rootFiles.filter((f) => f.endsWith('.module.ts'));
   if (moduleFiles.length === 0) {
-    fail(`${label}: no *.module.ts — a directory under src/ is a module or it is not a directory`);
+    fail(
+      label,
+      'no-module-file',
+      `${label}: no *.module.ts — a directory under src/ is a module or it is not a directory`,
+    );
   } else if (moduleFiles.length > 1) {
-    fail(`${label}: ${moduleFiles.join(', ')} — one module per directory; split it or merge them`);
+    fail(
+      label,
+      'multiple-module-files',
+      `${label}: ${moduleFiles.join(', ')} — one module per directory; split it or merge them`,
+    );
   }
   for (const file of rootFiles) {
     if (ROOT_FILES.some(({ pattern }) => pattern.test(file))) continue;
     if (file.endsWith('.mappers.ts')) {
       fail(
+        `${label}/${file}`,
+        'plural-mappers-file',
         `${label}/${file}: one mapper per aggregate, named for it — ${file.replace(/\.mappers\.ts$/, '.mapper.ts')}, not a bag of functions`,
       );
     } else if (file.endsWith('.service.ts')) {
       fail(
+        `${label}/${file}`,
+        'service-at-module-root',
         `${label}/${file}: a module has no service. Each thing it does is a use case under commands/<use-case>/ or queries/<use-case>/; what it calls out to is a port plus an adapter in infrastructure/`,
       );
     } else if (file.endsWith('.controller.ts')) {
       fail(
+        `${label}/${file}`,
+        'controller-at-module-root',
         `${label}/${file}: a controller serves exactly one use case and lives with it, as commands/<use-case>/<use-case>.http.controller.ts`,
       );
     } else {
       fail(
+        `${label}/${file}`,
+        'unknown-root-file',
         `${label}/${file}: a module root carries only ${ROOT_FILES.map(({ pattern }) => `*${pattern.source.replace(/\\\./g, '.').replace(/\$$/, '')}`).join(', ')}. Everything else names the layer it is in`,
       );
     }
@@ -350,12 +421,16 @@ function checkModule(name) {
     const subLabel = `${label}/${sub.name}`;
     const dissolved = DISSOLVED_DIRS[sub.name];
     if (dissolved) {
-      fail(`${subLabel}: ${dissolved}`);
+      fail(subLabel, 'dissolved-directory', `${subLabel}: ${dissolved}`);
       continue;
     }
     const spec = LAYERS[sub.name];
     if (!spec) {
-      fail(`${subLabel}: not a layer. A module holds ${Object.keys(LAYERS).join(', ')}`);
+      fail(
+        subLabel,
+        'not-a-layer',
+        `${subLabel}: not a layer. A module holds ${Object.keys(LAYERS).join(', ')}`,
+      );
       continue;
     }
     if (!requireNonEmpty(join(moduleDir, sub.name), subLabel)) continue;
@@ -368,21 +443,31 @@ function checkModule(name) {
     if (!file.endsWith('.ts')) continue;
     const source = readFileSync(file, 'utf8');
     const inSlice = /\/(commands|queries)\/[^/]+\/[^/]+\.http\.controller\.ts$/.test(file);
-    if (HTTP_METHOD.test(source) && !inSlice) {
+    // A probe is not a use case. `/health` and `/ready` report on the process,
+    // have no command or query behind them and never will, so the contract
+    // gives them a shape of their own rather than pretending they owe a slice.
+    const isProbe = /\/probes\/[^/]+\.probe\.controller\.ts$/.test(file);
+    if (HTTP_METHOD.test(source) && !inSlice && !isProbe) {
       fail(
-        `${rel(file)}: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/`,
+        rel(file),
+        'route-outside-slice',
+        `${rel(file)}: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/, or make it a probe under probes/`,
       );
     }
     if (inSlice && lineCount(file) > CONTROLLER_LINE_CAP) {
       fail(
+        rel(file),
+        'controller-over-cap',
         `${rel(file)}: ${lineCount(file)} lines; a controller dispatches and maps (cap ${CONTROLLER_LINE_CAP}). The work belongs in the handler`,
       );
     }
     if (
-      /\/(commands|queries)\/[^/]+\/[^/]+\.(service|query-handler)\.ts$/.test(file) &&
+      /\/(commands|queries)\/[^/]+\/[^/]+\.(command-handler|query-handler)\.ts$/.test(file) &&
       lineCount(file) > HANDLER_LINE_CAP
     ) {
       fail(
+        rel(file),
+        'handler-over-cap',
         `${rel(file)}: ${lineCount(file)} lines; a handler orchestrates (cap ${HANDLER_LINE_CAP}). Push the rules into the domain and the I/O behind a port`,
       );
     }
@@ -402,26 +487,30 @@ const modules = readdirSync(API_SRC, { withFileTypes: true })
 for (const name of modules) checkModule(name);
 
 // Subtract the ledger, and hold the ledger to being current: an entry that no
-// longer describes a real violation is debt that has been paid and not
-// written off, and the next person reads it as still owed.
-const ledger = new Set(LEDGER);
-const outstanding = errors.filter((error) => !ledger.delete(error));
+// longer describes a real violation is debt that has been paid and not written
+// off, and the next person reads it as still owed.
+const key = ({ path, kind }) => `${path}\u0000${kind}`;
+const ledger = new Set(LEDGER.map(key));
+const outstanding = errors.filter((error) => !ledger.delete(key(error)));
 for (const stale of ledger) {
-  outstanding.push(
-    `LEDGER: "${stale}" no longer happens — delete that entry from LEDGER in scripts/check-api-structure.mjs`,
-  );
+  const [path, kind] = stale.split('\u0000');
+  outstanding.push({
+    path,
+    kind: 'stale-ledger-entry',
+    message: `LEDGER: ${path} no longer reports "${kind}" — delete that entry from LEDGER in scripts/check-api-structure.mjs`,
+  });
 }
 
 if (outstanding.length > 0) {
   console.error(
     `API structure: ${outstanding.length} problem${outstanding.length === 1 ? '' : 's'}\n`,
   );
-  for (const error of outstanding) console.error(`  ✖ ${error}`);
+  for (const error of outstanding) console.error(`  ✖ ${error.message}`);
   console.error('\nSee apps/api/ARCHITECTURE.md');
   process.exit(1);
 }
 const owed = LEDGER.length;
 console.log(
   `API structure: ${modules.length} modules conform` +
-    (owed ? `, with ${owed} ledgered violations in admin/, organizations/ and health/.` : '.'),
+    (owed ? `, with ${owed} ledgered violations in admin/ and organizations/.` : '.'),
 );

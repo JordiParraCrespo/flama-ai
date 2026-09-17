@@ -14,8 +14,8 @@ import type { ApiTokenEntity } from '../../domain/api-token.entity';
 import { CreatedApiTokenResponseDto } from '../../dtos/api-token.response.dto';
 import { FindApiTokenByIdQuery } from '../../queries/find-api-token-by-id/find-api-token-by-id.query';
 import { CreateApiTokenCommand } from './create-api-token.command';
+import type { CreateApiTokenResult } from './create-api-token.command-handler';
 import { CreateApiTokenRequest } from './create-api-token.request.dto';
-import type { CreateApiTokenResult } from './create-api-token.service';
 
 @ApiTags('API tokens')
 @ApiBearerAuth()

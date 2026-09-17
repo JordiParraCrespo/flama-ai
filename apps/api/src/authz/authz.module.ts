@@ -16,10 +16,10 @@ import { PrincipalResidencyChecker } from './application/principal-residency.pol
 import { ScopeResolver } from './application/scope.resolver';
 import { ACCESS_GRANT_REPOSITORY } from './authz.di-tokens';
 import { AccessGrantMapper } from './authz.mapper';
+import { CreateAccessGrantCommandHandler } from './commands/create-access-grant/create-access-grant.command-handler';
 import { CreateAccessGrantHttpController } from './commands/create-access-grant/create-access-grant.http.controller';
-import { CreateAccessGrantService } from './commands/create-access-grant/create-access-grant.service';
+import { RevokeAccessGrantCommandHandler } from './commands/revoke-access-grant/revoke-access-grant.command-handler';
 import { RevokeAccessGrantHttpController } from './commands/revoke-access-grant/revoke-access-grant.http.controller';
-import { RevokeAccessGrantService } from './commands/revoke-access-grant/revoke-access-grant.service';
 import { AccessGrantOrmEntity } from './database/access-grant.orm-entity';
 import { AccessGrantRepository } from './database/access-grant.repository';
 import { AccessScopeInterceptor } from './interceptors/access-scope.interceptor';
@@ -36,7 +36,10 @@ const httpControllers = [
   RevokeAccessGrantHttpController,
 ];
 
-const commandHandlers: Provider[] = [CreateAccessGrantService, RevokeAccessGrantService];
+const commandHandlers: Provider[] = [
+  CreateAccessGrantCommandHandler,
+  RevokeAccessGrantCommandHandler,
+];
 const queryHandlers: Provider[] = [FindAuthzCatalogQueryHandler, FindAccessGrantsQueryHandler];
 const mappers: Provider[] = [AccessGrantMapper];
 const repositories: Provider[] = [

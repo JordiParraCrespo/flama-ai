@@ -5,20 +5,20 @@ import { Session } from '../auth/database/session.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
 import { UsersModule } from '../users/user.module';
 import { LocaleResolver } from './application/locale.resolver';
+import { ChangePasswordCommandHandler } from './commands/change-password/change-password.command-handler';
 import { ChangePasswordHttpController } from './commands/change-password/change-password.http.controller';
-import { ChangePasswordService } from './commands/change-password/change-password.service';
+import { DeleteAvatarCommandHandler } from './commands/delete-avatar/delete-avatar.command-handler';
 import { DeleteAvatarHttpController } from './commands/delete-avatar/delete-avatar.http.controller';
-import { DeleteAvatarService } from './commands/delete-avatar/delete-avatar.service';
+import { RevokeOtherSessionsCommandHandler } from './commands/revoke-other-sessions/revoke-other-sessions.command-handler';
 import { RevokeOtherSessionsHttpController } from './commands/revoke-other-sessions/revoke-other-sessions.http.controller';
-import { RevokeOtherSessionsService } from './commands/revoke-other-sessions/revoke-other-sessions.service';
+import { RevokeSessionCommandHandler } from './commands/revoke-session/revoke-session.command-handler';
 import { RevokeSessionHttpController } from './commands/revoke-session/revoke-session.http.controller';
-import { RevokeSessionService } from './commands/revoke-session/revoke-session.service';
+import { UpdateProfileCommandHandler } from './commands/update-profile/update-profile.command-handler';
 import { UpdateProfileHttpController } from './commands/update-profile/update-profile.http.controller';
-import { UpdateProfileService } from './commands/update-profile/update-profile.service';
+import { UpdateUserSettingsCommandHandler } from './commands/update-user-settings/update-user-settings.command-handler';
 import { UpdateUserSettingsHttpController } from './commands/update-user-settings/update-user-settings.http.controller';
-import { UpdateUserSettingsService } from './commands/update-user-settings/update-user-settings.service';
+import { UploadAvatarCommandHandler } from './commands/upload-avatar/upload-avatar.command-handler';
 import { UploadAvatarHttpController } from './commands/upload-avatar/upload-avatar.http.controller';
-import { UploadAvatarService } from './commands/upload-avatar/upload-avatar.service';
 import { SessionRepository } from './database/session.repository';
 import { UserSettingsOrmEntity } from './database/user-settings.orm-entity';
 import { UserSettingsRepository } from './database/user-settings.repository';
@@ -50,13 +50,13 @@ const httpControllers = [
 ];
 
 const commandHandlers: Provider[] = [
-  UpdateProfileService,
-  UpdateUserSettingsService,
-  UploadAvatarService,
-  DeleteAvatarService,
-  ChangePasswordService,
-  RevokeSessionService,
-  RevokeOtherSessionsService,
+  UpdateProfileCommandHandler,
+  UpdateUserSettingsCommandHandler,
+  UploadAvatarCommandHandler,
+  DeleteAvatarCommandHandler,
+  ChangePasswordCommandHandler,
+  RevokeSessionCommandHandler,
+  RevokeOtherSessionsCommandHandler,
 ];
 
 const queryHandlers: Provider[] = [

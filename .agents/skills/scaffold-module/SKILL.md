@@ -93,7 +93,7 @@ The module root carries only `<module>.module.ts` (required), `*.mapper.ts`,
 │   └── <module>.repository.ts         # @Injectable adapter: maps via mapper, stages events on the outbox
 ├── commands/<use-case>/
 │   ├── <use-case>.command.ts          # extends CommandBase
-│   ├── <use-case>.service.ts          # @CommandHandler; returns AggregateID
+│   ├── <use-case>.command-handler.ts   # @CommandHandler; returns AggregateID
 │   ├── <use-case>.http.controller.ts  # dispatches via CommandBus; Swagger + guards + @Version('1')
 │   └── <use-case>.request.dto.ts      # createZodDto(schema from @flama/shared)
 ├── queries/<use-case>/

@@ -102,7 +102,7 @@ users/
 ├── commands/                         # state-changing use cases
 │   └── update-user/
 │       ├── update-user.command.ts        # extends CommandBase
-│       ├── update-user.service.ts        # @CommandHandler (returns AggregateID)
+│       ├── update-user.command-handler.ts # @CommandHandler (returns AggregateID)
 │       ├── update-user.http.controller.ts
 │       └── update-user.request.dto.ts    # Zod DTO via createZodDto
 ├── queries/                          # read-only use cases
@@ -270,7 +270,7 @@ Read:   HTTP → Controller → new Query → QueryBus → QueryHandler
 | Artifact           | File                            |
 | ------------------ | ------------------------------- |
 | Command            | `<use-case>.command.ts`         |
-| Command handler    | `<use-case>.service.ts`         |
+| Command handler    | `<use-case>.command-handler.ts` |
 | Query              | `<use-case>.query.ts`           |
 | Query handler      | `<use-case>.query-handler.ts`   |
 | HTTP controller    | `<use-case>.http.controller.ts` |

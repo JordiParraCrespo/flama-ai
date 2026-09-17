@@ -23,7 +23,7 @@ executable as `pnpm check:api-structure`.
 <module>/
 ├── commands/<use-case>/        # state changes (one directory per use case)
 │   ├── <use-case>.command.ts        # extends CommandBase
-│   ├── <use-case>.service.ts        # @CommandHandler (the handler)
+│   ├── <use-case>.command-handler.ts # @CommandHandler (the handler)
 │   ├── <use-case>.http.controller.ts
 │   └── <use-case>.request.dto.ts    # Zod DTO (createZodDto), when there's a body
 ├── queries/<use-case>/         # reads (no side effects)
