@@ -24,8 +24,19 @@ each admits a fixed set of file names:
 | `database/` | `*.orm-entity.ts`, `*.repository.port.ts`, `*.repository.ts` |
 | `infrastructure/` | `*.port.ts`, `*.adapter.ts`, `*.gateway.ts`, `*.processor.ts`, `*.config.ts`, `*.util.ts`, `*.types.ts` |
 | `commands/<use-case>/`, `queries/<use-case>/` | the message, its handler, the controller, the request DTO |
-| `application/` | `*.factory.ts`, `*.policy.ts`, `*.resolver.ts`, `event-handlers/` |
+| `application/` | `*.factory.ts`, `*.policy.ts`, `*.resolver.ts`, `*.port.ts`, `event-handlers/` |
 | `dtos/`, `guards/`, `decorators/`, `interceptors/` | the one kind each is named for |
+| `probes/` | `*.probe.controller.ts`, `*.indicator.ts` |
+
+The command handler is `<use-case>.command-handler.ts`, matching
+`<use-case>.query-handler.ts`. It used to be `<use-case>.service.ts`, which was
+the dissolved bucket surviving as a suffix — the contract cannot forbid a
+`services/` directory and then require every handler to be named after one.
+
+A **probe is not a use case.** `/health`, `/ready` and `/health/capabilities`
+report on the process, have no command or query behind them and never will, so
+they have a shape of their own rather than owing three slices they would leave
+empty.
 
 The module root carries only `<module>.module.ts`, `*.mapper.ts`,
 `*.di-tokens.ts` and `*.resource.ts`.
@@ -52,9 +63,9 @@ The same question was put to every other file that had no layer in its path.
 `api-tokens/domain/ip-allowlist.ts` and `api-token.secret.ts` became a
 `*.policy.ts` and a `*.factory.ts`. `auth/scope-context.ts` was sitting in
 `domain/` while importing `express`, which is exactly the impurity the domain
-rule exists to catch — it is now `auth/infrastructure/scope-context.types.ts`.
-Specs were renamed to follow their subjects. 39 files moved in total; every
-relative import, the TypeORM datasource and the seed were rewritten with them.
+rule exists to catch — it kept its place once the express dependency went (see
+below). Specs were renamed to follow their subjects. Every relative import, the
+TypeORM datasource, the seed and each `vi.mock()` path moved with them.
 
 **`scripts/check-api-structure.mjs`** (`pnpm check:api-structure`) is that table,
 executable. Beyond the directory and file-name sets it holds four rules that
@@ -73,22 +84,54 @@ tokens, bus messages and inbound adapters — its handlers, mappers and concrete
 adapters are its own. `handlers-depend-on-port-not-adapter` now covers
 `*.adapter.ts` and `*.gateway.ts`, not just `*.repository.ts`.
 
+**Every adapter has a port.** Six of them — `AvatarStoragePort`,
+`ProfileAuthPort`, `LocaleResolverPort`, `DelegatedSessionPort`,
+`CredentialScopePort` and `CredentialVerifierPort` — each with a DI token the
+composition root binds. Handlers and guards inject the token and name the port;
+`profile.module.ts` and `auth.module.ts` export tokens, never classes. Moving a
+file into `infrastructure/` is not what makes it an adapter, and a checker
+taught to look away is not a ledger.
+
+That last port is what gives `better-auth-stays-behind-an-adapter` its teeth.
+The rule matched `node_modules/better-auth`, which nothing imports directly —
+everything imports `auth` from `better-auth.config.ts`, so the rule was
+vacuously true. It now covers the configured instance, and
+`CredentialScopeResolver` asks a `CredentialVerifierPort` instead of calling
+`auth.api.getMcpSession` from the application layer.
+
+`ScopedRequest` no longer extends express's `Request`. That import was the only
+reason it sat in `infrastructure/`, and it forced six use-case controllers to
+depend on an adapter layer — which is what had made a
+`^src/auth/infrastructure/` wildcard on the cross-module surface look
+necessary. It is structural and node-core only, back in `domain/`, and the
+wildcard is gone.
+
 **Known violations are a ledger, not an exemption.** `admin/` and
 `organizations/` are the pre-contract Better Auth façades — a root-level service
-and multi-route controllers across 42 routes — and `health/` is the same shape
-at three. Rather than weaken the checks for them, each outstanding violation is
-listed by its exact message. Nothing else in those modules is excused, a new
-violation in them still fails, and an entry that stops matching is itself an
-error, so the list cannot outlive the debt. `apps/api/AGENTS.md` says what to do
-when you touch them: a new operation goes in as a slice, never onto the old
-service.
+and multi-route controllers across 42 routes. Rather than weaken the checks for
+them, each outstanding violation is listed as a `(path, kind)` pair: the prose
+is output, never identity, so rewording a message can neither silence a
+violation nor invent a stale one. Nothing else in those modules is excused, a
+new violation in them still fails, and an entry that stops matching is itself an
+error. `apps/api/AGENTS.md` says what to do when you touch them: a new operation
+goes in as a slice, never onto the old service.
+
+**The checker has its own test suite.** `scripts/check-api-structure.test.mjs`
+builds trees for the purpose and pins the `kind` each breach reports, including
+two fixtures over the ledger mechanism itself. Running a checker only over the
+repository says whether the repository conforms today; it cannot exercise a rule
+nothing currently breaks.
 
 Not owning the data turns out to be a reason to have a port, not a reason to
 skip the contract, and the docs now say so. `ARCHITECTURE.md`'s "what is
 intentionally NOT full DDD" section is replaced by "modules that own no
 aggregate", which describes the port-plus-gateway-plus-slices shape those
-façades are migrating to. `.agents/rules/nestjs-architecture.md` and the
-`/scaffold-module` skill were rewritten against the same contract, so a
-generated skeleton passes both checks. CI runs `pnpm check:api-structure` in the
+façades are migrating to.
+
+The contract table lives in **one** place. `.agents/rules/nestjs-architecture.md`
+and the `/scaffold-module` skill point at `ARCHITECTURE.md` and keep only what
+is local to them, and `apps/docs/docs/architecture/api-architecture.md` — which
+still described `auth/auth.ts`, `users/services/`, a three-layer mapper and an
+event bus with no outbox — was rewritten against it. CI runs `pnpm check:api-structure` in the
 lint job and the Claude Code Stop hook runs it whenever a task touches
 `apps/api/src`.
