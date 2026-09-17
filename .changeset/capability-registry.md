@@ -25,7 +25,7 @@ booting with a `'not-set'` sentinel.
   at `GET /health/capabilities` (exempt from scope checks, like other
   anonymous reads); server-internal capabilities stay in the startup log.
 - `@flama/api-client` picks up the generated `HealthApi.deploymentCapabilities()`.
-- `@flama/frontend` adds a `capabilities` module and a
+- `@flama/frontend-core` adds a `capabilities` module and a
   `useDeploymentCapabilities()` hook; the web login page uses it to render
   only configured social providers, and to name the env vars to set when none
   are (only after a successful read — an unreachable API or a failed refetch
