@@ -8,7 +8,7 @@ import type { UserRoleRepositoryPort } from '../../../database/user-role.reposit
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
 import { Permission } from '../../../domain/value-objects/permission.value-object';
-import type { RoleGrantPolicy } from '../../../services/role-grant.policy';
+import type { RoleGrantPolicy } from '../../../application/role-grant.policy';
 import { AssignUserRolesCommand } from '../assign-user-roles.command';
 import { AssignUserRolesService } from '../assign-user-roles.service';
 

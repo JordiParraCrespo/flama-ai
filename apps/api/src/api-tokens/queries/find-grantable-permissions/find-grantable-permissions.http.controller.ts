@@ -7,7 +7,7 @@ import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
-import type { ScopedRequest } from '../../../auth/scope-context';
+import type { ScopedRequest } from '../../../auth/infrastructure/scope-context.types';
 import { PermissionCatalogResponseDto } from '../../dtos/permission-catalog.response.dto';
 import { FindGrantablePermissionsQuery } from './find-grantable-permissions.query';
 

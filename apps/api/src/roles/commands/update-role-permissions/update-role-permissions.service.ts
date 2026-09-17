@@ -7,7 +7,7 @@ import { RoleEntity } from '../../domain/role.entity';
 import { RoleErrors } from '../../domain/role.errors';
 import { Permission } from '../../domain/value-objects/permission.value-object';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
-import { RoleGrantPolicy } from '../../services/role-grant.policy';
+import { RoleGrantPolicy } from '../../application/role-grant.policy';
 import { UpdateRolePermissionsCommand } from './update-role-permissions.command';
 
 /** Replaces a role's full permission set — the granular permission editor. */

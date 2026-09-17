@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRepositoryPort } from '../../../../users/database/user.repository.port';
 import { UserEntity } from '../../../../users/domain/user.entity';
 import { Email } from '../../../../users/domain/value-objects/email.value-object';
-import type { AvatarStorage } from '../../../services/avatar.storage';
+import type { AvatarStorage } from '../../../infrastructure/avatar-storage.adapter';
 import { UploadAvatarCommand } from '../upload-avatar.command';
 import { UploadAvatarService } from '../upload-avatar.service';
 

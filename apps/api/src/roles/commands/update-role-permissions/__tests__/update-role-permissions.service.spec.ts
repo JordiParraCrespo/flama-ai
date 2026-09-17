@@ -4,7 +4,7 @@ import type { RoleRepositoryPort } from '../../../database/role.repository.port'
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
 import { Permission } from '../../../domain/value-objects/permission.value-object';
-import type { RoleGrantPolicy } from '../../../services/role-grant.policy';
+import type { RoleGrantPolicy } from '../../../application/role-grant.policy';
 import { UpdateRolePermissionsCommand } from '../update-role-permissions.command';
 import { UpdateRolePermissionsService } from '../update-role-permissions.service';
 

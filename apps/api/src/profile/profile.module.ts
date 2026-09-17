@@ -1,7 +1,7 @@
 import { Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Session } from '../auth/entities/session.entity';
+import { Session } from '../auth/database/session.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
 import { UsersModule } from '../users/user.module';
 import { ChangePasswordHttpController } from './commands/change-password/change-password.http.controller';
@@ -29,9 +29,9 @@ import { GetProfileHttpController } from './queries/get-profile/get-profile.http
 import { GetProfileQueryHandler } from './queries/get-profile/get-profile.query-handler';
 import { GetUserSettingsHttpController } from './queries/get-user-settings/get-user-settings.http.controller';
 import { GetUserSettingsQueryHandler } from './queries/get-user-settings/get-user-settings.query-handler';
-import { AvatarStorage } from './services/avatar.storage';
-import { LocaleResolver } from './services/locale.resolver';
-import { ProfileAuthFacade } from './services/profile-auth.facade';
+import { AvatarStorage } from './infrastructure/avatar-storage.adapter';
+import { LocaleResolver } from './application/locale.resolver';
+import { ProfileAuthFacade } from './infrastructure/profile-auth.gateway';
 
 // Registration order matters: every static sub-route (`settings`, `avatar`,
 // `sessions`) must be matched before `sessions/:id`, and the bare `GET`/`PATCH`

@@ -1,5 +1,5 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { ProfileAuthFacade } from '../../services/profile-auth.facade';
+import { ProfileAuthFacade } from '../../infrastructure/profile-auth.gateway';
 import { RevokeOtherSessionsCommand } from './revoke-other-sessions.command';
 
 /**

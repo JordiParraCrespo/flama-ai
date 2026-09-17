@@ -28,8 +28,8 @@ import { ProfileErrors } from '../../domain/profile.errors';
 import { ProfileResponseDto } from '../../dtos/profile.response.dto';
 import { ProfileMapper } from '../../profile.mapper';
 import { GetProfileQuery } from '../../queries/get-profile/get-profile.query';
-import { AvatarStorage } from '../../services/avatar.storage';
-import { AvatarFileInterceptor } from '../../services/avatar-file.interceptor';
+import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
+import { AvatarFileInterceptor } from '../../interceptors/avatar-file.interceptor';
 import { UploadAvatarCommand } from './upload-avatar.command';
 
 @ApiTags('Profile')

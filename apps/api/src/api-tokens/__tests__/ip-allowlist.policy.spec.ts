@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isIpAllowed, matchesIpRule } from '../domain/ip-allowlist';
+import { isIpAllowed, matchesIpRule } from '../domain/ip-allowlist.policy';
 
 describe('matchesIpRule', () => {
   it('matches a bare IPv4 address exactly', () => {

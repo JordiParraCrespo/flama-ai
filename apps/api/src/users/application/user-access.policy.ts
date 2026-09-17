@@ -1,8 +1,8 @@
 import { AppError } from '@flama/backend-core';
 import { canAccess } from '@flama/shared';
-import { AuthErrors } from '../auth/domain/auth.errors';
-import type { AbilityRequest } from '../roles/services/ability.factory';
-import type { UserEntity } from './domain/user.entity';
+import { AuthErrors } from '../../auth/domain/auth.errors';
+import type { AbilityRequest } from '../../roles/application/ability.factory';
+import type { UserEntity } from '../domain/user.entity';
 
 /**
  * Row-level authorization for a single user record.

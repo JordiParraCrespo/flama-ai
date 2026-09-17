@@ -5,7 +5,7 @@ import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { UserRepositoryPort } from '../../../users/database/user.repository.port';
 import { USER_REPOSITORY } from '../../../users/user.di-tokens';
 import { ProfileErrors } from '../../domain/profile.errors';
-import { AvatarStorage } from '../../services/avatar.storage';
+import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
 import { DeleteAvatarCommand } from './delete-avatar.command';
 
 /**

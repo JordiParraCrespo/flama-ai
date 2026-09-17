@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CacheService } from '@flama/backend-cache';
 import { Injectable, Logger } from '@nestjs/common';
-import { auth } from '../auth';
+import { auth } from './better-auth.config';
 
 /** How long a delegated session lives before it must be re-minted. */
 const SESSION_TTL_SECONDS = 10 * 60;

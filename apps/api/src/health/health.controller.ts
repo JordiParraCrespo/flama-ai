@@ -12,7 +12,7 @@ import {
 import { NoPolicy } from '../auth/decorators/check-policies.decorator';
 import { AllowAnyScope } from '../auth/decorators/require-scopes.decorator';
 import { CapabilitiesResponseDto } from './dtos/capabilities.response.dto';
-import { RedisHealthIndicator } from './redis-health.indicator';
+import { RedisHealthIndicator } from './infrastructure/redis-health.adapter';
 
 @ApiTags('Health')
 @Controller()

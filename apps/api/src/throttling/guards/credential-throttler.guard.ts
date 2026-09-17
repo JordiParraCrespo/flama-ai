@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import type { ScopedRequest } from '../auth/scope-context';
-import { CredentialScopeResolver } from '../auth/services/credential-scope.resolver';
+import type { ScopedRequest } from '../../auth/infrastructure/scope-context.types';
+import { CredentialScopeResolver } from '../../auth/application/credential-scope.resolver';
 
 /**
  * The application's `ThrottlerGuard`, keyed on **who is calling** rather than

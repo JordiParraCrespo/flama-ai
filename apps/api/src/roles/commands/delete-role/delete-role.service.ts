@@ -4,7 +4,7 @@ import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
 import { RoleErrors } from '../../domain/role.errors';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
-import { RoleGrantPolicy } from '../../services/role-grant.policy';
+import { RoleGrantPolicy } from '../../application/role-grant.policy';
 import { DeleteRoleCommand } from './delete-role.command';
 
 /**

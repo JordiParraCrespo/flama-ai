@@ -32,10 +32,10 @@ apps/api/src/
 
 Authentication is handled by [Better Auth](https://www.better-auth.com/),
 mounted into NestJS via [`@thallesp/nestjs-better-auth`](https://github.com/ThallesP/nestjs-better-auth).
-The Better Auth instance lives in `auth/auth.ts` and is registered in
+The Better Auth instance lives in `auth/infrastructure/better-auth.config.ts` and is registered in
 `AppModule` with `AuthModule.forRoot({ auth })`.
 
-### Configuration (`auth/auth.ts`)
+### Configuration (`auth/infrastructure/better-auth.config.ts`)
 
 | Feature            | Setup                                                                 |
 | ------------------ | --------------------------------------------------------------------- |

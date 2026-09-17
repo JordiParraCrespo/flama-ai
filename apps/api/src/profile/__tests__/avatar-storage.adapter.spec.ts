@@ -2,7 +2,7 @@ import { AppError } from '@flama/backend-core';
 import type { StorageService } from '@flama/backend-storage';
 import { AVATAR_MAX_BYTES } from '@flama/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AvatarStorage } from '../services/avatar.storage';
+import { AvatarStorage } from '../infrastructure/avatar-storage.adapter';
 
 describe('AvatarStorage', () => {
   let storage: {

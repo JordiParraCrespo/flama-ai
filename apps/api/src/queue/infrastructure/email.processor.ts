@@ -4,8 +4,8 @@ import { QUEUE_NAMES } from '@flama/shared';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { LocaleResolver } from '../profile/services/locale.resolver';
-import { EmailJobMapper, type EmailLocaleTarget } from './email-job.mapper';
+import { LocaleResolver } from '../../profile/application/locale.resolver';
+import { EmailJobMapper, type EmailLocaleTarget } from '../email-job.mapper';
 
 @Processor(QUEUE_NAMES.EMAIL)
 export class EmailProcessor extends WorkerHost {

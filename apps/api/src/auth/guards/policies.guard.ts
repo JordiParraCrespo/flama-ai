@@ -3,7 +3,7 @@ import { AppError } from '@flama/backend-core';
 import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthzErrors } from '../../authz/domain/authz.errors';
-import { AbilityFactory } from '../../roles/services/ability.factory';
+import { AbilityFactory } from '../../roles/application/ability.factory';
 import { CHECK_POLICIES_KEY, type PolicyRule } from '../decorators/check-policies.decorator';
 import { AuthErrors } from '../domain/auth.errors';
 

@@ -2,7 +2,7 @@ import { AppError } from '@flama/backend-core';
 import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { OwnedSession, SessionReaderPort } from '../../../database/session.repository.port';
-import type { ProfileAuthFacade } from '../../../services/profile-auth.facade';
+import type { ProfileAuthFacade } from '../../../infrastructure/profile-auth.gateway';
 import { RevokeSessionCommand } from '../revoke-session.command';
 import { RevokeSessionService } from '../revoke-session.service';
 

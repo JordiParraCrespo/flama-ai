@@ -48,16 +48,29 @@ const member =
 ```
 
 Shared shaping helpers (`asRecord`, `asArray`, `unwrap`, `unwrapArray`) live in
-`src/auth/better-auth.util.ts`; array/envelope mappers (`mapMembers`,
+`src/auth/infrastructure/better-auth.util.ts`; array/envelope mappers (`mapMembers`,
 `mapUserFromResult`, …) live alongside the scalar ones in `*.mappers.ts`.
 
 ## Delegating façades (organizations, admin)
 
 `src/organizations/` and `src/admin/` expose the Better Auth organization/admin
 plugin operations as typed, Swagger-documented, CASL-guarded REST endpoints that
-**delegate to `auth.api.*`** — Better Auth owns the tables, so these are
-infrastructure modules (controller → injectable service → `auth.api`), not
-CQRS/domain slices. Use `betterAuthHeaders` from `src/auth/better-auth.util.ts`,
+**delegate to `auth.api.*`**. Better Auth owns the tables, so there is no
+aggregate to write — but not owning the data is a reason to have a **port**,
+not a reason to skip the module contract. The target shape, like every other
+module (see [`ARCHITECTURE.md`](./ARCHITECTURE.md)), is: a port in
+`infrastructure/` describing what the application needs, a gateway beside it
+that speaks to `auth.api.*`, and one use-case slice per operation.
+
+> **Both modules are mid-migration.** They still carry a root-level
+> `*.service.ts` and multi-route `*.controller.ts` — the pre-contract layout.
+> `pnpm check:api-structure` reports each of those files, and
+> `.dependency-cruiser.cjs` carries a ledger entry for
+> `organizations.service.ts`. **Do not add a route to either module in the old
+> shape.** A new operation goes in as a slice; a route you touch is a chance to
+> move it. Neither module is an example to copy — `users/` and `profile/` are.
+
+Use `betterAuthHeaders` from `src/auth/infrastructure/better-auth.util.ts`,
 and normalize every `auth.api` result through a mapper (see above). See
 `.agents/rules/rbac-roles.md` for the full RBAC + org/admin guide.
 

@@ -5,8 +5,8 @@ import { Reflector } from '@nestjs/core';
 import { ApiTokenErrors } from '../../api-tokens/domain/api-token.errors';
 import { ORGANIZATION_PARAM_KEY } from '../decorators/organization-scoped.decorator';
 import { ALLOW_ANY_SCOPE_KEY, REQUIRE_SCOPES_KEY } from '../decorators/require-scopes.decorator';
-import type { ScopeContext, ScopedRequest } from '../scope-context';
-import { CredentialScopeResolver } from '../services/credential-scope.resolver';
+import type { ScopeContext, ScopedRequest } from '../infrastructure/scope-context.types';
+import { CredentialScopeResolver } from '../application/credential-scope.resolver';
 
 /**
  * Enforces what a scoped credential may reach. Registered globally, so it

@@ -10,9 +10,9 @@ import { betterAuth } from 'better-auth';
 import { admin, bearer, mcp, organization } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
-import { orUndefined } from '../config/env';
-import { emailQueue, enqueueEmailBestEffort } from './email-queue';
-import { buildInvitationUrl } from './invitation-url';
+import { orUndefined } from '../../config/env';
+import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
+import { buildInvitationUrl } from './invitation-url.util';
 
 /**
  * Access-control roles for the admin plugin. Every name listed in `adminRoles`

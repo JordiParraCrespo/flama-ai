@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DelegatedSessionService } from '../../auth/services/delegated-session.service';
-import { ProfileAuthFacade } from '../services/profile-auth.facade';
+import type { DelegatedSessionService } from '../../auth/infrastructure/delegated-session.adapter';
+import { ProfileAuthFacade } from '../infrastructure/profile-auth.gateway';
 
 // `auth.api.*` reaches a real Better Auth instance (and its database pool) at
 // module load, so the calls are stubbed; what is under test here is which

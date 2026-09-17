@@ -8,7 +8,7 @@ import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
-import type { ScopedRequest } from '../../../auth/scope-context';
+import type { ScopedRequest } from '../../../auth/infrastructure/scope-context.types';
 import { ApiTokenMapper } from '../../api-tokens.mapper';
 import type { ApiTokenEntity } from '../../domain/api-token.entity';
 import { CreatedApiTokenResponseDto } from '../../dtos/api-token.response.dto';

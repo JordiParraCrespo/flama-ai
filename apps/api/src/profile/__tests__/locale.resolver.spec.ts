@@ -2,7 +2,7 @@ import { I18nService } from '@flama/backend-i18n';
 import { None, Some } from 'oxide.ts';
 import { describe, expect, it, vi } from 'vitest';
 import { UserSettingsEntity } from '../domain/user-settings.entity';
-import { LocaleResolver } from '../services/locale.resolver';
+import { LocaleResolver } from '../application/locale.resolver';
 
 function resolver(saved: UserSettingsEntity | null, userId: string | null = 'user-1') {
   const i18n = new I18nService({

@@ -1,6 +1,6 @@
 import type { CacheService } from '@flama/backend-cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DelegatedSessionService } from '../services/delegated-session.service';
+import { DelegatedSessionService } from '../infrastructure/delegated-session.adapter';
 
 interface SessionRow {
   token: string;

@@ -4,8 +4,8 @@ import { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ORGANIZATION_PARAM_KEY } from '../../decorators/organization-scoped.decorator';
 import { ALLOW_ANY_SCOPE_KEY, REQUIRE_SCOPES_KEY } from '../../decorators/require-scopes.decorator';
-import type { ScopeContext } from '../../scope-context';
-import type { CredentialScopeResolver } from '../../services/credential-scope.resolver';
+import type { ScopeContext } from '../../infrastructure/scope-context.types';
+import type { CredentialScopeResolver } from '../../application/credential-scope.resolver';
 import { ScopesGuard } from '../scopes.guard';
 
 const tokenContext = (overrides: Partial<ScopeContext> = {}): ScopeContext => ({

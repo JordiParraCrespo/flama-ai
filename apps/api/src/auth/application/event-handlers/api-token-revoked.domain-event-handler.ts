@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ApiTokenRevokedDomainEvent } from '../../../api-tokens/domain/events/api-token-revoked.domain-event';
-import { DelegatedSessionService } from '../../services/delegated-session.service';
+import { DelegatedSessionService } from '../../infrastructure/delegated-session.adapter';
 
 /**
  * Drops the delegated Better Auth session cached for a revoked token.

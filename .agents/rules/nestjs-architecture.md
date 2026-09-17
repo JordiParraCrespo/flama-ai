@@ -11,13 +11,17 @@ point inward: the domain depends on nothing, the application orchestrates the
 domain, and infrastructure/interface adapters depend on the inside. The shared
 building blocks live in `@flama/backend-ddd`.
 
-## Module layout (vertical slices)
+## Module layout: one shape, enforced
 
-Each feature module is organised by use case, not by technical layer:
+Every module under `apps/api/src/` is cut the same way. A directory appears
+only when it has something to hold — there are no placeholder layers — but
+what it may hold, and what that file may be called, is fixed. The full table
+is in [`apps/api/ARCHITECTURE.md`](../../apps/api/ARCHITECTURE.md) and is
+executable as `pnpm check:api-structure`.
 
 ```
 <module>/
-├── commands/<use-case>/        # state changes (one folder per use case)
+├── commands/<use-case>/        # state changes (one directory per use case)
 │   ├── <use-case>.command.ts        # extends CommandBase
 │   ├── <use-case>.service.ts        # @CommandHandler (the handler)
 │   ├── <use-case>.http.controller.ts
@@ -26,21 +30,54 @@ Each feature module is organised by use case, not by technical layer:
 │   ├── <use-case>.query.ts          # extends QueryBase
 │   ├── <use-case>.query-handler.ts  # @QueryHandler
 │   └── <use-case>.http.controller.ts
-├── domain/                     # pure domain, no framework/persistence imports
-│   ├── <module>.entity.ts           # AggregateRoot / Entity
-│   ├── value-objects/
+├── domain/                     # pure: no framework, no persistence
+│   ├── <name>.entity.ts             # AggregateRoot / Entity
+│   ├── <name>.policy.ts             # a rule that needs nothing but the domain
+│   ├── value-objects/<name>.value-object.ts
 │   ├── events/<event>.domain-event.ts
 │   └── <module>.errors.ts
-├── database/                   # infrastructure
+├── database/                   # the persistence adapter
 │   ├── <module>.orm-entity.ts       # TypeORM persistence model
 │   ├── <module>.repository.port.ts  # the port (interface)
 │   └── <module>.repository.ts       # TypeORM adapter implementing the port
-├── application/event-handlers/ # @OnEvent domain-event handlers
+├── infrastructure/             # every other outbound adapter
+│   ├── <name>.port.ts               # what the application needs
+│   ├── <name>.gateway.ts            # …spoken to an external service
+│   └── <name>.adapter.ts            # …or to anything else outside the process
+├── application/                # needs ports, is not a use case
+│   ├── <name>.factory.ts | <name>.policy.ts | <name>.resolver.ts
+│   └── event-handlers/<event>.domain-event-handler.ts
+├── guards/ decorators/ interceptors/   # inbound adapters
 ├── dtos/<module>.response.dto.ts
 ├── <module>.mapper.ts
 ├── <module>.di-tokens.ts
 └── <module>.module.ts
 ```
+
+### There is no `services/`
+
+A "service" is not a layer, and a directory named after one is where a module
+goes to stop being a hexagon. When you are about to write one, ask which of
+these it is:
+
+| It…                                        | goes in                                        |
+| ------------------------------------------ | ---------------------------------------------- |
+| decides something from the domain alone     | `domain/<name>.policy.ts` / `.factory.ts`      |
+| calls out of the process                    | `infrastructure/<name>.port.ts` + an adapter   |
+| is what a route does                        | `commands/<use-case>/` or `queries/<use-case>/`|
+| needs ports but no route reaches it         | `application/<name>.{factory,policy,resolver}.ts` |
+
+The same applies to `entities/`, `utils/`, `helpers/`, `common/`, `types/`,
+`interfaces/`, `constants/` and `models/`. `pnpm check:api-structure` names
+each of them and the question to ask instead.
+
+### Two more rules the checker holds
+
+- **An HTTP route is declared in a use-case controller, nowhere else.** A
+  `@Get`/`@Post` outside `commands/<use-case>/` or `queries/<use-case>/` is a
+  route with no use case behind it.
+- **A controller is capped at 110 lines, a handler at 120.** Past them, a
+  controller has started deciding and a handler has started doing.
 
 ## CQRS command/query handlers
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
 import { MoreThan, type Repository } from 'typeorm';
-import { Session } from '../../auth/entities/session.entity';
+import { Session } from '../../auth/database/session.orm-entity';
 import type { OwnedSession, SessionReaderPort } from './session.repository.port';
 
 /**

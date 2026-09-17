@@ -4,7 +4,7 @@ import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { SessionReaderPort } from '../../database/session.repository.port';
 import { ProfileErrors } from '../../domain/profile.errors';
 import { SESSION_READER } from '../../profile.di-tokens';
-import { ProfileAuthFacade } from '../../services/profile-auth.facade';
+import { ProfileAuthFacade } from '../../infrastructure/profile-auth.gateway';
 import { RevokeSessionCommand } from './revoke-session.command';
 
 /**

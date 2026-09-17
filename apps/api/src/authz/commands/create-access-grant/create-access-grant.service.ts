@@ -7,7 +7,7 @@ import { ACCESS_GRANT_REPOSITORY } from '../../authz.di-tokens';
 import type { AccessGrantRepositoryPort } from '../../database/access-grant.repository.port';
 import { AccessGrantEntity } from '../../domain/access-grant.entity';
 import { AccessGrantErrors } from '../../domain/access-grant.errors';
-import { PrincipalResidencyChecker } from '../../services/principal-residency.checker';
+import { PrincipalResidencyChecker } from '../../application/principal-residency.policy';
 import { CreateAccessGrantCommand } from './create-access-grant.command';
 
 /**

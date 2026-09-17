@@ -7,17 +7,17 @@ import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
 import { UsersModule } from '../users/user.module';
 import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
-import { Account } from './entities/account.entity';
-import { OAuthAccessTokenOrmEntity } from './entities/oauth-access-token.entity';
-import { OAuthApplicationOrmEntity } from './entities/oauth-application.entity';
-import { OAuthConsentOrmEntity } from './entities/oauth-consent.entity';
-import { Session } from './entities/session.entity';
-import { Verification } from './entities/verification.entity';
+import { Account } from './database/account.orm-entity';
+import { OAuthAccessTokenOrmEntity } from './database/oauth-access-token.orm-entity';
+import { OAuthApplicationOrmEntity } from './database/oauth-application.orm-entity';
+import { OAuthConsentOrmEntity } from './database/oauth-consent.orm-entity';
+import { Session } from './database/session.orm-entity';
+import { Verification } from './database/verification.orm-entity';
 import { ApiAuthGuard } from './guards/api-auth.guard';
 import { PoliciesGuard } from './guards/policies.guard';
 import { ScopesGuard } from './guards/scopes.guard';
-import { CredentialScopeResolver } from './services/credential-scope.resolver';
-import { DelegatedSessionService } from './services/delegated-session.service';
+import { CredentialScopeResolver } from './application/credential-scope.resolver';
+import { DelegatedSessionService } from './infrastructure/delegated-session.adapter';
 
 /**
  * Registers the Better Auth tables with TypeORM (so the schema is created /

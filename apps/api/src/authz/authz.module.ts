@@ -24,9 +24,9 @@ import { FindAccessGrantsHttpController } from './queries/find-access-grants/fin
 import { FindAccessGrantsQueryHandler } from './queries/find-access-grants/find-access-grants.query-handler';
 import { FindAuthzCatalogHttpController } from './queries/find-catalog/find-catalog.http.controller';
 import { FindAuthzCatalogQueryHandler } from './queries/find-catalog/find-catalog.query-handler';
-import { ActiveOrganizationResolver } from './services/active-organization.resolver';
-import { PrincipalResidencyChecker } from './services/principal-residency.checker';
-import { ScopeResolver } from './services/scope.resolver';
+import { ActiveOrganizationResolver } from './application/active-organization.resolver';
+import { PrincipalResidencyChecker } from './application/principal-residency.policy';
+import { ScopeResolver } from './application/scope.resolver';
 
 // Static routes before parameterized ones.
 const httpControllers = [

@@ -1,11 +1,11 @@
 import { AppError } from '@flama/backend-core';
 import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
-import { auth } from '../auth';
-import { betterAuthHeaders } from '../better-auth.util';
+import { auth } from '../infrastructure/better-auth.config';
+import { betterAuthHeaders } from '../infrastructure/better-auth.util';
 import { AuthErrors } from '../domain/auth.errors';
-import type { ScopedRequest } from '../scope-context';
-import { CredentialScopeResolver } from '../services/credential-scope.resolver';
-import { DelegatedSessionService } from '../services/delegated-session.service';
+import type { ScopedRequest } from '../infrastructure/scope-context.types';
+import { CredentialScopeResolver } from '../application/credential-scope.resolver';
+import { DelegatedSessionService } from '../infrastructure/delegated-session.adapter';
 
 /**
  * Authenticates a request by any of the three supported credentials and

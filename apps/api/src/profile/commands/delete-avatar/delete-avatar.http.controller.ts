@@ -9,7 +9,7 @@ import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { ProfileResponseDto } from '../../dtos/profile.response.dto';
 import { ProfileMapper } from '../../profile.mapper';
 import { GetProfileQuery } from '../../queries/get-profile/get-profile.query';
-import { AvatarStorage } from '../../services/avatar.storage';
+import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
 import { DeleteAvatarCommand } from './delete-avatar.command';
 
 @ApiTags('Profile')

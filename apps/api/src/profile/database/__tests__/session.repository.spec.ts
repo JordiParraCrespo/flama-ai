@@ -1,8 +1,8 @@
 import type { Repository } from 'typeorm';
 import { FindOperator } from 'typeorm';
 import { describe, expect, it } from 'vitest';
-import type { Session } from '../../auth/entities/session.entity';
-import { SessionRepository } from './session.repository';
+import type { Session } from '../../../auth/database/session.orm-entity';
+import { SessionRepository } from '../session.repository';
 
 /**
  * The session list answers one question — "which devices are signed in to my

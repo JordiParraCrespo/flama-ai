@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildInvitationUrl } from '../invitation-url';
+import { buildInvitationUrl } from '../infrastructure/invitation-url.util';
 
 describe('buildInvitationUrl', () => {
   it('carries every value the registration screen needs and URL-encodes it', () => {

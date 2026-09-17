@@ -17,7 +17,7 @@ vi.mock('../../auth/auth', () => ({
   },
 }));
 
-import { auth } from '../../auth/auth';
+import { auth } from '../../auth/infrastructure/better-auth.config';
 import { WorkspacesService } from '../workspaces.service';
 
 const api = auth.api as unknown as Record<string, ReturnType<typeof vi.fn>>;

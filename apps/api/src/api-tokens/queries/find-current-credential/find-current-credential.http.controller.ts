@@ -7,7 +7,7 @@ import { CurrentScope } from '../../../auth/decorators/current-scope.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { AllowAnyScope } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
-import type { ScopeContext, ScopedRequest } from '../../../auth/scope-context';
+import type { ScopeContext, ScopedRequest } from '../../../auth/infrastructure/scope-context.types';
 import { CurrentCredentialResponseDto } from '../../dtos/current-credential.response.dto';
 import { FindCurrentCredentialQuery } from './find-current-credential.query';
 import type { CurrentCredentialScopes } from './find-current-credential.query-handler';
