@@ -117,7 +117,7 @@ node scripts/scaffold-feature.mjs --app web --module api-tokens [--screen api-to
 It creates the eight kind directories with a note in each and a first screen.
 Then: write the screen, add a route in `src/routes/` that mounts it, add a nav
 row in `src/lib/nav.ts` if the screen is a destination (its `policies` come
-from `SCREENS` in `@flama/shared/navigation`), add the translation keys, and
+from `SCREENS` in `@flama/frontend-web`), add the translation keys, and
 add a spec in `e2e/tests/web/`.
 
 Module names this app may use: the kernel's `analytics`, `auth`,
@@ -129,7 +129,7 @@ domain leads.
 ## What the checkers enforce
 
 `pnpm --filter @flama/web arch` (`.dependency-cruiser.cjs` over
-`packages/config/depcruise/frontend-app.cjs`):
+`packages/tsconfig/depcruise/frontend-app.cjs`):
 
 - `no-circular` — no import cycles, type-only edges excepted.
 - `features-are-islands` — a feature never imports another feature.
@@ -168,8 +168,8 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
   same-origin.
 - **`nav.ts`** — the workspace's two destinations, `/dashboard` and
   `/settings`, plus `USER_MENU_LINKS`. Each row's `policies` come from
-  `SCREENS` in `@flama/shared/navigation`; `apps/admin-web` lists `/users` and
-  `/roles` instead.
+  `SCREENS` in `@flama/frontend-web`, which reads them from the API's own
+  `ENDPOINT_POLICIES`; `apps/admin-web` lists `/users` and `/roles` instead.
 
 The query client is a provider, not a lib file: `src/providers/query-provider.tsx`
 applies the kernel's persistence policy with `CONSUMER_NON_PERSISTED_FEATURES`,

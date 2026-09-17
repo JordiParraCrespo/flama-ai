@@ -40,7 +40,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@flama/config": "workspace:^",
+    "@flama/tsconfig": "workspace:^",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/router-plugin": "^1.168.38",
     "@testing-library/react": "^16.3.3",

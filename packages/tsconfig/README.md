@@ -1,4 +1,4 @@
-# @flama/config
+# @flama/tsconfig
 
 Shared TypeScript configuration bases. Every app and package extends one of
 these instead of copy-pasting compiler options, so settings stay consistent
@@ -13,13 +13,18 @@ across the monorepo.
 | `tsconfig.nextjs.json`  | Next.js apps (`apps/web-showcase`)                               |
 | `tsconfig.expo.json`    | Expo / React Native apps (`apps/mobile`, `apps/mobile-showcase`) |
 
+Two build-time helpers ride along, for the same reason the tsconfigs do — one
+copy, extended rather than pasted: `vite-chunks.mjs` (the Rollup
+`manualChunks` the Vite SPAs share) and `depcruise/*.cjs` (the
+dependency-cruiser rule factories the frontend apps and kits extend).
+
 ## Usage
 
 Reference the package by name in a `tsconfig.json`:
 
 ```json
 {
-  "extends": "@flama/config/tsconfig.library.json",
+  "extends": "@flama/tsconfig/tsconfig.library.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src"
@@ -27,8 +32,8 @@ Reference the package by name in a `tsconfig.json`:
 }
 ```
 
-This package ships only the `tsconfig.*.json` files (see the `files` field in
-`package.json`) — there is no build step and no runtime code.
+This package ships only those files (see the `files` field in `package.json`)
+— there is no build step and no runtime code.
 
 ## Consumed by
 

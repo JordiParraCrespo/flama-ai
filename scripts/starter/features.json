@@ -40,7 +40,7 @@
         ".agents/skills/next-best-practices",
         ".agents/skills/next-cache-components",
         ".agents/skills/next-upgrade",
-        "packages/config/tsconfig.nextjs.json"
+        "packages/tsconfig/tsconfig.nextjs.json"
       ],
       "json": [
         {
@@ -172,7 +172,7 @@
       "neededBy": ["web", "admin-web"],
       "scripts": ["check:bundle"]
     },
-    "packages/config/tsconfig.expo.json": {
+    "packages/tsconfig/tsconfig.expo.json": {
       "$comment": "Everything Expo leaves in the kept apps: the Better Auth expo plugin in apps/api, the EXPO_PUBLIC_* pass-through in turbo.json, the react-native override.",
       "identifiers": ["tsconfig.expo", "EXPO_PUBLIC_", "@better-auth/expo", "react-native"],
       "neededBy": ["mobile", "admin-mobile", "mobile-showcase"],
@@ -212,11 +212,11 @@
       "identifiers": [".agents/skills/scaffold-feature", "/scaffold-feature"],
       "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
     },
-    "packages/config/depcruise/frontend-app.cjs": {
+    "packages/tsconfig/depcruise/frontend-app.cjs": {
       "identifiers": ["depcruise/frontend-app"],
       "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
     },
-    "packages/config/depcruise/frontend-kit.cjs": {
+    "packages/tsconfig/depcruise/frontend-kit.cjs": {
       "identifiers": ["depcruise/frontend-kit"],
       "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
     }

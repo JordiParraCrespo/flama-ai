@@ -103,17 +103,24 @@ export class PublishArticleHttpController {
 
 The endpoints that back a gated row in the web sidebar — members, roles, API
 tokens, admin, billing — are gated on the same `@CheckPolicies` the endpoint
-carries. That pairing is declared once, in `SCREENS`
-(`packages/shared/src/navigation/screens.ts`), and asserted by
-`apps/api/src/auth/__tests__/screen-policies.spec.ts`. Change the policy on one
-of those handlers and that test fails until `SCREENS` says the same thing —
-which is the point: a policy added to a controller would otherwise leave the
-sidebar offering a link that could only answer 403, and nothing in the build
-would notice. `GET /users/me/permissions` serves the caller's effective rules
-so the client can apply the same catalog.
+carries. That pairing is declared once, in `ENDPOINT_POLICIES`
+(`packages/shared/src/permissions/endpoint-policies.ts`), and asserted by
+`apps/api/src/auth/__tests__/endpoint-policies.spec.ts`. Change the policy on
+one of those handlers and that test fails until the catalog says the same
+thing — which is the point: a policy added to a controller would otherwise
+leave the sidebar offering a link that could only answer 403, and nothing in
+the build would notice. `GET /users/me/permissions` serves the caller's
+effective rules so the client can apply the same catalog.
 
-If a screen's data moves to a different handler, move its entry in `HANDLERS`
-there too. The test is only as honest as the handler it is pointed at.
+The catalog is keyed by **endpoint**, not by screen: a route path is one
+client's URL, and `apps/mobile` reaches the same handlers under different
+names. The web shell maps its routes onto these endpoints in `SCREENS`
+(`packages/frontend/web/src/shell/lib/screens.ts`) and reads the rules from
+here, so nothing restates them and the API keeps no frontend dependency.
+
+If an endpoint's data moves to a different handler, move its entry in
+`HANDLERS` there too. The test is only as honest as the handler it is pointed
+at.
 
 ### Resource scoping (own-resource checks)
 

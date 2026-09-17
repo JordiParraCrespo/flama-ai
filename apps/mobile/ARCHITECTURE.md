@@ -122,7 +122,7 @@ Anything else has to become a module of `@flama/frontend-consumer` first.
 ## What the checkers enforce
 
 `pnpm --filter @flama/mobile arch` (`.dependency-cruiser.cjs` over
-`packages/config/depcruise/frontend-app.cjs`, across `app features lib`):
+`packages/tsconfig/depcruise/frontend-app.cjs`, across `app features lib`):
 
 - `no-circular` — no import cycles, type-only edges excepted.
 - `features-are-islands` — a feature never imports another feature.

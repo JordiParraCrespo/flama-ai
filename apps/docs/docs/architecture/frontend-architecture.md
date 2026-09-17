@@ -157,8 +157,9 @@ The consumer app's account flows sit under `apps/web/src/routes`:
 | `/oauth/consent`          | The consent screen an OAuth client is sent to.                                                                                                                                                         | `features/auth`                |
 
 The sidebar and command palette are gated by the caller's permissions: each nav
-row takes its policies from `SCREENS` in `@flama/shared/navigation`, the same
-catalog the API's `@CheckPolicies` decorators are asserted against, so a route
-the caller cannot open is never offered. The rows live in
+row takes its policies from `SCREENS` in `@flama/frontend-web`, which reads
+them from `ENDPOINT_POLICIES` in `@flama/shared/permissions` — the same catalog
+the API's `@CheckPolicies` decorators are asserted against — so a route the
+caller cannot open is never offered. The rows live in
 `apps/web/src/lib/nav.ts`, and `useAuthorizedNav` and `useAbility` from
 `@flama/frontend-web` filter them.

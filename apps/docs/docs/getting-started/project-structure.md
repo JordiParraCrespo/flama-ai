@@ -41,7 +41,7 @@ flama/
 ## Dependency flow
 
 ```
-packages/config           → all apps and packages (tsconfig extends)
+packages/tsconfig         → all apps and packages (tsconfig extends)
 packages/shared           → api, frontend, api-client
 packages/backend/core     → api, other backend packages
 packages/backend/email    → api

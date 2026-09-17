@@ -8,3 +8,4 @@ export { useAuthorizedNav, useLandingRoute } from './hooks/use-authorized-nav';
 export { useHotkey } from './hooks/use-hotkey';
 export { type ShellConfig, ShellProvider, useShell } from './hooks/use-shell';
 export type { NavItem, NavLink, NavPolicy, NavTo, ShellWorkspace } from './lib/nav';
+export { SCREEN_ROUTES, SCREENS, type ScreenEntry, type ScreenRoute } from './lib/screens';

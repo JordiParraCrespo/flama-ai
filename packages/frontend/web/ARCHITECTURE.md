@@ -23,11 +23,11 @@ importing it configures i18next; everything else is pure and may be dropped.
 | `table` | `DataTable` and its column/facet/sort types, `useTableQuery`, `useClampedPage`, `paginateRows`, `downloadCsv` | middle |
 | `layout` | `PageHead`, the section primitives (`SectionCard`, `SectionRow`, `FieldRow`, …), `ConfirmDialog` | middle |
 | `roles` | `RolePill` | middle |
-| `shell` | `AppShell`, `AppSidebar`, `TopBar`, `UserMenu`, `CommandPalette`, `ShellProvider`/`useShell`, `useAbility`, `useAuthorizedNav`, the nav types | top |
+| `shell` | `AppShell`, `AppSidebar`, `TopBar`, `UserMenu`, `CommandPalette`, `ShellProvider`/`useShell`, `useAbility`, `useAuthorizedNav`, the nav types, the `SCREENS` catalog | top |
 | `auth` | `AuthLayout`, `AuthArtPanel`, `BrandLogo`, the auth primitives, `PasswordInput`, `SocialLoginButtons`, `OAuthCallbackNotice`, `redirectSignedIn` | top |
 
 The lists live in [`.dependency-cruiser.cjs`](.dependency-cruiser.cjs), which
-passes them to `packages/config/depcruise/frontend-kit.cjs`.
+passes them to `packages/tsconfig/depcruise/frontend-kit.cjs`.
 
 ## The layering, and why
 
@@ -76,7 +76,13 @@ what the shell shows — `apps/web/src/routes/_authenticated.tsx`:
 `nav` is the app's own `readonly NavItem[]` from its `lib/nav.ts`: each row
 carries a route, an icon, a `nav.*` label key and the CASL `policies` its
 destination needs, and `useAuthorizedNav` hides the rows the signed-in
-ability does not satisfy. `userMenuLinks` are the account-menu rows above the
+ability does not satisfy. A gated row takes those `policies` from `SCREENS`
+(`src/shell/lib/screens.ts`) rather than writing them out: `SCREENS` pairs
+each route with the endpoint behind it and reads that endpoint's rules from
+`ENDPOINT_POLICIES` in `@flama/shared/permissions`, which the API's own
+`endpoint-policies.spec.ts` pins its controllers to. The route paths live
+here because they are this platform's URLs; only the endpoint contract is
+shared, so the API needs no frontend package to check itself against it. `userMenuLinks` are the account-menu rows above the
 language list, and `workspace` is what the sidebar header names.
 
 ## How an app configures the auth layout

@@ -55,7 +55,7 @@
     "zod": "^3.0.0"
   },
   "devDependencies": {
-    "@flama/config": "workspace:^",
+    "@flama/tsconfig": "workspace:^",
     "@react-navigation/native": "^7.3.18",
     "@sentry/react-native": "~7.11.0",
     "@tanstack/query-sync-storage-persister": "^5.102.8",

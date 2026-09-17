@@ -127,7 +127,7 @@ Module names this app may use: the kernel's `analytics`, `auth`,
 ## What the checkers enforce
 
 `pnpm --filter @flama/admin-mobile arch` (`.dependency-cruiser.cjs` over
-`packages/config/depcruise/frontend-app.cjs`, across `app features lib`):
+`packages/tsconfig/depcruise/frontend-app.cjs`, across `app features lib`):
 
 - `no-circular` — no import cycles, type-only edges excepted.
 - `features-are-islands` — a feature never imports another feature.

@@ -3,7 +3,7 @@
 "@flama/admin-web": minor
 "@flama/translations": minor
 "@flama/auth": minor
-"@flama/config": minor
+"@flama/tsconfig": minor
 "@flama/design-system-web": patch
 "@flama/api-client": patch
 ---
@@ -40,7 +40,7 @@ On the critical path itself:
   hovering a link fetches the route it points at, instead of every navigation
   starting a request.
 - **Dependencies are chunked per library** via a shared
-  `@flama/config/vite-chunks.mjs`, so a release invalidates app code (42KB) and
+  `@flama/tsconfig/vite-chunks.mjs`, so a release invalidates app code (42KB) and
   leaves the vendor chunks cached (263KB). Splitting costs ~48KB gzipped on a
   cold first load, which is the trade the `immutable` caching above pays for —
   the number is recorded in that file.

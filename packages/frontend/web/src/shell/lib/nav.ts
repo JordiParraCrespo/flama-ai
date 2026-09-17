@@ -1,5 +1,5 @@
 import type { LucideIcon } from '@flama/design-system-web/icons';
-import type { ScreenPolicy } from '@flama/shared/navigation';
+import type { EndpointPolicy } from '@flama/shared/permissions';
 import type { Messages } from '@flama/translations/locales';
 import type { LinkProps } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
@@ -19,7 +19,7 @@ export type NavTo = NonNullable<LinkProps['to']>;
  * ability satisfies **every** one (matching the server's `PoliciesGuard`, which
  * ANDs its policies). A row with no policies is always visible.
  */
-export type NavPolicy = ScreenPolicy;
+export type NavPolicy = EndpointPolicy;
 
 /**
  * One row of an app's navigation: what the sidebar lists and the command
@@ -33,9 +33,9 @@ export interface NavItem {
   labelKey: keyof Messages['nav'];
   /**
    * The permissions this row's destination needs — taken from `SCREENS` in
-   * `@flama/shared/navigation`, never written out by hand, so a row cannot
-   * claim less than the endpoint behind it enforces. Omitted or empty means
-   * always visible.
+   * `../lib/screens`, never written out by hand, so a row cannot claim less
+   * than the endpoint behind it enforces. Omitted or empty means always
+   * visible.
    */
   policies?: readonly NavPolicy[];
 }

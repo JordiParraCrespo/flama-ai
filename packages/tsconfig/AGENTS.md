@@ -1,4 +1,4 @@
-# @flama/config — Agent Instructions
+# @flama/tsconfig — Agent Instructions
 
 Shared TypeScript configuration presets extended by every app and package.
 
@@ -15,8 +15,8 @@ vite-chunks.mjs         # Rollup manualChunks shared by the Vite SPAs
 ```
 
 Consumers reference the tsconfigs via
-`"extends": "@flama/config/tsconfig.*.json"` in their own `tsconfig.json`, and
-`vite-chunks.mjs` via `import { vendorChunks } from '@flama/config/vite-chunks.mjs'`
+`"extends": "@flama/tsconfig/tsconfig.*.json"` in their own `tsconfig.json`, and
+`vite-chunks.mjs` via `import { vendorChunks } from '@flama/tsconfig/vite-chunks.mjs'`
 in `vite.config.ts` (typed by the `.d.mts` beside it). It lives here rather than
 in either app because `apps/web` and `apps/admin-web` ship the same dependency
 set and must chunk it the same way.

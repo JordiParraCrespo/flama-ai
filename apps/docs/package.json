@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.2",
-    "@flama/config": "workspace:^",
+    "@flama/tsconfig": "workspace:^",
     "typescript": "^6.0.3"
   },
   "browserslist": {

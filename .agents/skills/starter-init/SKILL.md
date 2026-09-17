@@ -118,7 +118,7 @@ for anything only that app used (`@better-auth/expo`, `EXPO_PUBLIC_`,
 - `.agents/rules/*.md`: a `paths:` glob or a sentence pointing at a removed
   app. Delete the rule if nothing it governs remains.
 - Per-package `README.md` / `AGENTS.md` files that list consumers, including
-  `packages/config`, `packages/auth`, `packages/env`, `packages/frontend`,
+  `packages/tsconfig`, `packages/auth`, `packages/env`, `packages/frontend`,
   `packages/translations`, `packages/frontend/design-system/*`, and the kept apps'
   own `AGENTS.md`.
 - `.env.example`: the header comment lists what each section serves.

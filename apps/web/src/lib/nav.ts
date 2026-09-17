@@ -7,7 +7,7 @@ import type { NavItem, NavLink } from '@flama/frontend-web';
  * model, read by both the sidebar and the command palette, so a page can never
  * appear in one and not the other.
  *
- * A row's `policies` come from `SCREENS` in `@flama/shared/navigation`, never
+ * A row's `policies` come from `SCREENS` in `@flama/frontend-web`, never
  * written out here, so a row cannot claim less than the endpoint behind it
  * enforces. Empty means always visible: the dashboard reads only the caller's
  * own profile, and every user manages their own API tokens under Settings.

@@ -53,7 +53,7 @@ NestJS infrastructure.
 
 ## Shared config dependency
 
-All backend packages depend on `@flama/config` for TypeScript config. Reference it via workspace protocol: `"@flama/config": "workspace:*"`.
+All backend packages depend on `@flama/tsconfig` for TypeScript config. Reference it via workspace protocol: `"@flama/tsconfig": "workspace:*"`.
 
 ## Deliberate exception: `@flama/auth` ships TypeScript sources
 

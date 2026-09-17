@@ -228,9 +228,9 @@ importers:
       '@babel/core':
         specifier: ^7.29.7
         version: 7.29.7
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
@@ -322,9 +322,9 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
@@ -494,9 +494,9 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@nestjs/cli':
         specifier: ^11.0.24
         version: 11.0.24(@swc/core@1.15.24(@swc/helpers@0.5.23))(@types/node@26.5.1)(esbuild@0.28.1)(prettier@3.9.6)
@@ -549,9 +549,9 @@ importers:
         specifier: ^15.0.0
         version: 15.0.0
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
@@ -592,9 +592,9 @@ importers:
       '@docusaurus/module-type-aliases':
         specifier: ^3.10.2
         version: 3.10.2(postcss@8.5.28)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -620,9 +620,9 @@ importers:
         specifier: ^4.2.0
         version: 4.6.5
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@modelcontextprotocol/client':
         specifier: ^2.0.0
         version: 2.0.0
@@ -825,9 +825,9 @@ importers:
       '@babel/core':
         specifier: ^7.29.7
         version: 7.29.7
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
@@ -1121,9 +1121,9 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
@@ -1188,9 +1188,9 @@ importers:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../packages/config
+        version: link:../../packages/tsconfig
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -1241,7 +1241,7 @@ importers:
         specifier: ^1.6.25
         version: 1.6.25(@opentelemetry/api@1.9.1)(next@16.3.5(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.5.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.22.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../config
       typescript:
@@ -1269,7 +1269,7 @@ importers:
         specifier: ^11.1.28
         version: 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.2)
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       reflect-metadata:
@@ -1303,7 +1303,7 @@ importers:
         specifier: ^5.11.1
         version: 5.11.1
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       reflect-metadata:
@@ -1352,7 +1352,7 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@types/express':
@@ -1383,7 +1383,7 @@ importers:
         specifier: ^0.3.31
         version: 0.3.31(ioredis@5.11.1)(pg@8.22.0)(ts-node@10.9.2(@swc/core@1.15.24(@swc/helpers@0.5.23))(@types/node@22.20.1)(typescript@6.0.3))
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@types/node':
@@ -1420,7 +1420,7 @@ importers:
         specifier: ^6.18.0
         version: 6.18.0(@react-email/render@2.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@types/nodemailer':
@@ -1451,7 +1451,7 @@ importers:
         specifier: ^11.1.28
         version: 11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@types/node':
@@ -1491,7 +1491,7 @@ importers:
         specifier: ^5.81.2
         version: 5.81.2
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@types/express':
@@ -1528,7 +1528,7 @@ importers:
         specifier: ^11.1.28
         version: 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.2)
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       reflect-metadata:
@@ -1544,7 +1544,7 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
 
-  packages/config: {}
+  packages/tsconfig: {}
 
   packages/frontend/design-system/mobile:
     dependencies:
@@ -1767,7 +1767,7 @@ importers:
         specifier: ^17.4.2
         version: 17.4.2
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../config
       '@types/node':
@@ -1804,7 +1804,7 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@tanstack/react-query':
@@ -1862,7 +1862,7 @@ importers:
         specifier: ^5.0.14
         version: 5.0.14(@types/react@19.2.14)(immer@11.1.18)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@tanstack/react-query':
@@ -1899,7 +1899,7 @@ importers:
         specifier: ^0.13.1
         version: 0.13.1(@hey-api/openapi-ts@0.99.0(typescript@6.0.3))
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@hey-api/openapi-ts':
@@ -1936,7 +1936,7 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@tanstack/react-query':
@@ -1997,7 +1997,7 @@ importers:
         specifier: ^5.0.14
         version: 5.0.14(@types/react@19.2.14)(immer@11.1.18)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@react-navigation/native':
@@ -2082,7 +2082,7 @@ importers:
         specifier: ^1.432.0
         version: 1.432.0(@types/react@19.2.14)(react@19.2.3)
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../config
       '@tanstack/react-query':
@@ -2203,7 +2203,7 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
         version: link:../config
       typescript:
@@ -2230,9 +2230,9 @@ importers:
       '@biomejs/biome':
         specifier: ^2.5.5
         version: 2.5.5
-      '@flama/config':
+      '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../packages/config
+        version: link:../packages/tsconfig
       '@playwright/test':
         specifier: ^1.57.0
         version: 1.62.1
