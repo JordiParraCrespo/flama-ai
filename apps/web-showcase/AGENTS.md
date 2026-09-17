@@ -32,3 +32,5 @@ src/components/       # showcase chrome (sidebar, etc.)
 pnpm --filter @flama/web-showcase dev
 pnpm --filter @flama/web-showcase build
 ```
+
+See [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md) for the design-system rules this gallery demonstrates.

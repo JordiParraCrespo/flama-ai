@@ -42,3 +42,5 @@ src/
 pnpm --filter @flama/api-client generate
 pnpm --filter @flama/api-client build
 ```
+
+See [`.agents/rules/frontend-architecture.md`](../../../.agents/rules/frontend-architecture.md).

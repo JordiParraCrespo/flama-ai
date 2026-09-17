@@ -32,3 +32,5 @@ pnpm --filter @flama/mobile-showcase dev
 pnpm --filter @flama/mobile-showcase ios
 pnpm --filter @flama/mobile-showcase android
 ```
+
+See [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md) and [`.agents/rules/forms.md`](../../.agents/rules/forms.md).

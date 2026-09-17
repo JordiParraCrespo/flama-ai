@@ -1,59 +1,88 @@
-# @flama/frontend
+# @flama/frontend-core
 
-Platform-agnostic frontend core shared by `apps/web` and `apps/mobile`. Business
-logic, server-state, and auth live here — not in the app UIs — so both platforms
-behave identically. Web and mobile only provide the presentation layer and inject
-platform-specific implementations through the DI container.
+The kernel every frontend app loads. It holds the logic both products share —
+session, users, user settings, deployment capabilities, analytics — as plain
+entities, repositories and services over `@flama/api-client`, plus the React
+bindings that expose them as TanStack Query hooks. Nothing here is web or
+mobile: no DOM, no React Native, no router, so `apps/web`, `apps/admin-web`,
+`apps/mobile` and `apps/admin-mobile` all run the same code. It also owns the
+InversifyJS container (`FlamaApp`, `TOKENS`) the product packages extend, the
+query-cache persistence policy, and the contracts the two products meet on.
 
-## Architecture
+`react` and `@tanstack/react-query` are optional peer dependencies: import
+`@flama/frontend-core/react` only from a React app.
 
-Clean architecture, organized by module (`src/modules/{auth,users,core}`):
+## What it exports
 
+`@flama/frontend-core` (`src/index.ts`) — `config`, `di` and `modules`:
+
+- **di** — `FlamaApp`, `FlamaAppConfig`, `TOKENS`.
+- **modules/analytics** — `AnalyticsService`, `AnalyticsModule`,
+  `NoopAnalyticsClient`, `ANALYTICS_EVENTS`, `isFlagEnabled`,
+  `sanitizeUrlProperties`, the `IAnalyticsClient` port.
+- **modules/auth** — `AuthService`, `AuthRepository`, `AuthModule`,
+  `AuthErrors`, `createAuthStore` (also at `./state`), the `IAuthClient` port.
+- **modules/capabilities** — `CapabilitiesService`, `CapabilitiesRepository`,
+  `CapabilitiesModule`, `CapabilitiesErrors`.
+- **modules/core** — `createCoreModule`, `AppError`, `toAppError`,
+  `MapApiError`, `createErrorMessageResolver`, the `IStorageService` port.
+- **modules/user-settings** / **modules/users** — `UserSettingsEntity`,
+  `UserEntity` and their service, repository, module and errors.
+- **config** (`./config`) — `ConfigManager`, `deepMerge`, `getAttribute`.
+- **validation** (`./validation`) — `createZodErrorMap`,
+  `ValidationMessageKey`.
+
+`@flama/frontend-core/react` (`src/react/index.ts`):
+
+- `FlamaProvider`, `useFlamaApp`, `useAuthState`.
+- Session: `useLogin`, `useLogout`, `useSessionRestore`, `useSocialLogin`,
+  `useForgotPassword`, `useResetPassword`, `useChangePassword`, `authKeys`.
+- Users: `useProfile`, `useUser`, `useUsers`, `useUpdateUser`, `useDeleteUser`,
+  `useMyPermissions`, `usersKeys`.
+- Settings: `useUserSettings`, `useUpdateUserSettings`, `userSettingsKeys`.
+- Analytics: `useAnalytics`, `useCaptureEvent`, `usePageView`,
+  `useFeatureFlag`, `useFeatureFlags`, `analyticsKeys`.
+- Capabilities: `useDeploymentCapabilities`, `capabilitiesKeys`.
+- Cache policy: `defaultQueryClientOptions`, `createQueryPersistOptions`,
+  `shouldDehydrateQuery`, `KERNEL_NON_PERSISTED_FEATURES`, `cacheOwnerKey`.
+- Contracts both products use: `MEMBER_LISTS_KEY`, `withFeaturePrefix`.
+
+## How to use it
+
+`apps/web/src/lib/flama.ts` builds the container; the app's product package
+supplies `modules`:
+
+```ts
+import { consumerModules } from '@flama/frontend-consumer';
+import { FlamaApp } from '@flama/frontend-core';
+import { createWebAnalyticsClient, LocalStorageService } from '@flama/frontend-web';
+import { webAuthClient } from './auth-client';
+
+export const app = FlamaApp.create({
+  apiBaseUrl: import.meta.env.VITE_API_URL ?? '',
+  storage: new LocalStorageService(),
+  authClient: webAuthClient,
+  analytics: createWebAnalyticsClient(),
+  modules: consumerModules,
+});
 ```
-domain        → entities, use cases, ports (interfaces)
-data-access   → adapters over @flama/api-client, better-auth
-presentation  → framework-agnostic view models / query hooks
-```
 
-- **DI**: InversifyJS. `FlamaApp` composes the container from a `FlamaAppConfig`;
-  `TOKENS` are the injection keys. Platform-specific adapters (storage, etc.) are
-  bound by each app.
-- **State**: Zustand _vanilla_ stores, shared across web and mobile.
-- **Server state**: TanStack Query (`@tanstack/query-core`), exposed as React
-  hooks under `./react`. `./react` also exports the shared cache-persistence
-  policy (`defaultQueryClientOptions`, `createQueryPersistOptions`,
-  `shouldDehydrateQuery`) that both apps feed to `PersistQueryClientProvider`.
-- **Auth**: `better-auth`.
+`FlamaProvider` puts it in context (`apps/web/src/providers/flama-provider.tsx`)
+and a screen reads a hook: `const login = useLogin()` in
+`apps/web/src/features/auth/screens/login.tsx`.
 
-## Exports
-
-| Export path             | Contents                                                                             |
-| ----------------------- | ------------------------------------------------------------------------------------ |
-| `@flama/frontend`       | Barrel re-export of DI + modules + React bindings                                    |
-| `@flama/frontend/di`    | `FlamaApp`, `FlamaAppConfig`, `TOKENS`                                               |
-| `@flama/frontend/react` | `FlamaProvider` + query hooks (`useProfile`, `useLogin`, `useLogout`, `useUsers`, …) |
-| `@flama/frontend/state` | Auth Zustand store                                                                   |
-
-`react` and `@tanstack/react-query` are **optional** peer dependencies — import
-`@flama/frontend/react` only from a React app.
-
-## Usage
-
-```tsx
-import { useProfile, useLogout } from "@flama/frontend/react";
-
-const { data: user } = useProfile();
-```
-
-## Scripts
+## How to run it
 
 ```bash
-pnpm build       # tsc -> dist
-pnpm dev         # tsc --watch
-pnpm test        # vitest run
-pnpm lint        # biome check src/
+pnpm --filter @flama/frontend-core lint    # biome check src/
+pnpm --filter @flama/frontend-core test    # vitest run
+pnpm --filter @flama/frontend-core arch    # dependency-cruiser
+pnpm --filter @flama/frontend-core build   # tsc -> dist, what the apps consume
 ```
 
-## Consumed by
+## Depends on / used by
 
-`apps/web`, `apps/mobile`.
+Depends on `@flama/api-client`, `@flama/shared`, `inversify`, `zustand`,
+`better-auth` and `@tanstack/query-core`. Used by
+`@flama/frontend-consumer`, `@flama/frontend-admin`, `@flama/frontend-web`,
+`@flama/frontend-mobile` and all four frontend apps.

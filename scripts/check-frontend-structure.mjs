@@ -22,7 +22,16 @@ const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const errors = [];
 const fail = (message) => errors.push(message);
 
-const KINDS = ['screens', 'sections', 'dialogs', 'forms', 'components', 'hooks', 'lib', '__tests__'];
+const KINDS = [
+  'screens',
+  'sections',
+  'dialogs',
+  'forms',
+  'components',
+  'hooks',
+  'lib',
+  '__tests__',
+];
 const ROUTE_LINE_CAP = 120;
 /** What an app keeps beside its routes and features: configuration, nothing else. */
 const APP_CONFIG_FILES = ['flama.ts', 'auth-client.ts', 'nav.ts', 'query.ts'];
@@ -30,16 +39,63 @@ const APP_CONFIG_FILES = ['flama.ts', 'auth-client.ts', 'nav.ts', 'query.ts'];
 const modulesOf = (pkg) => {
   const dir = join(root, 'packages/frontend', pkg, 'src/modules');
   // `core` is the kernel's own wiring (errors, storage), not something a feature renders.
-  return existsSync(dir) ? readdirSync(dir).filter((n) => n !== 'core' && statSync(join(dir, n)).isDirectory()) : [];
+  return existsSync(dir)
+    ? readdirSync(dir).filter((n) => n !== 'core' && statSync(join(dir, n)).isDirectory())
+    : [];
 };
 const kernel = modulesOf('core');
 
 /** Each frontend app: where its routes and features are, which product it is, what else it may name. */
 const APPS = [
-  { app: 'apps/web', routes: 'src/routes', features: 'src/features', product: 'consumer', allow: ['dashboard', 'public'], kit: 'web' },
-  { app: 'apps/admin-web', routes: 'src/routes', features: 'src/features', product: 'admin', allow: [], kit: 'web' },
-  { app: 'apps/mobile', routes: 'app', features: 'features', product: 'consumer', allow: ['dashboard'], kit: 'mobile' },
-  { app: 'apps/admin-mobile', routes: 'app', features: 'features', product: 'admin', allow: [], kit: 'mobile' },
+  // flama:begin web
+  {
+    app: 'apps/web',
+    routes: 'src/routes',
+    features: 'src/features',
+    product: 'consumer',
+    allow: ['dashboard', 'public'],
+    kit: 'web',
+  },
+  // flama:end web
+  // flama:begin admin-web
+  {
+    app: 'apps/admin-web',
+    routes: 'src/routes',
+    features: 'src/features',
+    product: 'admin',
+    allow: [],
+    kit: 'web',
+  },
+  // flama:end admin-web
+  // flama:begin mobile
+  {
+    app: 'apps/mobile',
+    routes: 'app',
+    features: 'features',
+    product: 'consumer',
+    allow: ['dashboard'],
+    kit: 'mobile',
+  },
+  // flama:end mobile
+  // flama:begin admin-mobile
+  {
+    app: 'apps/admin-mobile',
+    routes: 'app',
+    features: 'features',
+    product: 'admin',
+    allow: [],
+    kit: 'mobile',
+  },
+  // flama:end admin-mobile
+];
+/** The platform kits, documented like the apps they serve. */
+const KITS = [
+  // flama:begin web|admin-web
+  'packages/frontend/web',
+  // flama:end web|admin-web
+  // flama:begin mobile|admin-mobile
+  'packages/frontend/mobile',
+  // flama:end mobile|admin-mobile
 ];
 
 function* walk(dir) {
@@ -56,7 +112,8 @@ const kitBasenames = (kit) => {
   if (!existsSync(dir)) return names;
   for (const file of walk(dir)) {
     const base = file.split('/').pop();
-    if (/\.(spec|test)\.tsx?$/.test(base) || base === 'index.ts' || base.endsWith('.d.ts')) continue;
+    if (/\.(spec|test)\.tsx?$/.test(base) || base === 'index.ts' || base.endsWith('.d.ts'))
+      continue;
     if (/\.tsx?$/.test(base)) names.add(base);
   }
   return names;
@@ -73,16 +130,22 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
     for (const name of readdirSync(featuresDir)) {
       const featureDir = join(featuresDir, name);
       if (!statSync(featureDir).isDirectory()) {
-        fail(`${app}/${features}/${name}: a feature is a directory named after a module; loose files do not belong here`);
+        fail(
+          `${app}/${features}/${name}: a feature is a directory named after a module; loose files do not belong here`,
+        );
         continue;
       }
       if (!allowed.has(name)) {
-        fail(`${app}/${features}/${name}: not a module of @flama/frontend-core or @flama/frontend-${product}, and not on the app's allowlist (${[...allow].join(', ') || 'none'})`);
+        fail(
+          `${app}/${features}/${name}: not a module of @flama/frontend-core or @flama/frontend-${product}, and not on the app's allowlist (${[...allow].join(', ') || 'none'})`,
+        );
       }
       for (const kind of readdirSync(featureDir)) {
         const kindDir = join(featureDir, kind);
         if (!statSync(kindDir).isDirectory()) {
-          fail(`${app}/${features}/${name}/${kind}: a feature holds kind directories (${KINDS.join(', ')}), not files`);
+          fail(
+            `${app}/${features}/${name}/${kind}: a feature holds kind directories (${KINDS.join(', ')}), not files`,
+          );
           continue;
         }
         if (!KINDS.includes(kind)) {
@@ -91,10 +154,14 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
         }
         for (const entry of readdirSync(kindDir, { withFileTypes: true })) {
           if (entry.isDirectory() && kind !== '__tests__') {
-            fail(`${app}/${features}/${name}/${kind}/${entry.name}: a kind directory holds files, never a sub-directory — a feature that wants one is two features`);
+            fail(
+              `${app}/${features}/${name}/${kind}/${entry.name}: a kind directory holds files, never a sub-directory — a feature that wants one is two features`,
+            );
           }
           if (entry.isFile() && entry.name === 'index.ts') {
-            fail(`${app}/${features}/${name}/${kind}/index.ts: no barrels inside a feature; a route imports the screen by its path`);
+            fail(
+              `${app}/${features}/${name}/${kind}/index.ts: no barrels inside a feature; a route imports the screen by its path`,
+            );
           }
         }
       }
@@ -108,7 +175,9 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
       if (!/\.tsx?$/.test(file) || file.endsWith('.gen.ts')) continue;
       const lines = readFileSync(file, 'utf8').split('\n').length;
       if (lines > ROUTE_LINE_CAP) {
-        fail(`${relative(root, file)}: ${lines} lines; a route file composes (cap ${ROUTE_LINE_CAP}). Move the body into ${features}/<module>/screens/`);
+        fail(
+          `${relative(root, file)}: ${lines} lines; a route file composes (cap ${ROUTE_LINE_CAP}). Move the body into ${features}/<module>/screens/`,
+        );
       }
     }
   }
@@ -120,7 +189,9 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
     for (const file of walk(libDir)) {
       const base = file.split('/').pop();
       if (!APP_CONFIG_FILES.includes(base)) {
-        fail(`${relative(root, file)}: an app's lib/ holds only ${APP_CONFIG_FILES.join(', ')}. A helper two screens use belongs in the platform kit; one screen's belongs in its feature's lib/`);
+        fail(
+          `${relative(root, file)}: an app's lib/ holds only ${APP_CONFIG_FILES.join(', ')}. A helper two screens use belongs in the platform kit; one screen's belongs in its feature's lib/`,
+        );
       }
     }
   }
@@ -133,37 +204,56 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
     for (const file of walk(dir)) {
       const base = file.split('/').pop();
       if (shipped.has(base)) {
-        fail(`${relative(root, file)}: @flama/frontend-${kit} already ships ${base}; import it from the kit instead of keeping a copy`);
+        fail(
+          `${relative(root, file)}: @flama/frontend-${kit} already ships ${base}; import it from the kit instead of keeping a copy`,
+        );
       }
     }
   }
 
   // components/ at the app root is the pre-features layout
   for (const legacy of ['src/components', 'components']) {
-    if (existsSync(join(appDir, legacy))) fail(`${app}/${legacy}: components live in ${features}/<module>/<kind>/ or in the platform kit, not at the app root`);
+    if (existsSync(join(appDir, legacy)))
+      fail(
+        `${app}/${legacy}: components live in ${features}/<module>/<kind>/ or in the platform kit, not at the app root`,
+      );
   }
 }
 
 // docs: every workspace package documented, frontend surfaces with an ARCHITECTURE.md
 const workspacePackages = [];
-for (const base of ['apps', 'packages', 'packages/backend', 'packages/design-system', 'packages/frontend', 'packages/go']) {
+const PACKAGE_ROOTS = [
+  'apps',
+  'packages',
+  'packages/backend',
+  'packages/design-system',
+  'packages/frontend',
+  // flama:begin runner
+  'packages/go',
+  // flama:end runner
+];
+for (const base of PACKAGE_ROOTS) {
   const dir = join(root, base);
   if (!existsSync(dir)) continue;
   for (const name of readdirSync(dir)) {
     const pkgDir = join(dir, name);
-    if (statSync(pkgDir).isDirectory() && existsSync(join(pkgDir, 'package.json'))) workspacePackages.push(relative(root, pkgDir));
+    if (statSync(pkgDir).isDirectory() && existsSync(join(pkgDir, 'package.json')))
+      workspacePackages.push(relative(root, pkgDir));
   }
 }
 for (const pkg of workspacePackages) {
   for (const doc of ['README.md', 'AGENTS.md']) {
-    if (!existsSync(join(root, pkg, doc))) fail(`${pkg}: missing ${doc} — every workspace package carries one`);
+    if (!existsSync(join(root, pkg, doc)))
+      fail(`${pkg}: missing ${doc} — every workspace package carries one`);
   }
   const agents = join(root, pkg, 'AGENTS.md');
   if (existsSync(agents) && !/\.agents\/rules\/[a-z-]+\.md/.test(readFileSync(agents, 'utf8'))) {
-    fail(`${pkg}/AGENTS.md: links no rule file under .agents/rules/ — an AGENTS.md is a map to the rules, not a copy of them`);
+    fail(
+      `${pkg}/AGENTS.md: links no rule file under .agents/rules/ — an AGENTS.md is a map to the rules, not a copy of them`,
+    );
   }
 }
-for (const surface of ['apps/web', 'apps/admin-web', 'apps/mobile', 'apps/admin-mobile', 'packages/frontend', 'packages/frontend/web', 'packages/frontend/mobile']) {
+for (const surface of [...APPS.map(({ app }) => app), 'packages/frontend', ...KITS]) {
   if (existsSync(join(root, surface)) && !existsSync(join(root, surface, 'ARCHITECTURE.md'))) {
     fail(`${surface}: missing ARCHITECTURE.md — the layer model and the cookbook live there`);
   }
@@ -175,4 +265,6 @@ if (errors.length > 0) {
   console.error('\nSee .agents/rules/frontend-architecture.md');
   process.exit(1);
 }
-console.log(`Frontend structure: ${APPS.length} apps and ${workspacePackages.length} packages conform.`);
+console.log(
+  `Frontend structure: ${APPS.length} apps and ${workspacePackages.length} packages conform.`,
+);

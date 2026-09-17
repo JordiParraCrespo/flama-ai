@@ -1,41 +1,33 @@
 # @flama/go-core — Agent Instructions
 
-> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first.
-
-The base of the Go toolkit: RFC 7807 problems and the slog logger. Every
-service and every sibling module imports it, so a change here re-runs
-everything above it in Turborepo.
+> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first, then
+> [`packages/go/README.md`](../README.md) for how the Go modules fit
+> together and [`apps/runner/ARCHITECTURE.md`](../../../apps/runner/ARCHITECTURE.md)
+> for the hexagon they serve.
 
 ## Where things go
 
-- A problem every Go service can raise goes in the shared catalog at the
-  bottom of `problem/problem.go` (`RUNNER_00n`). A problem one context raises
-  goes in that context's `domain/errors.go`, not here.
-- New wire members of the document belong on `problem.Details` and must
-  match `packages/backend/core/src/errors/problem-details.ts`; the two are
-  kept identical on purpose.
-- Logger setup lives in `logging/logging.go`; it takes an `Options` struct
-  and never reads the environment.
-- Tests sit next to the code (`problem/problem_test.go`).
+- A new problem is a catalog entry via `problem.New(code, status, title)` in the service that owns it; the shared codes here are the ones every service reports.
+- Log fields go through the `slog` logger `logging.New` builds; no other logger.
+- Anything a second service would copy belongs here; anything one service
+  owns stays in that service under `internal/`.
 
 ## Before pushing
 
 ```bash
-pnpm --filter @flama/go-core lint
-pnpm --filter @flama/go-core test
-pnpm --filter @flama/go-core build
+pnpm --filter @flama/go-core lint    # golangci-lint run ./...
+pnpm --filter @flama/go-core test    # go test -count=1 ./...
+pnpm --filter @flama/runner arch   # the runner's boundary test still passes
 ```
 
 ## Patterns agents get wrong
 
-- Building a `problem.Error` literal by hand instead of `problem.New` (a
-  catalog entry, package-level) plus `WithDetail` per request. The title is
-  the stable catalog message; specifics go in `Detail`.
-- Adding a code without its row under "Runner service" in
-  `apps/docs/docs/errors.md`. The `type` URI resolves to that page.
-- Importing `httpx` from here to get at the request id. `httpx` imports this
-  package; that is why `WithCorrelationID` lives here and takes a context.
-- Mutating a catalog value (`ErrNotFound.Detail = …`). The `With*` methods
-  return copies for a reason: the sentinel is shared across requests.
+- Importing another module's internals instead of its exported type. The
+  modules depend on each other only through what they export: `core` under
+  everything, `auth` on `core` and `httpx`, `ws` on `auth`.
+- Hand-writing a JSON error body. Every failure is an RFC 7807 problem
+  document from `core/problem`, rendered by the `httpx` router.
+- Reaching for a framework. Standard `net/http`, `slog`, interfaces as
+  ports and constructor injection are the whole toolkit.
 
 See [`.agents/rules/go.md`](../../../.agents/rules/go.md).

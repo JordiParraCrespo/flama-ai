@@ -30,3 +30,5 @@ src/
 pnpm --filter @flama/design-system-mobile build
 pnpm --filter @flama/design-system-mobile dev
 ```
+
+See [`.agents/rules/frontend-ui.md`](../../../.agents/rules/frontend-ui.md) and [`.agents/rules/forms.md`](../../../.agents/rules/forms.md).

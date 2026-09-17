@@ -78,17 +78,13 @@
   "overrides": [
     {
       "includes": [
-        "apps/web/src/**",
-        "apps/admin-web/src/**",
-        "apps/mobile/app/**",
-        "apps/mobile/features/**",
-        "apps/mobile/lib/**",
-        "apps/admin-mobile/app/**",
-        "apps/admin-mobile/features/**",
-        "apps/admin-mobile/lib/**",
-        "packages/frontend/web/src/**",
-        "packages/frontend/mobile/src/**",
-        "!**/hooks/**"
+        "apps/*/src/**",
+        "apps/*/app/**",
+        "apps/*/features/**",
+        "apps/*/lib/**",
+        "packages/frontend/*/src/**",
+        "!**/hooks/**",
+        "!packages/frontend/*/src/react/**"
       ],
       "linter": {
         "rules": {
@@ -98,11 +94,7 @@
               "options": {
                 "paths": {
                   "react": {
-                    "importNames": [
-                      "useMemo",
-                      "useCallback",
-                      "memo"
-                    ],
+                    "importNames": ["useMemo", "useCallback", "memo"],
                     "message": "The React Compiler memoises components at build time. Remove the manual memo; a hook that must hand a library a stable identity lives in a hooks/ file, where this is allowed."
                   }
                 }
@@ -114,18 +106,14 @@
     },
     {
       "includes": [
-        "apps/web/src/**",
-        "apps/admin-web/src/**",
-        "apps/mobile/app/**",
-        "apps/mobile/features/**",
-        "apps/mobile/lib/**",
-        "apps/admin-mobile/app/**",
-        "apps/admin-mobile/features/**",
-        "apps/admin-mobile/lib/**",
-        "packages/frontend/web/src/**",
-        "packages/frontend/mobile/src/**",
+        "apps/*/src/**",
+        "apps/*/app/**",
+        "apps/*/features/**",
+        "apps/*/lib/**",
+        "packages/frontend/*/src/**",
         "!**/hooks/**",
-        "!apps/*/app/**/_layout.tsx"
+        "!apps/*/app/**/_layout.tsx",
+        "!packages/frontend/*/src/react/**"
       ],
       "linter": {
         "rules": {

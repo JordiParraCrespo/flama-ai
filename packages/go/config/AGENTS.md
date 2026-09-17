@@ -1,41 +1,33 @@
 # @flama/go-config — Agent Instructions
 
-> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first.
-
-The `.env` loader and typed env accessors shared by Go services. It is the
-Go twin of `@flama/env`: same root marker, same "real variables win" rule,
-same quoting.
+> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first, then
+> [`packages/go/README.md`](../README.md) for how the Go modules fit
+> together and [`apps/runner/ARCHITECTURE.md`](../../../apps/runner/ARCHITECTURE.md)
+> for the hexagon they serve.
 
 ## Where things go
 
-- A new accessor kind (a list, a URL) is a method on `Env` in `env.go` that
-  records its failure with `e.fail` and returns the default, like `Int` and
-  `Duration` do.
-- Dotenv parsing rules are in `dotenv.go` (`parseValue`); keep them in step
-  with what `dotenv` accepts on the Node side.
-- Tests are in `env_test.go` and use a map-backed `Lookup`, never `os.Setenv`.
-- A variable name (`RUNNER_*`) never belongs here; it goes in the service's
-  `internal/config` and in the root `.env.example`.
+- A new variable is a field on the service's config struct read through `Env`; every error is collected and reported together, so add the read, not an early return.
+- The workspace `.env` is found by `FindWorkspaceRoot`; never read a per-service file.
+- Anything a second service would copy belongs here; anything one service
+  owns stays in that service under `internal/`.
 
 ## Before pushing
 
 ```bash
-pnpm --filter @flama/go-config lint
-pnpm --filter @flama/go-config test
-pnpm --filter @flama/go-config build
+pnpm --filter @flama/go-config lint    # golangci-lint run ./...
+pnpm --filter @flama/go-config test    # go test -count=1 ./...
+pnpm --filter @flama/runner arch   # the runner's boundary test still passes
 ```
 
 ## Patterns agents get wrong
 
-- Returning on the first bad variable. Accessors record and continue; the
-  caller checks `env.Err()` once, so an operator sees every problem at once.
-- Treating `FOO=` as set. `Optional` and `Secret` read blank as absent so an
-  empty line in `.env` does not switch a capability on with an empty secret.
-- Loading `.env` in production or letting the file overwrite a real
-  variable. `LoadDotenv` skips keys that exist; the service decides by `Mode`
-  whether to call it at all.
-- Reading `os.Getenv` from inside a module. Constructors take `Options`;
-  only the service's `internal/config` touches the environment.
+- Importing another module's internals instead of its exported type. The
+  modules depend on each other only through what they export: `core` under
+  everything, `auth` on `core` and `httpx`, `ws` on `auth`.
+- Hand-writing a JSON error body. Every failure is an RFC 7807 problem
+  document from `core/problem`, rendered by the `httpx` router.
+- Reaching for a framework. Standard `net/http`, `slog`, interfaces as
+  ports and constructor injection are the whole toolkit.
 
-See [`.agents/rules/go.md`](../../../.agents/rules/go.md) and
-[`.agents/rules/api-config.md`](../../../.agents/rules/api-config.md).
+See [`.agents/rules/go.md`](../../../.agents/rules/go.md).

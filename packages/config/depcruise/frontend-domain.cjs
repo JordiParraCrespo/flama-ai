@@ -14,7 +14,12 @@ module.exports = function frontendDomain({ role }) {
       : [`packages/frontend/${role === 'consumer' ? 'admin' : 'consumer'}/`];
   return {
     forbidden: [
-      { name: 'no-circular', severity: 'error', from: {}, to: { circular: true, viaOnly: { dependencyTypesNot: ['type-only'] } } },
+      {
+        name: 'no-circular',
+        severity: 'error',
+        from: {},
+        to: { circular: true, viaOnly: { dependencyTypesNot: ['type-only'] } },
+      },
       {
         name: 'domain-knows-no-react',
         comment:
@@ -41,13 +46,16 @@ module.exports = function frontendDomain({ role }) {
         to: {
           path: [
             'packages/frontend/(web|mobile)/',
-            'node_modules/(react-dom|react-native|expo-[a-z-]+|@tanstack/react-router)/',
+            'node_modules/(react-dom|@tanstack/react-router)/',
+            // flama:begin mobile|admin-mobile|mobile-showcase
+            'node_modules/(react-native|expo-[a-z-]+)/',
+            // flama:end mobile|admin-mobile|mobile-showcase
           ],
         },
       },
     ],
     options: {
-      doNotFollow: { path: 'node_modules|^\.\./' },
+      doNotFollow: { path: 'node_modules|^../' },
       tsConfig: { fileName: 'tsconfig.json' },
       // 'specify' keeps type-only imports apart from value imports, so a lib/
       // file may name `ReactNode` without being told it renders.

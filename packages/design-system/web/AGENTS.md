@@ -45,3 +45,5 @@ pnpm --filter @flama/design-system-web build
 pnpm --filter @flama/design-system-web dev
 pnpm --filter @flama/design-system-web test   # the barrel-export check
 ```
+
+See [`.agents/rules/frontend-ui.md`](../../../.agents/rules/frontend-ui.md) for how the apps consume these components.

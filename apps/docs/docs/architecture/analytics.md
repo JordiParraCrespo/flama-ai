@@ -43,7 +43,7 @@ silently split funnel:
 
 ```ts
 import { ANALYTICS_EVENTS } from '@flama/frontend-core';
-import { useCaptureEvent } from '@flama/frontend/react';
+import { useCaptureEvent } from '@flama/frontend-core/react';
 
 function UpgradeButton() {
   const { mutate: capture } = useCaptureEvent();
@@ -74,7 +74,7 @@ For events whose trigger is a render rather than an interaction — an upsell
 appeared, an empty state was reached — use `useCaptureOnMount`:
 
 ```ts
-import { useCaptureOnMount } from '@flama/frontend/react';
+import { useCaptureOnMount } from '@flama/frontend-core/react';
 
 function UpsellBanner() {
   useCaptureOnMount(ANALYTICS_EVENTS.USER_SIGNED_UP, { source: 'dashboard' });
@@ -124,7 +124,7 @@ than relaxing the sanitizer.
 ## Feature flags
 
 ```ts
-import { useFeatureFlag } from '@flama/frontend/react';
+import { useFeatureFlag } from '@flama/frontend-core/react';
 
 function Checkout() {
   const useNewFlow = useFeatureFlag('new-checkout');
@@ -149,7 +149,7 @@ query directly when you need the loading state — to hold rendering back until
 flags arrive rather than flashing the control branch:
 
 ```ts
-import { useFeatureFlags } from "@flama/frontend/react";
+import { useFeatureFlags } from "@flama/frontend-core/react";
 
 const { data: flags, isPending } = useFeatureFlags();
 ```

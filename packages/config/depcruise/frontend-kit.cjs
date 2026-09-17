@@ -66,7 +66,7 @@ module.exports = function frontendKit({ leaves, middle, top }) {
       },
     ],
     options: {
-      doNotFollow: { path: 'node_modules|^\.\./' },
+      doNotFollow: { path: 'node_modules|^../' },
       tsConfig: { fileName: 'tsconfig.json' },
       // 'specify' keeps type-only imports apart from value imports, so a lib/
       // file may name `ReactNode` without being told it renders.

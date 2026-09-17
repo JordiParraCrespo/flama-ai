@@ -47,7 +47,7 @@ module.exports = function frontendApp({ product, routes, features, platform }) {
       {
         name: 'features-are-islands',
         comment:
-          'A feature never imports another feature. Something two features need belongs in the platform kit (packages/frontend/web or /mobile), promoted when the second consumer appears.',
+          'A feature never imports another feature. Something two features need belongs in the platform kit, promoted when the second consumer appears.',
         severity: 'error',
         from: { path: `^${features}/([^/]+)/` },
         to: { path: `^${features}/`, pathNot: `^${features}/$1/` },
@@ -70,7 +70,8 @@ module.exports = function frontendApp({ product, routes, features, platform }) {
       },
       {
         name: 'lib-has-no-jsx',
-        comment: 'features/*/lib/ holds types, mappers and constants. Rendering belongs in a component.',
+        comment:
+          'features/*/lib/ holds types, mappers and constants. Rendering belongs in a component.',
         severity: 'error',
         from: { path: `^${features}/[^/]+/lib/` },
         to: { path: 'node_modules/react/', dependencyTypesNot: ['type-only'] },
@@ -94,7 +95,7 @@ module.exports = function frontendApp({ product, routes, features, platform }) {
     options: {
       // Workspace packages resolve to their real path, outside node_modules;
       // their own rules live in their own config, so stop at the boundary.
-      doNotFollow: { path: 'node_modules|^\.\./' },
+      doNotFollow: { path: 'node_modules|^../' },
       tsConfig: { fileName: 'tsconfig.json' },
       // 'specify' keeps type-only imports apart from value imports, so a lib/
       // file may name `ReactNode` without being told it renders.

@@ -1,43 +1,33 @@
 # @flama/go-httpx — Agent Instructions
 
-> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first.
-
-Router, middleware, JSON helpers and server lifecycle on plain `net/http`.
-Everything that touches a request in a Go service passes through here.
+> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first, then
+> [`packages/go/README.md`](../README.md) for how the Go modules fit
+> together and [`apps/runner/ARCHITECTURE.md`](../../../apps/runner/ARCHITECTURE.md)
+> for the hexagon they serve.
 
 ## Where things go
 
-- A cross-cutting middleware (one every service wants) is a `Middleware`
-  constructor in `middleware.go`; the composition root orders it in
-  `Router.Use`. A middleware that knows about credentials belongs in
-  `packages/go/auth`, not here.
-- Body and response helpers go in `json.go` and return `*problem.Error`
-  values from the shared catalog.
-- Listener options are fields on `ServerOptions` in `server.go`; the service
-  fills them from its config.
-- Tests go in `httpx_test.go`, using `httptest` and the `discardLogger`
-  helper in `testing_test.go`.
+- A new middleware is a `Middleware` in its own file, added to the chain in the composition root, never inside a handler.
+- Handlers return errors; `Recover` and the problem writer render them. Do not write a status code by hand.
+- Anything a second service would copy belongs here; anything one service
+  owns stays in that service under `internal/`.
 
 ## Before pushing
 
 ```bash
-pnpm --filter @flama/go-httpx lint
-pnpm --filter @flama/go-httpx test
-pnpm --filter @flama/go-httpx build
+pnpm --filter @flama/go-httpx lint    # golangci-lint run ./...
+pnpm --filter @flama/go-httpx test    # go test -count=1 ./...
+pnpm --filter @flama/runner arch   # the runner's boundary test still passes
 ```
 
 ## Patterns agents get wrong
 
-- Writing an error body from a handler (`http.Error`, a JSON `{"error":…}`).
-  Handlers are `HandlerFunc` and return the error; `Router.Wrap` renders it
-  through `problem.Writer`.
-- Adding `WriteTimeout` to the `http.Server` in `Serve`. It kills WebSocket
-  and streaming connections; bound headers with `ReadHeaderTimeout` and
-  bodies with `MaxBytes` instead.
-- Registering a route on the mux directly to skip the stack, or using a
-  framework's router. Groups inherit the parent stack; `chi` is the only
-  acceptable addition if `Router` ever runs out.
-- Reaching for a `RealIP` with more hops than there are trusted proxies. With
-  zero hops the header is ignored, which is what stops spoofing.
+- Importing another module's internals instead of its exported type. The
+  modules depend on each other only through what they export: `core` under
+  everything, `auth` on `core` and `httpx`, `ws` on `auth`.
+- Hand-writing a JSON error body. Every failure is an RFC 7807 problem
+  document from `core/problem`, rendered by the `httpx` router.
+- Reaching for a framework. Standard `net/http`, `slog`, interfaces as
+  ports and constructor injection are the whole toolkit.
 
 See [`.agents/rules/go.md`](../../../.agents/rules/go.md).

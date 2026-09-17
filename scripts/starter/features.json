@@ -3,7 +3,7 @@
   "features": {
     "web": {
       "title": "Consumer web app",
-      "summary": "apps/web \u2014 Vite + TanStack Router SPA for end users",
+      "summary": "apps/web — Vite + TanStack Router SPA for end users",
       "identifiers": ["apps/web", "@flama/web", "flama-web"],
       "paths": [
         "apps/web",
@@ -14,25 +14,25 @@
     },
     "mobile": {
       "title": "Consumer mobile app",
-      "summary": "apps/mobile \u2014 Expo app for end users (NativeWind, expo-router)",
+      "summary": "apps/mobile — Expo app for end users (NativeWind, expo-router)",
       "identifiers": ["apps/mobile", "@flama/mobile"],
       "paths": ["apps/mobile", "packages/nitro-app-info"]
     },
     "admin-web": {
       "title": "Admin control plane (web)",
-      "summary": "apps/admin-web \u2014 Vite control plane for users, roles and permissions",
+      "summary": "apps/admin-web — Vite control plane for users, roles and permissions",
       "identifiers": ["apps/admin-web", "@flama/admin-web", "flama-admin-web"],
       "paths": ["apps/admin-web", "helm/flama/templates/admin-web-deployment.yaml"]
     },
     "admin-mobile": {
       "title": "Admin control plane (mobile)",
-      "summary": "apps/admin-mobile \u2014 Expo control plane for users and roles",
+      "summary": "apps/admin-mobile — Expo control plane for users and roles",
       "identifiers": ["apps/admin-mobile", "@flama/admin-mobile"],
       "paths": ["apps/admin-mobile", "packages/nitro-app-info"]
     },
     "web-showcase": {
       "title": "Web design-system showcase",
-      "summary": "apps/web-showcase \u2014 Next.js gallery of @flama/design-system-web",
+      "summary": "apps/web-showcase — Next.js gallery of @flama/design-system-web",
       "identifiers": ["apps/web-showcase", "@flama/web-showcase"],
       "paths": [
         "apps/web-showcase",
@@ -57,13 +57,13 @@
     },
     "mobile-showcase": {
       "title": "Mobile design-system showcase",
-      "summary": "apps/mobile-showcase \u2014 Expo gallery of @flama/design-system-mobile",
+      "summary": "apps/mobile-showcase — Expo gallery of @flama/design-system-mobile",
       "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
       "paths": ["apps/mobile-showcase"]
     },
     "docs": {
       "title": "Documentation site",
-      "summary": "apps/docs \u2014 Docusaurus site (architecture, deployment, error catalog)",
+      "summary": "apps/docs — Docusaurus site (architecture, deployment, error catalog)",
       "identifiers": ["apps/docs", "@flama/docs", "flama-docs"],
       "paths": [
         "apps/docs",
@@ -73,19 +73,19 @@
     },
     "cli": {
       "title": "Command-line interface",
-      "summary": "apps/cli \u2014 `flama` CLI driven by scoped API tokens",
+      "summary": "apps/cli — `flama` CLI driven by scoped API tokens",
       "identifiers": ["apps/cli", "@flama/cli"],
       "paths": ["apps/cli", "apps/docs/docs/tooling/cli.md"]
     },
     "mcp": {
       "title": "MCP server",
-      "summary": "apps/mcp \u2014 Model Context Protocol server (stdio + Streamable HTTP) over the API",
+      "summary": "apps/mcp — Model Context Protocol server (stdio + Streamable HTTP) over the API",
       "identifiers": ["apps/mcp", "@flama/mcp", "flama-mcp"],
       "paths": ["apps/mcp", "apps/docs/docs/tooling/mcp.md"]
     },
     "runner": {
       "title": "Go runner service",
-      "summary": "apps/runner + packages/go/* \u2014 Go service template (REST + WS, API keys) the API delegates long-lived work to",
+      "summary": "apps/runner + packages/go/* — Go service template (REST + WS, API keys) the API delegates long-lived work to",
       "identifiers": [
         "apps/runner",
         "@flama/runner",
@@ -108,14 +108,14 @@
     },
     "e2e": {
       "title": "End-to-end tests",
-      "summary": "e2e/ \u2014 Playwright suites against the running API and web app",
+      "summary": "e2e/ — Playwright suites against the running API and web app",
       "identifiers": ["@flama/e2e", "e2e/"],
       "paths": ["e2e"],
       "scripts": ["test:e2e"]
     },
     "qa": {
       "title": "QA scenario pack",
-      "summary": "qa/ \u2014 scenario-driven Playwright QA pack with maturity tracking and screenshots",
+      "summary": "qa/ — scenario-driven Playwright QA pack with maturity tracking and screenshots",
       "identifiers": ["@flama/qa", "qa/"],
       "paths": ["qa", "plans", "docs/screenshots"],
       "requires": ["web", "admin-web", "e2e"],
@@ -124,7 +124,7 @@
     },
     "helm": {
       "title": "Kubernetes Helm chart",
-      "summary": "helm/ \u2014 chart for the Tier 2 (Kubernetes) deployment",
+      "summary": "helm/ — chart for the Tier 2 (Kubernetes) deployment",
       "identifiers": ["helm/"],
       "paths": ["helm", "apps/docs/docs/deployment/tier-2-production.md"]
     }
@@ -198,6 +198,27 @@
           "remove": ["!**/.expo"]
         }
       ]
+    },
+    "scripts/check-frontend-structure.mjs": {
+      "identifiers": ["check-frontend-structure", "check:structure"],
+      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"],
+      "scripts": ["check:structure"]
+    },
+    "scripts/scaffold-feature.mjs": {
+      "identifiers": ["scaffold-feature.mjs"],
+      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+    },
+    ".agents/skills/scaffold-feature": {
+      "identifiers": [".agents/skills/scaffold-feature", "/scaffold-feature"],
+      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+    },
+    "packages/config/depcruise/frontend-app.cjs": {
+      "identifiers": ["depcruise/frontend-app"],
+      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+    },
+    "packages/config/depcruise/frontend-kit.cjs": {
+      "identifiers": ["depcruise/frontend-kit"],
+      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
     }
   },
   "tooling": {
