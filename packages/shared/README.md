@@ -34,9 +34,10 @@ import { PAGINATION } from "@flama/shared/constants";
 - `ENDPOINT_POLICIES` declares what each guarded endpoint demands, keyed by the
   path the API mounts it at. A client that hides a destination behind
   permissions reads its rules from here rather than restating them.
-- A client's own route paths are **not** shared. The web shell's screen catalog
-  lives in `@flama/frontend-web` and maps its routes onto these endpoints, so
-  the API never depends on a frontend package to check itself.
+- A client's own route paths are **not** shared — they stay in the app that
+  mounts them, and a gated nav row names the endpoint it reads. That is what
+  lets `apps/api` check its controllers against the catalog without depending
+  on a frontend package.
 
 ## Scripts
 

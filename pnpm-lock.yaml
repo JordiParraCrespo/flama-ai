@@ -1243,7 +1243,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../config
+        version: link:../tsconfig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1271,7 +1271,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -1305,7 +1305,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -1354,7 +1354,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
@@ -1385,7 +1385,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
@@ -1422,7 +1422,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       '@types/nodemailer':
         specifier: ^8.0.1
         version: 8.0.1
@@ -1453,7 +1453,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
@@ -1493,7 +1493,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
@@ -1530,7 +1530,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -1544,7 +1544,211 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
 
-  packages/tsconfig: {}
+  packages/env:
+    dependencies:
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
+    devDependencies:
+      '@flama/tsconfig':
+        specifier: workspace:^
+        version: link:../tsconfig
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+
+  packages/frontend/admin:
+    dependencies:
+      '@flama/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../core
+      '@flama/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@tanstack/query-core':
+        specifier: 5.102.8
+        version: 5.102.8
+      inversify:
+        specifier: ^8.2.3
+        version: 8.2.3(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@flama/tsconfig':
+        specifier: workspace:^
+        version: link:../../tsconfig
+      '@tanstack/react-query':
+        specifier: 5.102.8
+        version: 5.102.8(react@19.2.3)
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/react':
+        specifier: 19.2.14
+        version: 19.2.14
+      dependency-cruiser:
+        specifier: ^18.1.0
+        version: 18.1.0
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1(@noble/hashes@2.2.0)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+
+  packages/frontend/api-client:
+    dependencies:
+      '@hey-api/client-fetch':
+        specifier: ^0.13.1
+        version: 0.13.1(@hey-api/openapi-ts@0.99.0(typescript@6.0.3))
+    devDependencies:
+      '@flama/tsconfig':
+        specifier: workspace:^
+        version: link:../../tsconfig
+      '@hey-api/openapi-ts':
+        specifier: ^0.99.0
+        version: 0.99.0(typescript@6.0.3)
+      '@tanstack/react-query':
+        specifier: 5.102.8
+        version: 5.102.8(react@19.2.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/frontend/consumer:
+    dependencies:
+      '@flama/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@flama/frontend-core':
+        specifier: workspace:*
+        version: link:../core
+      '@flama/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@tanstack/query-core':
+        specifier: 5.102.8
+        version: 5.102.8
+      inversify:
+        specifier: ^8.2.3
+        version: 8.2.3(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@flama/tsconfig':
+        specifier: workspace:^
+        version: link:../../tsconfig
+      '@tanstack/react-query':
+        specifier: 5.102.8
+        version: 5.102.8(react@19.2.3)
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/react':
+        specifier: 19.2.14
+        version: 19.2.14
+      dependency-cruiser:
+        specifier: ^18.1.0
+        version: 18.1.0
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1(@noble/hashes@2.2.0)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+
+  packages/frontend/core:
+    dependencies:
+      '@flama/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      '@flama/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@tanstack/query-core':
+        specifier: 5.102.8
+        version: 5.102.8
+      better-auth:
+        specifier: ^1.6.25
+        version: 1.6.25(@opentelemetry/api@1.9.1)(next@16.3.5(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.5.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.22.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))
+      inversify:
+        specifier: ^8.2.3
+        version: 8.2.3(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+      zustand:
+        specifier: ^5.0.14
+        version: 5.0.14(@types/react@19.2.14)(immer@11.1.18)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
+    devDependencies:
+      '@flama/tsconfig':
+        specifier: workspace:^
+        version: link:../../tsconfig
+      '@tanstack/react-query':
+        specifier: 5.102.8
+        version: 5.102.8(react@19.2.3)
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/react':
+        specifier: 19.2.14
+        version: 19.2.14
+      dependency-cruiser:
+        specifier: ^18.1.0
+        version: 18.1.0
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1(@noble/hashes@2.2.0)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
 
   packages/frontend/design-system/mobile:
     dependencies:
@@ -1761,212 +1965,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/env:
-    dependencies:
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
-    devDependencies:
-      '@flama/tsconfig':
-        specifier: workspace:^
-        version: link:../config
-      '@types/node':
-        specifier: ^22.20.1
-        version: 22.20.1
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^5.0.0
-        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
-
-  packages/frontend/admin:
-    dependencies:
-      '@flama/api-client':
-        specifier: workspace:*
-        version: link:../api-client
-      '@flama/frontend-core':
-        specifier: workspace:*
-        version: link:../core
-      '@flama/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      '@tanstack/query-core':
-        specifier: 5.102.8
-        version: 5.102.8
-      inversify:
-        specifier: ^8.2.3
-        version: 8.2.3(reflect-metadata@0.2.2)
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
-      zod:
-        specifier: ^3.25.76
-        version: 3.25.76
-    devDependencies:
-      '@flama/tsconfig':
-        specifier: workspace:^
-        version: link:../../config
-      '@tanstack/react-query':
-        specifier: 5.102.8
-        version: 5.102.8(react@19.2.3)
-      '@testing-library/react':
-        specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@types/react':
-        specifier: 19.2.14
-        version: 19.2.14
-      dependency-cruiser:
-        specifier: ^18.1.0
-        version: 18.1.0
-      jsdom:
-        specifier: ^30.0.1
-        version: 30.0.1(@noble/hashes@2.2.0)
-      react:
-        specifier: 19.2.3
-        version: 19.2.3
-      react-dom:
-        specifier: 19.2.3
-        version: 19.2.3(react@19.2.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^5.0.0
-        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
-
-  packages/frontend/core:
-    dependencies:
-      '@flama/api-client':
-        specifier: workspace:*
-        version: link:../api-client
-      '@flama/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      '@tanstack/query-core':
-        specifier: 5.102.8
-        version: 5.102.8
-      better-auth:
-        specifier: ^1.6.25
-        version: 1.6.25(@opentelemetry/api@1.9.1)(next@16.3.5(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.5.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.22.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))
-      inversify:
-        specifier: ^8.2.3
-        version: 8.2.3(reflect-metadata@0.2.2)
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
-      zod:
-        specifier: ^3.25.76
-        version: 3.25.76
-      zustand:
-        specifier: ^5.0.14
-        version: 5.0.14(@types/react@19.2.14)(immer@11.1.18)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
-    devDependencies:
-      '@flama/tsconfig':
-        specifier: workspace:^
-        version: link:../../config
-      '@tanstack/react-query':
-        specifier: 5.102.8
-        version: 5.102.8(react@19.2.3)
-      '@testing-library/react':
-        specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@types/react':
-        specifier: 19.2.14
-        version: 19.2.14
-      dependency-cruiser:
-        specifier: ^18.1.0
-        version: 18.1.0
-      jsdom:
-        specifier: ^30.0.1
-        version: 30.0.1(@noble/hashes@2.2.0)
-      react:
-        specifier: 19.2.3
-        version: 19.2.3
-      react-dom:
-        specifier: 19.2.3
-        version: 19.2.3(react@19.2.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^5.0.0
-        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
-
-  packages/frontend/api-client:
-    dependencies:
-      '@hey-api/client-fetch':
-        specifier: ^0.13.1
-        version: 0.13.1(@hey-api/openapi-ts@0.99.0(typescript@6.0.3))
-    devDependencies:
-      '@flama/tsconfig':
-        specifier: workspace:^
-        version: link:../../config
-      '@hey-api/openapi-ts':
-        specifier: ^0.99.0
-        version: 0.99.0(typescript@6.0.3)
-      '@tanstack/react-query':
-        specifier: 5.102.8
-        version: 5.102.8(react@19.2.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-
-  packages/frontend/consumer:
-    dependencies:
-      '@flama/api-client':
-        specifier: workspace:*
-        version: link:../api-client
-      '@flama/frontend-core':
-        specifier: workspace:*
-        version: link:../core
-      '@flama/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      '@tanstack/query-core':
-        specifier: 5.102.8
-        version: 5.102.8
-      inversify:
-        specifier: ^8.2.3
-        version: 8.2.3(reflect-metadata@0.2.2)
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
-      zod:
-        specifier: ^3.25.76
-        version: 3.25.76
-    devDependencies:
-      '@flama/tsconfig':
-        specifier: workspace:^
-        version: link:../../config
-      '@tanstack/react-query':
-        specifier: 5.102.8
-        version: 5.102.8(react@19.2.3)
-      '@testing-library/react':
-        specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@types/react':
-        specifier: 19.2.14
-        version: 19.2.14
-      dependency-cruiser:
-        specifier: ^18.1.0
-        version: 18.1.0
-      jsdom:
-        specifier: ^30.0.1
-        version: 30.0.1(@noble/hashes@2.2.0)
-      react:
-        specifier: 19.2.3
-        version: 19.2.3
-      react-dom:
-        specifier: 19.2.3
-        version: 19.2.3(react@19.2.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: ^5.0.0
-        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
-
   packages/frontend/mobile:
     dependencies:
       '@flama/design-system-mobile':
@@ -1999,7 +1997,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       '@react-navigation/native':
         specifier: ^7.3.18
         version: 7.3.18(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
@@ -2058,6 +2056,18 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
 
+  packages/frontend/nitro-app-info:
+    devDependencies:
+      nitrogen:
+        specifier: 0.37.1
+        version: 0.37.1(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
+      react-native-nitro-modules:
+        specifier: 0.37.1
+        version: 0.37.1(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/frontend/web:
     dependencies:
       '@flama/design-system-web':
@@ -2084,7 +2094,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../../config
+        version: link:../../tsconfig
       '@tanstack/react-query':
         specifier: 5.102.8
         version: 5.102.8(react@19.2.3)
@@ -2182,18 +2192,6 @@ importers:
         specifier: workspace:*
         version: link:../httpx
 
-  packages/frontend/nitro-app-info:
-    devDependencies:
-      nitrogen:
-        specifier: 0.37.1
-        version: 0.37.1(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
-      react-native-nitro-modules:
-        specifier: 0.37.1
-        version: 0.37.1(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   packages/shared:
     dependencies:
       '@casl/ability':
@@ -2205,7 +2203,7 @@ importers:
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^
-        version: link:../config
+        version: link:../tsconfig
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -2214,6 +2212,8 @@ importers:
         version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
 
   packages/translations: {}
+
+  packages/tsconfig: {}
 
   qa:
     dependencies:

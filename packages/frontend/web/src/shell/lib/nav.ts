@@ -32,8 +32,9 @@ export interface NavItem {
   icon: LucideIcon;
   labelKey: keyof Messages['nav'];
   /**
-   * The permissions this row's destination needs — taken from `SCREENS` in
-   * `../lib/screens`, never written out by hand, so a row cannot claim less
+   * The permissions this row's destination needs. A gated row takes them from
+   * `ENDPOINT_POLICIES` in `@flama/shared/permissions`, keyed by the endpoint
+   * its screen reads — never a literal rule list, so a row cannot claim less
    * than the endpoint behind it enforces. Omitted or empty means always
    * visible.
    */

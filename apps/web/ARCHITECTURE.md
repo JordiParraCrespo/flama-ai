@@ -116,8 +116,9 @@ node scripts/scaffold-feature.mjs --app web --module api-tokens [--screen api-to
 
 It creates the eight kind directories with a note in each and a first screen.
 Then: write the screen, add a route in `src/routes/` that mounts it, add a nav
-row in `src/lib/nav.ts` if the screen is a destination (its `policies` come
-from `SCREENS` in `@flama/frontend-web`), add the translation keys, and
+row in `src/lib/nav.ts` if the screen is a destination (a gated row's
+`policies` come from `ENDPOINT_POLICIES` in `@flama/shared/permissions`, keyed
+by the endpoint it reads), add the translation keys, and
 add a spec in `e2e/tests/web/`.
 
 Module names this app may use: the kernel's `analytics`, `auth`,
@@ -167,9 +168,10 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
   and `getSession` consumes `public/session-preload.js` when the API is
   same-origin.
 - **`nav.ts`** — the workspace's two destinations, `/dashboard` and
-  `/settings`, plus `USER_MENU_LINKS`. Each row's `policies` come from
-  `SCREENS` in `@flama/frontend-web`, which reads them from the API's own
-  `ENDPOINT_POLICIES`; `apps/admin-web` lists `/users` and `/roles` instead.
+  `/settings`, plus `USER_MENU_LINKS`. Both rows are ungated (`policies: []`);
+  a row that needs a permission takes it from `ENDPOINT_POLICIES` in
+  `@flama/shared/permissions`, never a literal rule list. `apps/admin-web`
+  lists `/users` and `/roles` instead.
 
 The query client is a provider, not a lib file: `src/providers/query-provider.tsx`
 applies the kernel's persistence policy with `CONSUMER_NON_PERSISTED_FEATURES`,

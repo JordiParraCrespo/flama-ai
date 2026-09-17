@@ -1,5 +1,5 @@
 import { CHECK_POLICIES_KEY, type PolicyRule } from '@flama/backend-authz';
-import { ENDPOINT_POLICIES, type EndpointPolicy, type GuardedEndpoint } from '@flama/shared';
+import { ENDPOINT_POLICIES, type GuardedEndpoint } from '@flama/shared';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { describe, expect, it } from 'vitest';
 import { AdminController } from '../../admin/admin.controller';
@@ -18,13 +18,11 @@ import { FindRolesHttpController } from '../../roles/queries/find-roles/find-rol
  * everyone while the read behind it demands a permission a plain member does
  * not hold is a link that can only answer 403.
  *
- * The web shell's screen catalog (`@flama/frontend-web`) now reads its
- * policies from `ENDPOINT_POLICIES`, and this test is the other half: adding,
- * removing or changing a `@CheckPolicies` on one of these handlers fails here
- * until the catalog is brought along with it. Nothing else in the build would
- * notice. The route paths the shell links to are that app's own and live with
- * it; only the API contract is shared, which is why this test needs no
- * frontend package to run.
+ * This is the half that holds the server to it: adding, removing or changing a
+ * `@CheckPolicies` on one of these handlers fails here until the catalog is
+ * brought along with it, and nothing else in the build would notice. Client
+ * route paths are not in it — a nav row names its endpoint where the row
+ * lives — so this test needs no frontend package to run.
  */
 
 /** The handler each guarded endpoint's data actually comes from. */
@@ -61,7 +59,7 @@ describe('the endpoint policy catalog and the handlers behind it', () => {
     [GuardedEndpoint, { controller: object; handler: string }]
   >) {
     it(`${endpoint} demands exactly what ENDPOINT_POLICIES says it does`, () => {
-      const declared = (ENDPOINT_POLICIES[endpoint] as readonly EndpointPolicy[])
+      const declared = ENDPOINT_POLICIES[endpoint]
         .map((policy) => `${policy.action} ${policy.subject}`)
         .sort();
 

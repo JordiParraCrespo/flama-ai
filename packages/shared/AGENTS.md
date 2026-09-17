@@ -41,13 +41,12 @@ src/
 ## What does not live here
 
 A client's own vocabulary, even when it is derived from a contract that does.
-Route paths are the clearest case: `/team` and `/api-tokens` are the web
-shell's URLs, `apps/mobile` reaches the same endpoints under other names, and
-nothing on the server has an opinion about either. The screen catalog that maps
-those routes onto endpoints lives in `@flama/frontend-web`
-(`src/shell/lib/screens.ts`) and reads its rules from `ENDPOINT_POLICIES`
-here — so the contract stays in one place and the API never takes a dependency
-on a frontend package to check itself against it.
+Route paths are the clearest case: a URL belongs to the app that mounts it, and
+`apps/web`, `apps/admin-web` and `apps/mobile` reach the same endpoints under
+different names. A nav row that gates on a permission names its endpoint where
+the row is declared and reads `ENDPOINT_POLICIES[<endpoint>]`; there is no
+shared route list, and the API takes no dependency on a frontend package to
+check itself against the catalog.
 
 The test is whether both tiers would need the thing if the other were replaced
 wholesale. A DTO shape, a role name, an endpoint's rules: yes. A screen, a

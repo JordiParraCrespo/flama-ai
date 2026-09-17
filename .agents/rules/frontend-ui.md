@@ -86,19 +86,23 @@ list narrows and debounces the URL write.
   what the table wrote on the next navigation. `/settings` is the example.
 - A list the server hands over whole is sliced with the kit's `paginateRows`.
 
-## A nav row's permissions come from the screen catalog
+## A gated nav row's permissions are the endpoint's own
 
-`NAV` in `apps/web/src/lib/nav.ts` takes each row's `policies` from `SCREENS`
-in `@flama/frontend-web`, which in turn reads them from `ENDPOINT_POLICIES` in
-`@flama/shared/permissions` — the API's own declaration. Never write a policy
-list in the nav file, and never add a row for a screen absent from the catalog:
-`apps/api/src/auth/__tests__/endpoint-policies.spec.ts` asserts the endpoint
-carries exactly the rules the catalog names. Why: a row declared `policies: []`
-while its endpoint demanded `read Member`, so members got a link to a 403.
+A row in an app's `lib/nav.ts` that needs a permission takes its `policies`
+from `ENDPOINT_POLICIES` in `@flama/shared/permissions`, keyed by the endpoint
+the screen reads — `policies: ENDPOINT_POLICIES['/tokens']`. Never a literal
+`[{ action, subject }]`: that is a second copy of a rule the server already
+owns, and `apps/api/src/auth/__tests__/endpoint-policies.spec.ts` holds the
+controller to the catalog entry, not to your copy. Why: a row declared
+`policies: []` while its endpoint demanded `read Member`, so members got a link
+to a 403.
 
-A new gated screen is two lines: the endpoint and its rules in
-`ENDPOINT_POLICIES`, then the route → endpoint pairing in `SCREENS`. The route
-paths stay on the web side; only the API contract is shared.
+The route string lives in the app that mounts it. `apps/web` and
+`apps/admin-web` have different URLs over the same endpoints, and `apps/mobile`
+different again, so there is no shared route list to look one up in — the nav
+row names the endpoint directly. Today both `apps/web` rows are ungated
+(`policies: []`) and `apps/admin-web` sits behind one `canAccessControlPlane`
+gate, so the first gated row is still to be written.
 
 A screen the product picks for the reader (the dashboard `/` redirects to)
 checks its own policies through `useLandingRoute` and answers `null` rather
