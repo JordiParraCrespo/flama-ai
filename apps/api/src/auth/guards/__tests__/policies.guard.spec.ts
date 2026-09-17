@@ -4,7 +4,7 @@ import { defineAbilitiesFromPermissions } from '@flama/shared';
 import type { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AbilityFactory } from '../../../roles/services/ability.factory';
+import type { AbilityFactory } from '../../../roles/application/ability.factory';
 import { CHECK_POLICIES_KEY } from '../../decorators/check-policies.decorator';
 import { AuthErrors } from '../../domain/auth.errors';
 import { PoliciesGuard } from '../policies.guard';

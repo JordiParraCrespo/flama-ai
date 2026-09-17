@@ -3,7 +3,7 @@ import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { QueueModule } from '../queue/queue.module';
-import { OutboxRelayService } from './outbox-relay.service';
+import { OutboxRelayService } from './infrastructure/outbox-relay.adapter';
 
 /**
  * Transactional outbox wiring. Global because every repository stages its

@@ -2,16 +2,18 @@ import { Global, Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/user.module';
+import { AbilityFactory } from './application/ability.factory';
+import { RoleGrantPolicy } from './application/role-grant.policy';
+import { AssignUserRolesCommandHandler } from './commands/assign-user-roles/assign-user-roles.command-handler';
 import { AssignUserRolesHttpController } from './commands/assign-user-roles/assign-user-roles.http.controller';
-import { AssignUserRolesService } from './commands/assign-user-roles/assign-user-roles.service';
+import { CreateRoleCommandHandler } from './commands/create-role/create-role.command-handler';
 import { CreateRoleHttpController } from './commands/create-role/create-role.http.controller';
-import { CreateRoleService } from './commands/create-role/create-role.service';
+import { DeleteRoleCommandHandler } from './commands/delete-role/delete-role.command-handler';
 import { DeleteRoleHttpController } from './commands/delete-role/delete-role.http.controller';
-import { DeleteRoleService } from './commands/delete-role/delete-role.service';
+import { UpdateRoleCommandHandler } from './commands/update-role/update-role.command-handler';
 import { UpdateRoleHttpController } from './commands/update-role/update-role.http.controller';
-import { UpdateRoleService } from './commands/update-role/update-role.service';
+import { UpdateRolePermissionsCommandHandler } from './commands/update-role-permissions/update-role-permissions.command-handler';
 import { UpdateRolePermissionsHttpController } from './commands/update-role-permissions/update-role-permissions.http.controller';
-import { UpdateRolePermissionsService } from './commands/update-role-permissions/update-role-permissions.service';
 import { RoleOrmEntity } from './database/role.orm-entity';
 import { RoleRepository } from './database/role.repository';
 import { UserRoleOrmEntity } from './database/user-role.orm-entity';
@@ -24,8 +26,6 @@ import { FindUserRolesHttpController } from './queries/find-user-roles/find-user
 import { FindUserRolesQueryHandler } from './queries/find-user-roles/find-user-roles.query-handler';
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from './roles.di-tokens';
 import { RoleMapper } from './roles.mapper';
-import { AbilityFactory } from './services/ability.factory';
-import { RoleGrantPolicy } from './services/role-grant.policy';
 
 // Register list/static routes before parameterized ones.
 const httpControllers = [
@@ -40,11 +40,11 @@ const httpControllers = [
 ];
 
 const commandHandlers: Provider[] = [
-  CreateRoleService,
-  UpdateRoleService,
-  UpdateRolePermissionsService,
-  DeleteRoleService,
-  AssignUserRolesService,
+  CreateRoleCommandHandler,
+  UpdateRoleCommandHandler,
+  UpdateRolePermissionsCommandHandler,
+  DeleteRoleCommandHandler,
+  AssignUserRolesCommandHandler,
 ];
 
 const queryHandlers: Provider[] = [

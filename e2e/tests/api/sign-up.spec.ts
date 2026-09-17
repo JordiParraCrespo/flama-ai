@@ -55,7 +55,7 @@ test.describe('sign-up', () => {
    * the account got them by creating one instead — the hook handed out an
    * organization the default `user` role could not open, so registering landed
    * on a dashboard that answered 403 (see the note in
-   * `apps/api/src/auth/auth.ts`). These two specs kept asserting the old
+   * `apps/api/src/auth/infrastructure/better-auth.config.ts`). These two specs kept asserting the old
    * behaviour and had been failing ever since; nothing ran them. Re-pointed at
    * the contract that replaced it, so re-introducing the hook fails here.
    *

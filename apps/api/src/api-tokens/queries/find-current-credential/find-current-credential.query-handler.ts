@@ -1,6 +1,6 @@
 import { expandScopes, grantableScopes, type Scope, sortScopes } from '@flama/shared';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { AbilityFactory } from '../../../roles/services/ability.factory';
+import { AbilityFactory } from '../../../roles/application/ability.factory';
 import { FindCurrentCredentialQuery } from './find-current-credential.query';
 
 export interface CurrentCredentialScopes {

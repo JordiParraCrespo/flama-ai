@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Session } from '../auth/entities/session.entity';
+import { Session } from '../auth/database/session.orm-entity';
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';

@@ -1,6 +1,6 @@
 import type { PermissionDefinition } from '@flama/shared';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { AbilityFactory } from '../../../roles/services/ability.factory';
+import { AbilityFactory } from '../../../roles/application/ability.factory';
 import { GetMyPermissionsQuery } from './get-my-permissions.query';
 
 @QueryHandler(GetMyPermissionsQuery)
