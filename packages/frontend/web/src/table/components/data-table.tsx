@@ -199,7 +199,9 @@ export function DataTable<TRow>({
    *
    * Storing the identity beside the keys is what makes "drop it when the query
    * moves" a derivation rather than an effect: there is no moment where the
-   * old selection renders against the new rows.
+   * old selection renders against the new rows. The reset below then commits
+   * the drop, so coming back to the same page later does not resurrect ticks
+   * the reader stopped seeing when they left.
    */
   const queryIdentity = JSON.stringify([
     pagination.page,
@@ -212,6 +214,9 @@ export function DataTable<TRow>({
     identity: string;
     keys: ReadonlySet<string>;
   }>(() => ({ identity: queryIdentity, keys: NO_SELECTION }));
+  if (selection.identity !== queryIdentity) {
+    setSelection({ identity: queryIdentity, keys: NO_SELECTION });
+  }
   const selected = selection.identity === queryIdentity ? selection.keys : NO_SELECTION;
 
   /** Applies `update` to the selection made under the current query. */
