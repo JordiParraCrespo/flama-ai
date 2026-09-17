@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRepositoryPort } from '../../../../users/database/user.repository.port';
 import { UserEntity } from '../../../../users/domain/user.entity';
 import { Email } from '../../../../users/domain/value-objects/email.value-object';
-import type { AvatarStorage } from '../../../infrastructure/avatar-storage.adapter';
+import type { AvatarStorageAdapter } from '../../../infrastructure/avatar-storage.adapter';
 import { DeleteAvatarCommand } from '../delete-avatar.command';
 import { DeleteAvatarCommandHandler } from '../delete-avatar.command-handler';
 
@@ -40,7 +40,7 @@ describe('DeleteAvatarCommandHandler', () => {
     avatars = { remove: vi.fn().mockResolvedValue(undefined) };
     service = new DeleteAvatarCommandHandler(
       repo as UserRepositoryPort,
-      avatars as unknown as AvatarStorage,
+      avatars as unknown as AvatarStorageAdapter,
     );
   });
 

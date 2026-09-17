@@ -1,5 +1,7 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { ProfileAuthFacade } from '../../infrastructure/profile-auth.gateway';
+import type { ProfileAuthPort } from '../../infrastructure/profile-auth.port';
+import { PROFILE_AUTH } from '../../profile.di-tokens';
 import { ChangePasswordCommand } from './change-password.command';
 
 /**
@@ -12,7 +14,10 @@ import { ChangePasswordCommand } from './change-password.command';
  */
 @CommandHandler(ChangePasswordCommand)
 export class ChangePasswordCommandHandler implements ICommandHandler<ChangePasswordCommand, void> {
-  constructor(private readonly profileAuth: ProfileAuthFacade) {}
+  constructor(
+    @Inject(PROFILE_AUTH)
+    private readonly profileAuth: ProfileAuthPort,
+  ) {}
 
   async execute(command: ChangePasswordCommand): Promise<void> {
     await this.profileAuth.changePassword(command.headers, {

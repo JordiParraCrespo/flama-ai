@@ -5,7 +5,8 @@ import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { UserRepositoryPort } from '../../../users/database/user.repository.port';
 import { USER_REPOSITORY } from '../../../users/user.di-tokens';
 import { ProfileErrors } from '../../domain/profile.errors';
-import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
+import type { AvatarStoragePort } from '../../infrastructure/avatar-storage.port';
+import { AVATAR_STORAGE } from '../../profile.di-tokens';
 import { DeleteAvatarCommand } from './delete-avatar.command';
 
 /**
@@ -22,7 +23,8 @@ export class DeleteAvatarCommandHandler
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepositoryPort,
-    private readonly avatars: AvatarStorage,
+    @Inject(AVATAR_STORAGE)
+    private readonly avatars: AvatarStoragePort,
   ) {}
 
   async execute(command: DeleteAvatarCommand): Promise<AggregateID> {

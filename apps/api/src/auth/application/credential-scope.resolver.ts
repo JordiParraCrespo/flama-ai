@@ -10,13 +10,9 @@ import {
 } from '../../api-tokens/domain/api-token-secret.factory';
 import type { UserRepositoryPort } from '../../users/database/user.repository.port';
 import { USER_REPOSITORY } from '../../users/user.di-tokens';
-import { auth } from '../infrastructure/better-auth.config';
-import { betterAuthHeaders } from '../infrastructure/better-auth.util';
-import type {
-  CredentialOwner,
-  ScopeContext,
-  ScopedRequest,
-} from '../infrastructure/scope-context.types';
+import { CREDENTIAL_VERIFIER } from '../auth.di-tokens';
+import type { CredentialOwner, ScopeContext, ScopedRequest } from '../domain/scope-context.types';
+import type { CredentialVerifierPort } from '../infrastructure/credential-verifier.port';
 
 /** Header carrying an API token, for clients that prefer it over `Authorization`. */
 const API_KEY_HEADER = 'x-api-key';
@@ -53,6 +49,8 @@ export class CredentialScopeResolver {
     private readonly apiTokens: ApiTokenRepositoryPort,
     @Inject(USER_REPOSITORY)
     private readonly users: UserRepositoryPort,
+    @Inject(CREDENTIAL_VERIFIER)
+    private readonly credentials: CredentialVerifierPort,
   ) {}
 
   /** Resolve (once per request) the scoped credential, or `null` for a session. */
@@ -121,18 +119,13 @@ export class CredentialScopeResolver {
   }
 
   private async resolveOAuthToken(request: ScopedRequest): Promise<ScopeContext | null> {
-    const session = await auth.api
-      .getMcpSession({ headers: betterAuthHeaders(request.headers) })
-      .catch((error) => {
-        this.logger.debug(`OAuth token verification failed: ${describe(error)}`);
-        return null;
-      });
+    const session = await this.credentials.verifyOAuthGrant(request.headers);
 
-    // Not an OAuth access token. It may still be a Better Auth *session* token
-    // presented as a bearer credential — that is how the mobile app and the
-    // CLI's sign-in flow authenticate. Those carry no scopes, so hand them back
-    // to the session path rather than rejecting them.
-    if (!session?.userId) return this.rejectUnlessSession(request);
+    // Not an OAuth access token. It may still be a session token presented as
+    // a bearer credential — that is how the mobile app and the CLI's sign-in
+    // flow authenticate. Those carry no scopes, so hand them back to the
+    // session path rather than rejecting them.
+    if (!session) return this.rejectUnlessSession(request);
 
     const { scopes } = parseScopeString(session.scopes);
 
@@ -154,16 +147,13 @@ export class CredentialScopeResolver {
 
   /**
    * A bearer credential that is neither an API token nor an OAuth grant is only
-   * acceptable if Better Auth recognises it as a session token; anything else
+   * acceptable if the provider recognises it as a session token; anything else
    * is rejected rather than ignored, so a stale token can never fall through to
    * a cookie session's full rights.
    */
   private async rejectUnlessSession(request: ScopedRequest): Promise<null> {
-    const session = await auth.api
-      .getSession({ headers: betterAuthHeaders(request.headers) })
-      .catch(() => null);
-
-    if (!session) throw new AppError(ApiTokenErrors.INVALID_CREDENTIAL);
+    const recognised = await this.credentials.hasValidSession(request.headers);
+    if (!recognised) throw new AppError(ApiTokenErrors.INVALID_CREDENTIAL);
     return null;
   }
 

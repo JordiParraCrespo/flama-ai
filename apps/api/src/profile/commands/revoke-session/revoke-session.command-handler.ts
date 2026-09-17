@@ -3,8 +3,8 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { SessionReaderPort } from '../../database/session.repository.port';
 import { ProfileErrors } from '../../domain/profile.errors';
-import { ProfileAuthFacade } from '../../infrastructure/profile-auth.gateway';
-import { SESSION_READER } from '../../profile.di-tokens';
+import type { ProfileAuthPort } from '../../infrastructure/profile-auth.port';
+import { PROFILE_AUTH, SESSION_READER } from '../../profile.di-tokens';
 import { RevokeSessionCommand } from './revoke-session.command';
 
 /**
@@ -19,7 +19,8 @@ export class RevokeSessionCommandHandler implements ICommandHandler<RevokeSessio
   constructor(
     @Inject(SESSION_READER)
     private readonly sessions: SessionReaderPort,
-    private readonly profileAuth: ProfileAuthFacade,
+    @Inject(PROFILE_AUTH)
+    private readonly profileAuth: ProfileAuthPort,
   ) {}
 
   async execute(command: RevokeSessionCommand): Promise<void> {

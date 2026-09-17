@@ -22,9 +22,15 @@ import { UploadAvatarHttpController } from './commands/upload-avatar/upload-avat
 import { SessionRepository } from './database/session.repository';
 import { UserSettingsOrmEntity } from './database/user-settings.orm-entity';
 import { UserSettingsRepository } from './database/user-settings.repository';
-import { AvatarStorage } from './infrastructure/avatar-storage.adapter';
-import { ProfileAuthFacade } from './infrastructure/profile-auth.gateway';
-import { SESSION_READER, USER_SETTINGS_REPOSITORY } from './profile.di-tokens';
+import { AvatarStorageAdapter } from './infrastructure/avatar-storage.adapter';
+import { ProfileAuthGateway } from './infrastructure/profile-auth.gateway';
+import {
+  AVATAR_STORAGE,
+  LOCALE_RESOLVER,
+  PROFILE_AUTH,
+  SESSION_READER,
+  USER_SETTINGS_REPOSITORY,
+} from './profile.di-tokens';
 import { ProfileMapper } from './profile.mapper';
 import { FindSessionsHttpController } from './queries/find-sessions/find-sessions.http.controller';
 import { FindSessionsQueryHandler } from './queries/find-sessions/find-sessions.query-handler';
@@ -70,7 +76,13 @@ const repositories: Provider[] = [
   { provide: SESSION_READER, useClass: SessionRepository },
 ];
 
-const services: Provider[] = [AvatarStorage, ProfileAuthFacade, LocaleResolver];
+// Every outbound dependency is bound to the token its port is named by, so a
+// handler names the port and the choice of adapter is made once, here.
+const adapters: Provider[] = [
+  { provide: AVATAR_STORAGE, useClass: AvatarStorageAdapter },
+  { provide: PROFILE_AUTH, useClass: ProfileAuthGateway },
+  { provide: LOCALE_RESOLVER, useClass: LocaleResolver },
+];
 
 /**
  * The caller's own account: profile fields, preferences, password and sessions.
@@ -86,9 +98,10 @@ const services: Provider[] = [AvatarStorage, ProfileAuthFacade, LocaleResolver];
     TypeOrmModule.forFeature([UserSettingsOrmEntity, Session, UserOrmEntity]),
   ],
   controllers: [...httpControllers],
-  providers: [...commandHandlers, ...queryHandlers, ...repositories, ...services, ProfileMapper],
-  // `LocaleResolver` is what the email worker reads a recipient's language
-  // through — the settings row is this module's aggregate.
-  exports: [USER_SETTINGS_REPOSITORY, LocaleResolver, TypeOrmModule],
+  providers: [...commandHandlers, ...queryHandlers, ...repositories, ...adapters, ProfileMapper],
+  // `LOCALE_RESOLVER` is what the email worker reads a recipient's language
+  // through — the settings row is this module's aggregate. Tokens are exported,
+  // never the classes behind them.
+  exports: [USER_SETTINGS_REPOSITORY, LOCALE_RESOLVER, TypeOrmModule],
 })
 export class ProfileModule {}

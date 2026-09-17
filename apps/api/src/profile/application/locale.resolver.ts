@@ -1,8 +1,7 @@
 import { I18nService } from '@flama/backend-i18n';
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import type { Repository } from 'typeorm';
-import { UserOrmEntity } from '../../users/database/user.orm-entity';
+import type { UserRepositoryPort } from '../../users/database/user.repository.port';
+import { USER_REPOSITORY } from '../../users/user.di-tokens';
 import type { UserSettingsRepositoryPort } from '../database/user-settings.repository.port';
 import { USER_SETTINGS_REPOSITORY } from '../profile.di-tokens';
 
@@ -28,8 +27,8 @@ export class LocaleResolver {
     private readonly i18n: I18nService,
     @Inject(USER_SETTINGS_REPOSITORY)
     private readonly settings: UserSettingsRepositoryPort,
-    @InjectRepository(UserOrmEntity)
-    private readonly users: Repository<UserOrmEntity>,
+    @Inject(USER_REPOSITORY)
+    private readonly users: UserRepositoryPort,
   ) {}
 
   async resolveForRecipient(userId: string): Promise<ResolvedLocale> {
@@ -42,8 +41,8 @@ export class LocaleResolver {
    * language, or a brand-new address that gets the default.
    */
   async resolveForEmailRecipient(email: string): Promise<ResolvedLocale> {
-    const user = await this.users.findOne({ where: { email }, select: { id: true } });
-    return user ? this.resolveForRecipient(user.id) : this.resolved(null);
+    const found = await this.users.findOneByEmail(email);
+    return found.isSome() ? this.resolveForRecipient(found.unwrap().id) : this.resolved(null);
   }
 
   private resolved(preferred: string | null): ResolvedLocale {

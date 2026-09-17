@@ -1,9 +1,11 @@
 import type { IncomingHttpHeaders } from 'node:http';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DELEGATED_SESSION } from '../../auth/auth.di-tokens';
 import { auth } from '../../auth/infrastructure/better-auth.config';
 import { betterAuthHeaders } from '../../auth/infrastructure/better-auth.util';
-import { DelegatedSessionService } from '../../auth/infrastructure/delegated-session.adapter';
+import type { DelegatedSessionPort } from '../../auth/infrastructure/delegated-session.port';
 import { invokeProfileApi } from '../profile-error.mapper';
+import type { ChangePasswordInput, ProfileAuthPort } from './profile-auth.port';
 
 /**
  * Delegating façade over the Better Auth operations that act on the caller's
@@ -16,24 +18,19 @@ import { invokeProfileApi } from '../profile-error.mapper';
  * onto this module's catalog.
  *
  * Bulk revocation additionally evicts the caller's cached delegated sessions.
- * Better Auth deletes the session rows, but `DelegatedSessionService` holds the
+ * Better Auth deletes the session rows, but `DelegatedSessionAdapter` holds the
  * token for a scoped credential for ten minutes; without the eviction the
  * credential keeps presenting a token that no longer exists and every façade
  * call fails until the cache expires.
  */
 @Injectable()
-export class ProfileAuthFacade {
-  constructor(private readonly delegatedSessions: DelegatedSessionService) {}
+export class ProfileAuthGateway implements ProfileAuthPort {
+  constructor(
+    @Inject(DELEGATED_SESSION)
+    private readonly delegatedSessions: DelegatedSessionPort,
+  ) {}
 
-  async changePassword(
-    headers: IncomingHttpHeaders,
-    input: {
-      userId: string;
-      currentPassword: string;
-      newPassword: string;
-      revokeOtherSessions: boolean;
-    },
-  ): Promise<void> {
+  async changePassword(headers: IncomingHttpHeaders, input: ChangePasswordInput): Promise<void> {
     await invokeProfileApi(() =>
       auth.api.changePassword({
         body: {

@@ -6,7 +6,7 @@ import { SessionRepository } from '../session.repository';
 
 /**
  * The session list answers one question — "which devices are signed in to my
- * account?" — and the rows `DelegatedSessionService` mints for an API token or
+ * account?" — and the rows `DelegatedSessionAdapter` mints for an API token or
  * an OAuth client are not an answer to it. Before issue #122 they were: one
  * account with two browsers and two credentials read as 23 devices, each with
  * a Sign out button that revoked nothing the credential could not immediately

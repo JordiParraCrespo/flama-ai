@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { CacheService } from '@flama/backend-cache';
 import { Injectable, Logger } from '@nestjs/common';
 import { auth } from './better-auth.config';
+import type { DelegatedSessionPort, DelegatedSessionRequest } from './delegated-session.port';
 
 /** How long a delegated session lives before it must be re-minted. */
 const SESSION_TTL_SECONDS = 10 * 60;
@@ -64,8 +65,8 @@ const INITIAL_GENERATION = 'initial';
  * tokens and OAuth grants are revoked where they are managed.
  */
 @Injectable()
-export class DelegatedSessionService {
-  private readonly logger = new Logger(DelegatedSessionService.name);
+export class DelegatedSessionAdapter implements DelegatedSessionPort {
+  private readonly logger = new Logger(DelegatedSessionAdapter.name);
 
   constructor(private readonly cache: CacheService) {}
 
@@ -75,13 +76,7 @@ export class DelegatedSessionService {
    * — callers fall back to scope-only access rather than failing the request,
    * since most routes never touch the Better Auth API.
    */
-  async resolveSessionToken(options: {
-    credentialId: string;
-    userId: string;
-    label: string;
-    /** Set as the session's active organization, when the credential pins one. */
-    activeOrganizationId?: string | null;
-  }): Promise<string | null> {
+  async resolveSessionToken(options: DelegatedSessionRequest): Promise<string | null> {
     const generation = await this.generationFor(options.userId);
     const key = this.cacheKey(options.credentialId, generation);
 

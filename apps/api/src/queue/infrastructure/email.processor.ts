@@ -2,9 +2,10 @@ import { EmailService } from '@flama/backend-email';
 import { I18nService, type LocalizedFormatter } from '@flama/backend-i18n';
 import { QUEUE_NAMES } from '@flama/shared';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { LocaleResolver } from '../../profile/application/locale.resolver';
+import type { LocaleResolverPort } from '../../profile/application/locale-resolver.port';
+import { LOCALE_RESOLVER } from '../../profile/profile.di-tokens';
 import { EmailJobMapper, type EmailLocaleTarget } from '../email-job.mapper';
 
 @Processor(QUEUE_NAMES.EMAIL)
@@ -14,7 +15,8 @@ export class EmailProcessor extends WorkerHost {
   constructor(
     private readonly emailService: EmailService,
     private readonly i18n: I18nService,
-    private readonly locales: LocaleResolver,
+    @Inject(LOCALE_RESOLVER)
+    private readonly locales: LocaleResolverPort,
     private readonly mapper: EmailJobMapper,
   ) {
     super();

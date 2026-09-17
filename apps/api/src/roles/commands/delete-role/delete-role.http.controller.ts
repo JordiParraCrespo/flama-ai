@@ -5,12 +5,12 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
-import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
-import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import {
   activeOrganizationIdOf,
   type ScopedRequest,
-} from '../../../auth/infrastructure/scope-context.types';
+} from '../../../auth/domain/scope-context.types';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
+import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import { DeleteRoleCommand } from './delete-role.command';
 
 @ApiTags('Roles')

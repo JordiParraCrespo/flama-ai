@@ -1,6 +1,6 @@
 import type { CacheService } from '@flama/backend-cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DelegatedSessionService } from '../infrastructure/delegated-session.adapter';
+import { DelegatedSessionAdapter } from '../infrastructure/delegated-session.adapter';
 
 interface SessionRow {
   token: string;
@@ -119,16 +119,16 @@ function rowFor(token: string | null): SessionRow {
   return row;
 }
 
-describe('DelegatedSessionService', () => {
+describe('DelegatedSessionAdapter', () => {
   let cache: ReturnType<typeof fakeCache>;
-  let service: DelegatedSessionService;
+  let service: DelegatedSessionAdapter;
 
   beforeEach(() => {
     vi.clearAllMocks();
     rows = [];
     fakeAdapter();
     cache = fakeCache();
-    service = new DelegatedSessionService(cache as unknown as CacheService);
+    service = new DelegatedSessionAdapter(cache as unknown as CacheService);
   });
 
   it('mints once and serves the rest from cache', async () => {

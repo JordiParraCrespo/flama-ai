@@ -12,7 +12,9 @@ function resolver(saved: UserSettingsEntity | null, userId: string | null = 'use
     onMissingKey: () => {},
   });
   const settings = { findOneById: vi.fn().mockResolvedValue(saved ? Some(saved) : None) };
-  const users = { findOne: vi.fn().mockResolvedValue(userId ? { id: userId } : null) };
+  const users = {
+    findOneByEmail: vi.fn().mockResolvedValue(userId ? Some({ id: userId }) : None),
+  };
   return new LocaleResolver(i18n, settings as never, users as never);
 }
 

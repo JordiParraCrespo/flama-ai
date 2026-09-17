@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRepositoryPort } from '../../../../users/database/user.repository.port';
 import { UserEntity } from '../../../../users/domain/user.entity';
 import { Email } from '../../../../users/domain/value-objects/email.value-object';
-import type { AvatarStorage } from '../../../infrastructure/avatar-storage.adapter';
+import type { AvatarStorageAdapter } from '../../../infrastructure/avatar-storage.adapter';
 import { UploadAvatarCommand } from '../upload-avatar.command';
 import { UploadAvatarCommandHandler } from '../upload-avatar.command-handler';
 
@@ -55,7 +55,7 @@ describe('UploadAvatarCommandHandler', () => {
     };
     service = new UploadAvatarCommandHandler(
       repo as UserRepositoryPort,
-      avatars as unknown as AvatarStorage,
+      avatars as unknown as AvatarStorageAdapter,
     );
   });
 

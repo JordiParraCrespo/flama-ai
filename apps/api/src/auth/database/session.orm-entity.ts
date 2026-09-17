@@ -25,7 +25,7 @@ export class Session {
   userAgent!: string | null;
 
   /**
-   * True for the internal sessions `DelegatedSessionService` mints so an API
+   * True for the internal sessions `DelegatedSessionAdapter` mints so an API
    * token or OAuth client can reach the Better Auth façades. They are bridges,
    * not devices, so the profile session list leaves them out.
    *

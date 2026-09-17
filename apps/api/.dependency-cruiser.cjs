@@ -34,20 +34,21 @@ const CROSS_MODULE_PUBLIC_SURFACE = [
   '\\.di-tokens\\.ts$', // the token a port is bound to
   '\\.repository\\.port\\.ts$', // the port itself
   '^src/[^/]+/infrastructure/[^/]+\\.port\\.ts$', // ports for non-database adapters
+  '^src/[^/]+/application/[^/]+\\.port\\.ts$', // ports an application layer publishes
   '^src/[^/]+/domain/', // entities, value objects, events, errors
   '^src/[^/]+/dtos/', // the response contracts it publishes
   '\\.(command|query)\\.ts$', // a bus message, to dispatch it
   '^src/[^/]+/(guards|decorators|interceptors)/', // the inbound adapters it offers
   '\\.resource\\.ts$', // the CASL resource it owns
   '\\.orm-entity\\.ts$', // covered, more tightly, by orm-entity-stays-in-database
-  '^src/auth/infrastructure/', // the configured Better Auth instance and its helpers
   '^src/[^/]+/[^/]+\\.module\\.ts$', // module wiring imports module wiring
-  // Ledger: two application-layer resolvers another module injects directly.
-  // Each wants a port on the consuming side — the throttler needs "what
-  // credential is this", the email processor needs "what locale does this
-  // user read" — and neither should know which module answers it.
-  '^src/auth/application/credential-scope\\.resolver\\.ts$',
-  '^src/profile/application/locale\\.resolver\\.ts$',
+  // The toolkit for writing a Better Auth adapter — request headers, the error
+  // invoker, the envelope narrowing. A module that owns records Better Auth
+  // keeps needs these to write its own gateway, so they are published. The
+  // configured instance beside them is published too, but only to adapters:
+  // `better-auth-stays-behind-an-adapter` below is what enforces that.
+  '^src/auth/infrastructure/better-auth\\.util\\.ts$',
+  '^src/auth/infrastructure/better-auth\\.config\\.ts$',
 ];
 
 module.exports = {
@@ -93,15 +94,6 @@ module.exports = {
       },
       to: {
         path: '\\.(repository|adapter|gateway)\\.ts$',
-        // Ledger: profile's avatar store and its Better Auth façade are
-        // injected as concrete classes. Both need a *.port.ts and a DI token
-        // before this list can go.
-        pathNot: [
-          '\\.port\\.ts$',
-          '^src/profile/infrastructure/avatar-storage\\.adapter\\.ts$',
-          '^src/profile/infrastructure/profile-auth\\.gateway\\.ts$',
-          '^src/auth/infrastructure/delegated-session\\.adapter\\.ts$',
-        ],
       },
     },
     {
@@ -134,14 +126,13 @@ module.exports = {
       severity: 'error',
       from: {
         path: '^src/[^/]+/(domain|commands|queries|application|dtos)/',
-        // Ledger: these four read ORM repositories directly and still need a
-        // port. Three of them reach across into organizations'/roles' tables,
+        // Ledger: these three read ORM repositories directly and still need a
+        // port. All of them reach across into organizations'/roles' tables,
         // which is what makes the port worth defining rather than inlining.
         pathNot: [
           '^src/authz/application/active-organization\\.resolver\\.ts$',
           '^src/authz/application/principal-residency\\.policy\\.ts$',
           '^src/authz/application/scope\\.resolver\\.ts$',
-          '^src/profile/application/locale\\.resolver\\.ts$',
         ],
       },
       to: { path: 'node_modules/(typeorm|@nestjs/typeorm)/' },
@@ -156,14 +147,41 @@ module.exports = {
         pathNot: [
           '^src/[^/]+/infrastructure/',
           '^src/[^/]+/[^/]+\\.module\\.ts$',
+          '^src/app\\.module\\.ts$', // the composition root wires the provider
+          // A guard is an inbound adapter, and these are the auth module's
+          // own: authenticating a request is the integration this module
+          // exists for. No other module's guards are admitted here.
+          '^src/auth/guards/',
           ...TESTS,
-          // Ledger: the last delegating façade that still calls Better Auth
-          // from a service instead of a gateway. Cleared when organizations/
-          // is cut into use-case slices over an OrganizationGatewayPort.
+          // The seed is a composition root of its own: a standalone script
+          // that boots the same providers to write the first admin user.
+          '^src/database/seed\\.ts$',
+          // Ledger: the delegating façades that still call Better Auth from a
+          // service or a mapper instead of a gateway. Cleared when admin/ and
+          // organizations/ are cut into use-case slices over gateway ports.
+          '^src/admin/admin\\.service\\.ts$',
+          '^src/admin/admin\\.mappers\\.ts$',
+          '^src/admin/admin-error\\.mapper\\.ts$',
           '^src/organizations/organizations\\.service\\.ts$',
+          '^src/organizations/invitations\\.service\\.ts$',
+          '^src/organizations/workspaces\\.service\\.ts$',
+          '^src/organizations/organization\\.mappers\\.ts$',
+          '^src/organizations/organization-error\\.mapper\\.ts$',
+          // Ledger: profile's error mapper folds Better Auth's error codes onto
+          // this module's catalog, which needs the invoker but is not itself an
+          // adapter. It belongs beside the gateway once that file moves.
+          '^src/profile/profile-error\\.mapper\\.ts$',
         ],
       },
-      to: { path: 'node_modules/better-auth/' },
+      to: {
+        path: [
+          'node_modules/better-auth/',
+          // The configured instance is the same dependency wearing a local
+          // path. Without this the rule is vacuously true: nothing imports the
+          // library directly, everything imports `auth` from here.
+          '^src/auth/infrastructure/better-auth\\.config\\.ts$',
+        ],
+      },
     },
     {
       name: 'no-cross-slice-imports',

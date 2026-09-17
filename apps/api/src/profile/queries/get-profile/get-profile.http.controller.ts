@@ -1,5 +1,5 @@
 import { ApiAuthProblemResponses, ApiProblemResponse } from '@flama/backend-core';
-import { Controller, Get, UseGuards, Version } from '@nestjs/common';
+import { Controller, Get, Inject, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
@@ -7,7 +7,8 @@ import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { ProfileResponseDto } from '../../dtos/profile.response.dto';
-import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
+import type { AvatarStoragePort } from '../../infrastructure/avatar-storage.port';
+import { AVATAR_STORAGE } from '../../profile.di-tokens';
 import { ProfileMapper } from '../../profile.mapper';
 import { GetProfileQuery } from './get-profile.query';
 
@@ -20,7 +21,8 @@ export class GetProfileHttpController {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly mapper: ProfileMapper,
-    private readonly avatars: AvatarStorage,
+    @Inject(AVATAR_STORAGE)
+    private readonly avatars: AvatarStoragePort,
   ) {}
 
   @Get()

@@ -2,15 +2,15 @@ import { AppError } from '@flama/backend-core';
 import type { StorageService } from '@flama/backend-storage';
 import { AVATAR_MAX_BYTES } from '@flama/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AvatarStorage } from '../infrastructure/avatar-storage.adapter';
+import { AvatarStorageAdapter } from '../infrastructure/avatar-storage.adapter';
 
-describe('AvatarStorage', () => {
+describe('AvatarStorageAdapter', () => {
   let storage: {
     upload: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
     getSignedUrl: ReturnType<typeof vi.fn>;
   };
-  let avatars: AvatarStorage;
+  let avatars: AvatarStorageAdapter;
 
   beforeEach(() => {
     storage = {
@@ -18,7 +18,7 @@ describe('AvatarStorage', () => {
       delete: vi.fn().mockResolvedValue(undefined),
       getSignedUrl: vi.fn().mockResolvedValue('https://cdn.example.com/signed'),
     };
-    avatars = new AvatarStorage(storage as unknown as StorageService);
+    avatars = new AvatarStorageAdapter(storage as unknown as StorageService);
   });
 
   describe('store', () => {

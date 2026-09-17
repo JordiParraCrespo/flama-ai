@@ -6,11 +6,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
-import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import {
   activeOrganizationIdOf,
   type ScopedRequest,
-} from '../../../auth/infrastructure/scope-context.types';
+} from '../../../auth/domain/scope-context.types';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { MyPermissionsResponseDto } from '../../dtos/my-permissions.response.dto';
 import { GetMyPermissionsQuery } from './get-my-permissions.query';
 

@@ -4,6 +4,7 @@ import { StorageService } from '@flama/backend-storage';
 import { AVATAR_MAX_BYTES, AVATAR_MIME_TYPES, type AvatarMimeType } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { ProfileErrors } from '../domain/profile.errors';
+import type { AvatarStoragePort } from './avatar-storage.port';
 
 /** File extension to store each accepted image type under. */
 const EXTENSIONS: Record<AvatarMimeType, string> = {
@@ -23,7 +24,7 @@ const EXTENSIONS: Record<AvatarMimeType, string> = {
  * that is correct for both.
  */
 @Injectable()
-export class AvatarStorage {
+export class AvatarStorageAdapter implements AvatarStoragePort {
   constructor(private readonly storage: StorageService) {}
 
   /**

@@ -25,7 +25,7 @@ import { ProfileErrors } from '../domain/profile.errors';
  * the client, so nothing can tell an oversized image apart from any other 413.
  *
  * Catching it here restores the contract. The equivalent check in
- * `AvatarStorage` stays: it covers callers that never go through multer.
+ * `AvatarStorageAdapter` stays: it covers callers that never go through multer.
  */
 export function AvatarFileInterceptor(fieldName = 'file'): Type<NestInterceptor> {
   const Base = FileInterceptor(fieldName, {
@@ -36,7 +36,18 @@ export function AvatarFileInterceptor(fieldName = 'file'): Type<NestInterceptor>
   class AvatarFileMixinInterceptor extends Base {
     async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
       try {
-        return (await super.intercept(context, next)) as Observable<unknown>;
+        const result = (await super.intercept(context, next)) as Observable<unknown>;
+        // No multipart part at all. Reported as an unsupported type rather
+        // than a validation failure: `invalidParams` describes rejected
+        // *fields*, and a missing part is not one. It belongs here with the
+        // rest of the multipart handling, not in the controller — deciding
+        // what an absent file means is this adapter's job.
+        if (!context.switchToHttp().getRequest<{ file?: unknown }>().file) {
+          throw new AppError(ProfileErrors.UNSUPPORTED_IMAGE_TYPE, {
+            detail: `No file was uploaded under the \`${fieldName}\` field.`,
+          });
+        }
+        return result;
       } catch (error) {
         if (isTooLarge(error)) {
           throw new AppError(ProfileErrors.IMAGE_TOO_LARGE, {

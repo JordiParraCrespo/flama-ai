@@ -8,6 +8,7 @@ import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-e
 import { UsersModule } from '../users/user.module';
 import { CredentialScopeResolver } from './application/credential-scope.resolver';
 import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
+import { CREDENTIAL_SCOPE, CREDENTIAL_VERIFIER, DELEGATED_SESSION } from './auth.di-tokens';
 import { Account } from './database/account.orm-entity';
 import { OAuthAccessTokenOrmEntity } from './database/oauth-access-token.orm-entity';
 import { OAuthApplicationOrmEntity } from './database/oauth-application.orm-entity';
@@ -17,7 +18,8 @@ import { Verification } from './database/verification.orm-entity';
 import { ApiAuthGuard } from './guards/api-auth.guard';
 import { PoliciesGuard } from './guards/policies.guard';
 import { ScopesGuard } from './guards/scopes.guard';
-import { DelegatedSessionService } from './infrastructure/delegated-session.adapter';
+import { BetterAuthCredentialVerifierAdapter } from './infrastructure/better-auth-credential-verifier.adapter';
+import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adapter';
 
 /**
  * Registers the Better Auth tables with TypeORM (so the schema is created /
@@ -65,15 +67,20 @@ import { DelegatedSessionService } from './infrastructure/delegated-session.adap
     PoliciesGuard,
     ApiAuthGuard,
     ScopesGuard,
-    CredentialScopeResolver,
-    DelegatedSessionService,
+    // The adapters are bound to the tokens their ports are named by. This is
+    // the only place that decides Better Auth answers these questions.
+    { provide: CREDENTIAL_VERIFIER, useClass: BetterAuthCredentialVerifierAdapter },
+    { provide: CREDENTIAL_SCOPE, useClass: CredentialScopeResolver },
+    { provide: DELEGATED_SESSION, useClass: DelegatedSessionAdapter },
   ],
+  // Guards are inbound adapters other modules apply with `@UseGuards`; the rest
+  // is published as tokens, so nothing downstream names a concrete class.
   exports: [
     PoliciesGuard,
     ApiAuthGuard,
     ScopesGuard,
-    CredentialScopeResolver,
-    DelegatedSessionService,
+    CREDENTIAL_SCOPE,
+    DELEGATED_SESSION,
     TypeOrmModule,
   ],
 })

@@ -81,8 +81,8 @@ const LAYERS = {
   commands: { slices: 'command' },
   queries: { slices: 'query' },
   application: {
-    what: 'the work that needs ports but is not a use case: a *.factory.ts that builds something from them, a *.policy.ts that asserts a rule with them, a *.resolver.ts that answers what a request acts on',
-    files: [/\.factory\.ts$/, /\.policy\.ts$/, /\.resolver\.ts$/],
+    what: 'the work that needs ports but is not a use case: a *.factory.ts that builds something from them, a *.policy.ts that asserts a rule with them, a *.resolver.ts that answers what a request acts on — and the *.port.ts another module injects one of them through',
+    files: [/\.factory\.ts$/, /\.policy\.ts$/, /\.resolver\.ts$/, /\.port\.ts$/],
     dirs: {
       'event-handlers': {
         what: 'what reacts to a domain event after it is committed',

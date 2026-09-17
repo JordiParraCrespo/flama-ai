@@ -2,7 +2,7 @@ import { AppError } from '@flama/backend-core';
 import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { OwnedSession, SessionReaderPort } from '../../../database/session.repository.port';
-import type { ProfileAuthFacade } from '../../../infrastructure/profile-auth.gateway';
+import type { ProfileAuthGateway } from '../../../infrastructure/profile-auth.gateway';
 import { RevokeSessionCommand } from '../revoke-session.command';
 import { RevokeSessionCommandHandler } from '../revoke-session.command-handler';
 
@@ -37,7 +37,7 @@ describe('RevokeSessionCommandHandler', () => {
     profileAuth = { revokeSession: vi.fn().mockResolvedValue(undefined) };
     service = new RevokeSessionCommandHandler(
       sessions as SessionReaderPort,
-      profileAuth as unknown as ProfileAuthFacade,
+      profileAuth as unknown as ProfileAuthGateway,
     );
   });
 

@@ -149,7 +149,7 @@ export const auth = betterAuth({
      * Two columns on Better Auth's `session` table that say a row is not a
      * device.
      *
-     * `DelegatedSessionService` mints internal sessions so an API token or an
+     * `DelegatedSessionAdapter` mints internal sessions so an API token or an
      * OAuth client can reach the façades that resolve their caller through
      * Better Auth. Those rows are bridges, not sign-ins, and the profile and
      * security "Active sessions" lists read `delegated` to leave them out. It

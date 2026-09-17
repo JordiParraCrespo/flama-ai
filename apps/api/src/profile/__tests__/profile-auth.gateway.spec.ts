@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DelegatedSessionService } from '../../auth/infrastructure/delegated-session.adapter';
-import { ProfileAuthFacade } from '../infrastructure/profile-auth.gateway';
+import type { DelegatedSessionAdapter } from '../../auth/infrastructure/delegated-session.adapter';
+import { ProfileAuthGateway } from '../infrastructure/profile-auth.gateway';
 
 // `auth.api.*` reaches a real Better Auth instance (and its database pool) at
 // module load, so the calls are stubbed; what is under test here is which
@@ -19,16 +19,16 @@ vi.mock('../../auth/infrastructure/better-auth.config', () => ({
   },
 }));
 
-describe('ProfileAuthFacade', () => {
+describe('ProfileAuthGateway', () => {
   let delegatedSessions: { invalidateForUser: ReturnType<typeof vi.fn> };
-  let facade: ProfileAuthFacade;
+  let facade: ProfileAuthGateway;
 
   beforeEach(() => {
     vi.clearAllMocks();
     delegatedSessions = {
       invalidateForUser: vi.fn().mockResolvedValue(undefined),
     };
-    facade = new ProfileAuthFacade(delegatedSessions as unknown as DelegatedSessionService);
+    facade = new ProfileAuthGateway(delegatedSessions as unknown as DelegatedSessionAdapter);
   });
 
   describe('changePassword', () => {

@@ -1,5 +1,7 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { ProfileAuthFacade } from '../../infrastructure/profile-auth.gateway';
+import type { ProfileAuthPort } from '../../infrastructure/profile-auth.port';
+import { PROFILE_AUTH } from '../../profile.di-tokens';
 import { RevokeOtherSessionsCommand } from './revoke-other-sessions.command';
 
 /**
@@ -11,7 +13,10 @@ import { RevokeOtherSessionsCommand } from './revoke-other-sessions.command';
 export class RevokeOtherSessionsCommandHandler
   implements ICommandHandler<RevokeOtherSessionsCommand, void>
 {
-  constructor(private readonly profileAuth: ProfileAuthFacade) {}
+  constructor(
+    @Inject(PROFILE_AUTH)
+    private readonly profileAuth: ProfileAuthPort,
+  ) {}
 
   async execute(command: RevokeOtherSessionsCommand): Promise<void> {
     await this.profileAuth.revokeOtherSessions(command.headers, command.userId);

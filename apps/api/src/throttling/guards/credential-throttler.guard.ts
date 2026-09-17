@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { CredentialScopeResolver } from '../../auth/application/credential-scope.resolver';
-import type { ScopedRequest } from '../../auth/infrastructure/scope-context.types';
+import type { CredentialScopePort } from '../../auth/application/credential-scope.port';
+import { CREDENTIAL_SCOPE } from '../../auth/auth.di-tokens';
+import type { ScopedRequest } from '../../auth/domain/scope-context.types';
 
 /**
  * The application's `ThrottlerGuard`, keyed on **who is calling** rather than
@@ -31,8 +32,8 @@ export class CredentialThrottlerGuard extends ThrottlerGuard {
    * `ThrottlerGuard`'s own constructor signature is part of its public API and
    * this subclass must not change it.
    */
-  @Inject(CredentialScopeResolver)
-  private credentials!: CredentialScopeResolver;
+  @Inject(CREDENTIAL_SCOPE)
+  private credentials!: CredentialScopePort;
 
   protected async getTracker(req: Record<string, unknown>): Promise<string> {
     const request = req as unknown as ScopedRequest;
