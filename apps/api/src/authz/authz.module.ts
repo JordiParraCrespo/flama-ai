@@ -11,6 +11,9 @@ import { ORGANIZATION_RESOURCES } from '../organizations/organizations.resource'
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { RoleResource } from '../roles/roles.resource';
 import { UserResource } from '../users/users.resource';
+import { ActiveOrganizationResolver } from './application/active-organization.resolver';
+import { PrincipalResidencyChecker } from './application/principal-residency.policy';
+import { ScopeResolver } from './application/scope.resolver';
 import { ACCESS_GRANT_REPOSITORY } from './authz.di-tokens';
 import { AccessGrantMapper } from './authz.mapper';
 import { CreateAccessGrantHttpController } from './commands/create-access-grant/create-access-grant.http.controller';
@@ -24,9 +27,6 @@ import { FindAccessGrantsHttpController } from './queries/find-access-grants/fin
 import { FindAccessGrantsQueryHandler } from './queries/find-access-grants/find-access-grants.query-handler';
 import { FindAuthzCatalogHttpController } from './queries/find-catalog/find-catalog.http.controller';
 import { FindAuthzCatalogQueryHandler } from './queries/find-catalog/find-catalog.query-handler';
-import { ActiveOrganizationResolver } from './application/active-organization.resolver';
-import { PrincipalResidencyChecker } from './application/principal-residency.policy';
-import { ScopeResolver } from './application/scope.resolver';
 
 // Static routes before parameterized ones.
 const httpControllers = [

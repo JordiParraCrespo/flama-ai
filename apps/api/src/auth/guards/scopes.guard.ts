@@ -3,10 +3,10 @@ import { isOrganizationAllowed, missingScopes, type Scope } from '@flama/shared'
 import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiTokenErrors } from '../../api-tokens/domain/api-token.errors';
+import { CredentialScopeResolver } from '../application/credential-scope.resolver';
 import { ORGANIZATION_PARAM_KEY } from '../decorators/organization-scoped.decorator';
 import { ALLOW_ANY_SCOPE_KEY, REQUIRE_SCOPES_KEY } from '../decorators/require-scopes.decorator';
 import type { ScopeContext, ScopedRequest } from '../infrastructure/scope-context.types';
-import { CredentialScopeResolver } from '../application/credential-scope.resolver';
 
 /**
  * Enforces what a scoped credential may reach. Registered globally, so it

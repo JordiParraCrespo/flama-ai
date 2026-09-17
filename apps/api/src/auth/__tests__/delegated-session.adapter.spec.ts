@@ -19,7 +19,7 @@ const createSession = vi.fn();
 const listSessions = vi.fn();
 const deleteSessions = vi.fn();
 
-vi.mock('../auth', () => ({
+vi.mock('../infrastructure/better-auth.config', () => ({
   auth: {
     get $context() {
       return Promise.resolve({

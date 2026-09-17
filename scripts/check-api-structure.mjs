@@ -21,7 +21,7 @@
  *
  * See apps/api/ARCHITECTURE.md. Run: pnpm check:api-structure
  */
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
@@ -46,8 +46,7 @@ const HANDLER_LINE_CAP = 120;
  */
 const LAYERS = {
   domain: {
-    what:
-      'the pure domain: aggregates, value objects, domain events, errors, and the rules and types that need nothing but them',
+    what: 'the pure domain: aggregates, value objects, domain events, errors, and the rules and types that need nothing but them',
     files: [/\.entity\.ts$/, /\.errors\.ts$/, /\.policy\.ts$/, /\.factory\.ts$/, /\.types\.ts$/],
     dirs: {
       'value-objects': { files: [/\.value-object\.ts$/] },
@@ -61,8 +60,7 @@ const LAYERS = {
     dirs: { __tests__: { files: [/\.spec\.ts$/] } },
   },
   infrastructure: {
-    what:
-      'outbound adapters for everything that is not the database: the port, its adapter, and the wiring that external system needs',
+    what: 'outbound adapters for everything that is not the database: the port, its adapter, and the wiring that external system needs',
     files: [
       /\.port\.ts$/,
       /\.adapter\.ts$/,
@@ -77,8 +75,7 @@ const LAYERS = {
   commands: { slices: 'command' },
   queries: { slices: 'query' },
   application: {
-    what:
-      'the work that needs ports but is not a use case: a *.factory.ts that builds something from them, a *.policy.ts that asserts a rule with them, a *.resolver.ts that answers what a request acts on',
+    what: 'the work that needs ports but is not a use case: a *.factory.ts that builds something from them, a *.policy.ts that asserts a rule with them, a *.resolver.ts that answers what a request acts on',
     files: [/\.factory\.ts$/, /\.policy\.ts$/, /\.resolver\.ts$/],
     dirs: {
       'event-handlers': {
@@ -132,8 +129,7 @@ const DISSOLVED_DIRS = {
     'a service is not a layer. Pure rules go in domain/ as a *.policy.ts or *.factory.ts; a call to something outside the process is a port plus an adapter in infrastructure/; anything a route reaches is a use case under commands/ or queries/',
   entities:
     'a persistence model is database/*.orm-entity.ts and a domain entity is domain/*.entity.ts — which one it is has to be visible from its path',
-  dto:
-    'response contracts go in dtos/; a request DTO belongs to the use-case slice that receives it',
+  dto: 'response contracts go in dtos/; a request DTO belongs to the use-case slice that receives it',
   utils:
     'a helper belongs to the layer that needs it — infrastructure/*.util.ts, or domain/ if it is a rule',
   helpers:
@@ -189,7 +185,6 @@ const LEDGER = [
   'apps/api/src/organizations/workspaces.controller.ts: declares an HTTP route outside a use-case controller. A route is the front door of one use case — put it in commands/<use-case>/ or queries/<use-case>/',
 ];
 
-const isDir = (path) => existsSync(path) && statSync(path).isDirectory();
 const tsFiles = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile());
 const subDirs = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());
 const lineCount = (path) => readFileSync(path, 'utf8').split('\n').length;

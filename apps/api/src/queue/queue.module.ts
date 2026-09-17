@@ -2,8 +2,8 @@ import { QUEUE_NAMES } from '@flama/shared';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ProfileModule } from '../profile/profile.module';
-import { EmailProcessor } from './infrastructure/email.processor';
 import { EmailJobMapper } from './email-job.mapper';
+import { EmailProcessor } from './infrastructure/email.processor';
 
 @Module({
   imports: [

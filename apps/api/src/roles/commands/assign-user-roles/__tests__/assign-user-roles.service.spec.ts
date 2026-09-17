@@ -3,12 +3,12 @@ import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserRepositoryPort } from '../../../../users/database/user.repository.port';
 import { UserErrors } from '../../../../users/domain/user.errors';
+import type { RoleGrantPolicy } from '../../../application/role-grant.policy';
 import type { RoleRepositoryPort } from '../../../database/role.repository.port';
 import type { UserRoleRepositoryPort } from '../../../database/user-role.repository.port';
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
 import { Permission } from '../../../domain/value-objects/permission.value-object';
-import type { RoleGrantPolicy } from '../../../application/role-grant.policy';
 import { AssignUserRolesCommand } from '../assign-user-roles.command';
 import { AssignUserRolesService } from '../assign-user-roles.service';
 

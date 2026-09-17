@@ -7,9 +7,9 @@ import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { ProfileResponseDto } from '../../dtos/profile.response.dto';
+import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
 import { ProfileMapper } from '../../profile.mapper';
 import { GetProfileQuery } from '../../queries/get-profile/get-profile.query';
-import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
 import { DeleteAvatarCommand } from './delete-avatar.command';
 
 @ApiTags('Profile')

@@ -7,8 +7,8 @@ import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { ProfileResponseDto } from '../../dtos/profile.response.dto';
-import { ProfileMapper } from '../../profile.mapper';
 import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
+import { ProfileMapper } from '../../profile.mapper';
 import { GetProfileQuery } from './get-profile.query';
 
 @ApiTags('Profile')

@@ -26,10 +26,10 @@ import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { ProfileErrors } from '../../domain/profile.errors';
 import { ProfileResponseDto } from '../../dtos/profile.response.dto';
-import { ProfileMapper } from '../../profile.mapper';
-import { GetProfileQuery } from '../../queries/get-profile/get-profile.query';
 import { AvatarStorage } from '../../infrastructure/avatar-storage.adapter';
 import { AvatarFileInterceptor } from '../../interceptors/avatar-file.interceptor';
+import { ProfileMapper } from '../../profile.mapper';
+import { GetProfileQuery } from '../../queries/get-profile/get-profile.query';
 import { UploadAvatarCommand } from './upload-avatar.command';
 
 @ApiTags('Profile')

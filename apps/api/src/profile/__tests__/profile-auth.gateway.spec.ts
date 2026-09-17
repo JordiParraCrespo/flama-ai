@@ -9,7 +9,7 @@ const changePassword = vi.fn();
 const revokeSession = vi.fn();
 const revokeOtherSessions = vi.fn();
 
-vi.mock('../../auth/auth', () => ({
+vi.mock('../../auth/infrastructure/better-auth.config', () => ({
   auth: {
     api: {
       changePassword: (...args: unknown[]) => changePassword(...args),

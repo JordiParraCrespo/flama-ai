@@ -6,6 +6,7 @@ import { OrganizationOrmEntity } from '../organizations/database/organization.or
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
 import { UsersModule } from '../users/user.module';
+import { CredentialScopeResolver } from './application/credential-scope.resolver';
 import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
 import { Account } from './database/account.orm-entity';
 import { OAuthAccessTokenOrmEntity } from './database/oauth-access-token.orm-entity';
@@ -16,7 +17,6 @@ import { Verification } from './database/verification.orm-entity';
 import { ApiAuthGuard } from './guards/api-auth.guard';
 import { PoliciesGuard } from './guards/policies.guard';
 import { ScopesGuard } from './guards/scopes.guard';
-import { CredentialScopeResolver } from './application/credential-scope.resolver';
 import { DelegatedSessionService } from './infrastructure/delegated-session.adapter';
 
 /**

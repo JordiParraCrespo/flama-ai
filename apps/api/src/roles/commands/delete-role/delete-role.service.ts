@@ -1,10 +1,10 @@
 import { AppError } from '@flama/backend-core';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
+import { RoleGrantPolicy } from '../../application/role-grant.policy';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
 import { RoleErrors } from '../../domain/role.errors';
 import { ROLE_REPOSITORY } from '../../roles.di-tokens';
-import { RoleGrantPolicy } from '../../application/role-grant.policy';
 import { DeleteRoleCommand } from './delete-role.command';
 
 /**

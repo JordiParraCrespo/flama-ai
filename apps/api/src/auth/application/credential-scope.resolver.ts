@@ -4,12 +4,19 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { API_TOKEN_REPOSITORY } from '../../api-tokens/api-tokens.di-tokens';
 import type { ApiTokenRepositoryPort } from '../../api-tokens/database/api-token.repository.port';
 import { ApiTokenErrors } from '../../api-tokens/domain/api-token.errors';
-import { hashApiTokenSecret, isApiTokenSecret } from '../../api-tokens/domain/api-token-secret.factory';
+import {
+  hashApiTokenSecret,
+  isApiTokenSecret,
+} from '../../api-tokens/domain/api-token-secret.factory';
 import type { UserRepositoryPort } from '../../users/database/user.repository.port';
 import { USER_REPOSITORY } from '../../users/user.di-tokens';
 import { auth } from '../infrastructure/better-auth.config';
 import { betterAuthHeaders } from '../infrastructure/better-auth.util';
-import type { CredentialOwner, ScopeContext, ScopedRequest } from '../infrastructure/scope-context.types';
+import type {
+  CredentialOwner,
+  ScopeContext,
+  ScopedRequest,
+} from '../infrastructure/scope-context.types';
 
 /** Header carrying an API token, for clients that prefer it over `Authorization`. */
 const API_KEY_HEADER = 'x-api-key';

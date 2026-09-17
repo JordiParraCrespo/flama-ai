@@ -4,11 +4,11 @@ import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { UserRepositoryPort } from '../../../users/database/user.repository.port';
 import { UserErrors } from '../../../users/domain/user.errors';
 import { USER_REPOSITORY } from '../../../users/user.di-tokens';
+import { RoleGrantPolicy } from '../../application/role-grant.policy';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
 import type { UserRoleRepositoryPort } from '../../database/user-role.repository.port';
 import { RoleErrors } from '../../domain/role.errors';
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from '../../roles.di-tokens';
-import { RoleGrantPolicy } from '../../application/role-grant.policy';
 import { AssignUserRolesCommand } from './assign-user-roles.command';
 
 /**

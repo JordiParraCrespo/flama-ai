@@ -7,10 +7,10 @@ import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
 import type { AbilityRequest } from '../../../roles/application/ability.factory';
+import { assertCanAccessUser } from '../../application/user-access.policy';
 import type { UserEntity } from '../../domain/user.entity';
 import { UserResponseDto } from '../../dtos/user.response.dto';
 import { UserMapper } from '../../user.mapper';
-import { assertCanAccessUser } from '../../application/user-access.policy';
 import { FindUserByIdQuery } from './find-user-by-id.query';
 
 @ApiTags('Users')

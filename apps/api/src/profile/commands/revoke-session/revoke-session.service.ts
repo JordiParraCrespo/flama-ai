@@ -3,8 +3,8 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { SessionReaderPort } from '../../database/session.repository.port';
 import { ProfileErrors } from '../../domain/profile.errors';
-import { SESSION_READER } from '../../profile.di-tokens';
 import { ProfileAuthFacade } from '../../infrastructure/profile-auth.gateway';
+import { SESSION_READER } from '../../profile.di-tokens';
 import { RevokeSessionCommand } from './revoke-session.command';
 
 /**

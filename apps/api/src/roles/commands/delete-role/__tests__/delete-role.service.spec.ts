@@ -1,9 +1,9 @@
 import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { RoleGrantPolicy } from '../../../application/role-grant.policy';
 import type { RoleRepositoryPort } from '../../../database/role.repository.port';
 import { RoleEntity } from '../../../domain/role.entity';
 import { RoleErrors } from '../../../domain/role.errors';
-import type { RoleGrantPolicy } from '../../../application/role-grant.policy';
 import { DeleteRoleCommand } from '../delete-role.command';
 import { DeleteRoleService } from '../delete-role.service';
 

@@ -8,7 +8,10 @@ import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
-import { activeOrganizationIdOf, type ScopedRequest } from '../../../auth/infrastructure/scope-context.types';
+import {
+  activeOrganizationIdOf,
+  type ScopedRequest,
+} from '../../../auth/infrastructure/scope-context.types';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
 import { FindRoleByIdQuery } from '../../queries/find-role-by-id/find-role-by-id.query';

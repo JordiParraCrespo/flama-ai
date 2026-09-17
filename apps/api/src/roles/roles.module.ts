@@ -2,6 +2,8 @@ import { Global, Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/user.module';
+import { AbilityFactory } from './application/ability.factory';
+import { RoleGrantPolicy } from './application/role-grant.policy';
 import { AssignUserRolesHttpController } from './commands/assign-user-roles/assign-user-roles.http.controller';
 import { AssignUserRolesService } from './commands/assign-user-roles/assign-user-roles.service';
 import { CreateRoleHttpController } from './commands/create-role/create-role.http.controller';
@@ -24,8 +26,6 @@ import { FindUserRolesHttpController } from './queries/find-user-roles/find-user
 import { FindUserRolesQueryHandler } from './queries/find-user-roles/find-user-roles.query-handler';
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from './roles.di-tokens';
 import { RoleMapper } from './roles.mapper';
-import { AbilityFactory } from './application/ability.factory';
-import { RoleGrantPolicy } from './application/role-grant.policy';
 
 // Register list/static routes before parameterized ones.
 const httpControllers = [

@@ -3,11 +3,11 @@ import { AppError } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
+import { PrincipalResidencyChecker } from '../../application/principal-residency.policy';
 import { ACCESS_GRANT_REPOSITORY } from '../../authz.di-tokens';
 import type { AccessGrantRepositoryPort } from '../../database/access-grant.repository.port';
 import { AccessGrantEntity } from '../../domain/access-grant.entity';
 import { AccessGrantErrors } from '../../domain/access-grant.errors';
-import { PrincipalResidencyChecker } from '../../application/principal-residency.policy';
 import { CreateAccessGrantCommand } from './create-access-grant.command';
 
 /**

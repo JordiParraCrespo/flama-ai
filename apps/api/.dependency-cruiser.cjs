@@ -79,8 +79,7 @@ module.exports = {
       severity: 'error',
       from: { path: '^src/([^/]+)/domain/' },
       to: {
-        path:
-          '^src/$1/(database|infrastructure|commands|queries|application|dtos|guards|decorators|interceptors)/',
+        path: '^src/$1/(database|infrastructure|commands|queries|application|dtos|guards|decorators|interceptors)/',
       },
     },
     {

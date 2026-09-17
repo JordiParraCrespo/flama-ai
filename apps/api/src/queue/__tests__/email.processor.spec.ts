@@ -5,8 +5,8 @@ import es from '@flama/translations/es/index.json';
 import type { Job } from 'bullmq';
 import { describe, expect, it, vi } from 'vitest';
 import type { LocaleResolver } from '../../profile/application/locale.resolver';
-import { EmailProcessor } from '../infrastructure/email.processor';
 import { EmailJobMapper } from '../email-job.mapper';
+import { EmailProcessor } from '../infrastructure/email.processor';
 
 function setup() {
   const email = {

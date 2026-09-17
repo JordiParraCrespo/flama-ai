@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session } from '../auth/database/session.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
 import { UsersModule } from '../users/user.module';
+import { LocaleResolver } from './application/locale.resolver';
 import { ChangePasswordHttpController } from './commands/change-password/change-password.http.controller';
 import { ChangePasswordService } from './commands/change-password/change-password.service';
 import { DeleteAvatarHttpController } from './commands/delete-avatar/delete-avatar.http.controller';
@@ -21,6 +22,8 @@ import { UploadAvatarService } from './commands/upload-avatar/upload-avatar.serv
 import { SessionRepository } from './database/session.repository';
 import { UserSettingsOrmEntity } from './database/user-settings.orm-entity';
 import { UserSettingsRepository } from './database/user-settings.repository';
+import { AvatarStorage } from './infrastructure/avatar-storage.adapter';
+import { ProfileAuthFacade } from './infrastructure/profile-auth.gateway';
 import { SESSION_READER, USER_SETTINGS_REPOSITORY } from './profile.di-tokens';
 import { ProfileMapper } from './profile.mapper';
 import { FindSessionsHttpController } from './queries/find-sessions/find-sessions.http.controller';
@@ -29,9 +32,6 @@ import { GetProfileHttpController } from './queries/get-profile/get-profile.http
 import { GetProfileQueryHandler } from './queries/get-profile/get-profile.query-handler';
 import { GetUserSettingsHttpController } from './queries/get-user-settings/get-user-settings.http.controller';
 import { GetUserSettingsQueryHandler } from './queries/get-user-settings/get-user-settings.query-handler';
-import { AvatarStorage } from './infrastructure/avatar-storage.adapter';
-import { LocaleResolver } from './application/locale.resolver';
-import { ProfileAuthFacade } from './infrastructure/profile-auth.gateway';
 
 // Registration order matters: every static sub-route (`settings`, `avatar`,
 // `sessions`) must be matched before `sessions/:id`, and the bare `GET`/`PATCH`

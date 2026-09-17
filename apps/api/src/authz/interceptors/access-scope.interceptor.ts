@@ -4,11 +4,11 @@ import type { NestInterceptor } from '@nestjs/common';
 import { type CallHandler, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { AbilityFactory } from '../../roles/application/ability.factory';
-import { ACCESS_SCOPE_KEY } from '../decorators/current-access-scope.decorator';
 import {
   ACTIVE_ORGANIZATION_HEADER,
   ActiveOrganizationResolver,
 } from '../application/active-organization.resolver';
+import { ACCESS_SCOPE_KEY } from '../decorators/current-access-scope.decorator';
 
 /** Instance-level roles that short-circuit scoping (Q0). */
 const PLATFORM_ROLES: readonly string[] = [ROLES.SUPERADMIN, ROLES.ADMIN];
