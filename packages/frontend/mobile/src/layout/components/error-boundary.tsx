@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Sentry, sentryEnabled } from '../../platform/lib/sentry';
+import { Sentry, sentryEnabled } from '../../platform';
 
 type ErrorBoundaryProps = {
   fallback: (reset: () => void) => ReactNode;

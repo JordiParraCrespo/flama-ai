@@ -1,6 +1,6 @@
 import { Badge, Card, cn, IconButton } from '@flama/design-system-web';
 import { Check, Copy } from '@flama/design-system-web/icons';
-import { useCopy } from '../../platform/hooks/use-copy';
+import { useCopy } from '../../platform';
 
 /**
  * The layout vocabulary a settings-shaped screen is built from, ported

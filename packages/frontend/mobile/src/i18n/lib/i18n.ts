@@ -3,7 +3,7 @@ import { defaultLocale, defaultNS, type Locale, locales, resources } from '@flam
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { storage } from '../../platform/lib/mmkv';
+import { storage } from '../../platform';
 
 /** Preference key — MMKV, not the keychain. */
 export const LOCALE_STORAGE_KEY = 'flama.locale';

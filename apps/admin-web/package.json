@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "lint": "biome check src/",
     "lint:design": "oxlint -c ../../packages/design-system/web/oxlint.design.json src",
-    "clean": "rimraf dist .turbo node_modules"
+    "clean": "rimraf dist .turbo node_modules",
+    "arch": "depcruise src --config .dependency-cruiser.cjs"
   },
   "dependencies": {
     "@flama/api-client": "workspace:*",
@@ -46,6 +47,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.1.1",
+    "dependency-cruiser": "^18.1.0",
     "jsdom": "^30.0.1",
     "oxc-transform-react": "0.145.0",
     "rimraf": "^6.1.3",

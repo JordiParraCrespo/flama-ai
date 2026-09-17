@@ -4,7 +4,7 @@ import {
   type IConfigProvider,
   type IConfigStorage,
 } from '@flama/frontend-core/config';
-import { storage } from '../../platform/lib/mmkv';
+import { storage } from '../../platform';
 import { type AppConfig, staticConfig } from './app-config';
 
 const CACHE_KEY = 'flama.remote-config';

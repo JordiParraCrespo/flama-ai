@@ -11,11 +11,12 @@
     "build:dev": "eas build --profile development",
     "build:preview": "eas build --profile preview",
     "build:prod": "eas build --profile production",
-    "lint": "biome check app/ components/ lib/ app.config.ts && tsc --noEmit",
-    "lint:design": "oxlint -c ../../packages/design-system/mobile/oxlint.design.json app components lib",
+    "lint": "biome check app/ features/ lib/ app.config.ts && tsc --noEmit",
+    "lint:design": "oxlint -c ../../packages/design-system/mobile/oxlint.design.json app features lib",
     "test": "vitest run --passWithNoTests",
     "clean": "rm -rf .expo node_modules",
-    "postinstall": "npx tailwindcss -i ./global.css -o ./node_modules/.cache/nativewind/global.css"
+    "postinstall": "npx tailwindcss -i ./global.css -o ./node_modules/.cache/nativewind/global.css",
+    "arch": "depcruise app features lib --config .dependency-cruiser.cjs"
   },
   "dependencies": {
     "@better-auth/expo": "^1.6.25",
@@ -83,6 +84,7 @@
     "@babel/core": "^7.29.7",
     "@types/react": "19.2.14",
     "babel-plugin-react-compiler": "1.0.0",
+    "dependency-cruiser": "^18.1.0",
     "tailwindcss": "^3.4.19",
     "typescript": "~6.0.3",
     "vitest": "^3.2.7"

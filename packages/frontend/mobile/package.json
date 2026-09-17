@@ -23,7 +23,8 @@
   ],
   "scripts": {
     "lint": "biome check src/",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "arch": "depcruise src --config .dependency-cruiser.cjs"
   },
   "dependencies": {
     "@flama/design-system-mobile": "workspace:*",
@@ -60,6 +61,7 @@
     "@tanstack/query-sync-storage-persister": "^5.102.8",
     "@tanstack/react-query": "^5.102.8",
     "@types/react": "19.2.14",
+    "dependency-cruiser": "^18.1.0",
     "expo-constants": "~57.0.18",
     "expo-localization": "~57.0.2",
     "expo-router": "~57.0.21",

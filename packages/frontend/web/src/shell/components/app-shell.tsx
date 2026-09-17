@@ -1,6 +1,6 @@
 import { SidebarInset, SidebarProvider } from '@flama/design-system-web';
 import { type ReactNode, useState } from 'react';
-import { useApplyUserSettings } from '../../i18n/hooks/use-apply-user-settings';
+import { useApplyUserSettings } from '../../i18n';
 import { type ShellConfig, ShellProvider } from '../hooks/use-shell';
 import { AppSidebar } from './app-sidebar';
 import { CommandPalette } from './command-palette';

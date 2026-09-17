@@ -1,8 +1,8 @@
 import { Link, useMatches } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { NavTo } from '../../shell/lib/nav';
-import { ThemeToggle } from '../../theme/components/theme-toggle';
+import type { NavTo } from '../../shell';
+import { ThemeToggle } from '../../theme';
 import '../lib/legal-note';
 import { AuthArtPanel } from './auth-art-panel';
 import { BrandLogo } from './brand-logo';

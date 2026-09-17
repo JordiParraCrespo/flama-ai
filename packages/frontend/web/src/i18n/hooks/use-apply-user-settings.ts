@@ -1,7 +1,7 @@
 import { useUserSettings } from '@flama/frontend-core/react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { hasStoredTheme, useTheme } from '../../theme/components/theme-provider';
+import { hasStoredTheme, useTheme } from '../../theme';
 import { LOCALE_STORAGE_KEY } from '../lib/i18n';
 
 /**

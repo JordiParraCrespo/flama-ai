@@ -1,6 +1,6 @@
 import { redirect } from '@tanstack/react-router';
-import { sanitizeRedirect } from '../../platform/lib/sanitize-redirect';
-import type { NavTo } from '../../shell/lib/nav';
+import { sanitizeRedirect } from '../../platform';
+import type { NavTo } from '../../shell';
 
 interface RedirectSignedInArgs {
   context: { auth: { isAuthenticated: boolean } };

@@ -1,6 +1,6 @@
 import { cn } from '@flama/design-system-web';
 import { useTranslation } from 'react-i18next';
-import { BrandGlyph } from '../../theme/components/brand-glyph';
+import { BrandGlyph } from '../../theme';
 
 /** Mark plus wordmark, as it sits in the top-left of every auth screen. */
 export function BrandLogo({ className, label }: { className?: string; label?: string }) {

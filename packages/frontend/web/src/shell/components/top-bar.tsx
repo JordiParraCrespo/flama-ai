@@ -1,7 +1,7 @@
 import { IconButton, Kbd, useSidebar } from '@flama/design-system-web';
 import { Menu, Moon, Search, Sun } from '@flama/design-system-web/icons';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../theme/components/theme-provider';
+import { useTheme } from '../../theme';
 import { UserMenu } from './user-menu';
 
 /**

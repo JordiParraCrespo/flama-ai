@@ -13,7 +13,7 @@ import {
 } from '@flama/design-system-web';
 import { TriangleAlert } from '@flama/design-system-web/icons';
 import { useTranslation } from 'react-i18next';
-import { useErrorMessage } from '../../forms/hooks/use-error-message';
+import { useErrorMessage } from '../../forms';
 
 /**
  * The workspace's "are you sure?" — a hero-plated dialog whose confirm button

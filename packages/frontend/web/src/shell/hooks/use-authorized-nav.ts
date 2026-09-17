@@ -1,6 +1,6 @@
 import type { NavItem, NavTo } from '../lib/nav';
 import { useAbilityState } from './use-ability';
-import { useShell } from './use-shell';
+import { useShellConfig } from './use-shell';
 
 /**
  * The nav rows the signed-in user may actually reach, in order. A row is shown
@@ -21,7 +21,10 @@ import { useShell } from './use-shell';
  * components call `useAuthorizedNav()` and get the app's nav from context.
  */
 export function useAuthorizedNav(nav?: readonly NavItem[]): NavItem[] {
-  const entries = nav ?? useShellNav();
+  // Both are read unconditionally: hooks run in the same order whether or
+  // not the caller passed its own nav.
+  const shell = useShellConfig();
+  const entries = nav ?? shell?.nav ?? [];
   const { ability, isUnavailable } = useAbilityState();
 
   return entries.filter((entry) => {
@@ -44,8 +47,4 @@ export function useAuthorizedNav(nav?: readonly NavItem[]): NavItem[] {
  */
 export function useLandingRoute(nav?: readonly NavItem[]): NavTo | null {
   return useAuthorizedNav(nav)[0]?.to ?? null;
-}
-
-function useShellNav(): readonly NavItem[] {
-  return useShell().nav;
 }

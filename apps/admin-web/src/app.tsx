@@ -2,7 +2,6 @@ import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@flama/des
 import { useAuthState, useSessionRestore } from '@flama/frontend-core/react';
 import { useTheme } from '@flama/frontend-web';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { app } from '@/lib/flama';
 import { routeTree } from './routeTree.gen';
@@ -69,7 +68,7 @@ function AppRoutes() {
   // to /login. Mirrors the mobile root AuthGate, which gates on the same query.
   const { isLoading, isError, isFetching, refetch } = useSessionRestore();
 
-  const context = useMemo(() => ({ auth: { isAuthenticated } }), [isAuthenticated]);
+  const context = { auth: { isAuthenticated } };
 
   if (isLoading) {
     return (

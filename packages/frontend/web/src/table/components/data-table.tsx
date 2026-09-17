@@ -31,7 +31,7 @@ import {
   Ellipsis,
   Filter,
 } from '@flama/design-system-web/icons';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useClampedPage } from '../hooks/use-clamped-page';
 
@@ -221,16 +221,13 @@ export function DataTable<TRow>({
       keys: update(current.identity === queryIdentity ? current.keys : NO_SELECTION),
     }));
 
-  const pageKeys = useMemo(() => rows.map(getKey), [rows, getKey]);
+  const pageKeys = rows.map(getKey);
   const allSelected = pageKeys.length > 0 && pageKeys.every((key) => selected.has(key));
   const someSelected = !allSelected && pageKeys.some((key) => selected.has(key));
 
   const clearSelection = () => updateSelection(() => NO_SELECTION);
 
-  const selectedOnPage = useMemo(
-    () => pageKeys.filter((key) => selected.has(key)),
-    [pageKeys, selected],
-  );
+  const selectedOnPage = pageKeys.filter((key) => selected.has(key));
 
   function toggleAll() {
     updateSelection((current) => {

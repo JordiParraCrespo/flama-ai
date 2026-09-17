@@ -24,8 +24,8 @@ features in `apps/web`; this app is the platform control plane.
 src/
 ├── main.tsx          # app bootstrap
 ├── app.tsx
-├── routes/           # TanStack Router file-based routes
-├── components/       # app-local UI
+├── routes/           # TanStack Router file-based routes (Route + a tiny mount, ≤120 lines)
+├── features/         # <module>/{screens,sections,dialogs,forms,components,hooks,lib}
 ├── providers/        # React context providers (query, i18n, DI)
 ├── lib/              # helpers
 ├── styles/
@@ -47,11 +47,18 @@ src/
   than filtering the page already in hand. `Select` stays for fixed product
   lists (a stage, a source). The full table of which control picks what is in
   [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md).
-- **A route file composes.** `src/routes/` holds the `Route`, the page
-  component and its queries; dialogs, cells and tabs go in
-  `src/components/<feature>/`. `components/team/` is the shape to copy. Layout vocabulary shared by more than one feature sits at
-  the top of `components/` (`section-ui.tsx`), not inside whichever feature
-  needed it first.
+- **A route file only mounts.** `src/routes/` holds the `Route`
+  (`beforeLoad`, `validateSearch`, `staticData`) and a tiny component that
+  renders a screen; everything else lives in `src/features/<module>/<kind>/`.
+  `<module>` is one of `admin-users`, `roles`, `auth`, `users`, `capabilities`,
+  `analytics`. `screens/` is the page body a route mounts, `sections/` a pane
+  or table, `dialogs/` one dialog per file owning its mutation, `forms/` a
+  React Hook Form over a shared Zod schema (props in, `onSubmit` out — never
+  imports the query port or the router), `components/` props-only entity UI,
+  `hooks/` the only home for `useEffect`, `lib/` types and constants without
+  JSX. No barrels, no sub-directories, and a feature never imports another
+  feature; layout vocabulary shared by more than one feature comes from
+  `@flama/frontend-web`.
 - **The second time you write a helper, it moves to `src/lib/`.** Look there
   first — `download-csv`, `format-date`, `use-locale`, `use-copy`,
   `use-error-message`, `use-zod-resolver` are all there because they were

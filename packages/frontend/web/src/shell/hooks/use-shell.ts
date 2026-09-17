@@ -18,7 +18,12 @@ const ShellContext = createContext<ShellConfig | null>(null);
 export const ShellProvider = ShellContext.Provider;
 
 export function useShell(): ShellConfig {
-  const config = useContext(ShellContext);
+  const config = useShellConfig();
   if (!config) throw new Error('useShell must be used within <AppShell>');
   return config;
+}
+
+/** The shell's config, or `null` outside `AppShell` — for hooks that also take it as an argument. */
+export function useShellConfig(): ShellConfig | null {
+  return useContext(ShellContext);
 }
