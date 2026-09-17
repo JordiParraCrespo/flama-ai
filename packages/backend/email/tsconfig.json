@@ -1,5 +1,5 @@
 {
-  "extends": "@flama/config/tsconfig.nestjs.json",
+  "extends": "@flama/tsconfig/tsconfig.nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",

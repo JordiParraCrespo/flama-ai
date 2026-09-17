@@ -185,7 +185,7 @@ packages/backend/authz/                    # @flama/backend-authz
 
 `package.json` mirrors `packages/backend/cache` exactly (that is the established
 template — `tsc -p tsconfig.json`, `main: ./dist/index.js`, tsconfig extending
-`@flama/config/tsconfig.nestjs.json`). The `pnpm-workspace.yaml` glob
+`@flama/tsconfig/tsconfig.nestjs.json`). The `pnpm-workspace.yaml` glob
 `packages/backend/*` already covers the directory, so no workspace edit is
 needed.
 

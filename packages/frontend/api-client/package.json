@@ -22,7 +22,7 @@
     "@hey-api/client-fetch": "^0.13.1"
   },
   "devDependencies": {
-    "@flama/config": "workspace:^",
+    "@flama/tsconfig": "workspace:^",
     "@hey-api/client-fetch": "^0.13.1",
     "@hey-api/openapi-ts": "^0.99.0",
     "@tanstack/react-query": "^5.102.8",

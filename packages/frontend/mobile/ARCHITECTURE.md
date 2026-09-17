@@ -25,7 +25,7 @@ with the app.
 
 There is no `top` list: nothing on mobile plays the part `shell` plays on
 web. The lists live in [`.dependency-cruiser.cjs`](.dependency-cruiser.cjs),
-which passes them to `packages/config/depcruise/frontend-kit.cjs`.
+which passes them to `packages/tsconfig/depcruise/frontend-kit.cjs`.
 
 ## The layering, and why
 

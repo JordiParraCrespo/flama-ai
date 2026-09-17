@@ -12,7 +12,7 @@ of duplicating them per app.
 | `@flama/shared`             | Re-exports everything below                                                                                                             |
 | `@flama/shared/schemas`     | Zod schemas — the source of truth for request/response DTOs                                                                             |
 | `@flama/shared/types`       | TypeScript types: `Role`, `PermissionDefinition`, `AuthProvider`, `JwtPayload`, `TokenPair`, `PaginationParams`, `PaginatedResponse<T>` |
-| `@flama/shared/permissions` | CASL helpers — `defineAbilitiesFromPermissions` (DB-driven, source of truth) and the legacy `defineAbilitiesFor` fallback               |
+| `@flama/shared/permissions` | CASL helpers — `defineAbilitiesFromPermissions` (DB-driven, source of truth), the legacy `defineAbilitiesFor` fallback, and `ENDPOINT_POLICIES` |
 | `@flama/shared/constants`   | `AUTH`, `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`                                                 |
 
 ## Usage
@@ -31,6 +31,13 @@ import { PAGINATION } from "@flama/shared/constants";
 - Authorization is database-backed dynamic RBAC. `defineAbilitiesFromPermissions`
   builds a CASL ability from a role's stored permissions and is shared by both
   backend and frontend. See `.agents/rules/rbac-roles.md`.
+- `ENDPOINT_POLICIES` declares what each guarded endpoint demands, keyed by the
+  path the API mounts it at. A client that hides a destination behind
+  permissions reads its rules from here rather than restating them.
+- A client's own route paths are **not** shared — they stay in the app that
+  mounts them, and a gated nav row names the endpoint it reads. That is what
+  lets `apps/api` check its controllers against the catalog without depending
+  on a frontend package.
 
 ## Scripts
 

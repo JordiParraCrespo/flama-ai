@@ -24,7 +24,7 @@ Full-stack monorepo boilerplate for bootstrapping applications fast.
 - **packages/frontend/design-system** — Shared tokens, web and mobile components
 - **packages/frontend/api-client** — Auto-generated typed API client
 - **packages/translations** — Shared i18n files
-- **packages/config** — Shared TypeScript and tooling configs
+- **packages/tsconfig** — Shared TypeScript and tooling configs
 
 ### Backend packages
 

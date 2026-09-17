@@ -123,7 +123,7 @@ Module names this app may use: the kernel's `analytics`, `auth`,
 ## What the checkers enforce
 
 `pnpm --filter @flama/admin-web arch` (`.dependency-cruiser.cjs` over
-`packages/config/depcruise/frontend-app.cjs`):
+`packages/tsconfig/depcruise/frontend-app.cjs`):
 
 - `no-circular` — no import cycles, type-only edges excepted.
 - `features-are-islands` — a feature never imports another feature.
@@ -162,9 +162,9 @@ consumer app (`apps/web`) on purpose:
   an administrator. Its `callbackURL` lands on `/users`, not `/dashboard`.
 - **`nav.ts`** — two rows, `/users` and `/roles`, with a local `NavItem` type
   whose `to` is that union. It carries no `policies`: the whole app is already
-  behind the `canAccessControlPlane` gate in `_authenticated.tsx`, where
-  `apps/web` instead takes each row's policies from `SCREENS` in
-  `@flama/shared/navigation`.
+  behind the `canAccessControlPlane` gate in `_authenticated.tsx`. A row that
+  did need one would take it from `ENDPOINT_POLICIES` in
+  `@flama/shared/permissions`, keyed by the endpoint its screen reads.
 
 The query client is a provider, not a lib file: `src/providers/query-provider.tsx`
 applies the kernel's persistence policy — with no `nonPersistedFeatures`, since

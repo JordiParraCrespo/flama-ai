@@ -251,7 +251,7 @@ and `apps/mobile-showcase`. Usage rules are `.agents/rules/frontend-ui.md`.
 ## Dependency flow
 
 ```
-packages/config           → used by all apps and packages (tsconfig extends)
+packages/tsconfig         → used by all apps and packages (tsconfig extends)
 packages/env              → used by api, mcp, mobile (root .env loader)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
 packages/auth             → used by api, web, mobile (shared Better Auth config)

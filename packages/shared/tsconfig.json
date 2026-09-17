@@ -1,5 +1,5 @@
 {
-  "extends": "@flama/config/tsconfig.library.json",
+  "extends": "@flama/tsconfig/tsconfig.library.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",

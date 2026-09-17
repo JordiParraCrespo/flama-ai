@@ -27,7 +27,7 @@ importing it configures i18next; everything else is pure and may be dropped.
 | `auth` | `AuthLayout`, `AuthArtPanel`, `BrandLogo`, the auth primitives, `PasswordInput`, `SocialLoginButtons`, `OAuthCallbackNotice`, `redirectSignedIn` | top |
 
 The lists live in [`.dependency-cruiser.cjs`](.dependency-cruiser.cjs), which
-passes them to `packages/config/depcruise/frontend-kit.cjs`.
+passes them to `packages/tsconfig/depcruise/frontend-kit.cjs`.
 
 ## The layering, and why
 
@@ -76,7 +76,12 @@ what the shell shows — `apps/web/src/routes/_authenticated.tsx`:
 `nav` is the app's own `readonly NavItem[]` from its `lib/nav.ts`: each row
 carries a route, an icon, a `nav.*` label key and the CASL `policies` its
 destination needs, and `useAuthorizedNav` hides the rows the signed-in
-ability does not satisfy. `userMenuLinks` are the account-menu rows above the
+ability does not satisfy. A gated row takes those `policies` from
+`ENDPOINT_POLICIES` in `@flama/shared/permissions`, keyed by the endpoint its
+screen reads, rather than writing the rules out — the API's own
+`endpoint-policies.spec.ts` pins its controllers to that same entry. The kit
+holds no route list: the URLs belong to each app, and the two Vite apps do not
+share them. `userMenuLinks` are the account-menu rows above the
 language list, and `workspace` is what the sidebar header names.
 
 ## How an app configures the auth layout

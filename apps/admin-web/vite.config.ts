@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { vendorChunks } from '@flama/config/vite-chunks.mjs';
+import { vendorChunks } from '@flama/tsconfig/vite-chunks.mjs';
 import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
@@ -44,7 +44,6 @@ export default defineConfig({
       '@flama/shared/schemas/organization',
       '@flama/shared/schemas/profile',
       '@flama/shared/schemas/role',
-      '@flama/shared/navigation',
       '@flama/shared/permissions',
     ],
   },
@@ -52,7 +51,7 @@ export default defineConfig({
     rollupOptions: {
       // One chunk per library instead of one chunk for all of them, so a
       // release invalidates app code and leaves the dependencies cached. See
-      // the note in `@flama/config/vite-chunks.mjs`.
+      // the note in `@flama/tsconfig/vite-chunks.mjs`.
       output: { manualChunks: vendorChunks },
     },
     commonjsOptions: {

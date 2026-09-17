@@ -6,7 +6,7 @@ twice, and the two splits answer different questions.
 
 This document is the source of truth for the tier. The machine-checked rules
 in each package's `.dependency-cruiser.cjs` (built from
-`packages/config/depcruise/*.cjs`), `scripts/check-frontend-structure.mjs` and
+`packages/tsconfig/depcruise/*.cjs`), `scripts/check-frontend-structure.mjs` and
 the scoped rule file `.agents/rules/frontend-architecture.md` enforce what is
 described here. When they disagree, fix the code or update both together.
 
@@ -219,7 +219,7 @@ public, add `export * from './<concern>'` to `src/index.ts` (and a subpath in
 ## What the checkers enforce
 
 `pnpm --filter <pkg> arch` runs dependency-cruiser with one of three factories
-in `packages/config/depcruise/`.
+in `packages/tsconfig/depcruise/`.
 
 `frontend-domain.cjs` (`core`, `consumer`, `admin`):
 
