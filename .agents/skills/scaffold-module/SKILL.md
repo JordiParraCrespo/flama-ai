@@ -14,10 +14,9 @@ pnpm check:api-structure          # where a file may live, what it may be called
 pnpm --filter @flama/api arch     # what it is then allowed to import
 ```
 
-`users/` is the reference for a module with an aggregate; `profile/` is the
-reference for one whose writes go partly through an external system. Read one
-of them when unsure — do **not** copy `organizations/` or `admin/`, which are
-mid-migration to this contract.
+`users/` is the reference module — read it when a shape is unclear. Do **not**
+copy `organizations/` or `admin/`, which are mid-migration to this contract and
+are ledgered as such.
 
 ## Before generating
 
@@ -33,48 +32,46 @@ Ask for / infer:
    (Better Auth, Stripe, another service), there is no aggregate to write — see
    "A module that owns no aggregate" below. The contract still applies.
 
-## The contract, in short
+## The contract
 
-A directory appears when it has something to hold — **never create an empty
-one** to look complete. What it may hold is fixed:
+**Do not work from a copy of it.** The closed set of layer directories and the
+file names each admits live in `apps/api/ARCHITECTURE.md`, and
+`pnpm check:api-structure` is that table executable. Read the page, generate,
+then run both checks — they will name anything the skeleton got wrong, in the
+words the contract uses.
 
-| Directory              | Admits                                                                              |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `domain/`              | `*.entity.ts`, `*.errors.ts`, `*.policy.ts`, `*.factory.ts`, `*.types.ts`, `value-objects/`, `events/` |
-| `database/`            | `*.orm-entity.ts`, `*.repository.port.ts`, `*.repository.ts`                          |
-| `infrastructure/`      | `*.port.ts`, `*.adapter.ts`, `*.gateway.ts`, `*.processor.ts`, `*.config.ts`, `*.util.ts`, `*.types.ts` |
-| `commands/<use-case>/` | `<use-case>.command.ts`, `.service.ts`, `.http.controller.ts`, `.request.dto.ts`      |
-| `queries/<use-case>/`  | `<use-case>.query.ts`, `.query-handler.ts`, `.http.controller.ts`, `.request.dto.ts`  |
-| `application/`         | `*.factory.ts`, `*.policy.ts`, `*.resolver.ts`, `event-handlers/*.domain-event-handler.ts` |
-| `dtos/`                | `*.response.dto.ts`                                                                   |
-| `guards/` `decorators/` `interceptors/` | `*.guard.ts` / `*.decorator.ts` / `*.interceptor.ts`                 |
+Three things the generator gets wrong most often:
 
-The module root carries only `<module>.module.ts` (required), `*.mapper.ts`,
-`*.di-tokens.ts` and `*.resource.ts`.
+- **Never create an empty directory** to look complete. A directory appears
+  when it has something to hold.
+- **Never generate a `services/` directory, a root-level `*.service.ts`, or a
+  `*.controller.ts` outside a slice.** When something feels like a service,
+  decide what it is:
 
-**Never generate a `services/` directory, or a root-level `*.service.ts` or
-`*.controller.ts`.** When something feels like a service, decide what it is:
+  | It…                                     | goes in                                           |
+  | --------------------------------------- | ------------------------------------------------- |
+  | decides from the domain alone            | `domain/<name>.policy.ts` / `.factory.ts`         |
+  | calls out of the process                 | `infrastructure/<name>.port.ts` + an adapter      |
+  | is what a route does                     | `commands/<use-case>/` or `queries/<use-case>/`   |
+  | needs ports but no route reaches it      | `application/<name>.{factory,policy,resolver}.ts` |
 
-| It…                                     | goes in                                           |
-| --------------------------------------- | ------------------------------------------------- |
-| decides from the domain alone            | `domain/<name>.policy.ts` / `.factory.ts`         |
-| calls out of the process                 | `infrastructure/<name>.port.ts` + an adapter      |
-| is what a route does                     | `commands/<use-case>/` or `queries/<use-case>/`   |
-| needs ports but no route reaches it      | `application/<name>.{factory,policy,resolver}.ts` |
+- **Every file in a slice is named after the slice**, and the command handler
+  is `<use-case>.command-handler.ts` — matching `<use-case>.query-handler.ts`.
 
 ## Layer rules (the Stop hook + CI enforce these)
 
 - `domain/` imports **only** `@flama/backend-ddd`, `@flama/backend-authz` and
-  `@flama/shared`. No `@nestjs/*`, no `typeorm`, no `oxide.ts`, no `express`.
-- Handlers (`commands/`, `queries/`, `application/`) inject the **port** via its
-  DI token — never a `*.repository.ts`, `*.adapter.ts` or `*.gateway.ts`.
-- Only `database/` references the `*.orm-entity.ts`. TypeORM itself appears only
-  in `database/` and `infrastructure/`.
-- A controller dispatches on the bus and maps the result; it never touches
-  `database/`.
-- No imports between sibling use-case slices — coordinate via the bus or events.
-  Reusing another slice's `*.command.ts` / `*.query.ts` to dispatch is fine.
-- Another module's internals are off limits. What a module publishes is its
+  `@flama/shared` plus node core. No `@nestjs/*`, no `typeorm`, no `oxide.ts`,
+  no `express`.
+- Handlers inject the **port** via its DI token — never a `*.repository.ts`,
+  `*.adapter.ts` or `*.gateway.ts`. Every adapter you generate gets a
+  `*.port.ts` and a token beside it; a class registered directly in the module
+  is the mistake this contract exists to stop.
+- Only `database/` references the `*.orm-entity.ts`, and only `database/` and
+  `infrastructure/` name TypeORM.
+- A controller dispatches on the bus and maps; it never touches `database/`.
+- No imports between sibling slices — coordinate via the bus or events.
+- Another module's internals are off limits: what it publishes is its
   `domain/`, `dtos/`, ports, DI tokens, bus messages and inbound adapters.
 - **Caps:** a controller is 110 lines, a handler 120.
 
@@ -93,7 +90,7 @@ The module root carries only `<module>.module.ts` (required), `*.mapper.ts`,
 │   └── <module>.repository.ts         # @Injectable adapter: maps via mapper, stages events on the outbox
 ├── commands/<use-case>/
 │   ├── <use-case>.command.ts          # extends CommandBase
-│   ├── <use-case>.command-handler.ts   # @CommandHandler; returns AggregateID
+│   ├── <use-case>.command-handler.ts  # @CommandHandler; returns AggregateID
 │   ├── <use-case>.http.controller.ts  # dispatches via CommandBus; Swagger + guards + @Version('1')
 │   └── <use-case>.request.dto.ts      # createZodDto(schema from @flama/shared)
 ├── queries/<use-case>/

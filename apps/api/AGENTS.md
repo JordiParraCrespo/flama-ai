@@ -48,8 +48,13 @@ const member =
 ```
 
 Shared shaping helpers (`asRecord`, `asArray`, `unwrap`, `unwrapArray`) live in
-`src/auth/infrastructure/better-auth.util.ts`; array/envelope mappers (`mapMembers`,
-`mapUserFromResult`, …) live alongside the scalar ones in `*.mappers.ts`.
+`src/auth/infrastructure/better-auth.util.ts`.
+
+**One mapper per aggregate, named for it** — `subscription.mapper.ts`, not a
+`*.mappers.ts` bag of loose functions. `pnpm check:api-structure` rejects the
+plural name; `admin.mappers.ts` and `organization.mappers.ts` are on its ledger
+precisely because they are that bag. Array and envelope mappers belong on the
+aggregate's mapper beside the scalar ones, as methods.
 
 ## Delegating façades (organizations, admin)
 
@@ -77,7 +82,10 @@ and normalize every `auth.api` result through a mapper (see above). See
 **Wrap every `auth.api.*` call in the module's own invoker** —
 `invokeOrganizationApi` (`organizations/organization-error.mapper.ts`) or
 `invokeAdminApi` (`admin/admin-error.mapper.ts`), both built with
-`betterAuthInvoker`. They fold Better Auth's `APIError` onto the module's error
+`betterAuthInvoker`. Those two files sit at the module root today only because
+`*.mapper.ts` is on the root allowlist; once each module is cut into slices the
+error fold belongs beside its gateway in `infrastructure/`, not as a second
+mapper at the root. They fold Better Auth's `APIError` onto the module's error
 catalog so the response is a proper problem document with an `ORG_*`/`ADMIN_*`
 code, keeping the upstream code as an `upstreamCode` extension. Throwing a bare
 `HttpException` here loses the code entirely — see "Structured errors" in

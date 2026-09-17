@@ -23,16 +23,24 @@
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const API_SRC = join(root, 'apps/api/src');
+
+/**
+ * The tree being checked, and what paths are reported relative to. Both are the
+ * repository by default; the test suite points them at a fixture instead.
+ */
+let srcDir = API_SRC;
+let reportRoot = root;
 /**
  * A problem is identified by the file it is about and the *kind* of breach,
  * not by the sentence describing it. The prose is output; `(path, kind)` is
  * what the ledger below keys on, so rewording a message never silences a
  * violation and never turns a paid-off one into a false alarm.
  */
-const errors = [];
+let errors = [];
 const fail = (path, kind, message) => errors.push({ path, kind, message });
 
 /**
@@ -207,7 +215,7 @@ const LEDGER = [
 const tsFiles = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile());
 const subDirs = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());
 const lineCount = (path) => readFileSync(path, 'utf8').split('\n').length;
-const rel = (path) => relative(root, path);
+const rel = (path) => relative(reportRoot, path);
 
 function* walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -368,8 +376,8 @@ function checkLayer(dir, label, spec) {
 }
 
 function checkModule(name) {
-  const moduleDir = join(API_SRC, name);
-  const label = `apps/api/src/${name}`;
+  const moduleDir = join(srcDir, name);
+  const label = `${relative(reportRoot, srcDir)}/${name}`;
 
   // Root: the module's wiring, and nothing that belongs to a layer.
   const rootFiles = tsFiles(moduleDir).map((e) => e.name);
@@ -474,43 +482,69 @@ function checkModule(name) {
   }
 }
 
-if (!existsSync(API_SRC)) {
-  console.log('API structure: apps/api is not part of this project.');
-  process.exit(0);
+/**
+ * Check one source tree against the contract.
+ *
+ * Exported so the fixture suite can drive it over a tree it built, which is the
+ * only way to assert on a violation the repository does not currently have —
+ * and the only way a wording change can be told apart from a paid-off one.
+ *
+ * @param {string} dir the `src` directory to check
+ * @param {{ root?: string, ledger?: Array<{path: string, kind: string}> }} [options]
+ */
+export function checkApiStructure(dir, options = {}) {
+  const previous = [srcDir, reportRoot];
+  srcDir = dir;
+  reportRoot = options.root ?? root;
+  errors = [];
+
+  const modules = readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !NON_MODULES.has(e.name))
+    .map((e) => e.name)
+    .sort();
+  for (const name of modules) checkModule(name);
+
+  // Subtract the ledger, and hold the ledger to being current: an entry that no
+  // longer describes a real violation is debt that has been paid and not
+  // written off, and the next person reads it as still owed.
+  const key = ({ path, kind }) => `${path}\u0000${kind}`;
+  const entries = options.ledger ?? LEDGER;
+  const ledger = new Set(entries.map(key));
+  const outstanding = errors.filter((error) => !ledger.delete(key(error)));
+  for (const stale of ledger) {
+    const [path, kind] = stale.split('\u0000');
+    outstanding.push({
+      path,
+      kind: 'stale-ledger-entry',
+      message: `LEDGER: ${path} no longer reports "${kind}" — delete that entry from LEDGER in scripts/check-api-structure.mjs`,
+    });
+  }
+
+  [srcDir, reportRoot] = previous;
+  return { modules, outstanding, ledgered: entries.length };
 }
 
-const modules = readdirSync(API_SRC, { withFileTypes: true })
-  .filter((e) => e.isDirectory() && !NON_MODULES.has(e.name))
-  .map((e) => e.name)
-  .sort();
+export { LEDGER };
 
-for (const name of modules) checkModule(name);
+// Run as a script; imported by the fixture suite without any of this firing.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  if (!existsSync(API_SRC)) {
+    console.log('API structure: apps/api is not part of this project.');
+    process.exit(0);
+  }
 
-// Subtract the ledger, and hold the ledger to being current: an entry that no
-// longer describes a real violation is debt that has been paid and not written
-// off, and the next person reads it as still owed.
-const key = ({ path, kind }) => `${path}\u0000${kind}`;
-const ledger = new Set(LEDGER.map(key));
-const outstanding = errors.filter((error) => !ledger.delete(key(error)));
-for (const stale of ledger) {
-  const [path, kind] = stale.split('\u0000');
-  outstanding.push({
-    path,
-    kind: 'stale-ledger-entry',
-    message: `LEDGER: ${path} no longer reports "${kind}" — delete that entry from LEDGER in scripts/check-api-structure.mjs`,
-  });
-}
+  const { modules, outstanding, ledgered } = checkApiStructure(API_SRC);
 
-if (outstanding.length > 0) {
-  console.error(
-    `API structure: ${outstanding.length} problem${outstanding.length === 1 ? '' : 's'}\n`,
+  if (outstanding.length > 0) {
+    console.error(
+      `API structure: ${outstanding.length} problem${outstanding.length === 1 ? '' : 's'}\n`,
+    );
+    for (const error of outstanding) console.error(`  ✖ ${error.message}`);
+    console.error('\nSee apps/api/ARCHITECTURE.md');
+    process.exit(1);
+  }
+  console.log(
+    `API structure: ${modules.length} modules conform` +
+      (ledgered ? `, with ${ledgered} ledgered violations in admin/ and organizations/.` : '.'),
   );
-  for (const error of outstanding) console.error(`  ✖ ${error.message}`);
-  console.error('\nSee apps/api/ARCHITECTURE.md');
-  process.exit(1);
 }
-const owed = LEDGER.length;
-console.log(
-  `API structure: ${modules.length} modules conform` +
-    (owed ? `, with ${owed} ledgered violations in admin/ and organizations/.` : '.'),
-);

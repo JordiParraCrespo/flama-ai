@@ -23,11 +23,15 @@ what is described here. When they disagree, fix the code or update both together
         │  └─────────────────────────────────────────┘  │
         │  Infrastructure   database (orm-entity, repository, ports)
         └───────────────────────────────────────────────┘
-        depends on ──►  @flama/backend-ddd, @flama/shared only (domain)
+        depends on ──►  @flama/backend-ddd, -authz, @flama/shared only (domain)
 ```
 
-- **Domain** depends on nothing but `@flama/backend-ddd` and `@flama/shared`.
-  No NestJS, no TypeORM, no `oxide.ts`.
+- **Domain** depends on nothing but `@flama/backend-ddd`,
+  `@flama/backend-authz`, `@flama/shared` and node core. No NestJS, no
+  TypeORM, no `oxide.ts`, no `express`. (`backend-authz` is in that list
+  because the resource declaration a module's domain owns is written against
+  it; `domain-stays-pure` in `.dependency-cruiser.cjs` is the enforced
+  statement of this sentence.)
 - **Application** (handlers) depends on the domain and on **repository ports**,
   never on the concrete repository.
 - **Infrastructure** (`database/`) implements the ports and maps domain ↔ ORM.
@@ -58,13 +62,14 @@ holding only the file names that layer admits:
 | `domain/`                     | `*.entity.ts`, `*.errors.ts`, `*.policy.ts`, `*.factory.ts`, `*.types.ts`, and `value-objects/*.value-object.ts`, `events/*.domain-event.ts` |
 | `database/`                   | `*.orm-entity.ts`, `*.repository.port.ts`, `*.repository.ts`                               |
 | `infrastructure/`             | `*.port.ts`, `*.adapter.ts`, `*.gateway.ts`, `*.processor.ts`, `*.config.ts`, `*.util.ts`, `*.types.ts` |
-| `commands/<use-case>/`        | `<use-case>.command.ts`, `.service.ts`, `.http.controller.ts`, `.request.dto.ts`           |
+| `commands/<use-case>/`        | `<use-case>.command.ts`, `.command-handler.ts`, `.http.controller.ts`, `.request.dto.ts`   |
 | `queries/<use-case>/`         | `<use-case>.query.ts`, `.query-handler.ts`, `.http.controller.ts`, `.request.dto.ts`       |
-| `application/`                | `*.factory.ts`, `*.policy.ts`, `*.resolver.ts`, and `event-handlers/*.domain-event-handler.ts` |
+| `application/`                | `*.factory.ts`, `*.policy.ts`, `*.resolver.ts`, `*.port.ts`, and `event-handlers/*.domain-event-handler.ts` |
 | `dtos/`                       | `*.response.dto.ts`                                                                        |
 | `guards/`                     | `*.guard.ts`                                                                               |
 | `decorators/`                 | `*.decorator.ts`                                                                           |
 | `interceptors/`               | `*.interceptor.ts`                                                                         |
+| `probes/`                     | `*.probe.controller.ts`, `*.indicator.ts`                                                  |
 | `__tests__/`                  | `*.spec.ts` — and each layer may have its own                                              |
 
 Four rules follow from the table and are worth stating on their own, because
@@ -87,7 +92,10 @@ they are the ones that decay first:
 3. **An HTTP route is declared in a use-case controller.** Nowhere else. A
    `@Get` outside `commands/<use-case>/` or `queries/<use-case>/` is a route
    with no use case behind it.
-4. **Caps.** A controller is 110 lines, a handler 120. They are not style
+4. **A probe is not a use case.** `/health` and `/ready` report on the process
+   itself: there is no command or query behind them and never will be, so they
+   live in `probes/` rather than owing a slice they would leave empty.
+5. **Caps.** A controller is 110 lines, a handler 120. They are not style
    preferences: past them, a controller has started deciding things and a
    handler has started doing them.
 

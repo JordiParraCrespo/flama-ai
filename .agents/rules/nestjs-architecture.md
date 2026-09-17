@@ -14,44 +14,20 @@ building blocks live in `@flama/backend-ddd`.
 ## Module layout: one shape, enforced
 
 Every module under `apps/api/src/` is cut the same way. A directory appears
-only when it has something to hold — there are no placeholder layers — but
-what it may hold, and what that file may be called, is fixed. The full table
-is in [`apps/api/ARCHITECTURE.md`](../../apps/api/ARCHITECTURE.md) and is
-executable as `pnpm check:api-structure`.
+only when it has something to hold — there are no placeholder layers — but the
+set of directories is closed, and so is the set of file names each admits.
 
-```
-<module>/
-├── commands/<use-case>/        # state changes (one directory per use case)
-│   ├── <use-case>.command.ts        # extends CommandBase
-│   ├── <use-case>.command-handler.ts # @CommandHandler (the handler)
-│   ├── <use-case>.http.controller.ts
-│   └── <use-case>.request.dto.ts    # Zod DTO (createZodDto), when there's a body
-├── queries/<use-case>/         # reads (no side effects)
-│   ├── <use-case>.query.ts          # extends QueryBase
-│   ├── <use-case>.query-handler.ts  # @QueryHandler
-│   └── <use-case>.http.controller.ts
-├── domain/                     # pure: no framework, no persistence
-│   ├── <name>.entity.ts             # AggregateRoot / Entity
-│   ├── <name>.policy.ts             # a rule that needs nothing but the domain
-│   ├── value-objects/<name>.value-object.ts
-│   ├── events/<event>.domain-event.ts
-│   └── <module>.errors.ts
-├── database/                   # the persistence adapter
-│   ├── <module>.orm-entity.ts       # TypeORM persistence model
-│   ├── <module>.repository.port.ts  # the port (interface)
-│   └── <module>.repository.ts       # TypeORM adapter implementing the port
-├── infrastructure/             # every other outbound adapter
-│   ├── <name>.port.ts               # what the application needs
-│   ├── <name>.gateway.ts            # …spoken to an external service
-│   └── <name>.adapter.ts            # …or to anything else outside the process
-├── application/                # needs ports, is not a use case
-│   ├── <name>.factory.ts | <name>.policy.ts | <name>.resolver.ts
-│   └── event-handlers/<event>.domain-event-handler.ts
-├── guards/ decorators/ interceptors/   # inbound adapters
-├── dtos/<module>.response.dto.ts
-├── <module>.mapper.ts
-├── <module>.di-tokens.ts
-└── <module>.module.ts
+**That table lives in one place:
+[`apps/api/ARCHITECTURE.md`](../../apps/api/ARCHITECTURE.md), and is executable
+as `pnpm check:api-structure`.** Read it there rather than from a copy here —
+a second copy is a second thing to update when the contract moves.
+
+Two commands decide whether a module conforms, and they answer different
+questions:
+
+```bash
+pnpm check:api-structure        # where a file may live, what it may be called
+pnpm --filter @flama/api arch   # what it is then allowed to import
 ```
 
 ### There is no `services/`
@@ -69,15 +45,26 @@ these it is:
 
 The same applies to `entities/`, `utils/`, `helpers/`, `common/`, `types/`,
 `interfaces/`, `constants/` and `models/`. `pnpm check:api-structure` names
-each of them and the question to ask instead.
+each of them and the question to ask instead. The command handler is
+`<use-case>.command-handler.ts` — there is no `.service.ts` either.
 
-### Two more rules the checker holds
+### What a handler may import
 
-- **An HTTP route is declared in a use-case controller, nowhere else.** A
-  `@Get`/`@Post` outside `commands/<use-case>/` or `queries/<use-case>/` is a
-  route with no use case behind it.
-- **A controller is capped at 110 lines, a handler at 120.** Past them, a
-  controller has started deciding and a handler has started doing.
+This is the part that is local to writing code, rather than to laying it out:
+
+- `domain/` imports **only** `@flama/backend-ddd`, `@flama/backend-authz`,
+  `@flama/shared` and node core. No `@nestjs/*`, no `typeorm`, no `oxide.ts`,
+  no `express`.
+- Handlers (`commands/`, `queries/`, `application/`) inject the **port** via
+  its DI token — never a `*.repository.ts`, `*.adapter.ts` or `*.gateway.ts`.
+- Only `database/` and `infrastructure/` name TypeORM; only `infrastructure/`
+  (and the auth module's own guards) name Better Auth.
+- A controller dispatches on the bus and maps; it never touches `database/` at
+  runtime. It is capped at 110 lines, a handler at 120.
+- Slices do not import each other's internals. Reusing another slice's
+  `*.command.ts` / `*.query.ts` to dispatch is fine.
+- A module publishes its `domain/`, `dtos/`, ports, DI tokens, bus messages and
+  inbound adapters. Everything else is its own.
 
 ## CQRS command/query handlers
 
