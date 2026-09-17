@@ -1,7 +1,7 @@
 ---
 "@flama/api": minor
 "@flama/api-client": minor
-"@flama/frontend": minor
+"@flama/frontend-core": minor
 ---
 
 Describe scope and permission-catalog responses properly in OpenAPI, so the

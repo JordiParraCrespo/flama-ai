@@ -2,7 +2,7 @@
 "@flama/backend-core": minor
 "@flama/backend-ddd": minor
 "@flama/shared": minor
-"@flama/frontend": minor
+"@flama/frontend-core": minor
 "@flama/api-client": minor
 "@flama/api": minor
 "@flama/cli": minor
