@@ -1,5 +1,5 @@
 ---
-"@flama/frontend": minor
+"@flama/frontend-core": minor
 "@flama/shared": minor
 "@flama/translations": minor
 ---

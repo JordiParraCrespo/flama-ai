@@ -1,5 +1,5 @@
 ---
-"@flama/frontend": minor
+"@flama/frontend-core": minor
 ---
 
 Add a pluggable analytics module with feature-flag support.

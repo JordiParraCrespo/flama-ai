@@ -3,7 +3,7 @@
 "@flama/admin-mobile": minor
 "@flama/mobile-showcase": minor
 "@flama/design-system-mobile": minor
-"@flama/frontend": minor
+"@flama/frontend-core": minor
 "@flama/api-client": minor
 "@flama/translations": minor
 ---

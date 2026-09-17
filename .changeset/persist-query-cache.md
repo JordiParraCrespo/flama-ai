@@ -1,5 +1,5 @@
 ---
-"@flama/frontend": minor
+"@flama/frontend-core": minor
 ---
 
 Add a shared TanStack Query cache-persistence policy.
