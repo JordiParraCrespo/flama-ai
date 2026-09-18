@@ -18,9 +18,16 @@ import {
 } from '@flama/design-system-web';
 import type { OrganizationEntity } from '@flama/frontend-consumer';
 import type { PermissionGroup, Scope } from '@flama/shared';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { PermissionField } from '@/features/api-tokens/components/permission-field';
 import { PermissionPicker } from '@/features/api-tokens/components/permission-picker';
+import {
+  hasAnyScope,
+  type ScopeSelection,
+  scopesFromSelection,
+} from '@/features/api-tokens/lib/scope-selection';
 import { LIFETIMES } from '@/features/api-tokens/lib/token-status';
 
 /**
@@ -35,9 +42,24 @@ export type CreateTokenFormValues = {
   organizationIds: string[];
 };
 
-const EMPTY_TOKEN_FORM: CreateTokenFormValues = {
+/**
+ * What the fields hold. Permissions are per resource here and flattened to the
+ * `Scope[]` the API takes on submit — see `lib/scope-selection.ts` for why.
+ *
+ * `permissions` starts empty and fills in as the rows mount, each registering
+ * its own `none`: the catalog is fetched, so there is nothing to seed from
+ * until it lands, and a row that has not rendered has granted nothing.
+ */
+type TokenFormFields = {
+  name: string;
+  permissions: ScopeSelection;
+  expiresInDays: number | null;
+  organizationIds: string[];
+};
+
+const EMPTY_TOKEN_FORM: TokenFormFields = {
   name: '',
-  scopes: [],
+  permissions: {},
   expiresInDays: 90,
   organizationIds: [],
 };
@@ -69,18 +91,47 @@ export function CreateTokenForm({
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors },
-  } = useForm<CreateTokenFormValues>({ defaultValues: EMPTY_TOKEN_FORM });
+  } = useForm<TokenFormFields>({ defaultValues: EMPTY_TOKEN_FORM });
+
+  const [permissionsMessage, setPermissionsMessage] = useState<string>();
+
+  /**
+   * The cross-row rule: a token with no scopes can call nothing.
+   *
+   * Held here rather than on the field because React Hook Form validation
+   * descends past `permissions` to the rows registered under it: neither a rule
+   * nor a `setError` on the parent path survives. It runs from both arms of
+   * `handleSubmit`, so an empty form reports this *and* the missing name in one
+   * pass, the way a field rule would have. `PermissionField` stops showing it
+   * the moment a row is granted.
+   */
+  const permissionsGranted = () => {
+    if (hasAnyScope(getValues('permissions'))) {
+      setPermissionsMessage(undefined);
+      return true;
+    }
+    setPermissionsMessage(t('apiTokens.permissionsRequired'));
+    return false;
+  };
 
   const submit = handleSubmit(async (values) => {
+    if (!permissionsGranted()) return;
+
     try {
-      await onSubmit(values);
+      await onSubmit({
+        name: values.name,
+        scopes: scopesFromSelection(groups, values.permissions),
+        expiresInDays: values.expiresInDays,
+        organizationIds: values.organizationIds,
+      });
     } catch {
       // The failure is shown above the fields; the draft stays for another try.
       return;
     }
     reset(EMPTY_TOKEN_FORM);
-  });
+  }, permissionsGranted);
 
   return (
     <form onSubmit={submit} noValidate>
@@ -110,31 +161,25 @@ export function CreateTokenForm({
           <FieldError errors={[errors.name]} />
         </Field>
 
-        <Controller
+        <PermissionField
           control={control}
-          name="scopes"
-          rules={{
-            validate: (value) => value.length > 0 || t('apiTokens.permissionsRequired'),
-          }}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>{t('apiTokens.permissions')}</FieldLabel>
-              {loadingCatalog ? (
-                <p className="text-sm text-ink-600">{t('common.loading')}</p>
-              ) : (
-                <PermissionPicker
-                  groups={groups}
-                  grantable={grantable}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={isPending}
-                />
-              )}
-              <p className="text-xs text-ink-600">{t('apiTokens.permissionsHint')}</p>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+          name="permissions"
+          label={t('apiTokens.permissions')}
+          hint={t('apiTokens.permissionsHint')}
+          message={permissionsMessage}
+        >
+          {loadingCatalog ? (
+            <p className="text-sm text-ink-600">{t('common.loading')}</p>
+          ) : (
+            <PermissionPicker
+              groups={groups}
+              grantable={grantable}
+              control={control}
+              name="permissions"
+              disabled={isPending}
+            />
           )}
-        />
+        </PermissionField>
 
         <Controller
           control={control}

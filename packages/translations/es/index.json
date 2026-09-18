@@ -549,7 +549,6 @@
       "roles": {
         "columns": {
           "description": "Descripción",
-          "members": "Miembros",
           "role": "Rol",
           "type": "Tipo"
         },
@@ -559,8 +558,6 @@
         "edit": "Editar",
         "empty": "No se han encontrado roles.",
         "export": "Exportar CSV",
-        "memberCount_one": "{{count}} miembro",
-        "memberCount_other": "{{count}} miembros",
         "new": "Nuevo rol",
         "search": "Buscar roles",
         "system": "Sistema"
@@ -827,29 +824,10 @@
   },
   "settings": {
     "api": {
-      "cancel": "Cancelar",
-      "close": "Cerrar",
-      "create": "Crear clave",
-      "createKey": "Crear clave",
-      "createKeySubtitle": "Ponle un nombre para reconocerla luego. El secreto solo se muestra una vez.",
-      "createKeyTitle": "Crear clave de API",
       "description": "Crea claves con permisos acotados para que tus herramientas llamen a la API en tu nombre.",
-      "expired": "Caducada",
-      "keyCreated": "Creada el {{created}} · último uso {{used}}",
-      "keyName": "Nombre de la clave",
-      "keyNameHint": "Usa una clave por sistema para poder revocarla por separado.",
-      "keyNamePlaceholder": "p. ej. web de WordPress",
-      "keyPermissions": "Permisos",
-      "keyPermissionsHint": "Una clave nunca puede hacer más que tú.",
       "keys": "Claves de API",
-      "neverUsed": "nunca",
-      "noKeys": "Aún no hay claves de API.",
-      "noPermissionResults": "Ningún permiso coincide con la búsqueda.",
-      "revoke": "Revocar",
-      "revoked": "Revocada",
-      "searchPermissions": "Buscar permisos",
-      "secretSubtitle": "Es la única vez que se muestra el secreto. Guárdalo en un lugar seguro.",
-      "secretTitle": "Copia tu nueva clave",
+      "manage": "Abrir tokens de API",
+      "manageDescription": "Crea claves, elige qué pueden hacer y revócalas.",
       "title": "API y webhooks"
     },
     "general": {

@@ -549,7 +549,6 @@
       "roles": {
         "columns": {
           "description": "Description",
-          "members": "Members",
           "role": "Role",
           "type": "Type"
         },
@@ -559,8 +558,6 @@
         "edit": "Edit",
         "empty": "No roles found.",
         "export": "Export CSV",
-        "memberCount_one": "{{count}} member",
-        "memberCount_other": "{{count}} members",
         "new": "New role",
         "search": "Search roles",
         "system": "System"
@@ -827,29 +824,10 @@
   },
   "settings": {
     "api": {
-      "cancel": "Cancel",
-      "close": "Close",
-      "create": "Create key",
-      "createKey": "Create key",
-      "createKeySubtitle": "Name the key so you can recognise it later. You'll only see the secret once.",
-      "createKeyTitle": "Create API key",
       "description": "Mint scoped keys so your own tools can call the API as you.",
-      "expired": "Expired",
-      "keyCreated": "Created {{created}} · last used {{used}}",
-      "keyName": "Key name",
-      "keyNameHint": "Use one key per system so you can revoke it independently.",
-      "keyNamePlaceholder": "e.g. WordPress site",
-      "keyPermissions": "Permissions",
-      "keyPermissionsHint": "A key can never do more than you can.",
       "keys": "API keys",
-      "neverUsed": "never",
-      "noKeys": "No API keys yet.",
-      "noPermissionResults": "No permissions match your search.",
-      "revoke": "Revoke",
-      "revoked": "Revoked",
-      "searchPermissions": "Search permissions",
-      "secretSubtitle": "This is the only time the secret is shown. Store it somewhere safe.",
-      "secretTitle": "Copy your new key",
+      "manage": "Open API tokens",
+      "manageDescription": "Create keys, choose what they may do, and revoke them.",
       "title": "API & webhooks"
     },
     "general": {
