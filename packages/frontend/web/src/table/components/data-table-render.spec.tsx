@@ -75,6 +75,8 @@ function Harness({
         // A way for the test to change the settled value from outside the
         // field, the way a cleared facet or a back button would.
         { label: 'clear-external', onClick: () => setValue('') },
+        { label: 'set-external', onClick: () => setValue('external') },
+        { label: 'set-acme-external', onClick: () => setValue('acme') },
       ]}
     />
   );
@@ -183,6 +185,35 @@ describe('DataTable render budget', () => {
     });
 
     expect((field as HTMLInputElement).value).toBe('');
+  });
+
+  it('cancels a pending local commit when navigation supplies a value', () => {
+    const { field, onCommit } = setup();
+
+    type(field, 'local draft');
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'set-external' }));
+    });
+    settle();
+
+    expect((field as HTMLInputElement).value).toBe('external');
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('follows a later navigation back to a value it previously emitted', () => {
+    const { field } = setup();
+
+    type(field, 'acme');
+    settle();
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'set-external' }));
+    });
+    expect((field as HTMLInputElement).value).toBe('external');
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'set-acme-external' }));
+    });
+
+    expect((field as HTMLInputElement).value).toBe('acme');
   });
 
   it('does not rebuild its query identity while the reader is typing', () => {

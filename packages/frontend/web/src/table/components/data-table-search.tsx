@@ -1,5 +1,5 @@
 import { SearchInput } from '@flama/design-system-web';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useDebouncedCallback } from '../hooks/use-debounced-callback';
 import {
   type DataTableSearch as DataTableSearchProps,
@@ -29,26 +29,34 @@ import {
 export function DataTableSearch({ value, onChange, placeholder }: DataTableSearchProps) {
   const [live, setLive] = useState(value);
 
-  /**
-   * The last value this field sent up. A ref, not state: it is written from a
-   * timer rather than from a render, and nothing renders differently because of
-   * it — it only decides whether the next `value` is news or an echo.
-   */
-  const committed = useRef(value);
-
   // Adjusting state to a prop, the way React documents it rather than with an
-  // effect. `settled` is the previous prop; comparing against it is what makes
-  // "the prop changed" a thing this component can see during render.
-  const [settled, setSettled] = useState(value);
-  if (settled !== value) {
-    setSettled(value);
-    if (value !== committed.current) setLive(value);
+  // effect. An emitted value is ignored exactly once when the parent echoes it
+  // back; after that, the same string is allowed to arrive from navigation.
+  // `externalRevision` invalidates a local timer only for genuine outside
+  // changes, never for an echo while the reader has carried on typing.
+  const [sync, setSync] = useState({
+    settled: value,
+    emitted: null as string | null,
+    externalRevision: 0,
+  });
+  if (sync.settled !== value) {
+    const isEcho = value === sync.emitted;
+    setSync({
+      settled: value,
+      emitted: null,
+      externalRevision: sync.externalRevision + (isEcho ? 0 : 1),
+    });
+    if (!isEcho) setLive(value);
   }
 
-  const commit = useDebouncedCallback((next: string) => {
-    committed.current = next;
-    onChange(next);
-  }, TABLE_SEARCH_DEBOUNCE_MS);
+  const commit = useDebouncedCallback(
+    (next: string) => {
+      setSync((current) => ({ ...current, emitted: next }));
+      onChange(next);
+    },
+    TABLE_SEARCH_DEBOUNCE_MS,
+    sync.externalRevision,
+  );
 
   return (
     <SearchInput

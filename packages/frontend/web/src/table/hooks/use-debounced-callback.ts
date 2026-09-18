@@ -16,6 +16,7 @@ import { useCallback, useEffect, useRef } from 'react';
 export function useDebouncedCallback<TArgs extends unknown[]>(
   callback: (...args: TArgs) => void,
   delay: number,
+  cancelKey?: unknown,
 ): (...args: TArgs) => void {
   const latest = useRef(callback);
   latest.current = callback;
@@ -23,10 +24,12 @@ export function useDebouncedCallback<TArgs extends unknown[]>(
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    // The timer: cancelled on unmount so a settled value never lands on a
-    // component that has gone.
+    void cancelKey;
+    // The timer: cancelled when its owner invalidates the pending work, and on
+    // unmount so a settled value never lands on a component that has gone.
+    clearTimeout(timer.current);
     return () => clearTimeout(timer.current);
-  }, []);
+  }, [cancelKey]);
 
   return useCallback(
     (...args: TArgs) => {
