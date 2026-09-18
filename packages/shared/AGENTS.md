@@ -33,9 +33,9 @@ src/
   `apps/api/src/auth/__tests__/endpoint-policies.spec.ts` pins the controllers
   to it.
 - **Types**: `Role` (free-form role-name `string`), `PermissionDefinition`,
-  `AuthProvider`, `JwtPayload`, `TokenPair`, `PaginationParams`,
-  `PaginatedResponse<T>`.
-- **Constants**: `AUTH`, `PAGINATION`, `ROLES`, `SYSTEM_ROLES`,
+  `PaginationParams`, `PaginatedResponse<T>`, `ProblemDetails`,
+  `DeploymentCapabilities`, `ClientCapabilities`.
+- **Constants**: `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`,
   `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`.
 
 ## What does not live here

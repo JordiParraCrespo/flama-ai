@@ -17,8 +17,10 @@ pnpm --filter @flama/web-showcase lint
 
 ```
 src/
-├── app/            # Next.js App Router pages, one per component family
-└── components/     # the gallery's own chrome (navigation, code panels)
+├── app/            # Next.js App Router: a single page rendering every gallery section in order
+├── components/     # each gallery section (foundations, forms, patterns, chat, mail,
+                    # lead-table, data-cells, component-demos) plus the showcase chrome
+└── lib/toc.ts      # the page's table of contents
 ```
 
 The design system itself lives in `packages/frontend/design-system/web`; a component is

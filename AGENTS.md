@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 11 apps and 14 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 11 apps and 16 shared packages.
 
 ## Monorepo structure
 
@@ -178,9 +178,10 @@ module" steps in `packages/go/README.md`.
 - CASL helpers shared between backend and frontend: `defineAbilitiesFromPermissions`
   (DB-driven, the source of truth) and the legacy `defineAbilitiesFor` fallback
 - Types: `Role` (a free-form role-name `string`), `PermissionDefinition`,
-  `AuthProvider`, `JwtPayload`, `TokenPair`, `PaginationParams`, `PaginatedResponse<T>`
-- Constants: `AUTH` (token expiry, salt rounds), `PAGINATION`, `ROLES`,
-  `SYSTEM_ROLES`, `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`
+  `PaginationParams`, `PaginatedResponse<T>`, `ProblemDetails`,
+  `DeploymentCapabilities`, `ClientCapabilities`
+- Constants: `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`,
+  `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`
 
 ### Frontend (packages/frontend, the four apps)
 
@@ -252,17 +253,17 @@ and `apps/mobile-showcase`. Usage rules are `.agents/rules/frontend-ui.md`.
 
 ```
 packages/tsconfig         → used by all apps and packages (tsconfig extends)
-packages/env              → used by api, mcp, mobile (root .env loader)
+packages/env              → used by api, mcp, mobile, admin-mobile (root .env loader)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
-packages/auth             → used by api, web, mobile (shared Better Auth config)
+packages/auth             → used by api, web, mobile, admin-web, admin-mobile (shared Better Auth config)
 packages/backend/core     → used by api, other backend packages
-packages/backend/ddd      → used by api (depends on backend/core)
+packages/backend/ddd      → used by api, backend/core (depends on nothing in the workspace)
 packages/backend/email    → used by api
 packages/backend/i18n     → used by api (bundles from packages/translations)
 packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
-packages/translations        → used by web, mobile, api (email copy via backend/i18n)
+packages/translations        → used by web, mobile, admin-web, admin-mobile, api (email copy via backend/i18n)
 packages/frontend/design-system/web    → used by web, admin-web, web-showcase, frontend/web
 packages/frontend/design-system/mobile → used by mobile, admin-mobile, mobile-showcase, frontend/mobile
 packages/frontend/api-client  → used by frontend/core, frontend/consumer, frontend/admin
@@ -307,7 +308,9 @@ pnpm changeset          # Create a changeset for versioning
   `pnpm generate:api-client`
 - New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
 - Keep the pluggable service pattern: abstract class → concrete implementations → factory in module
-- New translations go in `packages/translations/{locale}/index.json`
+- New translations go in `packages/translations/{locale}/{area}.json`, then
+  run `pnpm --filter @flama/translations assemble` so `{locale}/index.json`
+  (generated) matches
 - Where frontend code goes — kernel, product package, platform kit, or a
   feature's kind directory — is `.agents/rules/frontend-architecture.md`;
   `/scaffold-feature` builds the shape and `pnpm check:structure` checks it

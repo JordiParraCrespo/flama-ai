@@ -2,7 +2,8 @@
 
 Web component library for Flama — shadcn/ui-style components built on
 [Base UI](https://base-ui.com/) primitives and Tailwind CSS v4. Consumed by
-`apps/web` and previewed in `apps/web-showcase`.
+`apps/web`, `apps/admin-web` and `packages/frontend/web`, previewed in
+`apps/web-showcase`.
 
 ## Usage
 
@@ -85,4 +86,4 @@ and the findings it inherited are in `.agents/rules/frontend-ui.md`.
 
 ## Consumed by
 
-`apps/web`, `apps/web-showcase`.
+`apps/web`, `apps/admin-web`, `apps/web-showcase`, `packages/frontend/web`.

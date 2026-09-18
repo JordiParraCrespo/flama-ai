@@ -42,5 +42,6 @@ pnpm --filter @flama/go-postgres lint
 
 ## Depends on / used by
 
-Depends on `pgx` and `@flama/go-health` (the `Checker` interface). Used by
-`apps/runner`'s repositories and composition root.
+Depends on `pgx` only — `Checker` satisfies `@flama/go-health`'s `Checker`
+shape structurally, without importing that package. Used by `apps/runner`'s
+repositories and composition root.

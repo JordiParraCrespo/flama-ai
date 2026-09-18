@@ -37,14 +37,17 @@ Each app wires these into its own i18next instance:
 
 - `apps/web` and `apps/admin-web` use `react-i18next`, bundling only
   `defaultLocale` and serving the rest through a small backend module over
-  `loadLocaleMessages` (see `apps/web/src/lib/i18n.ts`).
-- `apps/mobile` uses `i18next` + `react-i18next` with the eager `resources`,
-  persisting the choice with `expo-secure-store` (see `apps/mobile/lib/i18n.ts`).
+  `loadLocaleMessages` (see `packages/frontend/web/src/i18n/lib/i18n.ts`).
+- `apps/mobile` and `apps/admin-mobile` use `i18next` + `react-i18next` with
+  the eager `resources`, persisting the choice with `expo-secure-store` (see
+  `packages/frontend/mobile/src/i18n/lib/i18n.ts`).
 
 ## Adding a translation
 
 Add the key to **every** locale file under the matching path
-(`packages/translations/{locale}/index.json`). Keys must exist in all locales so
+(`packages/translations/{locale}/{area}.json`), then run
+`pnpm --filter @flama/translations assemble` so the generated
+`{locale}/index.json` matches. Keys must exist in all locales so
 `t()` never falls back unexpectedly.
 
 ## Adding a locale
