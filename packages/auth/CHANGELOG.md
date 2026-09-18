@@ -1,9 +1,10 @@
-# @flama/admin-web
+# @flama/auth
 
 ## 0.2.0
 
 ### Minor Changes
 
+- 28b2d1b: Extract the Better Auth configuration both sides must agree on into a new `@flama/auth` package: the user-fields schema (consumed by the server's `user.additionalFields` and the clients' `inferAdditionalFields`), the shared client plugin set (`admin`, `organization` with the `teams` flag), and the `unwrap()` / `toAuthSession()` helpers previously copy-pasted into both client adapters. The `./client` entry ships TypeScript sources to preserve Better Auth's type inference; the root entry is compiled CJS for the NestJS API.
 - 48d1b41: Make the web delivery path carry its weight: compression, caching, a real CSP,
   and a budget that keeps first load honest.
 
@@ -55,69 +56,10 @@
 
 ### Patch Changes
 
-- d06200f: Name the config package after what it holds, and put the endpoint policies next
-  to CASL.
-
-  `@flama/config` is now `@flama/tsconfig`, in `packages/tsconfig/`. "Config" said
-  nothing — the repo has seven other things that answer to it (`src/config/` in
-  the API, `ShellConfig`, `vite.config.ts`, the root `.env`) — while the package
-  holds tsconfig presets and the two build-time helpers that travel with them
-  (`vite-chunks.mjs`, `depcruise/*.cjs`). Every `extends`, devDependency,
-  Dockerfile `COPY` and doc reference moved with it; nothing else changed.
-
-  `@flama/shared` no longer exports `./navigation`. `SCREENS` paired a web route
-  (`/team`, `/api-tokens`) with the endpoint behind it and the rules that endpoint
-  demands. The endpoint half is a real contract and stays, as `ENDPOINT_POLICIES`
-  in `@flama/shared/permissions` — keyed by the path Nest mounts the handler at,
-  which is what `apps/api/src/auth/__tests__/endpoint-policies.spec.ts` (renamed
-  from `screen-policies.spec.ts`) pins the controllers to.
-
-  The route half is deleted rather than rehoused. Those five paths are not routes
-  any app mounts: `apps/web` serves `/dashboard`, `/settings` and
-  `/settings/api-tokens`, `apps/admin-web` serves `/users` and `/roles`, and
-  neither read the catalog — both nav files write their rows out by hand. A list
-  of one product's leftover URLs does not earn a home in the platform kit both
-  Vite apps compile. The rule that survives is smaller and is now what the docs
-  say: a gated nav row takes `policies: ENDPOINT_POLICIES['/tokens']` where the
-  row is declared, never a literal rule list, and the route string stays in the
-  app that mounts it.
-
-  The catalog also carries its own invariants now. `ENDPOINT_POLICIES` is typed
-  `Record<string, readonly [EndpointPolicy, ...EndpointPolicy[]]>`, so an empty
-  rule list and a misspelled member are both compile errors — which is what the
-  package-local spec was asserting at runtime, so it is gone. `HANDLERS` in the
-  API test is a `Record<GuardedEndpoint, …>`, so a new catalog entry fails to
-  compile until a handler is named for it. Nothing casts.
-
-  `permissions/index.ts` became a barrel over `abilities.ts` (a verbatim move of
-  the old file) and `endpoint-policies.ts`.
-
-- Updated dependencies [97f6f1e]
-- Updated dependencies [23e7181]
 - Updated dependencies [755b293]
 - Updated dependencies [7fdcefc]
-- Updated dependencies [af46e89]
-- Updated dependencies [28b2d1b]
-- Updated dependencies [c27a7f4]
-- Updated dependencies [510fb79]
 - Updated dependencies [6bf67a5]
-- Updated dependencies [aae7787]
 - Updated dependencies [07eb972]
 - Updated dependencies [d532ef4]
 - Updated dependencies [d06200f]
-- Updated dependencies [e6895ae]
-- Updated dependencies [48d1b41]
-  - @flama/design-system-web@0.2.0
-  - @flama/frontend-core@0.3.0
-  - @flama/frontend-web@0.2.0
   - @flama/shared@1.0.0
-  - @flama/api-client@1.0.0
-  - @flama/translations@0.3.0
-  - @flama/auth@0.2.0
-  - @flama/frontend-admin@0.2.1
-
-## 0.1.0
-
-### Minor Changes
-
-- Add the web control plane for platform users, roles, and permissions.
