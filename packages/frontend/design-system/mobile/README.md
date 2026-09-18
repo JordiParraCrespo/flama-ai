@@ -34,8 +34,9 @@ depend on the monorepo layout.
 
 ## What's inside
 
-- `src/components/ui/*` — Accordion, AlertDialog, Avatar, Button, Card, Dialog,
-  DropdownMenu, Select, Tabs, Tooltip, Text, and more — each with its own export.
+- `src/components/ui/*` — Accordion, AlertDialog, Avatar, BrandMark, Button,
+  Card, Dialog, DropdownMenu, Select, Tabs, Tooltip, Text, and more — each with
+  its own export.
 - `src/lib/utils` — `cn()` (clsx + tailwind-merge).
 - `tailwind.config.js` — the NativeWind preset and design-system source glob.
 

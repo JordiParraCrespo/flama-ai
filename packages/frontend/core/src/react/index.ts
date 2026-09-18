@@ -27,6 +27,7 @@ export {
   useDeploymentCapabilities,
 } from './capabilities.queries';
 export { FlamaProvider, useFlamaApp } from './context';
+export { type ResolvedErrorMessage, useErrorMessage } from './error-message';
 export { useAuthState } from './hooks';
 export {
   cacheOwnerKey,

@@ -1,20 +1,21 @@
 import { Button } from '@flama/design-system-mobile/button';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import { FormField, useZodResolver } from '@flama/frontend-mobile';
 import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { FormField, useZodResolver } from '../../forms';
+import { AuthFormError, authControlClass, authInputClass } from '../components/auth-primitives';
 
-interface ForgotPasswordFormProps {
+export interface ForgotPasswordFormProps {
   onSubmit: (values: ForgotPasswordDto) => void;
   isPending: boolean;
+  error?: string;
 }
 
-export function ForgotPasswordForm({ onSubmit, isPending }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({ onSubmit, isPending, error }: ForgotPasswordFormProps) {
   const { t } = useTranslation();
-
   const { control, handleSubmit } = useForm<ForgotPasswordDto>({
     resolver: useZodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
@@ -24,17 +25,20 @@ export function ForgotPasswordForm({ onSubmit, isPending }: ForgotPasswordFormPr
 
   return (
     <View className="gap-4">
+      {error ? <AuthFormError>{error}</AuthFormError> : null}
       <Controller
         control={control}
         name="email"
         render={({ field, fieldState }) => (
           <FormField label={t('auth.email')} nativeID="fp-email" error={fieldState.error?.message}>
             <Input
+              className={authInputClass}
               placeholder={t('auth.emailPlaceholder')}
               aria-labelledby="fp-email"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
+              editable={!isPending}
               autoCapitalize="none"
               autoComplete="email"
               keyboardType="email-address"
@@ -43,7 +47,7 @@ export function ForgotPasswordForm({ onSubmit, isPending }: ForgotPasswordFormPr
           </FormField>
         )}
       />
-      <Button onPress={submit} disabled={isPending} className="mt-2">
+      <Button onPress={submit} disabled={isPending} className={authControlClass}>
         <Text>
           {isPending ? t('auth.forgotPassword.submitting') : t('auth.forgotPassword.submit')}
         </Text>
