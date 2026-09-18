@@ -20,10 +20,12 @@ is a demo surface — it does not hold product business logic.
 ```
 src/app/
 ├── layout.tsx
-├── page.tsx
-├── components/       # component gallery page
-└── blocks/           # composed-block gallery page
-src/components/       # showcase chrome (sidebar, etc.)
+├── page.tsx           # single page: every gallery section, in order
+└── globals.css
+src/components/        # each gallery section (foundations, forms, patterns,
+                        # chat, mail, lead-table, data-cells, component-demos)
+                        # plus the showcase chrome (sidebar, top bar, shell)
+src/lib/toc.ts          # the page's table of contents
 ```
 
 ## Commands

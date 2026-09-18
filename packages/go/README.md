@@ -24,7 +24,7 @@ Dependency flow: `core` ← `httpx` ← `health`, `auth` ← `ws`; `config` and
 Every module has a `package.json` naming it `@flama/go-<module>` with
 `build`, `lint` and `test` scripts that call `go` directly, and declares the
 modules it imports as `workspace:*` devDependencies. That declaration is
-what gives Turborepo the graph: `apps/runner` lists all six, so
+what gives Turborepo the graph: `apps/runner` lists all seven, so
 `turbo run build --filter=@flama/runner` builds them first, `--affected`
 re-runs dependents when a module changes, and a change in `core`
 invalidates the cache of everything above it while `config` stays cached.

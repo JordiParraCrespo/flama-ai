@@ -63,7 +63,7 @@ that request alone. Replicas need share nothing.
 | -------------------------- | ----------------------- | ---------------------------------------- |
 | `FLAMA_API_URL`            | `http://localhost:3001` | Base URL of the Flama API                |
 | `FLAMA_API_TOKEN`          | —                       | Token for the stdio entrypoint           |
-| `PORT`                     | `3005`                  | Port for the HTTP entrypoint             |
+| `MCP_PORT`                 | `3005`                  | Port for the HTTP entrypoint (wins over `PORT`, which belongs to the API in a shared root `.env`) |
 | `FLAMA_TIMEOUT_MS`         | `30000`                 | Per-request timeout against the API      |
 | `FLAMA_TOOLS_CACHE_TTL_MS` | `60000`                 | How long a client may cache `tools/list` |
 | `FLAMA_ALLOWED_ORIGINS`    | _(none)_                | Browser origins allowed to reach `/mcp`  |

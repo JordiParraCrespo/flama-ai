@@ -9,7 +9,6 @@ carries no product logic and talks to no API.
 
 ```bash
 pnpm --filter @flama/mobile-showcase dev      # expo start --dev-client
-pnpm --filter @flama/mobile-showcase lint
 pnpm --filter @flama/mobile-showcase lint:design
 ```
 

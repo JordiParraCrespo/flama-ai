@@ -80,6 +80,7 @@ pnpm --filter @flama/go-httpx build   # go build ./...
 
 ## Dependencies
 
-Imports `@flama/go-core` (`core/problem`). Imported by `@flama/go-health`,
-`@flama/go-auth`, `@flama/go-ws`, and in `apps/runner` by every HTTP adapter,
-the composition root and `cmd/server/main.go` (`httpx.Serve`).
+Imports `@flama/go-core` (`core/problem`). Imported by `@flama/go-health` and
+`@flama/go-auth` (`@flama/go-ws` pulls it in only transitively, through
+`auth`), and in `apps/runner` by every HTTP adapter, the composition root and
+`cmd/server/main.go` (`httpx.Serve`).
