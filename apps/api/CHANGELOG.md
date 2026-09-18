@@ -1,5 +1,366 @@
 # @flama/api
 
+## 1.0.0
+
+### Major Changes
+
+- d532ef4: Enforce conditional User permissions against the loaded record before reading
+  or updating it. Listing the global user directory now requires `manage User`.
+  The shared `canAccess()` helper performs the instance-level check.
+
+  Preserve the default role's existing restrictions: it has no platform User
+  grants, and self-service edits go through `/profile`. The existing
+  `TightenDefaultUserRole` migration already removes unconditional User grants;
+  no earlier scoping migration is introduced, as that would cause those grants
+  to survive the later tightening migration. Explicit conditional grants remain
+  supported, and profile update schemas continue to exclude `role`.
+
+  Non-admin callers that previously listed users with only `read User` now
+  receive 403; organization-scoped member endpoints cover tenant directories.
+
+### Minor Changes
+
+- 755b293: Add the authorization kernel: a feature module declares one resource object and
+  gets tenant isolation, team scoping, row-level SQL filtering, a role-builder
+  entry and a credential scope without writing an authorization check.
+
+  Also closes two defects in the existing system: `PoliciesGuard` allowed any
+  authenticated caller through a route that declared no policy, and roles were
+  global (`role.name` was unique table-wide), so two tenants could not both define
+  a `manager` role.
+
+- 07eb972: Serve every API error as an RFC 7807 problem document.
+
+  `AllExceptionsFilter` now answers with `application/problem+json` and the
+  standard members — `type`, `title`, `status`, `detail`, `instance` — plus the
+  `code`, `correlationId`, `timestamp` and `invalidParams` extensions, instead of
+  the ad-hoc `{ statusCode, code, message }` body.
+
+  - **Title vs detail.** `AppError` takes a second argument: `detail` (specific to
+    one occurrence) and `extensions` (extra members). The catalog message stays
+    the stable problem `title`, so handlers no longer interpolate request data
+    into it — `TOKEN_002` and `TOKEN_005` now report the offending scopes in
+    `detail` and as `ungrantableScopes` / `missingScopes`.
+  - **Validation failures** list every rejected field in `invalidParams`.
+  - **Domain exceptions** from `@flama/backend-ddd` carry an `httpStatus`, so a
+    `NotFoundException` surfaces as 404 rather than a blanket 500.
+  - **5xx responses** no longer echo the underlying message; the correlation id
+    ties the response to the logged stack trace.
+  - `type` URIs point at the new error reference (`https://flama.dev/errors`),
+    configurable per deployment with `ERROR_TYPE_BASE_URL`.
+
+  The `ProblemDetails` wire type lives in `@flama/shared`, replacing the unused
+  `ApiErrorResponse`. The CLI and MCP clients
+  read problem documents (still understanding the old body shape),
+  `@flama/frontend-core` exposes `toAppError` and the `@MapApiError` method decorator so screens can show
+  the server's `detail` and per-field errors, and `ApiProblemResponse` puts the
+  schema in the OpenAPI document and the generated client.
+
+- 25ff19f: One `.env` at the repo root, documented by a root `.env.example`.
+
+  New `@flama/env` package locates the workspace root (walking up to
+  `pnpm-workspace.yaml` or a `package.json` with `workspaces`), loads `.env`
+  then `.env.local` (local wins between the files), and never overwrites a
+  value already in `process.env` — real environment variables always win, so
+  the same loader is correct in CI and in production containers.
+
+  - `apps/api` entry points (`main.ts`, TypeORM CLI `data-source.ts`, seed,
+    OpenAPI generation, `auth.ts`) import `@flama/env/load` instead of
+    `dotenv/config`, which resolved `.env` against `process.cwd()`. The TypeORM
+    CLI previously loaded no env file at all.
+  - `apps/web` reads the root file via Vite's `envDir`; a `.env` inside the app
+    directory is no longer read.
+  - `apps/mobile` loads the root file in `app.config.ts` before Metro bundles,
+    and its deep-link `scheme` now reads `MOBILE_SCHEME` — the same variable the
+    API uses for its trusted origin — instead of a hardcoded copy.
+  - `apps/mcp` entry points load the root file too (a no-op outside a
+    workspace), and the HTTP port now prefers `MCP_PORT` over `PORT` so a shared
+    root `.env` can't make it collide with the API.
+  - Stale variables removed: the `JWT_SECRET` fallback for `BETTER_AUTH_SECRET`
+    and `JWT_REFRESH_SECRET` / `NEXT_PUBLIC_API_URL` in
+    `docker/docker-compose.prod.yml` (which now passes `BETTER_AUTH_SECRET` /
+    `BETTER_AUTH_URL`); `SENTRY_DSN` / `EXPO_PUBLIC_SENTRY_DSN` were documented
+    but never read and are not carried over.
+
+  The three per-app `.env.example` files are replaced by a single root
+  `.env.example` documenting every variable the repo reads.
+
+- 71c0597: Make the API's Domain-Driven Hexagon layout a contract a machine enforces,
+  rather than a description a module can drift away from.
+
+  `apps/api/ARCHITECTURE.md` already described the hexagon well. Nothing checked
+  the _shape_ of a module against it, so the shape had gone its own way: four
+  modules had grown a `services/` bucket, `auth/` kept persistence models in
+  `entities/` and its Better Auth instance in a bare `auth.ts`, five modules left
+  loose files at their root, and two carried 500-line services behind multi-route
+  controllers. Dependency-cruiser only ever policed the _direction_ of imports —
+  a file in the wrong layer with the right imports passed.
+
+  **One shape, no empty directories.** Every module is cut the same way. A
+  directory appears when it has something to hold — a module with no aggregate
+  has no `domain/`, not an empty one — but the set of directories is closed and
+  each admits a fixed set of file names:
+
+  | Directory                                          | Admits                                                                                                  |
+  | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+  | `domain/`                                          | `*.entity.ts`, `*.errors.ts`, `*.policy.ts`, `*.factory.ts`, `*.types.ts`, `value-objects/`, `events/`  |
+  | `database/`                                        | `*.orm-entity.ts`, `*.repository.port.ts`, `*.repository.ts`                                            |
+  | `infrastructure/`                                  | `*.port.ts`, `*.adapter.ts`, `*.gateway.ts`, `*.processor.ts`, `*.config.ts`, `*.util.ts`, `*.types.ts` |
+  | `commands/<use-case>/`, `queries/<use-case>/`      | the message, its handler, the controller, the request DTO                                               |
+  | `application/`                                     | `*.factory.ts`, `*.policy.ts`, `*.resolver.ts`, `*.port.ts`, `event-handlers/`                          |
+  | `dtos/`, `guards/`, `decorators/`, `interceptors/` | the one kind each is named for                                                                          |
+  | `probes/`                                          | `*.probe.controller.ts`, `*.indicator.ts`                                                               |
+
+  The command handler is `<use-case>.command-handler.ts`, matching
+  `<use-case>.query-handler.ts`. It used to be `<use-case>.service.ts`, which was
+  the dissolved bucket surviving as a suffix — the contract cannot forbid a
+  `services/` directory and then require every handler to be named after one.
+
+  A **probe is not a use case.** `/health`, `/ready` and `/health/capabilities`
+  report on the process, have no command or query behind them and never will, so
+  they have a shape of their own rather than owing three slices they would leave
+  empty.
+
+  The module root carries only `<module>.module.ts`, `*.mapper.ts`,
+  `*.di-tokens.ts` and `*.resource.ts`.
+
+  **There is no `services/`.** That is the change with the most reach, because a
+  "service" is not a layer and a directory named after one is where a module goes
+  to stop being a hexagon. Every one of them was dissolved into the thing it
+  actually was: `roles/services/ability.factory.ts` and `role-grant.policy.ts`
+  became `roles/application/`, the authz and profile resolvers became
+  `application/` too, and what really talked to something outside the process
+  became an adapter — `profile/services/avatar.storage.ts` →
+  `profile/infrastructure/avatar-storage.adapter.ts`,
+  `profile-auth.facade.ts` → `profile-auth.gateway.ts`,
+  `auth/services/delegated-session.service.ts` →
+  `auth/infrastructure/delegated-session.adapter.ts`.
+
+  The same question was put to every other file that had no layer in its path.
+  `auth/entities/*.entity.ts` were TypeORM models, so they are now
+  `auth/database/*.orm-entity.ts`; `auth/auth.ts` is
+  `auth/infrastructure/better-auth.config.ts`; `queue/email.processor.ts`,
+  `throttling/redis-throttler.storage.ts`, `health/redis-health.indicator.ts` and
+  `outbox/outbox-relay.service.ts` moved into their modules' `infrastructure/`;
+  `users/user-access.ts` became `users/application/user-access.policy.ts`;
+  `api-tokens/domain/ip-allowlist.ts` and `api-token.secret.ts` became a
+  `*.policy.ts` and a `*.factory.ts`. `auth/scope-context.ts` was sitting in
+  `domain/` while importing `express`, which is exactly the impurity the domain
+  rule exists to catch — it kept its place once the express dependency went (see
+  below). Specs were renamed to follow their subjects. Every relative import, the
+  TypeORM datasource, the seed and each `vi.mock()` path moved with them.
+
+  **`scripts/check-api-structure.mjs`** (`pnpm check:api-structure`) is that table,
+  executable. Beyond the directory and file-name sets it holds four rules that
+  decay first: a use case is a directory and every file in it carries its name; a
+  message and its handler come as a pair; an HTTP route is declared in a use-case
+  controller and nowhere else; and a controller is capped at 110 lines, a handler
+  at 120. Each dissolved bucket name reports the question to ask instead of the
+  bucket.
+
+  **`.dependency-cruiser.cjs`** gains five rules alongside the existing ones: a
+  controller goes through the bus and never reaches into `database/` at runtime;
+  TypeORM stays in `database/` and `infrastructure/`; Better Auth is an external
+  system reached through an adapter; a use-case slice does not import another
+  slice's internals; and a module publishes only its domain, DTOs, ports, DI
+  tokens, bus messages and inbound adapters — its handlers, mappers and concrete
+  adapters are its own. `handlers-depend-on-port-not-adapter` now covers
+  `*.adapter.ts` and `*.gateway.ts`, not just `*.repository.ts`.
+
+  **Every adapter has a port.** Six of them — `AvatarStoragePort`,
+  `ProfileAuthPort`, `LocaleResolverPort`, `DelegatedSessionPort`,
+  `CredentialScopePort` and `CredentialVerifierPort` — each with a DI token the
+  composition root binds. Handlers and guards inject the token and name the port;
+  `profile.module.ts` and `auth.module.ts` export tokens, never classes. Moving a
+  file into `infrastructure/` is not what makes it an adapter, and a checker
+  taught to look away is not a ledger.
+
+  That last port is what gives `better-auth-stays-behind-an-adapter` its teeth.
+  The rule matched `node_modules/better-auth`, which nothing imports directly —
+  everything imports `auth` from `better-auth.config.ts`, so the rule was
+  vacuously true. It now covers the configured instance, and
+  `CredentialScopeResolver` asks a `CredentialVerifierPort` instead of calling
+  `auth.api.getMcpSession` from the application layer.
+
+  `ScopedRequest` no longer extends express's `Request`. That import was the only
+  reason it sat in `infrastructure/`, and it forced six use-case controllers to
+  depend on an adapter layer — which is what had made a
+  `^src/auth/infrastructure/` wildcard on the cross-module surface look
+  necessary. It is structural and node-core only, back in `domain/`, and the
+  wildcard is gone.
+
+  **Known violations are a ledger, not an exemption.** `admin/` and
+  `organizations/` are the pre-contract Better Auth façades — a root-level service
+  and multi-route controllers across 42 routes. Rather than weaken the checks for
+  them, each outstanding violation is listed as a `(path, kind)` pair: the prose
+  is output, never identity, so rewording a message can neither silence a
+  violation nor invent a stale one. Nothing else in those modules is excused, a
+  new violation in them still fails, and an entry that stops matching is itself an
+  error. `apps/api/AGENTS.md` says what to do when you touch them: a new operation
+  goes in as a slice, never onto the old service.
+
+  **The checker has its own test suite.** `scripts/check-api-structure.test.mjs`
+  builds trees for the purpose and pins the `kind` each breach reports, including
+  two fixtures over the ledger mechanism itself. Running a checker only over the
+  repository says whether the repository conforms today; it cannot exercise a rule
+  nothing currently breaks.
+
+  Not owning the data turns out to be a reason to have a port, not a reason to
+  skip the contract, and the docs now say so. `ARCHITECTURE.md`'s "what is
+  intentionally NOT full DDD" section is replaced by "modules that own no
+  aggregate", which describes the port-plus-gateway-plus-slices shape those
+  façades are migrating to.
+
+  The contract table lives in **one** place. `.agents/rules/nestjs-architecture.md`
+  and the `/scaffold-module` skill point at `ARCHITECTURE.md` and keep only what
+  is local to them, and `apps/docs/docs/architecture/api-architecture.md` — which
+  still described `auth/auth.ts`, `users/services/`, a three-layer mapper and an
+  event bus with no outbox — was rewritten against it. CI runs `pnpm check:api-structure` in the
+  lint job and the Claude Code Stop hook runs it whenever a task touches
+  `apps/api/src`.
+
+- 9cf59be: Add a transactional outbox so domain events and queued jobs can no longer be
+  silently lost between a database commit and their delivery.
+
+  Previously repositories emitted domain events through `EventEmitter2` after the
+  write, and queued jobs went to BullMQ/Redis outside the Postgres transaction —
+  so a listener crash, a Redis blip, or a process killed between commit and
+  dispatch dropped the side effect with no record it was ever owed.
+
+  `@flama/backend-ddd` gains outbox building blocks alongside the existing
+  aggregate/domain-event bases:
+
+  - `OutboxMessageSchema` — a decorator-free `EntitySchema` for the new
+    `outbox_message` table. `aggregateId` is a plain column with no foreign key,
+    deliberately, so the queue outlives the records it names. Every row carries a
+    human-readable `reason` so a queued item is self-explaining.
+  - `OutboxService` — `stageEvents` / `stageJob` write rows **inside the caller's
+    TypeORM transaction**, atomically with the aggregate write; `claim` leases due
+    rows with `FOR UPDATE SKIP LOCKED` so multiple API replicas lease disjoint
+    rows; leases expire (`lockedUntil`), so work owned by a dead process is
+    reclaimed rather than stuck; failures retry with exponential backoff and park
+    as `failed` after `maxAttempts` instead of disappearing.
+  - `OutboxRelay` — the drain loop: a post-commit wake keeps happy-path latency at
+    in-process levels, and a background poll is the crash-recovery safety net.
+  - `DomainEvent` accepts an optional `reason` prop, recorded on the outbox row.
+
+  `apps/api` wires it up: an `AddOutbox` migration, a global `OutboxModule`, and
+  an `OutboxRelayService` that re-emits `event` rows on `EventEmitter2` (keyed by
+  event class name, so existing `@OnEvent` handlers are unchanged — they now
+  receive the deserialized payload rather than the class instance) and hands
+  `queue` rows to the named BullMQ queue. The user, role, API-token and
+  subscription repositories stage their aggregates' events through the outbox
+  instead of emitting them directly.
+
+  This does not replace BullMQ — it sits in front of it and closes exactly the
+  `commit(); enqueue();` atomicity gap BullMQ cannot.
+
+- e6895ae: Describe scope and permission-catalog responses properly in OpenAPI, so the
+  generated client carries their real types.
+
+  Several response DTOs described themselves loosely enough that the generated
+  client lost the type and every consumer had to cast it back:
+
+  - Scope arrays (`ApiTokenResponseDto.scopes`, `PermissionCatalogResponseDto.grantable`,
+    `CurrentCredentialResponseDto.grantedScopes` / `effectiveScopes`) were declared
+    `type: [String]` and generated as `string[]`. They now declare `enum: SCOPES`,
+    so the client sees the same 20-member union the request DTO already used.
+  - `PermissionCatalogResponseDto.groups` was an untyped object array and generated
+    as `Record<string, any>[]`. The catalog now has real DTOs — `PermissionGroupDto`,
+    `ScopeLevelsDto`, `ScopeLevelDto`, `ScopePolicyDto` — mirroring `PermissionGroup`
+    from `@flama/shared`, so drift between the two becomes a compile error.
+  - `GET /v1/users` declared no response schema at all and generated as `any`, taking
+    the whole paginated list with it. It now returns `PaginatedUsersResponseDto`
+    (with `PaginationMetaDto`).
+
+  The wire format is unchanged — only its description. `@flama/frontend-consumer`'s
+  api-tokens repository drops the casts this forced (including a `dto as never`
+  that was disabling type checking on the create-token request body) and reads
+  the generated DTOs directly. In `@flama/frontend-core`,
+  `UsersRepository.findAll` / `UsersService.findAll` widen their `role` filter
+  from `'admin' | 'user'` to `Role`, matching the database-backed roles the API
+  actually accepts.
+
+  The root `generate:openapi` script ran `nest build` from the repo root, where
+  there is no Nest workspace, so `pnpm generate:api-client` always failed; it now
+  delegates to `@flama/api`.
+
+### Patch Changes
+
+- 28b2d1b: Extract the Better Auth configuration both sides must agree on into a new `@flama/auth` package: the user-fields schema (consumed by the server's `user.additionalFields` and the clients' `inferAdditionalFields`), the shared client plugin set (`admin`, `organization` with the `teams` flag), and the `unwrap()` / `toAuthSession()` helpers previously copy-pasted into both client adapters. The `./client` entry ships TypeScript sources to preserve Better Auth's type inference; the root entry is compiled CJS for the NestJS API.
+- b079e83: Logging hardening: `LoggingModule` in `@flama/backend-core` wraps `nestjs-pino`
+  with hardened defaults — request log lines carry only known-safe fields (no
+  headers, query strings, or bodies; credential headers redacted as a backstop) —
+  and registers `UserContextInterceptor`, which attaches `userId` and the
+  credential's effective scopes to the request log context once the auth guards
+  resolve. `createAuthRouteLoggingMiddleware` brings the Better Auth
+  `/api/auth/*` routes (mounted ahead of Nest's middleware) into the request log
+  via the `middleware` option of `@thallesp/nestjs-better-auth`. The API also
+  gains opt-in SQL query logging (`DB_LOG_QUERIES=true`) that never logs bound
+  parameters.
+- d06200f: Name the config package after what it holds, and put the endpoint policies next
+  to CASL.
+
+  `@flama/config` is now `@flama/tsconfig`, in `packages/tsconfig/`. "Config" said
+  nothing — the repo has seven other things that answer to it (`src/config/` in
+  the API, `ShellConfig`, `vite.config.ts`, the root `.env`) — while the package
+  holds tsconfig presets and the two build-time helpers that travel with them
+  (`vite-chunks.mjs`, `depcruise/*.cjs`). Every `extends`, devDependency,
+  Dockerfile `COPY` and doc reference moved with it; nothing else changed.
+
+  `@flama/shared` no longer exports `./navigation`. `SCREENS` paired a web route
+  (`/team`, `/api-tokens`) with the endpoint behind it and the rules that endpoint
+  demands. The endpoint half is a real contract and stays, as `ENDPOINT_POLICIES`
+  in `@flama/shared/permissions` — keyed by the path Nest mounts the handler at,
+  which is what `apps/api/src/auth/__tests__/endpoint-policies.spec.ts` (renamed
+  from `screen-policies.spec.ts`) pins the controllers to.
+
+  The route half is deleted rather than rehoused. Those five paths are not routes
+  any app mounts: `apps/web` serves `/dashboard`, `/settings` and
+  `/settings/api-tokens`, `apps/admin-web` serves `/users` and `/roles`, and
+  neither read the catalog — both nav files write their rows out by hand. A list
+  of one product's leftover URLs does not earn a home in the platform kit both
+  Vite apps compile. The rule that survives is smaller and is now what the docs
+  say: a gated nav row takes `policies: ENDPOINT_POLICIES['/tokens']` where the
+  row is declared, never a literal rule list, and the route string stays in the
+  app that mounts it.
+
+  The catalog also carries its own invariants now. `ENDPOINT_POLICIES` is typed
+  `Record<string, readonly [EndpointPolicy, ...EndpointPolicy[]]>`, so an empty
+  rule list and a misspelled member are both compile errors — which is what the
+  package-local spec was asserting at runtime, so it is gone. `HANDLERS` in the
+  API test is a `Record<GuardedEndpoint, …>`, so a new catalog entry fails to
+  compile until a handler is named for it. Nothing casts.
+
+  `permissions/index.ts` became a barrel over `abilities.ts` (a verbatim move of
+  the old file) and `endpoint-policies.ts`.
+
+- Updated dependencies [755b293]
+- Updated dependencies [7fdcefc]
+- Updated dependencies [af46e89]
+- Updated dependencies [28b2d1b]
+- Updated dependencies [b079e83]
+- Updated dependencies [c27a7f4]
+- Updated dependencies [6bf67a5]
+- Updated dependencies [07eb972]
+- Updated dependencies [d532ef4]
+- Updated dependencies [25ff19f]
+- Updated dependencies [9cf59be]
+- Updated dependencies [d06200f]
+- Updated dependencies [48d1b41]
+  - @flama/backend-authz@0.2.0
+  - @flama/shared@1.0.0
+  - @flama/backend-core@0.3.0
+  - @flama/translations@0.3.0
+  - @flama/auth@0.2.0
+  - @flama/backend-ddd@0.3.0
+  - @flama/env@0.2.0
+  - @flama/backend-cache@0.1.0
+  - @flama/backend-email@0.2.0
+  - @flama/backend-i18n@0.1.0
+  - @flama/backend-queue@0.1.1
+  - @flama/backend-storage@0.1.0
+
 ## 0.2.0
 
 ### Minor Changes
