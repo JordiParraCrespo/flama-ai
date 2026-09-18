@@ -1,4 +1,13 @@
+import { cssInterop } from 'nativewind';
 import Svg, { Path } from 'react-native-svg';
+
+type SvgProps = React.ComponentProps<typeof Svg> & { className?: string };
+
+function ThemedSvg(props: SvgProps) {
+  return <Svg {...props} />;
+}
+
+cssInterop(ThemedSvg, { className: 'style' });
 
 /**
  * The identity providers' own marks, drawn here rather than pulled from the
@@ -31,16 +40,21 @@ export function GoogleIcon({ size = 17 }: { size?: number }) {
 
 /**
  * GitHub's mark is monochrome, so unlike Google's it has to follow the theme.
- * React Native gives an SVG no cascade to inherit from, so the caller passes
- * the resolved ink rather than a class.
+ * It follows the surrounding theme through the same NativeWind `currentColor`
+ * bridge as the design system's `BrandMark`.
  */
-export function GithubIcon({ size = 17, color }: { size?: number; color: string }) {
+export function GithubIcon({ size = 17, className }: { size?: number; className?: string }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
+    <ThemedSvg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={className ?? 'text-ink-900'}
+    >
       <Path
-        fill={color}
+        fill="currentColor"
         d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2.16c-3.2.7-3.88-1.36-3.88-1.36-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.3-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.76.12 3.05.74.82 1.19 1.85 1.19 3.11 0 4.43-2.7 5.41-5.26 5.7.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5"
       />
-    </Svg>
+    </ThemedSvg>
   );
 }

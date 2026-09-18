@@ -1,17 +1,15 @@
-import { useLogin } from '@flama/frontend-core/react';
+import { useErrorMessage, useLogin } from '@flama/frontend-core/react';
 import {
   AuthLayout,
   AuthLink,
   AuthSubtitle,
   AuthTitle,
+  LoginForm,
   SocialLoginButtons,
-  useErrorMessage,
 } from '@flama/frontend-mobile';
 import { Link, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import { LoginForm } from '../forms/login-form';
-import { CONTROL_PLANE_BRAND } from '../lib/brand';
 
 export function LoginScreen() {
   const { t } = useTranslation();
@@ -25,7 +23,7 @@ export function LoginScreen() {
   // control plane has no public registration, so an account here is one an
   // existing platform administrator provisioned.
   return (
-    <AuthLayout brandLabel={CONTROL_PLANE_BRAND}>
+    <AuthLayout brandLabel={t('common.controlAppName')}>
       <AuthTitle>{t('auth.login.title')}</AuthTitle>
       <AuthSubtitle>{t('auth.login.description')}</AuthSubtitle>
 

@@ -1,38 +1,24 @@
 import { Button } from '@flama/design-system-mobile/button';
-import { Checkbox } from '@flama/design-system-mobile/checkbox';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import {
-  AuthFormError,
-  authControlClass,
-  authInputClass,
-  FormField,
-  PasswordInput,
-  useZodResolver,
-} from '@flama/frontend-mobile';
 import { type LoginDto, loginSchema } from '@flama/shared';
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { FormField, useZodResolver } from '../../forms';
+import { AuthFormError, authControlClass, authInputClass } from '../components/auth-primitives';
+import { PasswordInput } from '../components/password-input';
 
-interface LoginFormProps {
+export interface LoginFormProps {
   onSubmit: (values: LoginDto) => void;
   isPending: boolean;
-  /** The resolved failure message, if the last attempt failed. */
   error?: string;
-  /** The "forgot password" link, rendered next to the keep-signed-in toggle. */
   forgotPasswordLink: ReactNode;
 }
 
 export function LoginForm({ onSubmit, isPending, error, forgotPasswordLink }: LoginFormProps) {
   const { t } = useTranslation();
-
-  // Session lifetime is decided by the API, so this is presentational for now:
-  // the control exists in the design and the preference has nowhere to go
-  // until the login endpoint accepts one.
-  const [keepSignedIn, setKeepSignedIn] = useState(true);
-
   const { control, handleSubmit } = useForm<LoginDto>({
     resolver: useZodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -43,7 +29,6 @@ export function LoginForm({ onSubmit, isPending, error, forgotPasswordLink }: Lo
   return (
     <View className="gap-4">
       {error ? <AuthFormError>{error}</AuthFormError> : null}
-
       <Controller
         control={control}
         name="email"
@@ -87,25 +72,7 @@ export function LoginForm({ onSubmit, isPending, error, forgotPasswordLink }: Lo
           </FormField>
         )}
       />
-
-      <View className="mb-2 flex-row items-center justify-between">
-        <Pressable
-          className="flex-row items-center gap-2.5"
-          onPress={() => setKeepSignedIn((value) => !value)}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: keepSignedIn }}
-        >
-          <Checkbox
-            checked={keepSignedIn}
-            onCheckedChange={(checked) => setKeepSignedIn(checked === true)}
-            disabled={isPending}
-            className="size-5"
-          />
-          <Text className="text-sm text-ink-600">{t('auth.login.keepSignedIn')}</Text>
-        </Pressable>
-        {forgotPasswordLink}
-      </View>
-
+      <View className="mb-2 items-end">{forgotPasswordLink}</View>
       <Button onPress={submit} disabled={isPending} className={authControlClass}>
         <Text>{isPending ? t('auth.login.submitting') : t('auth.login.submit')}</Text>
       </Button>

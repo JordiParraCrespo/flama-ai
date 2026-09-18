@@ -1,16 +1,17 @@
 import { Alert, AlertDescription } from '@flama/design-system-mobile/alert';
 import { Button } from '@flama/design-system-mobile/button';
-import { CircleAlert, Info } from '@flama/design-system-mobile/icons';
+import { Info } from '@flama/design-system-mobile/icons';
 import { Text } from '@flama/design-system-mobile/text';
 import { cn } from '@flama/design-system-mobile/utils';
 import type { SocialAuthIntent } from '@flama/frontend-core';
-import { useDeploymentCapabilities, useSocialLogin } from '@flama/frontend-core/react';
-import { useColorScheme } from 'nativewind';
+import {
+  useDeploymentCapabilities,
+  useErrorMessage,
+  useSocialLogin,
+} from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../forms';
-import { THEME } from '../../theme';
-import { AuthDivider, authControlClass } from './auth-primitives';
+import { AuthDivider, AuthFormError, authControlClass } from './auth-primitives';
 import { GithubIcon, GoogleIcon } from './provider-icons';
 
 /**
@@ -41,7 +42,6 @@ export function SocialLoginButtons({
   onSuccess?: () => void;
 }) {
   const { t } = useTranslation();
-  const { colorScheme } = useColorScheme();
   const resolveError = useErrorMessage();
   const social = useSocialLogin({ onSuccess });
   const { data, error } = useDeploymentCapabilities();
@@ -66,7 +66,6 @@ export function SocialLoginButtons({
   }
 
   const providerButton = cn(authControlClass, 'gap-2.5');
-  const githubInk = THEME[colorScheme === 'dark' ? 'dark' : 'light'].foreground;
 
   return (
     <>
@@ -75,11 +74,9 @@ export function SocialLoginButtons({
           API unreachable, the provider rejected server-side. It used to fail
           into a native alert the form knew nothing about. */}
       {social.error ? (
-        <Alert icon={CircleAlert} variant="destructive" className="mb-2.5">
-          <AlertDescription>
-            {resolveError(social.error, t('auth.login.socialFailed')).message}
-          </AlertDescription>
-        </Alert>
+        <AuthFormError className="mb-2.5">
+          {resolveError(social.error, t('auth.login.socialFailed')).message}
+        </AuthFormError>
       ) : null}
       <View className="gap-2.5">
         {google ? (
@@ -100,7 +97,7 @@ export function SocialLoginButtons({
             onPress={() => social.mutate({ provider: 'github', intent })}
             className={providerButton}
           >
-            <GithubIcon color={githubInk} />
+            <GithubIcon />
             <Text>{t('auth.login.continueWithGithub')}</Text>
           </Button>
         ) : null}

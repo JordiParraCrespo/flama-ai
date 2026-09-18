@@ -1,28 +1,21 @@
 import { Button } from '@flama/design-system-mobile/button';
 import { Input } from '@flama/design-system-mobile/input';
 import { Text } from '@flama/design-system-mobile/text';
-import {
-  AuthFormError,
-  authControlClass,
-  authInputClass,
-  FormField,
-  useZodResolver,
-} from '@flama/frontend-mobile';
 import { type ForgotPasswordDto, forgotPasswordSchema } from '@flama/shared';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { FormField, useZodResolver } from '../../forms';
+import { AuthFormError, authControlClass, authInputClass } from '../components/auth-primitives';
 
-interface ForgotPasswordFormProps {
+export interface ForgotPasswordFormProps {
   onSubmit: (values: ForgotPasswordDto) => void;
   isPending: boolean;
-  /** The resolved failure message, if the last attempt failed. */
   error?: string;
 }
 
 export function ForgotPasswordForm({ onSubmit, isPending, error }: ForgotPasswordFormProps) {
   const { t } = useTranslation();
-
   const { control, handleSubmit } = useForm<ForgotPasswordDto>({
     resolver: useZodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
@@ -33,7 +26,6 @@ export function ForgotPasswordForm({ onSubmit, isPending, error }: ForgotPasswor
   return (
     <View className="gap-4">
       {error ? <AuthFormError>{error}</AuthFormError> : null}
-
       <Controller
         control={control}
         name="email"

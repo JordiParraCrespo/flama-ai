@@ -1,3 +1,3 @@
+export { type ResolvedErrorMessage, useErrorMessage } from '@flama/frontend-core/react';
 export * from './components/form-field';
-export { type ResolvedErrorMessage, useErrorMessage } from './hooks/use-error-message';
 export { useZodResolver } from './hooks/use-zod-resolver';

@@ -43,10 +43,9 @@ pnpm --filter @flama/frontend-mobile arch
   are named through `nonPersistedFeatures`.
 - Writing a second copy of a helper in `apps/mobile` rather than promoting
   the first one here; `pnpm check:structure` compares basenames.
-- Styling a sign-in screen in the app instead of reaching for `auth`. The
-  chrome — the frame, the title ramp, the divider, the inline form error, the
-  password field and its checklist, the provider buttons — is shared with
-  `@flama/frontend-web` by design; a screen that invents its own drifts from
-  the web app immediately.
+- Keeping product-neutral auth UI or flows in an app instead of reaching for
+  `auth`. The concern owns the frame, forms, forgot/reset state machines,
+  password controls and provider buttons. An app keeps only product-specific
+  composition such as consumer registration or an admin brand wrapper.
 
 See [`.agents/rules/frontend-architecture.md`](../../../.agents/rules/frontend-architecture.md).

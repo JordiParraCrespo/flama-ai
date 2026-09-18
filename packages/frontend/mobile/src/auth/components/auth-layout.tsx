@@ -1,7 +1,5 @@
 import { Text } from '@flama/design-system-mobile/text';
-import type { ParseKeys } from 'i18next';
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LanguageSwitcher } from '../../i18n';
@@ -11,12 +9,8 @@ import { BrandLogo } from './brand-logo';
 export interface AuthLayoutProps {
   /** The wordmark's label; defaults to the product name. */
   brandLabel?: string;
-  /**
-   * The legal one-liner pinned under the form, outside the centred column —
-   * the same line `@flama/frontend-web`'s layout reads off the route's
-   * `staticData`. Screens without one pass nothing.
-   */
-  legalNoteKey?: ParseKeys;
+  /** Optional translated legal copy pinned below the form. */
+  legalNote?: ReactNode;
   children: ReactNode;
 }
 
@@ -33,9 +27,7 @@ export interface AuthLayoutProps {
  * Router's `(auth)` group is a `<Stack>`, and a navigator cannot live inside a
  * `ScrollView`, so here each screen mounts the layout itself.
  */
-export function AuthLayout({ brandLabel, legalNoteKey, children }: AuthLayoutProps) {
-  const { t } = useTranslation();
-
+export function AuthLayout({ brandLabel, legalNote, children }: AuthLayoutProps) {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-background"
@@ -56,8 +48,8 @@ export function AuthLayout({ brandLabel, legalNoteKey, children }: AuthLayoutPro
           </View>
 
           <View className="gap-3">
-            {legalNoteKey ? (
-              <Text className="text-center text-xs text-ink-400">{t(legalNoteKey)}</Text>
+            {legalNote ? (
+              <Text className="text-center text-xs text-ink-400">{legalNote}</Text>
             ) : null}
             <LanguageSwitcher />
           </View>

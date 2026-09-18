@@ -31,10 +31,7 @@ export function PasswordInput({
         accessibilityRole="button"
         accessibilityLabel={visible ? t('auth.hidePassword') : t('auth.showPassword')}
         onPress={() => setVisible((shown) => !shown)}
-        // Pinned rather than centred: an absolutely positioned child with no
-        // vertical inset takes the parent's alignment, and the parent here is
-        // a bare wrapper. (48 - 36) / 2 = 6.
-        className="absolute right-1.5 top-1.5 size-9 items-center justify-center rounded-md"
+        className="absolute bottom-0 right-1.5 top-0 w-9 items-center justify-center rounded-md"
       >
         <Icon as={visible ? EyeOff : Eye} size={17} className="text-ink-400" />
       </Pressable>

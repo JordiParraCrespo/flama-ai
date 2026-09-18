@@ -1,31 +1,25 @@
 import { Button } from '@flama/design-system-mobile/button';
 import { Text } from '@flama/design-system-mobile/text';
-import {
-  AuthFormError,
-  authControlClass,
-  FormField,
-  PasswordChecklist,
-  PasswordInput,
-  type PasswordRule,
-  useZodResolver,
-} from '@flama/frontend-mobile';
+import type { PasswordRule } from '@flama/frontend-core';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { type NewPasswordValues, newPasswordSchema } from '../lib/reset-password';
+import { FormField, useZodResolver } from '../../forms';
+import { AuthFormError, authControlClass } from '../components/auth-primitives';
+import { PasswordChecklist } from '../components/password-checklist';
+import { PasswordInput } from '../components/password-input';
+import { type NewPasswordValues, newPasswordSchema } from '../lib/new-password-schema';
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number', 'match'];
 
-interface ResetPasswordFormProps {
+export interface ResetPasswordFormProps {
   onSubmit: (values: NewPasswordValues) => void;
   isPending: boolean;
-  /** The resolved failure message, if the last attempt failed. */
   error?: string;
 }
 
 export function ResetPasswordForm({ onSubmit, isPending, error }: ResetPasswordFormProps) {
   const { t } = useTranslation();
-
   const { control, handleSubmit } = useForm<NewPasswordValues>({
     resolver: useZodResolver(newPasswordSchema),
     defaultValues: { password: '', confirmPassword: '' },
@@ -36,7 +30,6 @@ export function ResetPasswordForm({ onSubmit, isPending, error }: ResetPasswordF
   return (
     <View className="gap-4">
       {error ? <AuthFormError>{error}</AuthFormError> : null}
-
       <Controller
         control={control}
         name="password"
@@ -81,7 +74,6 @@ export function ResetPasswordForm({ onSubmit, isPending, error }: ResetPasswordF
           </FormField>
         )}
       />
-
       <PasswordChecklist
         control={control}
         name="password"

@@ -31,6 +31,7 @@
   "dependencies": {
     "@flama/design-system-mobile": "workspace:*",
     "@flama/frontend-core": "workspace:*",
+    "@flama/shared": "workspace:*",
     "@flama/translations": "workspace:*",
     "@hookform/resolvers": "^5.7.1",
     "intl-pluralrules": "2.0.1",

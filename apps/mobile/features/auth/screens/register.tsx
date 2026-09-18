@@ -1,17 +1,23 @@
+import { Button } from '@flama/design-system-mobile/button';
+import { Icon } from '@flama/design-system-mobile/icon';
+import { ShieldCheck } from '@flama/design-system-mobile/icons';
 import { Text } from '@flama/design-system-mobile/text';
 import { useRegister } from '@flama/frontend-consumer/react';
+import { useErrorMessage } from '@flama/frontend-core/react';
 import {
   AuthFooterNote,
+  AuthIconCircle,
   AuthLayout,
   AuthLink,
   AuthSubtitle,
   AuthTitle,
+  authControlClass,
   SocialLoginButtons,
-  useErrorMessage,
 } from '@flama/frontend-mobile';
 import { Link, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import { RegisterForm } from '../forms/register-form';
 
 export function RegisterScreen() {
@@ -19,6 +25,24 @@ export function RegisterScreen() {
   const router = useRouter();
   const resolveError = useErrorMessage();
   const { mutate, isPending, error } = useRegister();
+  const [registered, setRegistered] = useState(false);
+
+  if (registered) {
+    return (
+      <AuthLayout>
+        <AuthIconCircle>
+          <Icon as={ShieldCheck} size={24} />
+        </AuthIconCircle>
+        <AuthTitle>{t('auth.register.successTitle')}</AuthTitle>
+        <AuthSubtitle>{t('auth.register.successMessage')}</AuthSubtitle>
+        <Link href="/(auth)/login" asChild>
+          <Button className={authControlClass}>
+            <Text>{t('auth.register.signIn')}</Text>
+          </Button>
+        </Link>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>
@@ -28,17 +52,7 @@ export function RegisterScreen() {
       <RegisterForm
         isPending={isPending}
         error={error ? resolveError(error, t('auth.register.failed')).message : undefined}
-        onSubmit={(values) =>
-          mutate(values, {
-            // Failures render inline above the first field; this one stays a
-            // native alert because it is a terminal confirmation — the screen
-            // it belongs to is already being replaced by the sign-in screen.
-            onSuccess: () =>
-              Alert.alert(t('auth.register.successTitle'), t('auth.register.successMessage'), [
-                { text: 'OK', onPress: () => router.replace('/(auth)/login') },
-              ]),
-          })
-        }
+        onSubmit={(values) => mutate(values, { onSuccess: () => setRegistered(true) })}
       />
 
       {/* The one place a provider identity may become an account: these pass

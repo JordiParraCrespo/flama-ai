@@ -4,7 +4,7 @@ import { ArrowLeft, CircleAlert } from '@flama/design-system-mobile/icons';
 import { Separator } from '@flama/design-system-mobile/separator';
 import { Text } from '@flama/design-system-mobile/text';
 import { cn } from '@flama/design-system-mobile/utils';
-import { Link } from 'expo-router';
+import { type Href, Link } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
@@ -70,11 +70,11 @@ export function AuthDivider({ label }: { label: string }) {
   );
 }
 
-export function AuthBackLink({ children }: { children?: ReactNode }) {
+export function AuthBackLink({ children, href }: { children?: ReactNode; href: Href }) {
   const { t } = useTranslation();
 
   return (
-    <Link href="/(auth)/login" asChild>
+    <Link href={href} asChild>
       <Pressable className="mt-7 flex-row items-center gap-1.5 self-start">
         <Icon as={ArrowLeft} size={14} className="text-ink-400" />
         <Text className="text-sm text-ink-600">
@@ -105,9 +105,15 @@ export function AuthLink({ className, ...props }: React.ComponentProps<typeof Te
  * form with nothing to show for it. The design system's `Alert` carries the
  * destructive treatment and the `role="alert"`.
  */
-export function AuthFormError({ children }: { children: ReactNode }) {
+export function AuthFormError({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <Alert icon={CircleAlert} variant="destructive">
+    <Alert icon={CircleAlert} variant="destructive" className={className}>
       <AlertDescription>{children}</AlertDescription>
     </Alert>
   );

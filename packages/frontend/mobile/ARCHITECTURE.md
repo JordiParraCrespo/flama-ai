@@ -18,7 +18,7 @@ compiles it with the app.
 | `platform` | `createQueryPersistence`, `ExpoSecureStoreService`, the MMKV stores (`storage`, `stateStorage`, `queryStorage`), `initPurchases`, `Sentry`/`sentryEnabled`, the fetch polyfills | leaf |
 | `theme` | `THEME` (the NativeWind variable sets), `NAV_THEME` for React Navigation, `BrandGlyph`, `ThemeToggle` | leaf |
 | `config` | `configManager` over the kernel's `ConfigManager`, `AppConfig`, `staticConfig`, `ConfigManagerContext`, `useConfig` | leaf |
-| `forms` | `useZodResolver`, `FormField` (a `Controller` field with its label and error), `useErrorMessage` | leaf |
+| `forms` | `useZodResolver`, `FormField` (a `Controller` field with its label and error) | leaf |
 | `analytics` | `createMobileAnalyticsClient` (PostHog), `ScreenViewTracker` | leaf |
 | `i18n` | the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`, `LanguageSwitcher` — it reads `platform`'s MMKV store for the saved locale | middle |
 | `layout` | `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback` | middle |

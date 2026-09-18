@@ -27,7 +27,8 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
   `queryStorage`, `initPurchases`, `Sentry`, `sentryEnabled`.
 - **config** — `configManager`, `ConfigManagerContext`, `useConfigManager`,
   `useConfig`, `AppConfig`, `staticConfig`.
-- **forms** — `useZodResolver`, `FormField`, `useErrorMessage`.
+- **forms** — `useZodResolver` and `FormField`; translated API failures come
+  from `@flama/frontend-core/react` and are re-exported for compatibility.
 - **i18n** — the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`,
   `LanguageSwitcher`.
 - **theme** — `THEME`, `NAV_THEME`, `BrandGlyph`, `ThemeToggle`.

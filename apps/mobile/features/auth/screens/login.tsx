@@ -1,18 +1,17 @@
 import { Text } from '@flama/design-system-mobile/text';
-import { useLogin } from '@flama/frontend-core/react';
+import { useErrorMessage, useLogin } from '@flama/frontend-core/react';
 import {
   AuthFooterNote,
   AuthLayout,
   AuthLink,
   AuthSubtitle,
   AuthTitle,
+  LoginForm,
   SocialLoginButtons,
-  useErrorMessage,
 } from '@flama/frontend-mobile';
 import { Link, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import { LoginForm } from '../forms/login-form';
 
 export function LoginScreen() {
   const { t } = useTranslation();
