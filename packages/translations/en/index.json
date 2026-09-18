@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "Flama",
+    "controlAppName": "Flama Control",
     "loading": "Loading...",
     "error": "Something went wrong",
     "save": "Save",

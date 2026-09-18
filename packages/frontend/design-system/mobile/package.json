@@ -18,6 +18,7 @@
     "./mobile-root": "./src/components/ui/mobile-root.tsx",
     "./overlay": "./src/components/ui/overlay.tsx",
     "./toast": "./src/components/ui/toast.tsx",
+    "./brand-mark": "./src/components/ui/brand-mark.tsx",
     "./button": "./src/components/ui/button.tsx",
     "./card": "./src/components/ui/card.tsx",
     "./chat-markdown": "./src/components/ui/chat-markdown.tsx",

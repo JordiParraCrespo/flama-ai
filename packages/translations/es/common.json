@@ -1,5 +1,6 @@
 {
   "appName": "Flama",
+  "controlAppName": "Flama Control",
   "loading": "Cargando...",
   "error": "Algo salió mal",
   "save": "Guardar",

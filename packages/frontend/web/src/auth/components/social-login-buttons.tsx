@@ -1,9 +1,12 @@
 import { Alert, AlertDescription, Button, cn } from '@flama/design-system-web';
 import { Info } from '@flama/design-system-web/icons';
 import type { SocialAuthIntent } from '@flama/frontend-core';
-import { useDeploymentCapabilities, useSocialLogin } from '@flama/frontend-core/react';
+import {
+  useDeploymentCapabilities,
+  useErrorMessage,
+  useSocialLogin,
+} from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
-import { useErrorMessage } from '../../forms';
 import { AuthDivider, authControlClass } from './auth-primitives';
 import { GithubIcon, GoogleIcon } from './provider-icons';
 
