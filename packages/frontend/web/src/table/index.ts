@@ -7,6 +7,7 @@ export { FacetFilter } from './components/facet-filter';
 export { useClampedPage } from './hooks/use-clamped-page';
 export { useDebouncedCallback } from './hooks/use-debounced-callback';
 export * from './hooks/use-table-query';
+export { type TableSelection, useTableSelection } from './hooks/use-table-selection';
 export * from './lib/data-table-types';
 export * from './lib/download-csv';
 export * from './lib/paginate-rows';

@@ -1,6 +1,17 @@
 import { Avatar, AvatarFallback } from '@flama/design-system-web';
 import type { AdminUserEntity } from '@flama/frontend-admin';
-import { initials } from '@/features/admin-users/lib/initials';
+
+/** The first letters of the first two words, for an avatar with no image. */
+function initials(name: string): string {
+  return (
+    name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase() || '?'
+  );
+}
 
 /** The users table's first column: avatar, name, address. */
 export function UserCell({ user }: { user: AdminUserEntity }) {

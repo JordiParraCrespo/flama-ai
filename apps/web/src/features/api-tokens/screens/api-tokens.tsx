@@ -1,6 +1,6 @@
 import { PageHead } from '@flama/frontend-web';
 import { useTranslation } from 'react-i18next';
-import { CreateTokenSection } from '@/features/api-tokens/sections/create-token';
+import { CreateTokenCard } from '@/features/api-tokens/sections/create-token-card';
 import { TokenTable } from '@/features/api-tokens/sections/token-table';
 
 /**
@@ -19,7 +19,7 @@ export function ApiTokensScreen() {
       <PageHead title={t('apiTokens.title')} sub={t('apiTokens.description')} />
 
       <div className="flex flex-col gap-4">
-        <CreateTokenSection />
+        <CreateTokenCard />
         <TokenTable />
       </div>
     </>

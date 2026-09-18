@@ -20,10 +20,15 @@ import { TableSkeleton } from './table-skeleton';
  *
  * This is the expensive half of the table — one cell per column per row, a
  * dropdown per row, a checkbox per row — and it is a separate component so that
- * the cheap half above it can re-render without dragging it along. Everything it
- * takes is either the page of rows or something derived from the selection, so
- * the compiler holds it still while a reader types, opens a facet or works the
- * pager.
+ * a keystroke in the search field stops at the field. That is the one update it
+ * is genuinely insulated from, because the live value never leaves
+ * `DataTableSearch`.
+ *
+ * Everything else that moves the shell still comes through here: a facet, a
+ * page, a tick, `isFetching`. The selection in particular is state in
+ * `DataTable`, so ticking a checkbox re-renders this body and every row in it —
+ * with or without the React Compiler. `useTableSelection` says what changing
+ * that would take.
  */
 export function DataTableBody<TRow>({
   columns,

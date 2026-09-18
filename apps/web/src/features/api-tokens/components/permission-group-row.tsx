@@ -9,12 +9,12 @@ import {
   Users,
   Workflow,
 } from '@flama/design-system-web/icons';
-import type { PermissionGroup, Scope } from '@flama/shared';
+import type { PermissionGroup } from '@flama/shared';
 import { type Control, type FieldPath, type FieldValues, useController } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import type { Selection } from '@/features/api-tokens/lib/scope-selection';
+import type { ScopeLevel, ScopeResource } from '@/features/api-tokens/lib/scope-selection';
 
-const PERMISSION_ICONS: Record<PermissionGroup['resource'], typeof UserRound> = {
+const PERMISSION_ICONS: Record<ScopeResource, typeof UserRound> = {
   profile: UserRound,
   users: Users,
   admin: Shield,
@@ -35,16 +35,24 @@ const PERMISSION_ICONS: Record<PermissionGroup['resource'], typeof UserRound> = 
  * on "Edit" for `tokens` re-renders the tokens row. While the picker held one
  * flat `Scope[]`, the same click re-rendered all eleven rows and their
  * thirty-three toggles.
+ *
+ * It takes two booleans rather than the catalog of grantable scopes for the
+ * same reason. A row that held the whole array rebuilt a `Set` of it on every
+ * render and took a new identity whenever the catalog settled — eleven rows
+ * waiting on a list ten of them do not read.
  */
 export function PermissionGroupRow<TFieldValues extends FieldValues>({
   group,
-  grantable,
+  canRead,
+  canWrite,
   control,
   name,
   disabled,
 }: {
   group: PermissionGroup;
-  grantable: readonly Scope[];
+  /** Whether the signed-in user may grant this level; a token never exceeds its creator. */
+  canRead: boolean;
+  canWrite: boolean;
   control: Control<TFieldValues>;
   name: FieldPath<TFieldValues>;
   disabled?: boolean;
@@ -54,8 +62,7 @@ export function PermissionGroupRow<TFieldValues extends FieldValues>({
   // and `scopesFromSelection` reads a missing key as exactly that.
   const { field } = useController({ control, name });
 
-  const selection = (field.value ?? 'none') as Selection;
-  const allowed = new Set(grantable);
+  const level = (field.value ?? 'none') as ScopeLevel;
   const Icon = PERMISSION_ICONS[group.resource];
 
   return (
@@ -69,15 +76,15 @@ export function PermissionGroupRow<TFieldValues extends FieldValues>({
           {group.sensitive && <Badge variant="paused">{t('apiTokens.sensitive')}</Badge>}
         </div>
         <p className="text-sm text-ink-600">{group.description}</p>
-        {selection !== 'none' && (
-          <p className="mt-1 text-xs text-ink-600">{group.levels[selection].description}</p>
+        {level !== 'none' && (
+          <p className="mt-1 text-xs text-ink-600">{group.levels[level].description}</p>
         )}
       </div>
 
       <ToggleGroup
         multiple={false}
-        value={[selection]}
-        onValueChange={(next) => next[0] && field.onChange(next[0] as Selection)}
+        value={[level]}
+        onValueChange={(next) => next[0] && field.onChange(next[0] as ScopeLevel)}
         disabled={disabled}
         variant="outline"
         size="sm"
@@ -85,18 +92,10 @@ export function PermissionGroupRow<TFieldValues extends FieldValues>({
         <ToggleGroupItem id={`${group.resource}-none`} value="none">
           {t('apiTokens.levels.none')}
         </ToggleGroupItem>
-        <ToggleGroupItem
-          id={`${group.resource}-read`}
-          value="read"
-          disabled={!allowed.has(group.levels.read.scope)}
-        >
+        <ToggleGroupItem id={`${group.resource}-read`} value="read" disabled={!canRead}>
           {group.levels.read.label}
         </ToggleGroupItem>
-        <ToggleGroupItem
-          id={`${group.resource}-write`}
-          value="write"
-          disabled={!allowed.has(group.levels.write.scope)}
-        >
+        <ToggleGroupItem id={`${group.resource}-write`} value="write" disabled={!canWrite}>
           {group.levels.write.label}
         </ToggleGroupItem>
       </ToggleGroup>

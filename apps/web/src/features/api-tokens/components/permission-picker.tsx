@@ -23,7 +23,9 @@ export interface PermissionPickerProps<TFieldValues extends FieldValues> {
  * Per-resource permission picker: each group is granted None, Read or Edit.
  *
  * Levels the user cannot grant themselves are disabled, mirroring the rule the
- * API enforces: a token never exceeds its creator.
+ * API enforces: a token never exceeds its creator. The lookup happens once
+ * here, and each row is told about its own two levels — a row handed the whole
+ * catalog is a row that re-renders when any of it changes.
  */
 export function PermissionPicker<TFieldValues extends FieldValues>({
   groups,
@@ -33,6 +35,8 @@ export function PermissionPicker<TFieldValues extends FieldValues>({
   disabled,
   className,
 }: PermissionPickerProps<TFieldValues>) {
+  const allowed = new Set(grantable);
+
   return (
     <div
       className={cn(
@@ -44,8 +48,13 @@ export function PermissionPicker<TFieldValues extends FieldValues>({
         <PermissionGroupRow
           key={group.resource}
           group={group}
-          grantable={grantable}
+          canRead={allowed.has(group.levels.read.scope)}
+          canWrite={allowed.has(group.levels.write.scope)}
           control={control}
+          // React Hook Form's `FieldPath` cannot prove a template literal is a
+          // path of an unknown `TFieldValues`; the caller names the field that
+          // holds the `ScopeSelection` and the resource keys come from the
+          // catalog, so the string is right by construction.
           name={`${name}.${group.resource}` as FieldPath<TFieldValues>}
           disabled={disabled}
         />

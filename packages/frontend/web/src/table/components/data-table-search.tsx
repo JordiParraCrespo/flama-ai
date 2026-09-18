@@ -1,5 +1,5 @@
 import { SearchInput } from '@flama/design-system-web';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDebouncedCallback } from '../hooks/use-debounced-callback';
 import {
   type DataTableSearch as DataTableSearchProps,
@@ -18,22 +18,37 @@ import {
  *
  * The settled value still comes back down as `value`, because the URL is where
  * it lives: a followed link, a cleared filter or a back button changes it
- * without anyone typing, and the field has to follow.
+ * without anyone typing, and the field has to follow. What it must *not* follow
+ * is the echo of its own commit. Those two look identical from here — both
+ * arrive as a changed `value` — so the field remembers what it last sent up and
+ * ignores that one string coming back. Without it, any delay between `onChange`
+ * and the prop returning (a parent holding search in its own state, a debounced
+ * URL write) lands the old burst on a reader who has carried on typing, and the
+ * caret string snaps backwards.
  */
 export function DataTableSearch({ value, onChange, placeholder }: DataTableSearchProps) {
   const [live, setLive] = useState(value);
 
+  /**
+   * The last value this field sent up. A ref, not state: it is written from a
+   * timer rather than from a render, and nothing renders differently because of
+   * it — it only decides whether the next `value` is news or an echo.
+   */
+  const committed = useRef(value);
+
   // Adjusting state to a prop, the way React documents it rather than with an
-  // effect: when the settled value changes from outside — a cleared facet, a
-  // followed link — the field takes it. A commit of what was just typed lands
-  // here too and writes the same string, which is a no-op.
+  // effect. `settled` is the previous prop; comparing against it is what makes
+  // "the prop changed" a thing this component can see during render.
   const [settled, setSettled] = useState(value);
   if (settled !== value) {
     setSettled(value);
-    setLive(value);
+    if (value !== committed.current) setLive(value);
   }
 
-  const commit = useDebouncedCallback(onChange, TABLE_SEARCH_DEBOUNCE_MS);
+  const commit = useDebouncedCallback((next: string) => {
+    committed.current = next;
+    onChange(next);
+  }, TABLE_SEARCH_DEBOUNCE_MS);
 
   return (
     <SearchInput

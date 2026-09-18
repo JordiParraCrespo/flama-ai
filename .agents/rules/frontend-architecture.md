@@ -11,8 +11,8 @@ paths:
 
 Where a thing goes on the frontend, and what it may import. Every rule here is
 checked: dependency-cruiser (`pnpm arch`) for imports, `pnpm check:structure`
-for names, shapes, sizes and where a query is subscribed to, Biome for effects
-and memo, and a `*-render.spec.tsx` for what a component costs. The Claude Code Stop hook
+for names, shapes and where a query is subscribed to, Biome for effects and
+memo, and a `*-render.spec.tsx` for what a component costs. The Claude Code Stop hook
 runs all three. The layer model and the cookbooks are in
 [`packages/frontend/ARCHITECTURE.md`](../../packages/frontend/ARCHITECTURE.md)
 and each app's `ARCHITECTURE.md`; `/scaffold-feature` produces the shape.
@@ -101,9 +101,16 @@ A concern that needs a product hook is a feature, not kit.
 ## Render rules
 
 Placement is checked by every rule above this heading. These are about what a
-component *does*, and three of them are now checked too — `pnpm check:structure`
-reads the source. The first two were prose, and unchecked: both were broken, in
-two different apps, by code that satisfied every other rule in this file.
+component *does*. They were prose, and unchecked, and broken in two different
+apps by code that satisfied every other rule in this file — so two things check
+them now: `pnpm check:structure` reads where a query is subscribed to, and a
+`*-render.spec.tsx` measures what a component costs.
+
+A cost rule is not a size rule. This section briefly carried a line cap per kind
+and it was the wrong check: a section that owns the query, the column factory,
+six dialogs and the row menu passes at 149 lines, and what the cap actually
+produced was files split to land under it. If a component is doing two jobs,
+name the jobs and split *those*.
 
 - **Fetch in the component that renders the result, not the one that owns the
   layout.** `sections/`, `dialogs/` and `screens/` may all call a query hook, so
@@ -144,11 +151,11 @@ two different apps, by code that satisfied every other rule in this file.
   whole register page, art panel included, on every keystroke. `PermissionPicker`
   held one flat `Scope[]` for eleven groups, so granting one re-rendered
   thirty-three toggles; each row takes its own field off the form now.
-- **No component is big enough to hold two jobs.** `screens/` caps at 180
-  lines, `sections/` at 150, a kit component at 250, on top of the route file's
-  120. The route cap alone just pushed the work one level down: `data-table.tsx`
-  reached 624 lines — search field, selection, rows and pager in one component —
-  with every other rule in this file satisfied.
+- **A component owns one job, and the job is named by what updates it.**
+  `data-table.tsx` held the search field, the rows and the selection: three
+  things on three different clocks, so each one's update redrew the other two.
+  The split that matters is by clock, not by length — a keystroke, a page, a
+  tick. When you cannot name the second job, there isn't one.
 - **One component per file.** Biome's `noNestedComponentDefinitions` is on.
 - **An effect synchronises with something outside React, and says what.**
   A DOM listener, a subscription, a timer, an imperative library, the URL.
@@ -165,6 +172,12 @@ two different apps, by code that satisfied every other rule in this file.
   threaded query from one to zero — so a profiler will not show you any of
   this. That is why the two rules at the top of this list are checked rather
   than profiled, and why a `*-render.spec.tsx` runs with the compiler **off**.
+
+  The converse is the trap: splitting a component into files does not isolate
+  anything by itself. `DataTableRow` is its own file and a tick still redraws
+  the page, because the setter that a tick calls lives in the shell above it.
+  A split isolates an update only when the state that update writes moves with
+  it.
 - **A component whose cost is the point gets a render budget.** Name it
   `*-render.spec.tsx` and it runs in the `render-budget` vitest project, which
   does not enable the compiler. `data-table-render.spec.tsx` asserts that a
@@ -189,5 +202,9 @@ two different apps, by code that satisfied every other rule in this file.
 - Forwarding a prop a component never reads, so the thing below it can have a
   value the thing above it fetched.
 - Letting a controlled input's value reach a component that maps over rows.
+- Splitting a file to satisfy a number, and reporting the split as a fix.
+- Passing a whole collection to a cell that needs one entry of it: a `Map`
+  rebuilt each render invalidates the column factory that closes over it, and
+  every cell with it.
 - Reaching for `useEffect` to reset a form when a prop changes: React Hook
   Form's `values` option does it.

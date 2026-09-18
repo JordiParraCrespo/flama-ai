@@ -120,41 +120,26 @@ const kitBasenames = (kit) => {
 };
 
 /**
- * The render-topology contract.
+ * One render-topology check: a query belongs where its result is drawn.
  *
- * Everything above this point is about where a file sits. These three are
- * about what a component *does*, and they exist because placement alone let
- * two screens grow the same defect: the page subscribed to a query and threaded
- * the result down, and the one component every table is built from grew until a
- * keystroke in its search box re-rendered every row.
+ * Everything above this point is about where a file sits. This is about what a
+ * component *does*, and it is the only such rule worth a source scan — the
+ * mistake it catches (subscribe on the page, thread the result down) is a
+ * placement mistake wearing a hook, and placement is what this script reads.
  *
- * They are deliberately coarse — a line count and two source scans, no parser.
- * A rule an agent can satisfy by moving a hook one file down is worth more than
- * a rule that needs a build step to evaluate.
+ * What a component *costs* is not checked here. It was, briefly, as a line cap
+ * per kind; a cap is a formatter, not a model — a section that still owns the
+ * query, the column factory, six dialogs and the row menu passes it at 149
+ * lines, and the pressure it creates is to shard files rather than to name the
+ * jobs. The `*-render.spec.tsx` files, with the React Compiler off, are the
+ * check for cost. See .agents/rules/frontend-architecture.md.
+ *
+ * This scan is deliberately narrow and easy to walk around: it reads named
+ * imports from a product package's React entrypoint and a single local JSX
+ * consumer, so two dummy readers, a default import, a query hook re-exported by
+ * the kit, or a `Map` that arrived as a prop all pass it. It is a tripwire on
+ * the shape that actually recurred, not a proof.
  */
-
-/**
- * How long a file of each kind may be before it is doing two jobs.
- *
- * The route cap above says "a route composes" and stops there, so everything it
- * pushes downhill lands in one screen or one section and grows unchecked —
- * `data-table.tsx` reached 624 lines with every rule in this file satisfied.
- * These are the continuation of that cap, not new policy.
- */
-const SIZE_CAPS = [
-  { kind: 'screens', cap: 180, hint: 'a screen composes sections; move a pane into sections/' },
-  {
-    kind: 'sections',
-    cap: 150,
-    hint: 'a section renders one pane; move its rows, menus and dialogs into their own files',
-  },
-];
-
-/** The same cap for the kit, where one over-large component multiplies across every app. */
-const KIT_COMPONENT_CAP = 250;
-
-/** Props every wrapper forwards by design; forwarding these is not a smell. */
-const FORWARDED_PROPS = new Set(['className', 'children', 'style', 'id', 'ref', 'key', 'testID']);
 
 /** What a React Query result exposes. Reading any of these makes a value derived from it. */
 const QUERY_FIELDS = ['data', 'isLoading', 'isFetching', 'isPending', 'isError', 'error', 'status'];
@@ -321,34 +306,6 @@ function checkQueryStaysHome(source, label) {
   }
 }
 
-/**
- * A prop that is only forwarded is a prop the component should not have.
- *
- * `CreateTokenCard` took `groups`, `grantable` and `loadingCatalog` to hand all
- * three straight to `CreateTokenForm`. Three props, three re-render paths, and
- * nothing in between that read them.
- */
-function checkNoPassThroughProps(source, label) {
-  const component = /export function [A-Z][\w]*\s*\(\s*{([^}]*)}/.exec(source);
-  if (!component) return;
-  const props = component[1]
-    .split(',')
-    .map((part) => part.trim().split(':')[0].trim())
-    .filter((name) => /^[a-z][\w]*$/.test(name) && !FORWARDED_PROPS.has(name));
-
-  for (const prop of props) {
-    const uses = source.match(new RegExp(`\\b${prop}\\b`, 'g'))?.length ?? 0;
-    const forwards = source.match(new RegExp(`\\b${prop}={${prop}}`, 'g'))?.length ?? 0;
-    // The destructuring, the type annotation, and then nothing but forwards —
-    // each of which spends the name twice, on the attribute and on its value.
-    if (forwards > 0 && uses <= forwards * 2 + 2) {
-      fail(
-        `${label}: \`${prop}\` is only forwarded, never read. A prop that passes straight through is a re-render path with nothing on it — let the component below ask for the value itself.`,
-      );
-    }
-  }
-}
-
 for (const { app, routes, features, product, allow, kit } of APPS) {
   const appDir = join(root, app);
   if (!existsSync(appDir)) continue;
@@ -388,14 +345,6 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
             const source = readFileSync(file, 'utf8');
             const label = `${app}/${features}/${name}/${kind}/${entry.name}`;
             checkQueryStaysHome(source, label);
-            if (kind === 'screens' || kind === 'sections') {
-              checkNoPassThroughProps(source, label);
-            }
-            const capped = SIZE_CAPS.find((rule) => rule.kind === kind);
-            const lines = source.split('\n').length;
-            if (capped && lines > capped.cap) {
-              fail(`${label}: ${lines} lines (cap ${capped.cap}) — ${capped.hint}`);
-            }
           }
           if (entry.isDirectory() && kind !== '__tests__') {
             fail(
@@ -461,21 +410,6 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
       fail(
         `${app}/${legacy}: components live in ${features}/<module>/<kind>/ or in the platform kit, not at the app root`,
       );
-  }
-}
-
-// the kit's components: one over-large component here multiplies across every app
-for (const kit of KITS) {
-  const dir = join(root, kit, 'src');
-  if (!existsSync(dir)) continue;
-  for (const file of walk(dir)) {
-    if (!/\.tsx$/.test(file) || /\.spec\.tsx$/.test(file)) continue;
-    const lines = readFileSync(file, 'utf8').split('\n').length;
-    if (lines > KIT_COMPONENT_CAP) {
-      fail(
-        `${relative(root, file)}: ${lines} lines (cap ${KIT_COMPONENT_CAP}) — the kit's most reused component is the worst place for a god component; split it so a change to one part does not re-render the others`,
-      );
-    }
   }
 }
 

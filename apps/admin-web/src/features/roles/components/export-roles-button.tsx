@@ -8,16 +8,10 @@ import { exportRoles } from '@/features/roles/lib/export-roles';
 /**
  * The roles table's one bulk action: download what is ticked.
  *
- * Its own component because the six labels the CSV needs are six `t()` calls,
- * and a table is not improved by carrying them in the middle of its props.
+ * Its own component because the labels the CSV needs are five `t()` calls, and
+ * a table is not improved by carrying them in the middle of its props.
  */
-export function ExportRolesButton({
-  roles,
-  roleCounts,
-}: {
-  roles: RoleEntity[];
-  roleCounts: Map<string, number>;
-}) {
+export function ExportRolesButton({ roles }: { roles: RoleEntity[] }) {
   const { t } = useTranslation();
 
   return (
@@ -25,10 +19,9 @@ export function ExportRolesButton({
       variant="secondary"
       size={TABLE_HEADER_CONTROL_SIZE}
       onClick={() =>
-        exportRoles(roles, roleCounts, {
+        exportRoles(roles, {
           role: t('pages.team.roles.columns.role'),
           description: t('pages.team.roles.columns.description'),
-          members: t('pages.team.roles.columns.members'),
           type: t('pages.team.roles.columns.type'),
           system: t('pages.team.roles.system'),
           custom: t('pages.team.roles.custom'),

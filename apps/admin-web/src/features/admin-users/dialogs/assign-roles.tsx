@@ -8,31 +8,29 @@ import {
   DialogTitle,
 } from '@flama/design-system-web';
 import { Shield } from '@flama/design-system-web/icons';
-import type { AdminUserEntity, RoleEntity } from '@flama/frontend-admin';
-import { useAssignAdminUserRoles, useRoles } from '@flama/frontend-admin/react';
+import type { AdminUserEntity } from '@flama/frontend-admin';
+import { useAssignAdminUserRoles, useRoles, useUserRoles } from '@flama/frontend-admin/react';
 import { useTranslation } from 'react-i18next';
 import { AssignRolesForm } from '@/features/admin-users/forms/assign-roles-form';
 
 /**
  * Assign a user's roles.
  *
- * The list of roles to pick from is asked for here, when the dialog opens,
- * rather than kept warm by the screen behind it: nothing else on that screen
- * renders it, and while it lived up there every settle of it went through the
- * table. The reader's current roles still come in as a prop — the table already
- * has them, one query per row, to draw the pills.
+ * Both lists are asked for here, when the dialog opens, rather than kept warm
+ * by the table behind it: nothing else on that screen renders the catalog, and
+ * the reader's current roles are already cached under the same key the row's
+ * pills used, so this costs a lookup rather than a request.
  */
 export function AssignRolesDialog({
   user,
-  assignedRoles,
   onClose,
 }: {
   user: AdminUserEntity;
-  assignedRoles: RoleEntity[];
   onClose: () => void;
 }) {
   const { t } = useTranslation();
   const roles = useRoles({ page: 1, limit: 100 });
+  const assignedRoles = useUserRoles(user.id);
   const assign = useAssignAdminUserRoles();
 
   return (
@@ -51,7 +49,7 @@ export function AssignRolesDialog({
         </DialogHeader>
         <AssignRolesForm
           roles={roles.data?.data ?? []}
-          assignedRoles={assignedRoles}
+          assignedRoles={assignedRoles.data ?? []}
           isPending={assign.isPending}
           error={assign.error}
           onCancel={onClose}

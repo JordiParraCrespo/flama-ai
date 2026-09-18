@@ -24,12 +24,18 @@ const PAGE_SIZE = 8;
  * What did cost something was the search box: while the live value was a prop
  * of `DataTable`, every character re-rendered all eight rows. The field keeps
  * it now, and `setSearch` is called once per burst.
+ *
+ * It took a `roleCounts` map once, for a member-count column and a CSV column.
+ * Nothing ever passed it: the only caller is the roles screen, so the column
+ * never rendered and the export wrote a column of zeros. There is no endpoint
+ * behind it either — `RoleEntity` carries no count — so it went, rather than
+ * shipping a placeholder number.
  */
-export function RolesList({ roleCounts }: { roleCounts?: Map<string, number> }) {
+export function RolesList() {
   const { t } = useTranslation();
   // Prefixed for the same reason as the members tab beside it.
   const query = useTableQuery({ prefix: 'roles' });
-  const { search, searchQuery, page } = query;
+  const { search, page } = query;
 
   /**
    * A page at a time, from the server. `GET /roles` has always returned a
@@ -43,7 +49,7 @@ export function RolesList({ roleCounts }: { roleCounts?: Map<string, number> }) 
   const roles = useRoles({
     page,
     limit: PAGE_SIZE,
-    search: searchQuery || undefined,
+    search: search || undefined,
   });
   const rows = roles.data?.data ?? [];
   const meta = roles.data?.meta;
@@ -54,7 +60,7 @@ export function RolesList({ roleCounts }: { roleCounts?: Map<string, number> }) 
   } | null>(null);
   const [deleteRole, setDeleteRole] = useState<RoleEntity | null>(null);
 
-  const columns = useRoleColumns(roleCounts);
+  const columns = useRoleColumns();
 
   return (
     <>
@@ -87,10 +93,7 @@ export function RolesList({ roleCounts }: { roleCounts?: Map<string, number> }) 
         // role is still edited, duplicated or deleted one at a time through the
         // row menu.
         bulkActions={(selected) => (
-          <ExportRolesButton
-            roles={rows.filter((role) => selected.includes(role.id))}
-            roleCounts={roleCounts ?? new Map()}
-          />
+          <ExportRolesButton roles={rows.filter((role) => selected.includes(role.id))} />
         )}
         rowActions={(role) => (
           <>

@@ -1,7 +1,7 @@
 import { DropdownMenuItem, DropdownMenuSeparator } from '@flama/design-system-web';
 import { KeyRound, Plus, Trash2, UserCog, Users } from '@flama/design-system-web/icons';
 import type { AdminUserEntity } from '@flama/frontend-admin';
-import { useAdminUsers, useUsersRoles } from '@flama/frontend-admin/react';
+import { useAdminUsers } from '@flama/frontend-admin/react';
 import { DataTable, useTableQuery } from '@flama/frontend-web';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -39,9 +39,9 @@ export function UsersTable() {
   const query = useTableQuery<SortKey>({
     sort: { key: 'createdAt', order: 'desc', keys: ['name', 'email', 'createdAt'] },
   });
-  const searchField = query.searchQuery.includes('@') ? 'email' : 'name';
+  const searchField = query.search.includes('@') ? 'email' : 'name';
   const users = useAdminUsers({
-    search: query.searchQuery || undefined,
+    search: query.search || undefined,
     searchField,
     limit: PAGE_SIZE,
     offset: (query.page - 1) * PAGE_SIZE,
@@ -49,11 +49,7 @@ export function UsersTable() {
     sortDirection: query.sort.order,
   });
   const rows = users.data?.data ?? [];
-  const userRolesQueries = useUsersRoles(rows.map((user) => user.id));
-  const assignedRoles = new Map(
-    rows.map((user, index) => [user.id, userRolesQueries[index]?.data ?? []]),
-  );
-  const columns = useUserColumns(assignedRoles);
+  const columns = useUserColumns();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -122,13 +118,7 @@ export function UsersTable() {
         )}
       />
       {createOpen && <CreateUserDialog onClose={() => setCreateOpen(false)} />}
-      {dialog?.kind === 'roles' && (
-        <AssignRolesDialog
-          user={dialog.user}
-          assignedRoles={assignedRoles.get(dialog.user.id) ?? []}
-          onClose={closeDialog}
-        />
-      )}
+      {dialog?.kind === 'roles' && <AssignRolesDialog user={dialog.user} onClose={closeDialog} />}
       {dialog?.kind === 'password' && (
         <SetPasswordDialog user={dialog.user} onClose={closeDialog} />
       )}

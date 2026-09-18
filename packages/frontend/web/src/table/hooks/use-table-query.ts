@@ -1,5 +1,4 @@
 import {
-  debounce,
   parseAsArrayOf,
   parseAsInteger,
   parseAsString,
@@ -7,7 +6,6 @@ import {
   useQueryStates,
 } from 'nuqs';
 import { useCallback, useMemo } from 'react';
-import { TABLE_SEARCH_DEBOUNCE_MS } from '../lib/data-table-types';
 
 /**
  * What the reader has narrowed a table to, held in the URL rather than in
@@ -27,12 +25,18 @@ import { TABLE_SEARCH_DEBOUNCE_MS } from '../lib/data-table-types';
  *   nothing". `leads` had this as a `useEffect` with a lint suppression on it;
  *   the other five did not have it at all.
  * - **Typing costs one history entry and one request**, not one of each per
- *   keystroke. The debounce itself is not here: what a reader is typing is the
- *   *field's* state until it settles, so `DataTableSearch` holds the half-typed
- *   word and calls `setSearch` once per burst. Keeping the live value here made
- *   every character a prop of the table, and so a re-render of every row, for a
- *   request that had not been made yet. `limitUrlUpdates` still guards the URL
- *   for a caller that renders its own input.
+ *   keystroke — and the debounce that makes that true is not here. What a
+ *   reader is typing is the *field's* state until it settles, so
+ *   `DataTableSearch` holds the half-typed word and calls `setSearch` once per
+ *   burst. Keeping the live value here made every character a prop of the
+ *   table, and so a re-render of every row, for a request that had not been
+ *   made yet.
+ *
+ *   There is deliberately no second debounce on the way out. One did survive
+ *   the move, on the URL write, and it was not free: the field syncs an
+ *   incoming `search` back down, so a late write could land after the reader
+ *   had typed on and snap the caret string back a burst. A caller that renders
+ *   its own input uses `DataTableSearch`; the policy lives in one place.
  *
  * Updates replace the current history entry (nuqs' default). The URL here is
  * for reloading and sharing, not for stepping a filter back one control at a
@@ -47,12 +51,6 @@ const ORDERS = ['asc', 'desc'] as const;
 /** Stable identities, so the parsers do not change on every render. */
 const NO_FILTERS: string[] = [];
 const NO_SORT_KEYS: readonly string[] = [];
-
-/**
- * The same window the field waits, so a caller that renders its own input
- * cannot write the URL faster than `DataTableSearch` commits.
- */
-const SEARCH_DEBOUNCE_MS = TABLE_SEARCH_DEBOUNCE_MS;
 
 export interface TableSort<TSortKey extends string> {
   key: TSortKey;
@@ -106,20 +104,12 @@ export interface TableQueryOptions<TSortKey extends string, TFilter extends stri
 
 export interface TableQuery<TSortKey extends string, TFilter extends string = string> {
   /**
-   * The settled search — what the URL holds. This is what seeds the field, and
-   * it changes once per burst of typing rather than once per keystroke.
+   * The settled search — what the URL holds, what seeds the field, and what a
+   * request reads. One name: it used to have a debounced twin, and once the
+   * debounce moved into the field the twin was the same string under a second
+   * name that every call site had to remember was an alias.
    */
   search: string;
-  /**
-   * The same value, under the name a request reads it by.
-   *
-   * The two were once different: this one trailed `search` by a debounce. The
-   * debounce moved into the field that produces the keystrokes, so there is
-   * nothing left to trail — both names are kept because they say different
-   * things at the call site, and a link arriving with `?q=` still asks once,
-   * immediately.
-   */
-  searchQuery: string;
   setSearch: (value: string) => void;
   filters: TFilter[];
   setFilters: (values: string[]) => void;
@@ -208,7 +198,7 @@ export function useTableQuery<TSortKey extends string = string, TFilter extends 
 
   const setSearch = useCallback(
     (value: string) => {
-      setQuery({ search: value, page: 1 }, { limitUrlUpdates: debounce(SEARCH_DEBOUNCE_MS) });
+      setQuery({ search: value, page: 1 });
     },
     [setQuery],
   );
@@ -248,7 +238,6 @@ export function useTableQuery<TSortKey extends string = string, TFilter extends 
 
   return {
     search: query.search,
-    searchQuery: query.search,
     setSearch,
     filters,
     setFilters,

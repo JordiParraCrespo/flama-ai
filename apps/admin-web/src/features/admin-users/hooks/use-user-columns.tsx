@@ -1,14 +1,19 @@
 import { Badge } from '@flama/design-system-web';
-import type { AdminUserEntity, RoleEntity } from '@flama/frontend-admin';
+import type { AdminUserEntity } from '@flama/frontend-admin';
 import { type DataTableColumn, formatMediumDate, useLocale } from '@flama/frontend-web';
 import { useTranslation } from 'react-i18next';
 import { UserCell } from '@/features/admin-users/components/user-cell';
-import { UserRolesCell } from '@/features/admin-users/components/user-roles-cell';
+import { UserRolesCell } from '@/features/admin-users/sections/user-roles-cell';
 
-/** The users table's columns: who, what they may do, and since when. */
-export function useUserColumns(
-  assignedRoles: Map<string, RoleEntity[]>,
-): DataTableColumn<AdminUserEntity>[] {
+/**
+ * The users table's columns: who, what they may do, and since when.
+ *
+ * It takes nothing about the rows. It used to take the page's roles as a `Map`,
+ * which arrived new on every render and made these columns new with it — so a
+ * single row's roles landing redrew every cell in the table. The roles column
+ * names the cell and the cell waits on its own query.
+ */
+export function useUserColumns(): DataTableColumn<AdminUserEntity>[] {
   const { t } = useTranslation();
   const locale = useLocale();
 
@@ -24,7 +29,7 @@ export function useUserColumns(
       key: 'roles',
       label: t('control.users.columns.roles'),
       width: 220,
-      render: (user) => <UserRolesCell roles={assignedRoles.get(user.id) ?? []} />,
+      render: (user) => <UserRolesCell userId={user.id} />,
     },
     {
       key: 'access',

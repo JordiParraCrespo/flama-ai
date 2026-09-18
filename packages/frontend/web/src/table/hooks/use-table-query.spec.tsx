@@ -53,12 +53,12 @@ describe('useTableQuery', () => {
       expect(result.current.page).toBe(3);
     });
 
-    it('starts searchQuery equal to search so a followed link asks once, now', () => {
+    it("reads a followed link's search straight out of the URL", () => {
       // Waiting out the debounce here would show every reader an unfiltered
       // table for 300ms before the one they were linked to.
       const { result } = setup('?q=acme');
 
-      expect(result.current.searchQuery).toBe('acme');
+      expect(result.current.search).toBe('acme');
     });
   });
 
@@ -315,19 +315,19 @@ describe('useTableQuery', () => {
   describe('the search', () => {
     it('takes a settled value straight through', () => {
       // The debounce lives in `DataTableSearch` now, so what arrives here has
-      // already settled: holding it again would only delay the request.
+      // already settled: holding it again would only delay the request, and a
+      // late write would land after the reader had typed on.
       const { result } = setup();
 
       act(() => result.current.setSearch('acme'));
 
       expect(result.current.search).toBe('acme');
-      expect(result.current.searchQuery).toBe('acme');
     });
 
     it('answers a followed link without waiting', () => {
       const { result } = setup('?q=acme');
 
-      expect(result.current.searchQuery).toBe('acme');
+      expect(result.current.search).toBe('acme');
     });
   });
 });

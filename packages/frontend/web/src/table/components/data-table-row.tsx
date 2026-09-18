@@ -14,9 +14,13 @@ import { useTranslation } from 'react-i18next';
 import type { DataTableColumn } from '../lib/data-table-types';
 
 /**
- * One row, on its own so that ticking it, or opening its menu, is one row's
- * work. While every row lived in the body's own map, a single checkbox
- * re-rendered the page.
+ * One row of the table.
+ *
+ * A separate component for reading, not for isolation: `toggleOne` writes state
+ * that lives in `DataTable`, so a tick re-renders the shell, the body and every
+ * row regardless of which file this is in. Nothing is memoised here and nothing
+ * should claim to be — a split isolates an update only when the state that
+ * update writes moves with it.
  */
 export function DataTableRow<TRow>({
   row,

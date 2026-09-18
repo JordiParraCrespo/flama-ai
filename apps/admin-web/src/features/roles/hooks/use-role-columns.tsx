@@ -10,11 +10,8 @@ import { RoleTypeBadge } from '@/features/roles/components/role-type-badge';
  * A hook rather than a constant because every label is a `t()` call, and a hook
  * rather than a block inside the section because the section is a composition:
  * what a column looks like is a separate question from which page is on screen.
- *
- * The member count is only a column when somebody counted — the roles screen
- * shows the list on its own, the team tab shows it beside its members.
  */
-export function useRoleColumns(roleCounts?: Map<string, number>): DataTableColumn<RoleEntity>[] {
+export function useRoleColumns(): DataTableColumn<RoleEntity>[] {
   const { t } = useTranslation();
 
   return [
@@ -24,20 +21,6 @@ export function useRoleColumns(roleCounts?: Map<string, number>): DataTableColum
       width: 380,
       render: (role) => <RoleCell role={role} />,
     },
-    ...(roleCounts
-      ? [
-          {
-            key: 'members',
-            label: t('pages.team.roles.columns.members'),
-            width: 140,
-            render: (role: RoleEntity) => (
-              <span className="text-ink-600">
-                {t('pages.team.roles.memberCount', { count: roleCounts.get(role.id) ?? 0 })}
-              </span>
-            ),
-          },
-        ]
-      : []),
     {
       key: 'type',
       label: t('pages.team.roles.columns.type'),
