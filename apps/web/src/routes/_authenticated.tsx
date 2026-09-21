@@ -1,17 +1,10 @@
 import { useOrganizations } from '@flama/frontend-consumer/react';
-import { AppShell } from '@flama/frontend-web';
-import { createFileRoute, Navigate, Outlet, redirect } from '@tanstack/react-router';
+import { AppShell, redirectSignedOut } from '@flama/frontend-web';
+import { createFileRoute, Navigate, Outlet } from '@tanstack/react-router';
 import { NAV, USER_MENU_LINKS } from '@/lib/nav';
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: ({ context, location }) => {
-    if (!context.auth.isAuthenticated) {
-      // `href`, not `pathname`: a deep link's search params are part of where
-      // the reader was going (`/settings?section=security`), and dropping them
-      // lands them somewhere else after they sign in.
-      throw redirect({ to: '/login', search: { redirect: location.href } });
-    }
-  },
+  beforeLoad: ({ context, location }) => redirectSignedOut({ context, location }),
   component: AuthenticatedShell,
 });
 
