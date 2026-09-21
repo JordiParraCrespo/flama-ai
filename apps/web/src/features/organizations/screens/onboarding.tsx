@@ -29,8 +29,8 @@ import { slugify } from '@/features/organizations/lib/slugify';
  * new account there instead is how the first screen after signing up came to
  * be "You do not have permission to do that".
  *
- * It renders inside the auth layout, like the sign-in screens beside it:
- * the wordmark, the theme toggle and the centred column are the route's.
+ * It is the body of the auth layout's column, like the sign-in screens beside
+ * it: `AuthLayout` owns the wordmark, the theme toggle and the measure.
  */
 export function OnboardingScreen() {
   const { t } = useTranslation();

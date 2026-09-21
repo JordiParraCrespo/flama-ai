@@ -1,4 +1,5 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { redirectSignedOut } from '@flama/frontend-web';
+import { createFileRoute } from '@tanstack/react-router';
 import { OnboardingScreen } from '@/features/organizations/screens/onboarding';
 
 /**
@@ -11,11 +12,7 @@ import { OnboardingScreen } from '@/features/organizations/screens/onboarding';
  * `/onboarding` segment, which is why the URL is unchanged by the move.
  */
 export const Route = createFileRoute('/_auth/onboarding')({
-  beforeLoad: ({ context, location }) => {
-    if (!context.auth.isAuthenticated) {
-      throw redirect({ to: '/login', search: { redirect: location.href } });
-    }
-  },
+  beforeLoad: ({ context, location }) => redirectSignedOut({ context, location }),
   component: OnboardingPage,
 });
 

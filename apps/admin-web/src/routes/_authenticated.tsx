@@ -1,16 +1,12 @@
 import { Alert, AlertDescription, AlertTitle, Button, Skeleton } from '@flama/design-system-web';
 import { useLogout, useProfile } from '@flama/frontend-core/react';
-import { AppShell, BrandGlyph } from '@flama/frontend-web';
-import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router';
+import { AppShell, BrandGlyph, redirectSignedOut } from '@flama/frontend-web';
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { NAV } from '@/lib/nav';
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: ({ context, location }) => {
-    if (!context.auth.isAuthenticated) {
-      throw redirect({ to: '/login', search: { redirect: location.href } });
-    }
-  },
+  beforeLoad: ({ context, location }) => redirectSignedOut({ context, location }),
   component: ControlPlaneGate,
 });
 

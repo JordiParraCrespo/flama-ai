@@ -106,9 +106,13 @@ beforeLoad: ({ context, location }) =>
 `apps/admin-web` has only the signed-out half, so its `_auth` route calls
 `redirectSignedIn` directly.
 
-`apps/admin-web/src/routes/_auth.tsx` composes the same pieces
-(`AuthArtPanel`, `BrandLogo`, `ThemeToggle`, `sanitizeRedirect`) by hand,
-because the control plane has no public pages and its redirect rule differs.
+`redirectSignedOut` is the other half of the pair, and takes no landing: it
+sends a signed-out reader to `/login` carrying `location.href`, which
+`redirectSignedIn` hands back once they are in. Both `_authenticated` routes
+and `apps/web`'s onboarding step call it, rather than each writing the
+redirect out. A route picks one guard, the other, or neither — there is no
+list of paths to let through, because a route both readers may open belongs
+under a parent that guards nobody.
 
 ## Add a concern
 

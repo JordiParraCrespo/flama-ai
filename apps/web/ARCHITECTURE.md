@@ -68,11 +68,11 @@ may read a feature's `lib/` for a search schema. It may not reach into
 the checker tells you to move the body into `features/<module>/screens/`.
 
 ```tsx
-// src/routes/_auth/forgot-password.tsx
+// src/routes/_auth/_public/forgot-password.tsx
 import { createFileRoute } from '@tanstack/react-router';
 import { ForgotPasswordScreen } from '@/features/auth/screens/forgot-password';
 
-export const Route = createFileRoute('/_auth/forgot-password')({
+export const Route = createFileRoute('/_auth/_public/forgot-password')({
   component: ForgotPasswordPage,
   staticData: { legalNoteKey: 'auth.forgotPassword.legal' },
 });
@@ -113,9 +113,9 @@ decides only whether a folder contributes a URL segment; it says nothing about
 whether a route is a layout or a guard.
 
 Putting `accept-invitation` under the unguarded layout is what replaced the
-`allow: ['/accept-invitation']` exception the guard used to carry: where a
-route sits now says who may reach it, and cannot fall out of step with its
-path.
+exception the guard used to carry. `redirectSignedIn` no longer accepts a list
+of paths to let through: where a route sits says who may reach it, and cannot
+fall out of step with its path.
 
 ## Render rules
 
