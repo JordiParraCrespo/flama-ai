@@ -41,17 +41,27 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 // The grammar only. Everything below — git, JSON, the filesystem, exiting —
 // is this script's own, and stays here.
-import { identifierRegex, MarkerError, annotate as parseMarkers } from '../lib/markers.mjs';
+import {
+  identifierRegex,
+  MarkerError,
+  narrowMarker,
+  annotate as parseMarkers,
+} from '../lib/markers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
 const MANIFEST_PATH = join(HERE, 'features.json');
+/** What `pnpm plugin:add` installed, merged into the manifest at load. */
+const INSTALLED_PATH = join(ROOT, '.flama-plugins.json');
 /** Marker id for the starter apparatus itself (`flama:begin starter`). */
 const TOOLING_ID = 'starter';
 /** Never scanned for references: binary, generated, or the apparatus itself. */
 const SCAN_SKIP = [
   /^pnpm-lock\.yaml$/,
   /^scripts\/starter\//,
+  // The installed-plugin registry, like the manifest beside this script:
+  // naming a feature is its whole job.
+  /^\.flama-plugins\.json$/,
   /^\.agents\/skills\/starter-init\//,
   /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|zip|pdf)$/i,
 ];
@@ -68,8 +78,35 @@ const COMMENT_LINE_RE = /^\s*(?:#|\/\/|\/\*|\*|<!--|--|;)/;
 // Manifest
 // ---------------------------------------------------------------------------
 
+/**
+ * The starter's manifest, plus whatever `pnpm plugin:add` installed.
+ *
+ * An installed plugin is a feature this repo did not ship with, so it cannot
+ * live in `features.json` — that file is the starter's, and rewriting it on
+ * every install would churn a file the project owns. It lives in
+ * `.flama-plugins.json` instead, in the same shape, and is merged here. From
+ * that point the two are indistinguishable: the honesty check covers an
+ * installed plugin, and `--without <id>` removes one.
+ */
 function loadManifest() {
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
+  if (existsSync(INSTALLED_PATH)) {
+    const installed = JSON.parse(readFileSync(INSTALLED_PATH, 'utf8'));
+    for (const [id, feature] of Object.entries(installed.features ?? {})) {
+      if (manifest.features[id]) {
+        fail(`.flama-plugins.json: "${id}" is already a feature of this starter`);
+      }
+      manifest.features[id] = feature;
+    }
+    // A plugin does not own a shared path, it joins the list of dependants.
+    for (const [path, dependants] of Object.entries(installed.shared ?? {})) {
+      const entry = manifest.shared[path];
+      if (!entry) fail(`.flama-plugins.json: shared "${path}" is not in features.json`);
+      for (const id of dependants) {
+        if (!entry.neededBy.includes(id)) entry.neededBy.push(id);
+      }
+    }
+  }
   const features = manifest.features;
   for (const [id, feature] of Object.entries(features)) {
     for (const dep of feature.requires ?? []) {
@@ -343,7 +380,7 @@ function prune(manifest, removedIds, options) {
       if (stack.length) touched = true;
       if (stack.some(({ ids }) => ids.every((id) => removed.has(id)))) continue;
       if (marker && !keepTooling) continue;
-      out.push(line);
+      out.push(marker ? narrowMarker(line, removed) : line);
     }
     if (!touched) continue;
     console.log(`  edit   ${file}`);

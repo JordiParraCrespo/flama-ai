@@ -62,6 +62,57 @@ export function annotate(file, content) {
   return result;
 }
 
+/**
+ * `// flama:plugins <slot>` — an insertion point, not a block.
+ *
+ * An anchor is a lone comment naming where an installed plugin's block goes.
+ * It is inert to `annotate`, so a prune neither validates nor strips it, and
+ * it survives into a pruned project where the installer still has to work.
+ * The installer inserts immediately above it, at its indentation.
+ */
+export const ANCHOR_RE = /^(\s*)(?:#|\/\/|<!--|\{\{-?\s*\/\*|\/\*)\s*flama:plugins\s+([\w-]+)\b/;
+
+/**
+ * Where a slot's anchor sits, or null. Returns the line index and the
+ * anchor's own indentation, which the inserted block adopts.
+ *
+ * A slot must appear exactly once per file; two anchors with the same name
+ * means the insertion point is ambiguous, which is a `MarkerError` rather
+ * than a coin flip.
+ */
+export function findAnchor(file, content, slot) {
+  const hits = content
+    .split('\n')
+    .map((line, index) => ({ line, index, match: ANCHOR_RE.exec(line) }))
+    .filter((entry) => entry.match?.[2] === slot);
+  if (hits.length === 0) return null;
+  if (hits.length > 1) {
+    throw new MarkerError(
+      `${file}: ${hits.length} anchors named "${slot}" (lines ${hits.map((h) => h.index + 1).join(', ')})`,
+    );
+  }
+  return { index: hits[0].index, indent: hits[0].match[1] };
+}
+
+/**
+ * The same marker with some ids taken out of its spec.
+ *
+ * A marker naming several features outlives the first of them to go — its
+ * block belongs to all of them and leaves only with the last. What must not
+ * outlive them is the *name*: `flama:begin mcp|cli` with `cli` gone cites a
+ * feature that no longer exists. So the block stays and the spec narrows to
+ * whoever is left. Returns the line unchanged when nothing, or everything,
+ * was named.
+ */
+export function narrowMarker(line, removed) {
+  const match = MARKER_RE.exec(line);
+  if (!match) return line;
+  const ids = match[2].split('|');
+  const kept = ids.filter((id) => !removed.has(id));
+  if (!kept.length || kept.length === ids.length) return line;
+  return line.replace(match[2], kept.join('|'));
+}
+
 /** Word-boundary match for an identifier such as `apps/web` or `@flama/web`. */
 export function identifierRegex(identifier) {
   const escaped = identifier.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
