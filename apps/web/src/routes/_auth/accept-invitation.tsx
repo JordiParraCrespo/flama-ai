@@ -4,6 +4,7 @@ import {
   type AcceptInvitationSearch,
 } from '@/features/organizations/screens/accept-invitation';
 
+/** Both a signed-out and a signed-in reader are legitimate here, so no guard. */
 export const Route = createFileRoute('/_auth/accept-invitation')({
   validateSearch: (search: Record<string, unknown>): AcceptInvitationSearch => ({
     id: (search.id as string) || undefined,

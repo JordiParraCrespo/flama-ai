@@ -21,7 +21,8 @@ export interface AuthLayoutProps {
  * The auth split: form on the left, aurora panel on the right. Below 900px the
  * panel drops away entirely and the form takes the full width — it carries no
  * information, only atmosphere. An app's `_auth` route mounts this around its
- * `Outlet`, after `redirectSignedIn` has decided who may be here.
+ * `Outlet`. It is chrome, not a gate: who may be here is each child route's
+ * own `beforeLoad`, so one layout can cover screens with opposite answers.
  */
 export function AuthLayout({ brandLabel, links = [], copy, children }: AuthLayoutProps) {
   const { t } = useTranslation();
