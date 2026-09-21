@@ -13,17 +13,18 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthPublicRouteImport } from './routes/_auth/_public'
 import { Route as AuthAcceptInvitationRouteImport } from './routes/_auth/accept-invitation'
-import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
-import { Route as AuthLoginRouteImport } from './routes/_auth/login'
-import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
-import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
+import { Route as AuthOnboardingRouteImport } from './routes/_auth/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as OauthConsentRouteImport } from './routes/oauth/consent'
+import { Route as AuthPublicForgotPasswordRouteImport } from './routes/_auth/_public/forgot-password'
+import { Route as AuthPublicLoginRouteImport } from './routes/_auth/_public/login'
+import { Route as AuthPublicRegisterRouteImport } from './routes/_auth/_public/register'
+import { Route as AuthPublicResetPasswordRouteImport } from './routes/_auth/_public/reset-password'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSettingsApiTokensRouteImport } from './routes/_authenticated/settings/api-tokens'
 
@@ -45,11 +46,6 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -60,29 +56,18 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthPublicRoute = AuthPublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthAcceptInvitationRoute = AuthAcceptInvitationRouteImport.update({
   id: '/accept-invitation',
   path: '/accept-invitation',
   getParentRoute: () => AuthRoute,
 } as any)
-const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthRegisterRoute = AuthRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const AuthOnboardingRoute = AuthOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -100,6 +85,27 @@ const OauthConsentRoute = OauthConsentRouteImport.update({
   path: '/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthPublicForgotPasswordRoute =
+  AuthPublicForgotPasswordRouteImport.update({
+    id: '/forgot-password',
+    path: '/forgot-password',
+    getParentRoute: () => AuthPublicRoute,
+  } as any)
+const AuthPublicLoginRoute = AuthPublicLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthPublicRoute,
+} as any)
+const AuthPublicRegisterRoute = AuthPublicRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AuthPublicRoute,
+} as any)
+const AuthPublicResetPasswordRoute = AuthPublicResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthPublicRoute,
+} as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/settings/',
@@ -116,34 +122,34 @@ const AuthenticatedSettingsApiTokensRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/accept-invitation': typeof AuthAcceptInvitationRoute
-  '/forgot-password': typeof AuthForgotPasswordRoute
-  '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
-  '/reset-password': typeof AuthResetPasswordRoute
+  '/onboarding': typeof AuthOnboardingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/forgot-password': typeof AuthPublicForgotPasswordRoute
+  '/login': typeof AuthPublicLoginRoute
+  '/register': typeof AuthPublicRegisterRoute
+  '/reset-password': typeof AuthPublicResetPasswordRoute
   '/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/accept-invitation': typeof AuthAcceptInvitationRoute
-  '/forgot-password': typeof AuthForgotPasswordRoute
-  '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
-  '/reset-password': typeof AuthResetPasswordRoute
+  '/onboarding': typeof AuthOnboardingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/forgot-password': typeof AuthPublicForgotPasswordRoute
+  '/login': typeof AuthPublicLoginRoute
+  '/register': typeof AuthPublicRegisterRoute
+  '/reset-password': typeof AuthPublicResetPasswordRoute
   '/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
 }
@@ -153,17 +159,18 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/_auth/_public': typeof AuthPublicRouteWithChildren
   '/_auth/accept-invitation': typeof AuthAcceptInvitationRoute
-  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/_auth/login': typeof AuthLoginRoute
-  '/_auth/register': typeof AuthRegisterRoute
-  '/_auth/reset-password': typeof AuthResetPasswordRoute
+  '/_auth/onboarding': typeof AuthOnboardingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/oauth/consent': typeof OauthConsentRoute
+  '/_auth/_public/forgot-password': typeof AuthPublicForgotPasswordRoute
+  '/_auth/_public/login': typeof AuthPublicLoginRoute
+  '/_auth/_public/register': typeof AuthPublicRegisterRoute
+  '/_auth/_public/reset-password': typeof AuthPublicResetPasswordRoute
   '/_authenticated/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
 }
@@ -172,34 +179,34 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/onboarding'
     | '/privacy'
     | '/terms'
     | '/accept-invitation'
+    | '/onboarding'
+    | '/dashboard'
+    | '/profile'
+    | '/oauth/consent'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
-    | '/dashboard'
-    | '/profile'
-    | '/oauth/consent'
     | '/settings/api-tokens'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/onboarding'
     | '/privacy'
     | '/terms'
     | '/accept-invitation'
+    | '/onboarding'
+    | '/dashboard'
+    | '/profile'
+    | '/oauth/consent'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
-    | '/dashboard'
-    | '/profile'
-    | '/oauth/consent'
     | '/settings/api-tokens'
     | '/settings'
   id:
@@ -208,17 +215,18 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_authenticated'
     | '/about'
-    | '/onboarding'
     | '/privacy'
     | '/terms'
+    | '/_auth/_public'
     | '/_auth/accept-invitation'
-    | '/_auth/forgot-password'
-    | '/_auth/login'
-    | '/_auth/register'
-    | '/_auth/reset-password'
+    | '/_auth/onboarding'
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
     | '/oauth/consent'
+    | '/_auth/_public/forgot-password'
+    | '/_auth/_public/login'
+    | '/_auth/_public/register'
+    | '/_auth/_public/reset-password'
     | '/_authenticated/settings/api-tokens'
     | '/_authenticated/settings/'
   fileRoutesById: FileRoutesById
@@ -228,7 +236,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
-  OnboardingRoute: typeof OnboardingRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   OauthConsentRoute: typeof OauthConsentRoute
@@ -264,13 +271,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -285,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/_public': {
+      id: '/_auth/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthPublicRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_auth/accept-invitation': {
       id: '/_auth/accept-invitation'
       path: '/accept-invitation'
@@ -292,32 +299,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthAcceptInvitationRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_auth/forgot-password': {
-      id: '/_auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof AuthForgotPasswordRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/login': {
-      id: '/_auth/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/register': {
-      id: '/_auth/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof AuthRegisterRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/reset-password': {
-      id: '/_auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
+    '/_auth/onboarding': {
+      id: '/_auth/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthOnboardingRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_authenticated/dashboard': {
@@ -341,6 +327,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/_public/forgot-password': {
+      id: '/_auth/_public/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthPublicForgotPasswordRouteImport
+      parentRoute: typeof AuthPublicRoute
+    }
+    '/_auth/_public/login': {
+      id: '/_auth/_public/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthPublicLoginRouteImport
+      parentRoute: typeof AuthPublicRoute
+    }
+    '/_auth/_public/register': {
+      id: '/_auth/_public/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthPublicRegisterRouteImport
+      parentRoute: typeof AuthPublicRoute
+    }
+    '/_auth/_public/reset-password': {
+      id: '/_auth/_public/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof AuthPublicResetPasswordRouteImport
+      parentRoute: typeof AuthPublicRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/settings'
@@ -358,20 +372,34 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthPublicRouteChildren {
+  AuthPublicForgotPasswordRoute: typeof AuthPublicForgotPasswordRoute
+  AuthPublicLoginRoute: typeof AuthPublicLoginRoute
+  AuthPublicRegisterRoute: typeof AuthPublicRegisterRoute
+  AuthPublicResetPasswordRoute: typeof AuthPublicResetPasswordRoute
+}
+
+const AuthPublicRouteChildren: AuthPublicRouteChildren = {
+  AuthPublicForgotPasswordRoute: AuthPublicForgotPasswordRoute,
+  AuthPublicLoginRoute: AuthPublicLoginRoute,
+  AuthPublicRegisterRoute: AuthPublicRegisterRoute,
+  AuthPublicResetPasswordRoute: AuthPublicResetPasswordRoute,
+}
+
+const AuthPublicRouteWithChildren = AuthPublicRoute._addFileChildren(
+  AuthPublicRouteChildren,
+)
+
 interface AuthRouteChildren {
+  AuthPublicRoute: typeof AuthPublicRouteWithChildren
   AuthAcceptInvitationRoute: typeof AuthAcceptInvitationRoute
-  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
-  AuthLoginRoute: typeof AuthLoginRoute
-  AuthRegisterRoute: typeof AuthRegisterRoute
-  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthOnboardingRoute: typeof AuthOnboardingRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthPublicRoute: AuthPublicRouteWithChildren,
   AuthAcceptInvitationRoute: AuthAcceptInvitationRoute,
-  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
-  AuthLoginRoute: AuthLoginRoute,
-  AuthRegisterRoute: AuthRegisterRoute,
-  AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthOnboardingRoute: AuthOnboardingRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
@@ -399,7 +427,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
-  OnboardingRoute: OnboardingRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   OauthConsentRoute: OauthConsentRoute,

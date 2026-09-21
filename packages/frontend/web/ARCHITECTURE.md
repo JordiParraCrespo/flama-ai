@@ -90,13 +90,21 @@ language list, and `workspace` is what the sidebar header names.
 on the left, `AuthArtPanel` on the right, the panel dropped below 900px. It
 takes `brandLabel` (the wordmark, defaulting to the product name), `links`
 (footer links, typed `NavTo`) and `copy` (`'consumer' | 'control'`, which
-product's words the art panel shows). The `_auth` route mounts it after
-`redirectSignedIn` has decided who may be here — `apps/web/src/routes/_auth.tsx`:
+product's words the art panel shows). An app's `_auth` route mounts it around
+its `Outlet` — `apps/web/src/routes/_auth.tsx`.
+
+The guard is not the layout's. In `apps/web` the layout covers routes that
+want opposite answers, so each child carries its own `beforeLoad` and `_auth`
+carries none:
 
 ```tsx
+// routes/_auth/_public.tsx — no component; it defaults to <Outlet />
 beforeLoad: ({ context, location }) =>
-  redirectSignedIn({ context, location, landing: '/dashboard', allow: ['/accept-invitation'] }),
+  redirectSignedIn({ context, location, landing: '/dashboard' }),
 ```
+
+`apps/admin-web` has only the signed-out half, so its `_auth` route calls
+`redirectSignedIn` directly.
 
 `apps/admin-web/src/routes/_auth.tsx` composes the same pieces
 (`AuthArtPanel`, `BrandLogo`, `ThemeToggle`, `sanitizeRedirect`) by hand,

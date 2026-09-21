@@ -11,8 +11,6 @@ import {
   AuthEyebrow,
   AuthSubtitle,
   AuthTitle,
-  BrandLogo,
-  ThemeToggle,
   useErrorMessage,
 } from '@flama/frontend-web';
 import { Navigate, useNavigate } from '@tanstack/react-router';
@@ -30,6 +28,9 @@ import { slugify } from '@/features/organizations/lib/slugify';
  * product shell reads organization-scoped data on every screen, so sending a
  * new account there instead is how the first screen after signing up came to
  * be "You do not have permission to do that".
+ *
+ * It renders inside the auth layout, like the sign-in screens beside it:
+ * the wordmark, the theme toggle and the centred column are the route's.
  */
 export function OnboardingScreen() {
   const { t } = useTranslation();
@@ -52,69 +53,64 @@ export function OnboardingScreen() {
   const error = accept.error ?? create.error;
 
   return (
-    <div className="flex min-h-svh flex-col bg-background px-6 py-10 min-[900px]:px-14">
-      <ThemeToggle className="absolute top-8 right-6 z-10 min-[900px]:top-10 min-[900px]:right-14" />
-      <BrandLogo />
+    <>
+      <AuthEyebrow>{t('onboarding.eyebrow')}</AuthEyebrow>
+      <AuthTitle>{t('onboarding.title')}</AuthTitle>
+      <AuthSubtitle>{t('onboarding.description')}</AuthSubtitle>
 
-      <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center py-6">
-        <AuthEyebrow>{t('onboarding.eyebrow')}</AuthEyebrow>
-        <AuthTitle>{t('onboarding.title')}</AuthTitle>
-        <AuthSubtitle>{t('onboarding.description')}</AuthSubtitle>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{resolveError(error).message}</AlertDescription>
+        </Alert>
+      )}
 
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{resolveError(error).message}</AlertDescription>
-          </Alert>
-        )}
-
-        {pending.length > 0 && (
-          <>
-            <ul className="flex flex-col gap-3">
-              {pending.map((invitation) => (
-                <li
-                  key={invitation.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-border-subtle p-3.5"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate text-base font-medium text-ink-900">
-                      {t('onboarding.invitation.title')}
-                    </div>
-                    <div className="mt-px truncate text-xs text-ink-400">
-                      {t('onboarding.invitation.role', { role: invitation.organizationRole })}
-                    </div>
+      {pending.length > 0 && (
+        <>
+          <ul className="flex flex-col gap-3">
+            {pending.map((invitation) => (
+              <li
+                key={invitation.id}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-border-subtle p-3.5"
+              >
+                <div className="min-w-0">
+                  <div className="truncate text-base font-medium text-ink-900">
+                    {t('onboarding.invitation.title')}
                   </div>
-                  <Button size="sm" disabled={busy} onClick={() => accept.mutate(invitation.id)}>
-                    {accept.isPending
-                      ? t('onboarding.invitation.joining')
-                      : t('onboarding.invitation.join')}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-            <AuthDivider label={t('common.or')} />
-          </>
-        )}
+                  <div className="mt-px truncate text-xs text-ink-400">
+                    {t('onboarding.invitation.role', { role: invitation.organizationRole })}
+                  </div>
+                </div>
+                <Button size="sm" disabled={busy} onClick={() => accept.mutate(invitation.id)}>
+                  {accept.isPending
+                    ? t('onboarding.invitation.joining')
+                    : t('onboarding.invitation.join')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+          <AuthDivider label={t('common.or')} />
+        </>
+      )}
 
-        <CreateOrganizationForm
-          disabled={busy}
-          isPending={create.isPending}
-          onSubmit={({ name }) => {
-            const slug = slugify(name);
-            // A name with no slug-able characters ("日本") is the API's to name: sending
-            // `slug: ''` would fail the schema's floor for no reason the reader can fix.
-            create.mutate(slug.length >= 2 ? { name, slug } : { name });
-          }}
-        />
+      <CreateOrganizationForm
+        disabled={busy}
+        isPending={create.isPending}
+        onSubmit={({ name }) => {
+          const slug = slugify(name);
+          // A name with no slug-able characters ("日本") is the API's to name: sending
+          // `slug: ''` would fail the schema's floor for no reason the reader can fix.
+          create.mutate(slug.length >= 2 ? { name, slug } : { name });
+        }}
+      />
 
-        <Button
-          variant="secondary"
-          className="mt-7 w-fit self-start"
-          disabled={logout.isPending}
-          onClick={() => logout.mutate()}
-        >
-          {t('onboarding.signOut')}
-        </Button>
-      </div>
-    </div>
+      <Button
+        variant="secondary"
+        className="mt-7 w-fit self-start"
+        disabled={logout.isPending}
+        onClick={() => logout.mutate()}
+      >
+        {t('onboarding.signOut')}
+      </Button>
+    </>
   );
 }
