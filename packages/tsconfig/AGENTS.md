@@ -31,4 +31,5 @@ set and must chunk it the same way.
 
 The dependency-cruiser factories in `depcruise/` are described in
 [`packages/frontend/ARCHITECTURE.md`](../frontend/ARCHITECTURE.md) and each
-consuming app's own `ARCHITECTURE.md`.
+consuming app's own `ARCHITECTURE.md`; the boundaries they enforce are
+[`.agents/rules/frontend-architecture.md`](../../.agents/rules/frontend-architecture.md).
