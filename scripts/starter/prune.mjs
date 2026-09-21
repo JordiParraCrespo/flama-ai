@@ -28,25 +28,20 @@
  * by default a prune strips every marker and removes the starter apparatus).
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  annotate,
-  collapseBlankRuns,
-  editJson as editJsonFile,
-  fail,
-  trackedFiles as gitFiles,
-  identifierRegex,
-  isPluginId,
-  isPluginMarker,
-  isText,
-} from '../lib/markers.mjs';
-
-// The marker language itself lives in `scripts/lib/`, not here: a one-shot
-// prune deletes this directory, and the plugin installer speaks the same
-// language and has to outlive it.
-export { annotate, identifierRegex };
+// The grammar only. Everything below — git, JSON, the filesystem, exiting —
+// is this script's own, and stays here.
+import { identifierRegex, MarkerError, annotate as parseMarkers } from '../lib/markers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -131,9 +126,42 @@ export function resolveRemoval(manifest, removed) {
 // Files and markers
 // ---------------------------------------------------------------------------
 
-/** Every scannable file in the repo — `gitFiles` with this script's skip list. */
-function trackedFiles(options = {}) {
-  return gitFiles(ROOT, { ...options, skip: SCAN_SKIP });
+function trackedFiles({ untracked = true } = {}) {
+  const out = execFileSync(
+    'git',
+    ['ls-files', '-z', '--cached', ...(untracked ? ['--others', '--exclude-standard'] : [])],
+    {
+      cwd: ROOT,
+      maxBuffer: 64 * 1024 * 1024,
+    },
+  );
+  return out
+    .toString('utf8')
+    .split('\0')
+    .filter(
+      (file) =>
+        file &&
+        existsSync(join(ROOT, file)) &&
+        !lstatSync(join(ROOT, file)).isSymbolicLink() &&
+        statSync(join(ROOT, file)).isFile(),
+    )
+    .filter((file) => !SCAN_SKIP.some((re) => re.test(file)));
+}
+
+function isText(buffer) {
+  const sample = buffer.subarray(0, 8000);
+  return !sample.includes(0);
+}
+
+/** `parseMarkers`, with a malformed marker reported the way this script reports
+ * everything else: a message and exit 2. */
+function annotate(file, content) {
+  try {
+    return parseMarkers(file, content);
+  } catch (error) {
+    if (error instanceof MarkerError) fail(error.message);
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -203,10 +231,6 @@ function check(manifest) {
     for (const entry of lines) {
       if (!entry.marker) continue;
       for (const id of entry.stack.at(-1).ids) {
-        // `plugin:<id>` blocks are written by the plugin installer and
-        // declared in `.flama-plugins.json`, not in this manifest. They are
-        // none of the pruner's business.
-        if (isPluginId(id)) continue;
         if (!knownIds.has(id))
           problems.push(
             `${file}:${lines.indexOf(entry) + 1}: marker names unknown feature "${id}"`,
@@ -266,9 +290,14 @@ function check(manifest) {
 const edited = [];
 
 function editJson(file, mutate, dryRun) {
-  if (!editJsonFile(ROOT, file, mutate, { dryRun })) return;
+  const path = join(ROOT, file);
+  if (!existsSync(path)) return;
+  const json = JSON.parse(readFileSync(path, 'utf8'));
+  const changed = mutate(json);
+  if (!changed) return;
   console.log(`  edit   ${file}`);
   edited.push(file);
+  if (!dryRun) writeFileSync(path, `${JSON.stringify(json, null, 2)}\n`);
 }
 
 function prune(manifest, removedIds, options) {
@@ -310,13 +339,10 @@ function prune(manifest, removedIds, options) {
     if (!content.includes('flama:begin')) continue;
     const out = [];
     let touched = false;
-    for (const { line, stack, marker, ids } of annotate(file, content)) {
+    for (const { line, stack, marker } of annotate(file, content)) {
       if (stack.length) touched = true;
-      if (stack.some((block) => block.ids.every((id) => removed.has(id)))) continue;
-      // Strip the starter's own markers — they only served this prune — but
-      // leave a plugin's behind: they are what `plugin:remove` reads later,
-      // and a project may well be pruned after a plugin is installed.
-      if (marker && !keepTooling && !isPluginMarker(ids)) continue;
+      if (stack.some(({ ids }) => ids.every((id) => removed.has(id)))) continue;
+      if (marker && !keepTooling) continue;
       out.push(line);
     }
     if (!touched) continue;
@@ -508,7 +534,7 @@ function prune(manifest, removedIds, options) {
   console.log('\nDone.');
   if (!keepTooling) {
     console.log(
-      'Every starter flama:begin/end marker is gone, kept features included: they only served this prune. Any plugin: marker stays — `pnpm plugin:remove` still needs it.',
+      'Every flama:begin/end marker is gone, kept features included: the markers only served this prune.',
     );
   }
   if (leftovers.length) {
@@ -522,9 +548,18 @@ function prune(manifest, removedIds, options) {
   );
 }
 
+function collapseBlankRuns(text) {
+  return text.replace(/\n{3,}/g, '\n\n');
+}
+
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
+
+function fail(message) {
+  console.error(`error: ${message}`);
+  process.exit(2);
+}
 
 function parseArgs(argv) {
   const options = {

@@ -17,7 +17,6 @@ import type { NavItem, NavLink } from '@flama/frontend-web';
 export const NAV = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'dashboard', policies: [] },
   { to: '/settings', icon: Settings, labelKey: 'settings', policies: [] },
-  // flama:plugins web-nav
 ] as const satisfies readonly NavItem[];
 
 /** The account menu's own destinations, above the language list. */

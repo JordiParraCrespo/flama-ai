@@ -67,8 +67,6 @@ const repositories: Provider[] = [
   imports: [
     CqrsModule,
     TypeOrmModule.forFeature([SubscriptionOrmEntity, BillingCustomerOrmEntity]),
-    // Contributed here rather than from the authz module's central list, so
-    // the module carries its own resource declaration — the `leads` pattern.
     AuthzKernelModule.forFeature([BillingResource]),
   ],
   controllers: [...httpControllers],

@@ -87,9 +87,7 @@ jobs:
       - name: Frontend structure
         run: pnpm check:structure
       # flama:end web|admin-web|mobile|admin-mobile
-      # The marker language in `scripts/lib/` — shared by the starter pruner
-      # and the plugin installer, and outliving the first, so it is checked
-      # here rather than with the starter apparatus below.
+      # The marker grammar in `scripts/lib/`, which outlives a prune.
       - name: Repo scripts
         run: pnpm test:scripts
       # flama:begin starter

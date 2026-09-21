@@ -12,7 +12,6 @@ export const DEPLOYMENT_CAPABILITIES = [
   'stripe_billing',
   's3_storage',
   'email_delivery',
-  // flama:plugins capability-vocabulary
 ] as const;
 
 export type DeploymentCapability = (typeof DEPLOYMENT_CAPABILITIES)[number];
@@ -36,7 +35,6 @@ export const CLIENT_CAPABILITIES = [
   'google_oauth',
   'github_oauth',
   'stripe_billing',
-  // flama:plugins client-capabilities
 ] as const satisfies readonly DeploymentCapability[];
 
 export type ClientCapability = (typeof CLIENT_CAPABILITIES)[number];

@@ -68,19 +68,10 @@ When you add a file that mentions an optional app (CI, compose, Helm,
 `# flama:end <id>`; `pnpm starter:check` fails otherwise.
 <!-- flama:end starter -->
 
-The marker language itself lives in `scripts/lib/markers.mjs`, apart from the
-pruner, because a one-shot prune deletes `scripts/starter/` and the plugin
-installer speaks the same language. Two things there are new and worth knowing:
-
-- **`plugin:<id>` markers** belong to an installed plugin, are declared in
-  `.flama-plugins.json` rather than `features.json`, and survive a prune —
-  `pnpm plugin:remove` still needs them.
-- **Anchors** (`// flama:plugins <slot>`) mark where a plugin inserts its
-  block: inside `app.module.ts`'s imports, the `SCOPE_RESOURCES` tuple, the
-  capability arrays, `.env.example`, and so on. They are inert to the pruner
-  and survive it. Keep one where its registry's entries belong — if you move
-  or reformat such a list, move the anchor with it, or installing a plugin
-  fails loudly rather than guessing where its entry goes.
+The marker grammar itself — the regex and the block parser — lives in
+`scripts/lib/markers.mjs`, outside the starter apparatus a one-shot prune
+deletes. It is the grammar and nothing else; `prune.mjs` owns its own git,
+JSON and filesystem helpers.
 
 ## Key conventions
 
