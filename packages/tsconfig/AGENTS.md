@@ -29,4 +29,7 @@ set and must chunk it the same way.
 - Match the preset to the runtime target (library vs NestJS vs Next.js) rather
   than adding per-app overrides upstream.
 
-The dependency-cruiser factories in `depcruise/` are described in [`.agents/rules/frontend-architecture.md`](../../.agents/rules/frontend-architecture.md).
+The dependency-cruiser factories in `depcruise/` are described in
+[`packages/frontend/ARCHITECTURE.md`](../frontend/ARCHITECTURE.md) and each
+consuming app's own `ARCHITECTURE.md`; the boundaries they enforce are
+[`.agents/rules/frontend-architecture.md`](../../.agents/rules/frontend-architecture.md).

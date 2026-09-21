@@ -17,7 +17,7 @@
 ```bash
 pnpm --filter @flama/go-config lint    # golangci-lint run ./...
 pnpm --filter @flama/go-config test    # go test -count=1 ./...
-pnpm --filter @flama/runner arch   # the runner's boundary test still passes
+pnpm --filter @flama/runner test   # the runner's boundary test still passes
 ```
 
 ## Patterns agents get wrong

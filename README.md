@@ -93,7 +93,7 @@ file that mentions one wraps those lines in `flama:begin`/`flama:end` markers.
 | Admin Web          | http://localhost:3003          |
 | API                | http://localhost:3001          |
 | API Docs (Swagger) | http://localhost:3001/api/docs |
-| Docs               | http://localhost:3002          |
+| Docs               | http://localhost:3003          |
 
 ## Tech stack
 

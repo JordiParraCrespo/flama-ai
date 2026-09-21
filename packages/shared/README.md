@@ -11,9 +11,9 @@ of duplicating them per app.
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `@flama/shared`             | Re-exports everything below                                                                                                             |
 | `@flama/shared/schemas`     | Zod schemas — the source of truth for request/response DTOs                                                                             |
-| `@flama/shared/types`       | TypeScript types: `Role`, `PermissionDefinition`, `AuthProvider`, `JwtPayload`, `TokenPair`, `PaginationParams`, `PaginatedResponse<T>` |
+| `@flama/shared/types`       | TypeScript types: `Role`, `PermissionDefinition`, `PaginationParams`, `PaginatedResponse<T>`, `ProblemDetails`, `DeploymentCapabilities`, `ClientCapabilities` |
 | `@flama/shared/permissions` | CASL helpers — `defineAbilitiesFromPermissions` (DB-driven, source of truth), the legacy `defineAbilitiesFor` fallback, and `ENDPOINT_POLICIES` |
-| `@flama/shared/constants`   | `AUTH`, `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`                                                 |
+| `@flama/shared/constants`   | `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`, `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`                                                 |
 
 ## Usage
 
@@ -49,4 +49,5 @@ pnpm lint    # biome check src/
 
 ## Consumed by
 
-`apps/api`, `packages/frontend`, `packages/frontend/api-client`.
+`apps/api`, `apps/cli`, `apps/mcp`, `packages/auth`, `packages/backend/authz`,
+`packages/backend/core`, `packages/frontend/*`, `packages/frontend/api-client`.

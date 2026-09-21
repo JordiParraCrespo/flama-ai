@@ -1,9 +1,10 @@
 # @flama/api-client — Agent Instructions
 
 Typed API client **auto-generated** from the API's OpenAPI/Swagger spec.
-Consumed by `@flama/frontend`.
+Consumed by `@flama/frontend-core`, `@flama/frontend-consumer` and
+`@flama/frontend-admin`.
 
-> Read the root [`CLAUDE.md`](../../CLAUDE.md) first.
+> Read the root [`CLAUDE.md`](../../../CLAUDE.md) first.
 
 ## Important: generated code
 
@@ -25,8 +26,10 @@ post-processing step (`scripts/openapi-postprocess.mjs`). Uses union types and
 
 ```
 src/
-├── data-access/     # generated client (models + services)
+├── generated/       # hey-api SDK/client/react-query output (re-exported as heyApiSdk/heyApiClient/heyApiQuery)
+├── data-access/     # legacy generated client (models + services)
 ├── common/          # hand-written wrappers/config that survive regeneration
+├── configure.ts     # ApiClientConfig, auth header helpers
 └── index.ts
 ```
 

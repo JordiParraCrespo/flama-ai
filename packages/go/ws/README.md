@@ -15,8 +15,8 @@ to the API.
 `hub.go`
 
 - `Hub`, `NewHub(logger, Options)`, `DefaultOptions()` — the registry of
-  connections and subscriptions; `Publish(topic, payload)` fans out,
-  `Shutdown(ctx)` closes every connection with a going-away frame.
+  connections and subscriptions; `Publish(topic, event, payload)` fans out,
+  `Close(ctx)` closes every connection with a going-away frame.
 
 `handler.go`
 
