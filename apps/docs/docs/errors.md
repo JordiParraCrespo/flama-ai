@@ -286,6 +286,8 @@ with their own codes rather than as a blanket 500:
 | `GENERIC.CONFLICT` <a id="generic_conflict" />                           | 409  |
 | `GENERIC.NOT_FOUND` <a id="generic_not_found" />                         | 404  |
 
+<!-- flama:plugins errors -->
+
 ## Handling errors as a client
 
 **CLI.** Failures map onto exit codes (`3` auth, `4` forbidden, `5` not found,

@@ -50,6 +50,7 @@ import { CredentialThrottlerGuard } from './throttling/guards/credential-throttl
 import { RedisThrottlerStorage } from './throttling/infrastructure/redis-throttler.adapter';
 import { ThrottlingModule } from './throttling/throttling.module';
 import { UsersModule } from './users/user.module';
+// flama:plugins api-imports
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { UsersModule } from './users/user.module';
         storageConfig,
         oauthConfig,
         stripeConfig,
+        // flama:plugins api-config
       ],
     }),
     // Request logging with hardened defaults (credential redaction, no
@@ -180,6 +182,7 @@ import { UsersModule } from './users/user.module';
     HealthModule,
     QueueModule,
     BillingModule,
+    // flama:plugins api-modules
   ],
   providers: [
     // Keyed on the calling credential, not the source IP — see the guard.

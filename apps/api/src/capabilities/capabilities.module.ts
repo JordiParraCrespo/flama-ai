@@ -33,6 +33,7 @@ export function resolveCapabilities(configService: ConfigService): DeploymentCap
     email_delivery:
       (emailProvider === 'nodemailer' && Boolean(configService.get('email.smtpHost'))) ||
       (emailProvider === 'resend' && Boolean(configService.get('email.resendApiKey'))),
+    // flama:plugins capabilities
   };
 }
 

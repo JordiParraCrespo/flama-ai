@@ -5,3 +5,4 @@ export { oauthConfig } from './oauth.config';
 export { redisConfig } from './redis.config';
 export { storageConfig } from './storage.config';
 export { stripeConfig } from './stripe.config';
+// flama:plugins api-config-barrel

@@ -24,6 +24,7 @@ export const SCOPE_RESOURCES = [
   'tokens',
   'billing',
   'leads',
+  // flama:plugins scope-resources
 ] as const;
 export type ScopeResource = (typeof SCOPE_RESOURCES)[number];
 
@@ -312,6 +313,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       },
     },
   },
+  // flama:plugins permission-groups
 ];
 
 /** Every scope in the catalog, in display order. */
