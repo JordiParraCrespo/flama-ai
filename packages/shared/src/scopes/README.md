@@ -95,11 +95,9 @@ audit trail survives.
 
 Present one as `Authorization: Bearer flama_pat_…` or in `x-api-key`.
 
-:::note IP allowlists behind a proxy
-The allowlist matches the address Express reports. Behind a load balancer that
-is the proxy's address unless you configure `trust proxy`, so set that up
-before relying on the restriction.
-:::
+> **IP allowlists behind a proxy.** The allowlist matches the address Express
+> reports. Behind a load balancer that is the proxy's address unless you
+> configure `trust proxy`, so set that up before relying on the restriction.
 
 ### OAuth 2.1 (for MCP clients)
 

@@ -8,7 +8,8 @@ An agent connected to this server only sees the tools its credential may
 actually use. Nothing is hidden by convention: the tool list is filtered from
 the credential's **effective scopes** (what it was granted, intersected with
 what its owner's roles still permit), and the API enforces the same scopes
-independently on every call.
+independently on every call. A bug in this layer therefore costs you a missing
+tool, never unauthorized access.
 
 ## Two entrypoints, one tool registry
 
@@ -21,98 +22,14 @@ Tools are declared once in `src/tools/` and gated identically on both.
 
 ## Quick start (local)
 
+The `flama` command comes with the `cli` plugin — `pnpm plugin:add cli`. Without
+it, mint a token from the API and write the client config by hand.
+
 ```bash
 # 1. Mint a token with only the permissions the agent needs
 flama tokens create --name "Claude" --permissions users:read,roles:read
 
 # 2. Register the server with your MCP client
-flama mcp install --client claude-code
-```
-
-Or configure it by hand:
-
-```json
-{
-  "mcpServers": {
-    "flama": {
-      "command": "node",
-      "args": ["/path/to/flama/apps/mcp/dist/bin/stdio.js"],
-      "env": {
-        "FLAMA_API_URL": "http://localhost:3001",
-        "FLAMA_API_TOKEN": "flama_pat_…"
-      }
-    }
-  }
-}
-```
-
-## Remote (OAuth)
-
-`pnpm start:http` serves Streamable HTTP on `/mcp`. Requests without a valid
-bearer token get a `401` carrying `WWW-Authenticate: Bearer resource_metadata=…`,
-which points the client at the API's OAuth metadata; the client then registers
-itself, sends the user through the consent screen, and returns with an access
-token carrying only the scopes the user approved.
-
-Nothing is retained between requests: `2026-07-28` removed the `initialize`
-handshake and the `Mcp-Session-Id` header, so each request carries its own
-protocol version, client identity and credential, and a server is built for
-that request alone. Replicas need share nothing.
-
-| Variable                   | Default                 | Meaning                                  |
-| -------------------------- | ----------------------- | ---------------------------------------- |
-| `FLAMA_API_URL`            | `http://localhost:3001` | Base URL of the Flama API                |
-| `FLAMA_API_TOKEN`          | —                       | Token for the stdio entrypoint           |
-| `MCP_PORT`                 | `3005`                  | Port for the HTTP entrypoint (wins over `PORT`, which belongs to the API in a shared root `.env`) |
-| `FLAMA_TIMEOUT_MS`         | `30000`                 | Per-request timeout against the API      |
-| `FLAMA_TOOLS_CACHE_TTL_MS` | `60000`                 | How long a client may cache `tools/list` |
-| `FLAMA_ALLOWED_ORIGINS`    | _(none)_                | Browser origins allowed to reach `/mcp`  |
-
-## Adding a tool
-
-Add it to the right file in `src/tools/`, declaring the scopes it needs:
-
-```ts
-defineTool({
-  name: "archive_project",
-  title: "Archive a project",
-  description: "Archive a project. Archived projects stay readable.",
-  requiredScopes: ["projects:write"],
-  inputSchema: z.object({ id: z.string().uuid() }),
-  annotations: { idempotentHint: true },
-  handler: ({ id }, { client }) => client.post(`/projects/${id}/archive`),
-});
-```
-
-The scope must exist in `@flama/shared`'s catalog and the endpoint must declare
-the same one via `@RequireScopes`, so the tool is offered exactly when it will
-work.
-
-## MCP server
-
-`apps/mcp` exposes the API to AI agents over the Model Context Protocol, with
-per-tool permissions. It speaks protocol revision **`2026-07-28`**, and still
-serves clients that open with the older 2025 handshake.
-
-An agent connected to it only sees the tools its credential may actually use.
-The tool list is filtered from the credential's **effective scopes** — what it
-was granted, intersected with what its owner's roles still permit — and the API
-enforces the same scopes independently on every call. A bug in the MCP layer
-therefore costs you a missing tool, never unauthorized access.
-
-### Two entrypoints, one registry
-
-| Entrypoint | Command           | Credential                         | Use it for                           |
-| ---------- | ----------------- | ---------------------------------- | ------------------------------------ |
-| stdio      | `pnpm start`      | Scoped API token                   | Local clients: Claude Desktop / Code |
-| HTTP       | `pnpm start:http` | Per-request OAuth 2.1 or API token | A hosted server serving many users   |
-
-Tools are declared once in `src/tools/` and gated identically on both.
-
-### Local setup
-
-```bash
-flama tokens create --name "Claude" --permissions users:read,roles:read
 flama mcp install --client claude-code
 ```
 
@@ -136,13 +53,14 @@ By hand:
 }
 ```
 
-### Remote setup
+## Remote (OAuth)
 
 `pnpm start:http` serves Streamable HTTP on `/mcp`. A request without a valid
 bearer token gets a `401` carrying
 `WWW-Authenticate: Bearer resource_metadata=…`, which points the client at the
 API's OAuth metadata; it registers itself, sends the user through the consent
-screen, and comes back with an access token carrying the approved scopes.
+screen, and comes back with an access token carrying only the scopes the user
+approved.
 
 The server is stateless — every request re-resolves its credential — so it
 scales horizontally and one deployment serves every user at their own
@@ -152,11 +70,13 @@ protocol version and client identity in `_meta`, and a plain round-robin load
 balancer is enough because there is no session to keep two replicas agreeing
 on.
 
+## Configuration
+
 | Variable                   | Default                 | Meaning                                  |
 | -------------------------- | ----------------------- | ---------------------------------------- |
 | `FLAMA_API_URL`            | `http://localhost:3001` | Base URL of the Flama API                |
 | `FLAMA_API_TOKEN`          | —                       | Token for the stdio entrypoint           |
-| `PORT`                     | `3005`                  | Port for the HTTP entrypoint             |
+| `MCP_PORT`                 | `3005`                  | Port for the HTTP entrypoint (wins over `PORT`, which belongs to the API in a shared root `.env`) |
 | `FLAMA_TIMEOUT_MS`         | `30000`                 | Per-request timeout against the API      |
 | `FLAMA_TOOLS_CACHE_TTL_MS` | `60000`                 | How long a client may cache `tools/list` |
 | `FLAMA_ALLOWED_ORIGINS`    | _(none)_                | Browser origins allowed to reach `/mcp`  |
@@ -164,12 +84,13 @@ on.
 `tools/list` results are returned with `ttlMs` and `cacheScope: "private"`, the
 cache fields `2026-07-28` added. The scope is always private: the list is
 derived from the caller's own permissions, so a shared cache must never hand
-one user's list to another. Set the TTL to `0` to switch client caching off.
+one user's list to another. Set `FLAMA_TOOLS_CACHE_TTL_MS` to `0` to switch
+client caching off.
 
 Requests carrying an `Origin` header from anywhere else are refused, which is
 the DNS-rebinding protection the MCP specification asks for.
 
-### Tools
+## Tools
 
 26 tools across users, roles, organizations, members, invitations, workspaces
 and privileged admin operations. Each declares the scopes it needs and carries
@@ -179,7 +100,9 @@ confirm.
 `whoami` needs no permissions at all and reports what the connection can do —
 worth calling first when an expected tool is missing.
 
-### Adding a tool
+## Adding a tool
+
+Add it to the right file in `src/tools/`, declaring the scopes it needs:
 
 ```ts
 defineTool({
@@ -193,8 +116,8 @@ defineTool({
 });
 ```
 
-The scope must exist in the shared catalog and the endpoint must declare the
-same one via `@RequireScopes`, so the tool is offered exactly when it will
+The scope must exist in `@flama/shared`'s catalog and the endpoint must declare
+the same one via `@RequireScopes`, so the tool is offered exactly when it will
 work.
 
 ### Writing tool descriptions

@@ -29,7 +29,7 @@ flama/
 │   │   ├── i18n/         # Server-side translation + Intl formatting (@flama/backend-i18n)
 │   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
 │   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
-│   ├── config/           # Shared TypeScript configs
+│   ├── tsconfig/         # Shared TypeScript configs
 │   ├── env/              # Root .env loader (@flama/env)
 │   ├── frontend/         # The React tier: logic split by product, glue split by platform
 │   │   ├── core/         # Kernel every app loads: session, users, settings, DI (@flama/frontend-core)
@@ -81,45 +81,11 @@ pnpm plugin:add admin-web         # install it
 pnpm plugin:remove admin-web      # take it back out
 ```
 
-The plugins live in their own repository, so `list` and `add` **fetch** it —
-a depth-1 clone into a temporary directory, thrown away when the command
-ends. A project generated from this starter has no checkout of that repository
-beside it, so nothing is assumed about what sits next to the project on disk.
-`--ref <branch|tag|commit>` picks what to fetch, `--repo <url>` a fork, and
-`--from <path>` a checkout that already exists — the offline route, and how
-the plugins repo tests itself. `remove` never fetches: it is the pruner, so
-uninstalling works offline and long after the source is gone.
-
-An installed plugin is a feature in every way that matters. Its entry lands in
-`.flama-plugins.json`, which `prune.mjs` merges into the manifest at load, so
-`pnpm starter:check` covers it and `pnpm starter:prune --without cli` removes
-it. That is deliberate: **removal is the pruner**, so there is no second
-implementation to keep in step.
-
-Four things a plugin needs from this repo:
-
-- **An anchor** (`# flama:plugins <slot>`) wherever it inserts a block. Add one
-  immediately after each `flama:end <id>` of the feature you are extracting:
-  the pruner strips the block and leaves the anchor exactly where it was.
-  Anchors are lone comments, inert to the pruner, and they survive a prune
-  because the installer still has to work in a pruned project. Move the list an
-  anchor sits in and the anchor moves with it, or installing fails loudly
-  rather than guessing.
-- **A co-owned marker.** `flama:begin mcp|cli` belongs to both; when one goes
-  the block stays and the pruner narrows the spec to whoever is left.
-  Installing inserts the id back into whatever spec it finds, so two plugins
-  sharing a block both install, in either order. The body is what identifies
-  the block — the pruner never edits it.
-- **A line to aim at, in JSON.** JSON holds no comments and so no anchor: the
-  plugin records the line a removed run followed, which must match exactly
-  once.
-- **A feature that stays**, if the block is co-owned. A block whose every owner
-  has left goes with the last of them, and nothing can widen what is not
-  there.
-
-Plugins live in the `flama-ai-plugins` repo, are generated from this one by
-`scripts/extract.mjs`, and are proven by `scripts/roundtrip.mjs`: install,
-run this repo's checks, remove, and require the tree to be byte-identical.
+`pnpm plugin:list` is the catalog. The installer owns the format contract —
+what a plugin declares and how it lands — and documents it where it lives, in
+`scripts/plugins/`. **Removal is the pruner**, so an installed plugin behaves
+like any other feature: `pnpm starter:check` covers it and
+`pnpm starter:prune --without <id>` removes it.
 
 ## Key conventions
 
@@ -179,9 +145,10 @@ The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-
 
 Errors are **RFC 7807 problem documents** (`application/problem+json`) produced by
 the global `AllExceptionsFilter`; the catalog message is the stable problem
-`title` and per-request specifics go in `AppError`'s `detail`. New error codes
-need a row in the error catalog — `apps/docs/docs/errors.md` when the `docs`
-plugin is installed — see `nestjs-architecture.md`.
+`title` and per-request specifics go in `AppError`'s `detail`. A new code is
+declared in its module's `domain/*.errors.ts`; with the `docs` plugin
+installed it also needs a row in `apps/docs/docs/errors.md`. See
+`nestjs-architecture.md`.
 
 - `go.md` — the Go service template (`apps/runner`): layout, ports, errors,
   auth, what to reach for instead of a framework
@@ -232,7 +199,9 @@ module" steps in `packages/go/README.md`.
   `PaginationParams`, `PaginatedResponse<T>`, `ProblemDetails`,
   `DeploymentCapabilities`, `ClientCapabilities`
 - Constants: `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`,
-  `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`
+  `QUEUE_NAMES`
+- Permissions (`src/permissions/`): `SYSTEM_ROLE_PERMISSIONS` and the CASL
+  helpers above
 
 ### Frontend (packages/frontend, the frontend apps)
 

@@ -115,8 +115,10 @@ builds and tidies on its own, which is what the Docker build relies on.
   the bootstrap key required, service tokens optional and reported on
   `/health/capabilities`.
 - **Errors** as the same RFC 7807 documents the API produces (from
-  `packages/go/core/problem`), with the runner catalog listed on the
-  [error reference](../errors.md#runner-service).
+  `packages/go/core/problem`). Each module owns its codes in its own
+  `domain/errors.go` — `apps/runner/internal/jobs/domain/errors.go` and
+  `apps/runner/internal/apikeys/domain/errors.go` are the `JOB_*` and
+  `APIKEY_*` catalogs.
 - **Authentication** by API key (`flr_…`, SHA-256 at rest, revocable,
   scoped) or HS256 service token, both resolving to one `Principal`.
 - **Scopes** in the `resource:read|write` vocabulary of the

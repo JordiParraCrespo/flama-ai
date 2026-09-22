@@ -2,9 +2,11 @@
 /**
  * Trim the starter down to the apps you are actually going to build.
  *
- * Flama ships every app it knows how to build. A real project wants three of
- * them, and deleting the rest by hand leaves dead references in CI, compose,
- * Helm, `.env.example` and the docs — the mess this script exists to prevent.
+ * Flama ships eight optional features. A real project wants three of them, and
+ * deleting the rest by hand leaves dead references in CI, compose, Helm and
+ * `.env.example` — the mess this script exists to prevent. What the starter
+ * does not ship is a plugin: `pnpm plugin:add <id>` installs one, and removing
+ * it comes back here.
  *
  * The truth lives in `features.json` next to this file: each optional feature
  * lists the paths that go with it, and every other file that mentions it wraps
@@ -14,11 +16,11 @@
  *   ...lines that exist only because of the runner...
  *   # flama:end runner
  *
- * A marker can name several features — `flama:begin mobile|admin-mobile` —
+ * A marker can name several features — `flama:begin mobile|mobile-showcase` —
  * and its block goes only when all of them go.
  *
  *   node scripts/starter/prune.mjs --without mobile,runner,mcp
- *   node scripts/starter/prune.mjs --keep web,admin-web,docs
+ *   node scripts/starter/prune.mjs --keep web,mcp,e2e
  *   node scripts/starter/prune.mjs --check        # CI: manifest still honest?
  *   node scripts/starter/prune.mjs --list
  *
@@ -338,7 +340,7 @@ function check(manifest) {
 const edited = [];
 
 /**
- * Delete a line from a JSON text, keeping the rest byte-for-byte.
+ * Delete a value from a JSON text, keeping the rest byte-for-byte.
  *
  * Re-serialising with `JSON.stringify` reformats the whole file — it expands
  * every array the author kept on one line — so a prune that drops a single
@@ -347,11 +349,23 @@ const edited = [];
  * not return the file to where it started, and byte-identical removal is the
  * guarantee the whole plugin format rests on.
  *
- * Every edit here deletes a value from an array or a key from an object, and
- * in these files each sits on its own line, so deleting the line is enough.
- * A trailing comma left dangling before the closing bracket is dropped.
+ * Every edit here deletes a value from an array or a key from an object.
+ * Sometimes it has its own line; sometimes the author kept the whole array on
+ * one — `"outputs": ["dist/**", ".next/**", "build/**"]` — and then the value
+ * has to come out of the middle of that line. Both shapes, and the comma each
+ * leaves behind.
  */
-function deleteJsonLine(text, match) {
+export function deleteJsonValue(text, literal) {
+  const quoted = `"${literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`;
+  return (
+    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*,?\\s*$`)) ??
+    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*:`)) ??
+    deleteInline(text, quoted)
+  );
+}
+
+/** The value (or `"key": value` pair) occupies the line by itself. */
+function deleteOwnLine(text, match) {
   const lines = text.split('\n');
   const index = lines.findIndex((line) => match.test(line));
   if (index === -1) return null;
@@ -362,6 +376,24 @@ function deleteJsonLine(text, match) {
     lines[previous] = lines[previous].replace(/,(\s*)$/, '$1');
   }
   return lines.join('\n');
+}
+
+/**
+ * The value is one member of an array written on a single line. It takes the
+ * comma that follows it, or — if it is last — the one before it, so the array
+ * is still well-formed. The quotes in `quoted` are what keep `".next/**"` from
+ * matching inside `"!.next/cache/**"`.
+ */
+function deleteInline(text, quoted) {
+  for (const pattern of [
+    new RegExp(`${quoted}\\s*,\\s*`),
+    new RegExp(`\\s*,\\s*${quoted}`),
+    new RegExp(quoted),
+  ]) {
+    const match = pattern.exec(text);
+    if (match) return text.slice(0, match.index) + text.slice(match.index + match[0].length);
+  }
+  return null;
 }
 
 /**
@@ -383,11 +415,8 @@ function editJson(file, plan, dryRun) {
 
   let text = original;
   for (const literal of deletions) {
-    const escaped = literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const next =
-      deleteJsonLine(text, new RegExp(`^\\s*"${escaped}"\\s*,?\\s*$`)) ??
-      deleteJsonLine(text, new RegExp(`^\\s*"${escaped}"\\s*:`));
-    if (next === null) fail(`${file}: could not find a line for "${literal}"`);
+    const next = deleteJsonValue(text, literal);
+    if (next === null) fail(`${file}: could not find "${literal}"`);
     text = next;
   }
   if (JSON.stringify(JSON.parse(text)) !== JSON.stringify(json)) {

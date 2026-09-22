@@ -80,9 +80,12 @@ node scripts/starter/prune.mjs --keep <ids> --dry-run   # show the plan
 node scripts/starter/prune.mjs --keep <ids>             # do it (runs pnpm install)
 ```
 
-Prefer `--keep`: it names what the user asked for and pulls in what those
-features require (`qa` keeps `web`, `admin-web` and `e2e`). `--without` is
-for the rare "everything but X" prune.
+Prefer `--keep`: it names what the user asked for, and the shared packages
+those features need are worked out from `neededBy` rather than listed
+(either mobile app keeps `packages/frontend/design-system/mobile`). Only the
+eight ids in `features.json` are valid here — a plugin is not a feature until
+it is installed, so `--keep admin-web` on a fresh clone is an error.
+`--without` is for the rare "everything but X" prune.
 
 The script deletes the feature paths, drops the marked blocks in every config
 file and in the API code that existed for a removed app, edits the JSON files

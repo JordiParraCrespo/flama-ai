@@ -45,7 +45,6 @@ added when a project wants them, with `pnpm plugin:add <id>`:
 | `packages/env`                    | Root `.env` loader shared by the Node apps                         |
 | `packages/frontend/core`          | Kernel every app loads: session, users, user settings, capabilities, analytics, InversifyJS DI |
 | `packages/frontend/consumer`      | Consumer product domain: organizations, profile, api-tokens        |
-| `packages/frontend/admin`         | Control-plane domain: admin-users, roles                           |
 | `packages/frontend/web`           | What both Vite apps share below their routes, by concern           |
 | `packages/frontend/mobile`        | What both Expo apps share below their routes                       |
 | `packages/backend/*`              | Cross-cutting NestJS toolkit: errors/filters (`core`), DDD building blocks (`ddd`), authorization kernel (`authz`), Redis cache (`cache`), queues (`queue`), file storage (`storage`), email (`email`), i18n (`i18n`) |
@@ -61,7 +60,9 @@ added when a project wants them, with `pnpm plugin:add <id>`:
 | Workspace | Description                                                                |
 | --------- | ---------------------------------------------------------------------------- |
 | `e2e`     | Playwright suites against the running API and web app                       |
-| `qa`      | Scenario-driven Playwright QA pack with maturity tracking and screenshots    |
+
+`pnpm plugin:add qa` adds `qa/`, the scenario-driven pack with maturity
+tracking and screenshots.
 
 ## Quick start
 
@@ -115,10 +116,13 @@ second implementation of it.
 | App                | URL                            |
 | ------------------ | ------------------------------ |
 | Web                | http://localhost:3000          |
-| Admin Web          | http://localhost:3003          |
 | API                | http://localhost:3001          |
 | API Docs (Swagger) | http://localhost:3001/api/docs |
-| Docs               | http://localhost:3003          |
+| MCP (HTTP)         | http://localhost:3005/mcp      |
+| Runner             | http://localhost:3006          |
+
+`pnpm plugin:add admin-web` serves the control plane on `:3003`, and
+`pnpm plugin:add docs` the Docusaurus site on `:3004`.
 
 ## Tech stack
 
@@ -146,7 +150,6 @@ pnpm build                # Build all apps and packages
 pnpm test                 # Run unit tests
 pnpm test:integration     # Run integration tests
 pnpm test:e2e             # Run the Playwright e2e suite
-pnpm qa:suite             # Run the QA scenario pack
 pnpm lint                 # Lint all code
 pnpm arch                 # Check architecture boundaries (apps/api and the frontend, via dependency-cruiser)
 pnpm check                # Biome check + fix
