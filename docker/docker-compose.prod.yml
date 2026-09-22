@@ -100,6 +100,7 @@ services:
     ports:
       - "3002:80"
   # flama:end docs
+  # flama:plugins docs
 
   # flama:begin runner
   runner:

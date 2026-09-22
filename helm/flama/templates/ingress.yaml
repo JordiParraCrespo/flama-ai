@@ -20,6 +20,7 @@ spec:
         # flama:begin docs
         - {{ .Values.ingress.hosts.docs }}
         # flama:end docs
+        # flama:plugins docs
       secretName: {{ .Release.Name }}-tls
   {{- end }}
   rules:
@@ -69,4 +70,5 @@ spec:
                 port:
                   number: 80
     # flama:end docs
+    # flama:plugins docs-2
 {{- end }}

@@ -98,6 +98,7 @@ docs:
       cpu: 100m
       memory: 128Mi
 # flama:end docs
+# flama:plugins docs
 
 postgres:
   enabled: true
@@ -127,5 +128,6 @@ ingress:
     # flama:begin docs
     docs: docs.flama.dev
     # flama:end docs
+    # flama:plugins docs-2
   tls:
     enabled: false

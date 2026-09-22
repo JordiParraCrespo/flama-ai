@@ -34,6 +34,7 @@ const IMAGES = {
   // flama:begin docs
   docs: '@flama/docs',
   // flama:end docs
+  // flama:plugins docs
   // flama:begin mcp
   mcp: '@flama/mcp',
   // flama:end mcp

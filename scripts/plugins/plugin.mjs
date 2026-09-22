@@ -290,10 +290,26 @@ function insertBlocks(manifest, dryRun) {
   const touched = [];
   for (const block of manifest.blocks ?? []) {
     const target = join(ROOT, block.file);
-    if (!existsSync(target)) fail(`${block.file} does not exist; cannot place "${block.anchor}"`);
+    if (!existsSync(target)) {
+      // A block whose file belongs to another optional feature has nothing to
+      // say in a project without it: the CLI's sidebar entry needs a docs site
+      // to sit in. Skip it and say so. With no `needs` the file is one this
+      // starter should have, so its absence means an anchor moved, and
+      // refusing is the only honest answer.
+      if (block.needs) {
+        console.log(`  skip   ${block.file} (no ${block.needs} in this project)`);
+        continue;
+      }
+      fail(`${block.file} does not exist; cannot place "${block.anchor}"`);
+    }
     const content = readFileSync(target, 'utf8');
 
-    if (content.includes(`flama:begin ${manifest.id}`)) {
+    // A feature can own several blocks in one file, each at its own anchor —
+    // `helm/values.yaml` holds one per app it deploys. The guard below refuses
+    // a file that already carries this plugin, so it has to mean "carried one
+    // before this run started": once the first block is written the file does
+    // carry one, and refusing on that would make the second block unplaceable.
+    if (!touched.includes(block.file) && content.includes(`flama:begin ${manifest.id}`)) {
       fail(`${block.file} already carries a "${manifest.id}" block`);
     }
     let anchor;
@@ -319,7 +335,7 @@ function insertBlocks(manifest, dryRun) {
     lines.splice(anchor.index, 0, body);
     console.log(`  block  ${block.file} (above flama:plugins ${block.anchor})`);
     if (!dryRun) writeFileSync(target, lines.join('\n'));
-    touched.push(block.file);
+    if (!touched.includes(block.file)) touched.push(block.file);
   }
   return touched;
 }
@@ -342,7 +358,16 @@ function insertBlocks(manifest, dryRun) {
 function widenCoOwned(manifest, dryRun) {
   for (const block of manifest.coOwned ?? []) {
     const target = join(ROOT, block.file);
-    if (!existsSync(target)) fail(`${block.file} does not exist; cannot widen a shared block`);
+    if (!existsSync(target)) {
+      // Same rule as an owned block: absent because the project skipped the
+      // feature that brings the file is fine; absent for any other reason is
+      // an anchor that moved.
+      if (block.needs) {
+        console.log(`  skip   ${block.file} shared block (no ${block.needs} in this project)`);
+        continue;
+      }
+      fail(`${block.file} does not exist; cannot widen a shared block`);
+    }
     const source = join(manifest.dir, block.source);
     if (!existsSync(source)) fail(`${manifest.id}: shared block "${block.source}" is missing`);
 
