@@ -17,9 +17,9 @@ cd "$repo_root" || exit 0
 
 api_changed=$(git status --porcelain -- apps/api/src 2>/dev/null)
 frontend_changed=$(git status --porcelain -- packages/frontend 2>/dev/null)
-# flama:begin web|admin-web|mobile|admin-mobile
+# flama:begin web|admin-web|mobile
 frontend_changed+=$(git status --porcelain -- apps/web apps/admin-web apps/mobile apps/admin-mobile 2>/dev/null)
-# flama:end web|admin-web|mobile|admin-mobile
+# flama:end web|admin-web|mobile
 
 [[ -z "$api_changed" && -z "$frontend_changed" ]] && exit 0
 

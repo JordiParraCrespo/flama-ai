@@ -20,9 +20,6 @@ api:
     # flama:begin mobile
     MOBILE_SCHEME: flama
     # flama:end mobile
-    # flama:begin admin-mobile
-    ADMIN_MOBILE_SCHEME: flama-admin
-    # flama:end admin-mobile
     # flama:plugins admin-mobile
     DB_HOST: flama-postgres
     DB_PORT: "5432"

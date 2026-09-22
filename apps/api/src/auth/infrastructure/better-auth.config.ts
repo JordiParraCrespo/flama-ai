@@ -1,8 +1,8 @@
 import '@flama/env/load';
 import { randomUUID } from 'node:crypto';
-// flama:begin mobile|admin-mobile
+// flama:begin mobile
 import { expo } from '@better-auth/expo';
-// flama:end mobile|admin-mobile
+// flama:end mobile
 import { organizationSharedOptions, userAdditionalFields } from '@flama/auth';
 import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
 import { Logger } from '@nestjs/common';
@@ -44,9 +44,6 @@ const adminFrontendUrl = process.env.ADMIN_FRONTEND_URL ?? 'http://localhost:300
 // flama:begin mobile
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
 // flama:end mobile
-// flama:begin admin-mobile
-const adminMobileScheme = process.env.ADMIN_MOBILE_SCHEME ?? 'flama-admin';
-// flama:end admin-mobile
 // flama:plugins admin-mobile
 
 // Read through `orUndefined` so a blank `DB_X=` means "unset" here exactly as
@@ -109,9 +106,6 @@ export const auth = betterAuth({
     // flama:begin mobile
     `${mobileScheme}://`,
     // flama:end mobile
-    // flama:begin admin-mobile
-    `${adminMobileScheme}://`,
-    // flama:end admin-mobile
     // flama:plugins admin-mobile-2
   ],
   // Brute-force protection on the auth surface. `/api/auth/*` is mounted on the
@@ -394,9 +388,9 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    // flama:begin mobile|admin-mobile
+    // flama:begin mobile
     expo(),
-    // flama:end mobile|admin-mobile
+    // flama:end mobile
     admin({
       // Users whose `role` is one of these can call the admin plugin endpoints
       // (list/ban/impersonate/set-role/...). CASL still governs the app's own

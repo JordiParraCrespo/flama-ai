@@ -53,9 +53,6 @@ services:
       # flama:begin mobile
       MOBILE_SCHEME: ${MOBILE_SCHEME:-flama}
       # flama:end mobile
-      # flama:begin admin-mobile
-      ADMIN_MOBILE_SCHEME: ${ADMIN_MOBILE_SCHEME:-flama-admin}
-      # flama:end admin-mobile
       # flama:plugins admin-mobile
       # OAuth providers. The image does not ship the root `.env`, so anything
       # the API must read has to be forwarded here. Empty is the "not

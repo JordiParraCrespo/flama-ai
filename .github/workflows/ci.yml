@@ -60,7 +60,7 @@ jobs:
       # flama:end runner
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      # flama:begin web|admin-web|web-showcase|mobile|admin-mobile|mobile-showcase
+      # flama:begin web|admin-web|web-showcase|mobile|mobile-showcase
       # The design-system linter (`@shadcn/lint` through oxlint, scoped to its
       # own rules — Biome keeps correctness) over every web and mobile app that
       # has a `lint:design` script. Every rule is at `warn` while the findings
@@ -69,7 +69,7 @@ jobs:
       # once it is clean.
       - name: Design-system lint
         run: pnpm lint:design
-      # flama:end web|admin-web|web-showcase|mobile|admin-mobile|mobile-showcase
+      # flama:end web|admin-web|web-showcase|mobile|mobile-showcase
       # Empty filters mean "every package" to Turborepo, so an empty affected
       # list has to skip the step rather than pass nothing.
       - name: Architecture boundaries
@@ -80,13 +80,13 @@ jobs:
       # Import rules are dependency-cruiser's, above.
       - name: API structure
         run: pnpm check:api-structure
-      # flama:begin web|admin-web|mobile|admin-mobile
+      # flama:begin web|admin-web|mobile
       # The frontend layout contract: feature names, kind directories, the
       # route line cap, no copies of what a kit ships, and the docs every
       # package carries. Import rules are dependency-cruiser's, above.
       - name: Frontend structure
         run: pnpm check:structure
-      # flama:end web|admin-web|mobile|admin-mobile
+      # flama:end web|admin-web|mobile
       # The marker grammar in `scripts/lib/`, which outlives a prune.
       - name: Repo scripts
         run: pnpm test:scripts

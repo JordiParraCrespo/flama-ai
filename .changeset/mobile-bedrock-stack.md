@@ -1,6 +1,5 @@
 ---
 "@flama/mobile": minor
-"@flama/admin-mobile": minor
 "@flama/mobile-showcase": minor
 "@flama/design-system-mobile": minor
 "@flama/frontend-mobile": minor

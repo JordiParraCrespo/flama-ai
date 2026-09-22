@@ -78,16 +78,6 @@ const APPS = [
     kit: 'mobile',
   },
   // flama:end mobile
-  // flama:begin admin-mobile
-  {
-    app: 'apps/admin-mobile',
-    routes: 'app',
-    features: 'features',
-    product: 'admin',
-    allow: [],
-    kit: 'mobile',
-  },
-  // flama:end admin-mobile
   // flama:plugins admin-mobile
 ];
 /** The platform kits, documented like the apps they serve. */
@@ -95,9 +85,9 @@ const KITS = [
   // flama:begin web|admin-web
   'packages/frontend/web',
   // flama:end web|admin-web
-  // flama:begin mobile|admin-mobile
+  // flama:begin mobile
   'packages/frontend/mobile',
-  // flama:end mobile|admin-mobile
+  // flama:end mobile
 ];
 
 function* walk(dir) {

@@ -24,12 +24,6 @@
       "identifiers": ["apps/admin-web", "@flama/admin-web", "flama-admin-web"],
       "paths": ["apps/admin-web", "helm/flama/templates/admin-web-deployment.yaml"]
     },
-    "admin-mobile": {
-      "title": "Admin control plane (mobile)",
-      "summary": "apps/admin-mobile — Expo control plane for users and roles",
-      "identifiers": ["apps/admin-mobile", "@flama/admin-mobile"],
-      "paths": ["apps/admin-mobile"]
-    },
     "web-showcase": {
       "title": "Web design-system showcase",
       "summary": "apps/web-showcase — Next.js gallery of @flama/design-system-web",
@@ -119,11 +113,11 @@
     },
     "packages/frontend/design-system/mobile": {
       "identifiers": ["packages/frontend/design-system/mobile", "@flama/design-system-mobile"],
-      "neededBy": ["mobile", "admin-mobile", "mobile-showcase"]
+      "neededBy": ["mobile", "mobile-showcase"]
     },
     "packages/frontend/core": {
       "identifiers": ["packages/frontend/core", "@flama/frontend-core"],
-      "neededBy": ["web", "mobile", "admin-web", "admin-mobile"]
+      "neededBy": ["web", "mobile", "admin-web"]
     },
     "packages/frontend/consumer": {
       "identifiers": ["packages/frontend/consumer", "@flama/frontend-consumer"],
@@ -131,7 +125,7 @@
     },
     "packages/frontend/admin": {
       "identifiers": ["packages/frontend/admin", "@flama/frontend-admin"],
-      "neededBy": ["admin-web", "admin-mobile"]
+      "neededBy": ["admin-web"]
     },
     "packages/frontend/web": {
       "identifiers": ["packages/frontend/web", "@flama/frontend-web"],
@@ -139,15 +133,15 @@
     },
     "packages/frontend/nitro-app-info": {
       "identifiers": ["packages/frontend/nitro-app-info", "@flama/nitro-app-info"],
-      "neededBy": ["mobile", "admin-mobile"]
+      "neededBy": ["mobile"]
     },
     "packages/frontend/mobile": {
       "identifiers": ["packages/frontend/mobile", "@flama/frontend-mobile"],
-      "neededBy": ["mobile", "admin-mobile"]
+      "neededBy": ["mobile"]
     },
     "packages/frontend/api-client": {
       "identifiers": ["packages/frontend/api-client", "@flama/api-client"],
-      "neededBy": ["web", "mobile", "admin-web", "admin-mobile"],
+      "neededBy": ["web", "mobile", "admin-web"],
       "scripts": ["generate:api-client"]
     },
     "scripts/check-bundle-size.mjs": {
@@ -158,7 +152,7 @@
     "packages/tsconfig/tsconfig.expo.json": {
       "$comment": "Everything Expo leaves in the kept apps: the Better Auth expo plugin in apps/api, the EXPO_PUBLIC_* pass-through in turbo.json, the react-native override.",
       "identifiers": ["tsconfig.expo", "EXPO_PUBLIC_", "@better-auth/expo", "react-native"],
-      "neededBy": ["mobile", "admin-mobile", "mobile-showcase"],
+      "neededBy": ["mobile", "mobile-showcase"],
       "json": [
         {
           "file": "turbo.json",
@@ -184,24 +178,24 @@
     },
     "scripts/check-frontend-structure.mjs": {
       "identifiers": ["check-frontend-structure", "check:structure"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"],
+      "neededBy": ["web", "admin-web", "mobile"],
       "scripts": ["check:structure"]
     },
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "admin-web", "mobile"]
     },
     ".agents/skills/scaffold-feature": {
       "identifiers": [".agents/skills/scaffold-feature", "/scaffold-feature"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "admin-web", "mobile"]
     },
     "packages/tsconfig/depcruise/frontend-app.cjs": {
       "identifiers": ["depcruise/frontend-app"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "admin-web", "mobile"]
     },
     "packages/tsconfig/depcruise/frontend-kit.cjs": {
       "identifiers": ["depcruise/frontend-kit"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "admin-web", "mobile"]
     }
   },
   "tooling": {

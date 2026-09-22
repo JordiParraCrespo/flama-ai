@@ -7,7 +7,7 @@ build/
 # flama:begin web-showcase
 .next/
 # flama:end web-showcase
-# flama:begin mobile|admin-mobile|mobile-showcase
+# flama:begin mobile|mobile-showcase
 .expo/
 apps/mobile/ios/
 apps/mobile/android/
@@ -17,7 +17,7 @@ apps/mobile-showcase/ios/
 apps/mobile-showcase/android/
 packages/frontend/nitro-app-info/android/.cxx/
 packages/frontend/design-system/mobile/assets/icons/nanoicons/
-# flama:end mobile|admin-mobile|mobile-showcase
+# flama:end mobile|mobile-showcase
 .docusaurus/
 *.tsbuildinfo
 node-compile-cache/
