@@ -216,13 +216,15 @@ function allFeatures() {
  * The manifest's feature entry, in `features.json` key order so an install
  * produces the same file a hand-written entry would.
  */
-export function featureEntry(manifest) {
+export function featureEntry(manifest, landed) {
   const { title, summary, identifiers, paths, requires, scripts, json } = manifest.feature;
   return {
     title,
     summary,
     identifiers,
-    paths,
+    // The paths that actually landed, which is all of them unless a file was
+    // skipped for want of the feature whose tree it lives in.
+    paths: landed ?? paths,
     ...(requires?.length ? { requires } : {}),
     ...(scripts?.length ? { scripts } : {}),
     ...(json?.length ? { json } : {}),
@@ -409,13 +411,25 @@ function add(manifest, options) {
     }
   }
 
-  const destinations = Object.keys(manifest.files);
+  // A file can belong inside another optional feature's tree — the CLI's docs
+  // page lives under `apps/docs`. In a project without that feature there is
+  // nowhere to put it and no site to read it, so it is skipped rather than
+  // dropped into an empty directory.
+  const absent = (destination) => {
+    const dep = manifest.filesNeed?.[destination];
+    return Boolean(dep) && !features[dep];
+  };
+  const destinations = Object.keys(manifest.files).filter((d) => !absent(d));
   for (const destination of destinations) {
     if (existsSync(join(ROOT, destination)) && !force) {
       fail(`${destination} already exists (pass --force to overwrite)`);
     }
   }
-  for (const path of manifest.feature.paths) {
+  // Only the paths that actually land are declared: the entry goes into
+  // `.flama-plugins.json`, which the honesty check reads, and a path that was
+  // skipped would read there as a file the project has lost.
+  const paths = manifest.feature.paths.filter((path) => !absent(path));
+  for (const path of paths) {
     if (
       !destinations.some((d) => path === d || path.startsWith(`${d}/`) || d.startsWith(`${path}/`))
     )
@@ -424,6 +438,10 @@ function add(manifest, options) {
 
   console.log(`\nInstalling ${manifest.id}: ${manifest.feature.summary}\n`);
   for (const [destination, from] of Object.entries(manifest.files)) {
+    if (absent(destination)) {
+      console.log(`  skip   ${destination} (no ${manifest.filesNeed[destination]} in this project)`);
+      continue;
+    }
     const source = join(manifest.dir, from);
     if (!existsSync(source)) fail(`${manifest.id}: "${from}" is missing from the plugin`);
     console.log(`  copy   ${destination}`);
@@ -438,7 +456,7 @@ function add(manifest, options) {
 
   console.log(`  edit   .flama-plugins.json (+${manifest.id})`);
   const installed = loadInstalled();
-  installed.features[manifest.id] = featureEntry(manifest);
+  installed.features[manifest.id] = featureEntry(manifest, paths);
   joinShared(installed, manifest);
   writeInstalled(installed, dryRun);
 

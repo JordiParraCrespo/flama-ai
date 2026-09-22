@@ -31,9 +31,6 @@ const IMAGES = {
   // flama:begin admin-web
   'admin-web': '@flama/admin-web',
   // flama:end admin-web
-  // flama:begin docs
-  docs: '@flama/docs',
-  // flama:end docs
   // flama:plugins docs
   // flama:begin mcp
   mcp: '@flama/mcp',

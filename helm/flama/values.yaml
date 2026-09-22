@@ -85,19 +85,6 @@ runner:
     ERROR_TYPE_BASE_URL: https://docs.flama.dev/errors
 # flama:end runner
 
-# flama:begin docs
-docs:
-  image: ghcr.io/your-org/flama-docs:latest
-  replicas: 1
-  port: 80
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 100m
-      memory: 128Mi
-# flama:end docs
 # flama:plugins docs
 
 postgres:
@@ -125,9 +112,6 @@ ingress:
     # flama:begin admin-web
     adminWeb: control.flama.dev
     # flama:end admin-web
-    # flama:begin docs
-    docs: docs.flama.dev
-    # flama:end docs
     # flama:plugins docs-2
   tls:
     enabled: false

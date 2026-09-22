@@ -61,16 +61,6 @@
       "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
       "paths": ["apps/mobile-showcase"]
     },
-    "docs": {
-      "title": "Documentation site",
-      "summary": "apps/docs — Docusaurus site (architecture, deployment, error catalog)",
-      "identifiers": ["apps/docs", "@flama/docs", "flama-docs"],
-      "paths": [
-        "apps/docs",
-        "helm/flama/templates/docs-deployment.yaml",
-        "apps/api/src/__tests__/error-catalog-coverage.spec.ts"
-      ]
-    },
     "mcp": {
       "title": "MCP server",
       "summary": "apps/mcp — Model Context Protocol server (stdio + Streamable HTTP) over the API",

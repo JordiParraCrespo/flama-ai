@@ -93,13 +93,6 @@ services:
       - "3003:3000"
   # flama:end admin-web
 
-  # flama:begin docs
-  docs:
-    image: ${DOCS_IMAGE:-ghcr.io/your-org/flama-docs:latest}
-    restart: always
-    ports:
-      - "3002:80"
-  # flama:end docs
   # flama:plugins docs
 
   # flama:begin runner
