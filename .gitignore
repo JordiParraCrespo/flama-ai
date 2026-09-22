@@ -15,7 +15,6 @@ apps/admin-mobile/ios/
 apps/admin-mobile/android/
 apps/mobile-showcase/ios/
 apps/mobile-showcase/android/
-packages/frontend/nitro-app-info/android/.cxx/
 packages/frontend/design-system/mobile/assets/icons/nanoicons/
 # flama:end mobile|mobile-showcase
 .docusaurus/

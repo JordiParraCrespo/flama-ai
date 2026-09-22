@@ -39,10 +39,9 @@ flama/
 │   │   ├── api-client/   # Auto-generated typed client from Swagger (@flama/api-client)
 │   │   ├── web/          # What both Vite apps share: shell, auth chrome, table, i18n… (@flama/frontend-web)
 │   │   ├── mobile/       # What both Expo apps share: config, storage, analytics… (@flama/frontend-mobile)
-│   │   ├── design-system/
-│   │   │   ├── web/      # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
-│   │   │   └── mobile/   # NativeWind + rn-primitives (@flama/design-system-mobile)
-│   │   └── nitro-app-info/ # Nitro native module exposing app info to the Expo apps (@flama/nitro-app-info)
+│   │   └── design-system/
+│   │       ├── web/      # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
+│   │       └── mobile/   # NativeWind + rn-primitives (@flama/design-system-mobile)
 │   ├── go/               # Shared Go modules (@flama/go-*): core, config, httpx, auth, health, ws
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files

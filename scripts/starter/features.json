@@ -131,10 +131,6 @@
       "identifiers": ["packages/frontend/web", "@flama/frontend-web"],
       "neededBy": ["web", "admin-web"]
     },
-    "packages/frontend/nitro-app-info": {
-      "identifiers": ["packages/frontend/nitro-app-info", "@flama/nitro-app-info"],
-      "neededBy": ["mobile"]
-    },
     "packages/frontend/mobile": {
       "identifiers": ["packages/frontend/mobile", "@flama/frontend-mobile"],
       "neededBy": ["mobile"]
