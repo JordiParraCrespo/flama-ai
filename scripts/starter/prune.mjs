@@ -337,15 +337,63 @@ function check(manifest) {
 /** Files rewritten by the current prune, formatted at the end. */
 const edited = [];
 
-function editJson(file, mutate, dryRun) {
+/**
+ * Delete a line from a JSON text, keeping the rest byte-for-byte.
+ *
+ * Re-serialising with `JSON.stringify` reformats the whole file — it expands
+ * every array the author kept on one line — so a prune that drops a single
+ * pattern from `biome.json` rewrites unrelated parts of it. Biome accepts
+ * either shape, so nothing complained, but it means removing a plugin does
+ * not return the file to where it started, and byte-identical removal is the
+ * guarantee the whole plugin format rests on.
+ *
+ * Every edit here deletes a value from an array or a key from an object, and
+ * in these files each sits on its own line, so deleting the line is enough.
+ * A trailing comma left dangling before the closing bracket is dropped.
+ */
+function deleteJsonLine(text, match) {
+  const lines = text.split('\n');
+  const index = lines.findIndex((line) => match.test(line));
+  if (index === -1) return null;
+  lines.splice(index, 1);
+  const previous = index - 1;
+  const next = lines[index]?.trim();
+  if (previous >= 0 && lines[previous].trimEnd().endsWith(',') && /^[\]}]/.test(next ?? '')) {
+    lines[previous] = lines[previous].replace(/,(\s*)$/, '$1');
+  }
+  return lines.join('\n');
+}
+
+/**
+ * `plan(json)` returns the literal values and keys to delete. Nothing else in
+ * the file is touched, and the result has to parse to the same thing mutating
+ * the object would have produced — otherwise the surgery missed something and
+ * this stops rather than write a file it cannot vouch for.
+ */
+function editJson(file, plan, dryRun) {
   const path = join(ROOT, file);
   if (!existsSync(path)) return;
-  const json = JSON.parse(readFileSync(path, 'utf8'));
-  const changed = mutate(json);
-  if (!changed) return;
+  const original = readFileSync(path, 'utf8');
+  const json = JSON.parse(original);
+  const deletions = plan(json) ?? [];
+  if (!deletions.length) return;
   console.log(`  edit   ${file}`);
   edited.push(file);
-  if (!dryRun) writeFileSync(path, `${JSON.stringify(json, null, 2)}\n`);
+  if (dryRun) return;
+
+  let text = original;
+  for (const literal of deletions) {
+    const escaped = literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const next =
+      deleteJsonLine(text, new RegExp(`^\\s*"${escaped}"\\s*,?\\s*$`)) ??
+      deleteJsonLine(text, new RegExp(`^\\s*"${escaped}"\\s*:`));
+    if (next === null) fail(`${file}: could not find a line for "${literal}"`);
+    text = next;
+  }
+  if (JSON.stringify(JSON.parse(text)) !== JSON.stringify(json)) {
+    fail(`${file}: editing the text did not produce the intended JSON`);
+  }
+  writeFileSync(path, text);
 }
 
 function prune(manifest, removedIds, options) {
@@ -425,14 +473,14 @@ function prune(manifest, removedIds, options) {
   editJson(
     'package.json',
     (json) => {
-      let changed = false;
+      const deleted = [];
       for (const name of scriptsToDrop) {
         if (json.scripts?.[name] !== undefined) {
           delete json.scripts[name];
-          changed = true;
+          deleted.push(name);
         }
       }
-      return changed;
+      return deleted;
     },
     dryRun,
   );
@@ -440,7 +488,7 @@ function prune(manifest, removedIds, options) {
     'biome.json',
     (json) => {
       const includes = json.files?.includes;
-      if (!Array.isArray(includes)) return false;
+      if (!Array.isArray(includes)) return [];
       const kept = includes.filter((pattern) => {
         const literal = pattern.replace(/^!?\*\*\//, '').replace(/\/\*.*$/, '');
         if (!literal.includes('/') || literal.startsWith('.')) return true;
@@ -451,20 +499,21 @@ function prune(manifest, removedIds, options) {
             (path.startsWith(`${literal}/`) && !existsSync(join(ROOT, literal))),
         );
       });
-      if (kept.length === includes.length) return false;
+      if (kept.length === includes.length) return [];
       json.files.includes = kept;
-      return true;
+      return includes.filter((pattern) => !kept.includes(pattern));
     },
     dryRun,
   );
   editJson(
     '.changeset/config.json',
     (json) => {
-      if (!Array.isArray(json.ignore)) return false;
+      if (!Array.isArray(json.ignore)) return [];
       const kept = json.ignore.filter((name) => !packageNames.includes(name));
-      if (kept.length === json.ignore.length) return false;
+      if (kept.length === json.ignore.length) return [];
+      const removed = json.ignore.filter((name) => !kept.includes(name));
       json.ignore = kept;
-      return true;
+      return removed;
     },
     dryRun,
   );
@@ -483,24 +532,24 @@ function prune(manifest, removedIds, options) {
         const parent = segments.slice(0, -1).reduce((node, key) => node?.[key], json);
         const key = segments.at(-1);
         const target = parent?.[key];
-        if (target === undefined) return false;
+        if (target === undefined) return [];
         if (Array.isArray(target) && edit.remove) {
           const kept = target.filter((value) => !edit.remove.includes(value));
-          if (kept.length === target.length) return false;
+          if (kept.length === target.length) return [];
           parent[key] = kept;
-          return true;
+          return target.filter((value) => !kept.includes(value));
         }
         if (edit.deleteKeys && typeof target === 'object') {
-          let changed = false;
+          const deleted = [];
           for (const name of edit.deleteKeys) {
             if (name in target) {
               delete target[name];
-              changed = true;
+              deleted.push(name);
             }
           }
-          return changed;
+          return deleted;
         }
-        return false;
+        return [];
       },
       dryRun,
     );
