@@ -1,7 +1,7 @@
 # @flama/design-system-mobile — Agent Instructions
 
 Mobile UI component library: React Native components styled with **NativeWind**
-(Tailwind for RN). Consumed by `apps/mobile`, `apps/admin-mobile`,
+(Tailwind for RN). Consumed by `apps/mobile` (and `apps/admin-mobile`, a plugin),
 `apps/mobile-showcase` and `packages/frontend/mobile`.
 
 > Read the root [`CLAUDE.md`](../../../../CLAUDE.md) and the design-system overview

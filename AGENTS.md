@@ -2,7 +2,9 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It contains 11 apps and 16 shared packages.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It
+ships 7 apps and 15 shared packages, and five more apps are available as
+plugins.
 
 ## Monorepo structure
 
@@ -10,9 +12,6 @@ Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It conta
 flama/
 ├── apps/
 │   ├── api/              # NestJS REST API
-│   ├── admin-mobile/     # Expo control plane for users and roles
-│   ├── admin-web/        # Vite control plane for users and roles
-│   ├── docs/             # Docusaurus documentation
 │   ├── mcp/              # MCP server (stdio + Streamable HTTP)
 │   ├── mobile/           # Consumer Expo app
 │   ├── mobile-showcase/  # Expo app showcasing the mobile design system
@@ -35,7 +34,6 @@ flama/
 │   ├── frontend/         # The React tier: logic split by product, glue split by platform
 │   │   ├── core/         # Kernel every app loads: session, users, settings, DI (@flama/frontend-core)
 │   │   ├── consumer/     # The consumer product's domain: organizations, profile, api-tokens (@flama/frontend-consumer)
-│   │   ├── admin/        # The control plane's domain: admin-users, roles (@flama/frontend-admin)
 │   │   ├── api-client/   # Auto-generated typed client from Swagger (@flama/api-client)
 │   │   ├── web/          # What both Vite apps share: shell, auth chrome, table, i18n… (@flama/frontend-web)
 │   │   ├── mobile/       # What both Expo apps share: config, storage, analytics… (@flama/frontend-mobile)
@@ -74,13 +72,13 @@ JSON and filesystem helpers.
 ### Plugins
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
-something the starter deliberately does not ship — the `flama` CLI is the first
-— packaged so a project can add it back:
+something the starter deliberately does not ship, packaged so a project can add
+it back. Five today: `cli`, `docs`, `admin-web`, `admin-mobile` and `qa`.
 
 ```bash
-pnpm plugin:list                  # what is on offer
-pnpm plugin:add cli               # install it
-pnpm plugin:remove cli            # take it back out
+pnpm plugin:list                  # what is on offer, and what is installed
+pnpm plugin:add admin-web         # install it
+pnpm plugin:remove admin-web      # take it back out
 ```
 
 The plugins live in their own repository, so `list` and `add` **fetch** it —
@@ -98,16 +96,26 @@ An installed plugin is a feature in every way that matters. Its entry lands in
 it. That is deliberate: **removal is the pruner**, so there is no second
 implementation to keep in step.
 
-Two things a plugin needs from this repo:
+Four things a plugin needs from this repo:
 
-- **An anchor** (`# flama:plugins <slot>`) wherever it inserts a block —
-  `.env.example` and `apps/docs/sidebars.ts` today. Anchors are lone comments,
-  inert to the pruner, and they survive a prune because the installer still has
-  to work in a pruned project. Move the list an anchor sits in and the anchor
-  moves with it, or installing fails loudly rather than guessing.
-- **A narrowing marker.** `flama:begin mcp|cli` belongs to both; when one goes
-  the block stays and the spec narrows to whoever is left (`narrowMarker`).
-  Installing widens it again.
+- **An anchor** (`# flama:plugins <slot>`) wherever it inserts a block. Add one
+  immediately after each `flama:end <id>` of the feature you are extracting:
+  the pruner strips the block and leaves the anchor exactly where it was.
+  Anchors are lone comments, inert to the pruner, and they survive a prune
+  because the installer still has to work in a pruned project. Move the list an
+  anchor sits in and the anchor moves with it, or installing fails loudly
+  rather than guessing.
+- **A co-owned marker.** `flama:begin mcp|cli` belongs to both; when one goes
+  the block stays and the pruner narrows the spec to whoever is left.
+  Installing inserts the id back into whatever spec it finds, so two plugins
+  sharing a block both install, in either order. The body is what identifies
+  the block — the pruner never edits it.
+- **A line to aim at, in JSON.** JSON holds no comments and so no anchor: the
+  plugin records the line a removed run followed, which must match exactly
+  once.
+- **A feature that stays**, if the block is co-owned. A block whose every owner
+  has left goes with the last of them, and nothing can widen what is not
+  there.
 
 Plugins live in the `flama-ai-plugins` repo, are generated from this one by
 `scripts/extract.mjs`, and are proven by `scripts/roundtrip.mjs`: install,
@@ -172,7 +180,8 @@ The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-
 Errors are **RFC 7807 problem documents** (`application/problem+json`) produced by
 the global `AllExceptionsFilter`; the catalog message is the stable problem
 `title` and per-request specifics go in `AppError`'s `detail`. New error codes
-need a row in `apps/docs/docs/errors.md` — see `nestjs-architecture.md`.
+need a row in the error catalog — `apps/docs/docs/errors.md` when the `docs`
+plugin is installed — see `nestjs-architecture.md`.
 
 - `go.md` — the Go service template (`apps/runner`): layout, ports, errors,
   auth, what to reach for instead of a framework
@@ -225,16 +234,17 @@ module" steps in `packages/go/README.md`.
 - Constants: `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`,
   `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`
 
-### Frontend (packages/frontend, the four apps)
+### Frontend (packages/frontend, the frontend apps)
 
 The frontend is split twice, and the two splits answer different questions:
 
 - **By product** for logic. `core` is the kernel every app loads (session,
   users, user settings, capabilities, analytics, the InversifyJS container,
-  config, validation). `consumer` and `admin` are the two products' domains
-  (entities, repositories, services, TanStack Query hooks); an app loads
-  exactly one, through `FlamaApp.create({ modules })`. The products never
-  import each other — where they meet, the meeting point is a kernel contract.
+  config, validation). `consumer` is the consumer product's domain (entities,
+  repositories, services, TanStack Query hooks), and `admin` is the control
+  plane's, arriving with that plugin; an app loads exactly one, through
+  `FlamaApp.create({ modules })`. The products never import each other — where
+  they meet, the meeting point is a kernel contract.
 - **By platform** for UI and glue. `web` and `mobile` hold what both apps of
   a platform share below their routes, organised by concern (`shell`, `auth`,
   `table`, `layout`, `forms`, `theme`, `i18n`, `analytics`, `platform`, …),
@@ -262,7 +272,10 @@ cookbooks are `packages/frontend/ARCHITECTURE.md` and each app's
 - Vite env vars (`import.meta.env`, `VITE_`-prefixed) for configuration, read
   from the root `.env` (`envDir` in `vite.config.ts` points at the repo root)
 
-### Control plane (apps/admin-web, apps/admin-mobile)
+### Control plane (the `admin-web` and `admin-mobile` plugins)
+
+Not in the starter — `pnpm plugin:add admin-web` brings it, and it carries
+`packages/frontend/admin`, the product package both control planes share.
 
 - Separate web and Expo entrypoints for platform administration
 - Restricted to Better Auth `admin` and `superadmin` platform roles
@@ -295,9 +308,9 @@ and `apps/mobile-showcase`. Usage rules are `.agents/rules/frontend-ui.md`.
 
 ```
 packages/tsconfig         → used by all apps and packages (tsconfig extends)
-packages/env              → used by api, mcp, mobile, admin-mobile (root .env loader)
+packages/env              → used by api, mcp, mobile (root .env loader)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
-packages/auth             → used by api, web, mobile, admin-web, admin-mobile (shared Better Auth config)
+packages/auth             → used by api, web, mobile (shared Better Auth config)
 packages/backend/core     → used by api, other backend packages
 packages/backend/ddd      → used by api, backend/core (depends on nothing in the workspace)
 packages/backend/email    → used by api
@@ -305,15 +318,14 @@ packages/backend/i18n     → used by api (bundles from packages/translations)
 packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
-packages/translations        → used by web, mobile, admin-web, admin-mobile, api (email copy via backend/i18n)
-packages/frontend/design-system/web    → used by web, admin-web, web-showcase, frontend/web
-packages/frontend/design-system/mobile → used by mobile, admin-mobile, mobile-showcase, frontend/mobile
-packages/frontend/api-client  → used by frontend/core, frontend/consumer, frontend/admin
+packages/translations        → used by web, mobile, api (email copy via backend/i18n)
+packages/frontend/design-system/web    → used by web, web-showcase, frontend/web
+packages/frontend/design-system/mobile → used by mobile, mobile-showcase, frontend/mobile
+packages/frontend/api-client  → used by frontend/core, frontend/consumer
 packages/frontend/core        → used by every frontend package and app
 packages/frontend/consumer    → used by web, mobile
-packages/frontend/admin       → used by admin-web, admin-mobile
-packages/frontend/web         → used by web, admin-web
-packages/frontend/mobile      → used by mobile, admin-mobile
+packages/frontend/web         → used by web
+packages/frontend/mobile      → used by mobile
 packages/go/core              → used by every other packages/go module and runner
 packages/go/{config,httpx,auth,health,ws,postgres} → used by runner (auth ← ws, httpx ← health, auth)
 ```
@@ -373,13 +385,14 @@ pnpm changeset          # Create a changeset for versioning
   Import a narrow subpath (`@flama/shared/schemas/auth`) or fetch from the API.
   Anything newly imported this way needs adding to `optimizeDeps.include` in
   `apps/web/vite.config.ts` for dev
-- The same applies to `@flama/translations`: `apps/web` and `apps/admin-web`
-  import metadata from `@flama/translations/locales` and catalogs from
+- The same applies to `@flama/translations`: `apps/web` (and `apps/admin-web`,
+  with that plugin) import metadata from `@flama/translations/locales` and catalogs from
   `@flama/translations/lazy`; only the default locale is bundled
 - The web apps' critical path is budgeted: `pnpm check:bundle` fails past the
   number in `scripts/check-bundle-size.mjs`. Raise a budget only deliberately,
   in its own diff
 - Compression, cache headers and the Content-Security-Policy for the SPAs live
-  in `apps/web/nginx.conf` and `apps/admin-web/nginx.conf`. A new third-party
+  in `apps/web/nginx.conf` (and `apps/admin-web/nginx.conf`, with that
+  plugin). A new third-party
   origin goes in `CSP_EXTRA_ORIGINS`; anything the browser must run before
   React is a file in `public/`, the policy admits no inline script

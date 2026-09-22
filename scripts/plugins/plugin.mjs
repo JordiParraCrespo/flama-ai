@@ -188,8 +188,23 @@ function loadPlugin(source, id) {
   return { ...manifest, dir };
 }
 
+/**
+ * The starter's own features, if the starter apparatus is still here.
+ *
+ * A one-shot `/starter-init` prune deletes `scripts/starter/`, and a finished
+ * project is exactly where plugins are meant to be useful. Nothing in an
+ * install actually needs the starter's manifest — what a project has is its
+ * own `.flama-plugins.json` — so its absence is a project that has been
+ * initialised, not an error.
+ */
 function loadFeatures() {
+  if (!existsSync(FEATURES_PATH)) return { features: {}, shared: {} };
   return JSON.parse(readFileSync(FEATURES_PATH, 'utf8'));
+}
+
+/** Whether the pruner survived the project's initialisation. */
+function hasPruner() {
+  return existsSync(PRUNE_PATH);
 }
 
 function loadInstalled() {
@@ -566,8 +581,14 @@ function add(manifest, options) {
   // fails if the plugin left a mention of itself outside its own paths and
   // blocks. An install that passes it is indistinguishable from a feature
   // that shipped in the box.
-  console.log('\nChecking the manifest still describes the repo…');
-  runPrune(['--check']);
+  // The honesty check is the pruner's, so a project that pruned it away
+  // cannot run it. The install still stands; it just goes unverified.
+  if (hasPruner()) {
+    console.log('\nChecking the manifest still describes the repo…');
+    runPrune(['--check']);
+  } else {
+    console.log('\nNo scripts/starter here, so the manifest check is skipped.');
+  }
   console.log(`\nInstalled ${manifest.id}. Next: pnpm install${followUps(manifest)}`);
 }
 
@@ -593,6 +614,15 @@ function remove(id, options) {
       loadFeatures().features[id]
         ? `"${id}" ships with this starter; use pnpm starter:prune to drop it`
         : `"${id}" is not installed`,
+    );
+  }
+  // Removal *is* the pruner, so it cannot outlive it. Say which of the two
+  // ways out applies rather than crash on a missing file.
+  if (!hasPruner()) {
+    fail(
+      `removing a plugin runs scripts/starter/prune.mjs, which this project no longer has.\n` +
+        `Delete the paths in .flama-plugins.json by hand and drop its "${id}" entry, or keep\n` +
+        `the starter apparatus next time by pruning with --keep-tooling.`,
     );
   }
   const features = allFeatures();

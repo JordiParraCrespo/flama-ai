@@ -1,9 +1,9 @@
 # @flama/frontend-mobile
 
-What both Expo apps — `apps/mobile` and `apps/admin-mobile` — share below
-their routes: the persisted query client, secure storage and MMKV, remote
-config, form plumbing, i18n, theming, the sign-in chrome, error boundaries and
-analytics. It is source-exported (`main` points at `src/index.ts`) and compiled
+What the Expo apps — `apps/mobile`, and `apps/admin-mobile` with that
+plugin — share below their routes: the persisted query client, secure storage
+and MMKV, remote config, form plumbing, i18n, theming, the sign-in chrome,
+error boundaries and analytics. It is source-exported (`main` points at `src/index.ts`) and compiled
 by each app's Metro bundler, with a subpath export per concern.
 
 The kit is organised by concern — `src/<concern>/<kind>/`, the kinds a
