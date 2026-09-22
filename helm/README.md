@@ -1,7 +1,3 @@
----
-sidebar_position: 2
----
-
 # Tier 2: Production Deployment (~€15-35/mo)
 
 For production applications with Kubernetes on Hetzner.

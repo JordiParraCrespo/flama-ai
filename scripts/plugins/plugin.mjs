@@ -232,7 +232,7 @@ export function featureEntry(manifest) {
 /**
  * The `shared` entries in `features.json` that name this plugin.
  *
- * A shared path — `apps/docs/docs/tooling/permissions.md`, the design system —
+ * A shared path — the design system, `packages/frontend/core` —
  * belongs to no single feature and survives while any dependant remains. A
  * plugin therefore does not own those paths; it owns its *membership* of
  * their `neededBy` lists, and installing or removing it edits those lists.

@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Granular permissions
 
 Flama has two authorization layers, and understanding the split is the key to

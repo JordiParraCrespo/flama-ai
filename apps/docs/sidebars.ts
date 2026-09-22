@@ -22,33 +22,17 @@ const sidebars: SidebarsConfig = {
         'architecture/frontend-architecture',
         'architecture/query-keys',
         'architecture/analytics',
-        // flama:begin runner
-        'architecture/go-services',
-        // flama:end runner
       ],
     },
     'errors',
-    // flama:begin mcp
-    {
-      type: 'category',
-      label: 'CLI & MCP',
-      items: [
-        'tooling/permissions',
-        // flama:plugins docs-tooling
-        // flama:begin mcp
-        'tooling/mcp',
-        // flama:end mcp
-      ],
-    },
-    // flama:end mcp
+    // A tooling category exists only when something fills it: Docusaurus
+    // rejects a category with no items, so a plugin inserts the whole thing.
+    // flama:plugins docs-tooling
     {
       type: 'category',
       label: 'Deployment',
       items: [
         'deployment/tier-1-cheap',
-        // flama:begin helm
-        'deployment/tier-2-production',
-        // flama:end helm
       ],
     },
   ],

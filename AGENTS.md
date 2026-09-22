@@ -191,7 +191,8 @@ guide is `.agents/rules/rbac-roles.md`.
 Governed by the **scope catalog** in `packages/shared/src/scopes/`. Roles say
 what a person may do; scopes say what a credential may do on their behalf, and
 effective access is the intersection — see
-`.agents/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
+`.agents/rules/scopes-and-credentials.md`, and the permission catalog in
+`packages/shared/src/scopes/README.md`.
 
 - `apps/mcp` — one tool registry in `src/tools/`, two entrypoints in `src/bin/`.
   Every tool declares `requiredScopes`; the tool list is filtered by the

@@ -75,7 +75,7 @@
       "title": "MCP server",
       "summary": "apps/mcp — Model Context Protocol server (stdio + Streamable HTTP) over the API",
       "identifiers": ["apps/mcp", "@flama/mcp", "flama-mcp"],
-      "paths": ["apps/mcp", "apps/docs/docs/tooling/mcp.md"]
+      "paths": ["apps/mcp"]
     },
     "runner": {
       "title": "Go runner service",
@@ -96,7 +96,6 @@
         "go.work",
         ".golangci.yml",
         ".agents/rules/go.md",
-        "apps/docs/docs/architecture/go-services.md",
         "helm/flama/templates/runner-deployment.yaml"
       ]
     },
@@ -120,7 +119,7 @@
       "title": "Kubernetes Helm chart",
       "summary": "helm/ — chart for the Tier 2 (Kubernetes) deployment",
       "identifiers": ["helm/"],
-      "paths": ["helm", "apps/docs/docs/deployment/tier-2-production.md"]
+      "paths": ["helm"]
     }
   },
   "shared": {
@@ -156,10 +155,6 @@
       "identifiers": ["packages/frontend/api-client", "@flama/api-client"],
       "neededBy": ["web", "mobile", "admin-web", "admin-mobile"],
       "scripts": ["generate:api-client"]
-    },
-    "apps/docs/docs/tooling/permissions.md": {
-      "identifiers": [],
-      "neededBy": ["mcp"]
     },
     "scripts/check-bundle-size.mjs": {
       "identifiers": ["check-bundle-size", "check:bundle"],
