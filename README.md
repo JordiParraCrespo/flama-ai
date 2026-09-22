@@ -122,7 +122,7 @@ second implementation of it.
 | Runner             | http://localhost:3006          |
 
 `pnpm plugin:add admin-web` serves the control plane on `:3003`, and
-`pnpm plugin:add docs` the Docusaurus site on `:3004`.
+`pnpm plugin:add docs` the Docusaurus site on `:3002`.
 
 ## Tech stack
 
