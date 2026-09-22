@@ -79,10 +79,19 @@ something the starter deliberately does not ship — the `flama` CLI is the firs
 — packaged so a project can add it back:
 
 ```bash
-pnpm plugin:list --from ../flama-ai-plugins
-pnpm plugin:add cli --from ../flama-ai-plugins
-pnpm plugin:remove cli
+pnpm plugin:list                  # what is on offer
+pnpm plugin:add cli               # install it
+pnpm plugin:remove cli            # take it back out
 ```
+
+The plugins live in their own repository, so `list` and `add` **fetch** it —
+a depth-1 clone into a temporary directory, thrown away when the command
+ends. A project generated from this starter has no checkout of that repository
+beside it, so nothing is assumed about what sits next to the project on disk.
+`--ref <branch|tag|commit>` picks what to fetch, `--repo <url>` a fork, and
+`--from <path>` a checkout that already exists — the offline route, and how
+the plugins repo tests itself. `remove` never fetches: it is the pruner, so
+uninstalling works offline and long after the source is gone.
 
 An installed plugin is a feature in every way that matters. Its entry lands in
 `.flama-plugins.json`, which `prune.mjs` merges into the manifest at load, so

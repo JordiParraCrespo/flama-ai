@@ -9,12 +9,20 @@
  * an installed plugin is indistinguishable from a feature that shipped in the
  * box — which is what makes removal free: `plugin:remove` is `prune.mjs`.
  *
- *   node scripts/plugins/plugin.mjs add cli --from ../flama-ai-plugins
+ *   node scripts/plugins/plugin.mjs add cli
  *   node scripts/plugins/plugin.mjs remove cli
- *   node scripts/plugins/plugin.mjs list --from ../flama-ai-plugins
+ *   node scripts/plugins/plugin.mjs list
  *
- * Flags: --dry-run (print the plan, touch nothing), --force (overwrite paths
- * that already exist).
+ * The plugins live in their own repository, so by default the source is
+ * fetched: a depth-1 clone into a temporary directory, thrown away when the
+ * command ends. A project generated from this starter has no checkout of that
+ * repository beside it, and nothing here assumes what sits next to a project
+ * on disk.
+ *
+ * Flags: --ref <branch|tag|sha> (what to fetch, default main), --repo <url>
+ * (fetch from a fork), --from <path> (a checkout that already exists — the
+ * offline path, and how the plugins repo tests itself), --dry-run (print the
+ * plan, touch nothing), --force (overwrite paths that already exist).
  *
  * ## What a plugin carries
  *
@@ -39,11 +47,13 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findAnchor, MarkerError, narrowMarker } from '../lib/markers.mjs';
@@ -59,8 +69,9 @@ const FEATURES_PATH = join(ROOT, 'scripts', 'starter', 'features.json');
  */
 const INSTALLED_PATH = join(ROOT, '.flama-plugins.json');
 const PRUNE_PATH = join(ROOT, 'scripts', 'starter', 'prune.mjs');
-/** Where `--from` points when it is not given: a sibling checkout. */
-const DEFAULT_SOURCE = resolve(ROOT, '..', 'flama-ai-plugins');
+/** Where plugins come from when `--from` is not given. */
+const DEFAULT_REPO = 'https://github.com/JordiParraCrespo/flama-ai-plugins.git';
+const DEFAULT_REF = 'main';
 
 function fail(message) {
   console.error(`error: ${message}`);
@@ -83,19 +94,87 @@ function runPrune(args) {
 }
 
 // ---------------------------------------------------------------------------
+// Where the plugins come from
+// ---------------------------------------------------------------------------
+
+/**
+ * The scratch clone, if this run made one. Removed on exit rather than in a
+ * `finally`, because `fail()` exits the process and would skip it.
+ */
+let scratch = null;
+process.on('exit', () => {
+  if (scratch) rmSync(scratch, { recursive: true, force: true });
+});
+
+/**
+ * A directory holding the plugins repository.
+ *
+ * `--from` names one that already exists; anything else is fetched. The path
+ * resolves against the repo root, not the working directory, so `--from
+ * ../flama-ai-plugins` means the same thing from `apps/api` as from the root —
+ * every other path in this script is already root-relative. An absolute path
+ * is unaffected, which is what the round-trip harness passes.
+ */
+function resolveSource({ from, repo, ref }) {
+  if (from) {
+    const dir = resolve(ROOT, from);
+    if (!existsSync(dir)) fail(`--from ${from}: ${dir} does not exist`);
+    return { dir, label: from };
+  }
+  scratch = mkdtempSync(join(tmpdir(), 'flama-plugins-'));
+  // init + fetch rather than `clone --branch`, which takes a branch or a tag
+  // but not a commit. This takes all three.
+  try {
+    execFileSync('git', ['init', '--quiet', scratch], { stdio: 'pipe' });
+    execFileSync('git', ['-C', scratch, 'remote', 'add', 'origin', repo], { stdio: 'pipe' });
+    execFileSync('git', ['-C', scratch, 'fetch', '--quiet', '--depth', '1', 'origin', ref], {
+      stdio: 'pipe',
+    });
+    execFileSync('git', ['-C', scratch, 'checkout', '--quiet', 'FETCH_HEAD'], { stdio: 'pipe' });
+  } catch (error) {
+    const output = `${error.stdout ?? ''}${error.stderr ?? ''}`.trim();
+    fail(
+      `could not fetch ${ref} from ${repo}\n${output}\n` +
+        'If the machine is offline or the repository is private, clone it yourself ' +
+        'and pass --from <path>.',
+    );
+  }
+  const at = execFileSync('git', ['-C', scratch, 'rev-parse', '--short', 'HEAD'], {
+    encoding: 'utf8',
+  }).trim();
+  // Which commit, not just which ref: a branch moves, and what was installed
+  // should be answerable later from the terminal scrollback alone.
+  console.log(`Fetched ${repo} at ${ref} (${at}).`);
+  return { dir: scratch, label: `${repo} at ${ref}` };
+}
+
+// ---------------------------------------------------------------------------
 // Manifests
 // ---------------------------------------------------------------------------
 
 function pluginsDir(source) {
-  const dir = join(resolve(source), 'plugins');
-  if (!existsSync(dir)) fail(`no plugins/ directory in ${source}`);
+  const dir = join(source.dir, 'plugins');
+  if (!existsSync(dir)) fail(`no plugins/ directory in ${source.label}`);
   return dir;
+}
+
+function pluginIds(source) {
+  return readdirSync(pluginsDir(source), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
 }
 
 function loadPlugin(source, id) {
   const dir = join(pluginsDir(source), id);
   const manifestPath = join(dir, 'plugin.json');
-  if (!existsSync(manifestPath)) fail(`no plugin "${id}" in ${source} (see --list)`);
+  if (!existsSync(manifestPath)) {
+    const available = pluginIds(source);
+    fail(
+      `no plugin "${id}" in ${source.label}` +
+        (available.length ? ` — it has: ${available.join(', ')}` : ' — it has none'),
+    );
+  }
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   if (manifest.id !== id) fail(`${manifestPath}: declares id "${manifest.id}", lives in ${id}/`);
   for (const field of ['feature', 'files']) {
@@ -416,12 +495,9 @@ function remove(id, options) {
 function list(source) {
   const installed = loadInstalled().features;
   const dir = pluginsDir(source);
-  const ids = readdirSync(dir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort();
+  const ids = pluginIds(source);
   if (!ids.length) {
-    console.log(`No plugins in ${source}.`);
+    console.log(`No plugins in ${source.label}.`);
     return;
   }
   for (const id of ids) {
@@ -435,16 +511,29 @@ function list(source) {
 // CLI
 // ---------------------------------------------------------------------------
 
+const USAGE =
+  'usage: plugin.mjs <add|remove|list> [<id>] [--from <path>] [--ref <git-ref>] [--repo <url>]';
+
+const VALUE_FLAGS = { '--from': 'from', '--ref': 'ref', '--repo': 'repo' };
+
 export function parseArgs(argv) {
-  const options = { command: null, id: null, source: DEFAULT_SOURCE, dryRun: false, force: false };
+  const options = {
+    command: null,
+    id: null,
+    from: null,
+    repo: DEFAULT_REPO,
+    ref: DEFAULT_REF,
+    dryRun: false,
+    force: false,
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--force') options.force = true;
-    else if (arg === '--from') {
+    else if (VALUE_FLAGS[arg]) {
       const next = argv[i + 1];
-      if (!next) fail('--from needs a path');
-      options.source = next;
+      if (!next || next.startsWith('--')) fail(`${arg} needs a value`);
+      options[VALUE_FLAGS[arg]] = next;
       i += 1;
     } else if (arg.startsWith('--')) fail(`unknown argument ${arg}`);
     else if (!options.command) options.command = arg;
@@ -456,11 +545,18 @@ export function parseArgs(argv) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
-  if (options.command === 'list') return list(options.source);
-  if (!options.id) fail('usage: plugin.mjs <add|remove|list> <id> [--from <path>]');
-  if (options.command === 'add') return add(loadPlugin(options.source, options.id), options);
-  if (options.command === 'remove') return remove(options.id, options);
-  fail('usage: plugin.mjs <add|remove|list> <id> [--from <path>]');
+  // `remove` is the pruner and reads nothing from the plugins repo, so it
+  // never fetches — uninstalling works offline and after the source is gone.
+  if (options.command === 'remove') {
+    if (!options.id) fail(USAGE);
+    return remove(options.id, options);
+  }
+  if (options.command === 'list') return list(resolveSource(options));
+  if (options.command === 'add') {
+    if (!options.id) fail(USAGE);
+    return add(loadPlugin(resolveSource(options), options.id), options);
+  }
+  fail(USAGE);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
