@@ -13,9 +13,6 @@ api:
     NODE_ENV: production
     BETTER_AUTH_URL: https://flama.dev
     FRONTEND_URL: https://flama.dev
-    # flama:begin admin-web
-    ADMIN_FRONTEND_URL: https://control.flama.dev
-    # flama:end admin-web
     # flama:plugins admin-web
     # flama:begin mobile
     MOBILE_SCHEME: flama
@@ -45,24 +42,6 @@ web:
       memory: 256Mi
 # flama:end web
 
-# flama:begin admin-web
-adminWeb:
-  # Extra origins for the nginx Content-Security-Policy (space separated).
-  # Empty keeps the image default: the PostHog EU endpoints. Widen it when
-  # analytics lives in another region, or VITE_API_URL points the bundle at an
-  # origin other than the one serving it.
-  cspExtraOrigins: ""
-  image: ghcr.io/your-org/flama-admin-web:latest
-  replicas: 1
-  port: 3000
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 300m
-      memory: 256Mi
-# flama:end admin-web
 # flama:plugins admin-web-2
 
 # flama:begin runner
@@ -109,9 +88,6 @@ ingress:
     # flama:begin web
     web: flama.dev
     # flama:end web
-    # flama:begin admin-web
-    adminWeb: control.flama.dev
-    # flama:end admin-web
     # flama:plugins admin-web-3
     # flama:plugins docs-2
   tls:

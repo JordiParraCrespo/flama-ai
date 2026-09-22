@@ -28,9 +28,6 @@ const IMAGES = {
   // flama:begin web
   web: '@flama/web',
   // flama:end web
-  // flama:begin admin-web
-  'admin-web': '@flama/admin-web',
-  // flama:end admin-web
   // flama:plugins admin-web
   // flama:plugins docs
   // flama:begin mcp

@@ -46,9 +46,6 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       FRONTEND_URL: ${FRONTEND_URL}
-      # flama:begin admin-web
-      ADMIN_FRONTEND_URL: ${ADMIN_FRONTEND_URL:-http://localhost:3003}
-      # flama:end admin-web
       # flama:plugins admin-web
       # flama:begin mobile
       MOBILE_SCHEME: ${MOBILE_SCHEME:-flama}
@@ -82,15 +79,6 @@ services:
       - "3000:3000"
   # flama:end web
 
-  # flama:begin admin-web
-  admin-web:
-    image: ${ADMIN_WEB_IMAGE:-ghcr.io/your-org/flama-admin-web:latest}
-    restart: always
-    depends_on:
-      - api
-    ports:
-      - "3003:3000"
-  # flama:end admin-web
   # flama:plugins admin-web-2
 
   # flama:plugins docs

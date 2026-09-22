@@ -56,7 +56,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { findAnchor, MarkerError, narrowMarker } from '../lib/markers.mjs';
+import { findAnchor, MARKER_RE, MarkerError } from '../lib/markers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -295,6 +295,51 @@ export function checkFences(id, file, body) {
   return null;
 }
 
+/**
+ * Put back the lines a prune deleted from a JSON file.
+ *
+ * JSON holds no comments, so these have no `flama:plugins` anchor to aim at.
+ * The plugin records the line the run followed instead, and it has to match
+ * exactly once: a file that has drifted is one where the installer cannot
+ * know where the lines belong, and guessing would corrupt it silently.
+ */
+function insertJsonBlocks(manifest, dryRun) {
+  const touched = [];
+  for (const block of manifest.jsonBlocks ?? []) {
+    const target = join(ROOT, block.file);
+    if (!existsSync(target)) {
+      if (block.needs) {
+        console.log(`  skip   ${block.file} (no ${block.needs} in this project)`);
+        continue;
+      }
+      fail(`${block.file} does not exist; cannot put its lines back`);
+    }
+    const source = join(manifest.dir, block.source);
+    if (!existsSync(source)) fail(`${manifest.id}: json block "${block.source}" is missing`);
+    const body = readFileSync(source, 'utf8').replace(/\n$/, '');
+
+    const lines = readFileSync(target, 'utf8').split('\n');
+    const matches = lines.filter((line) => line === block.after).length;
+    if (matches !== 1) {
+      fail(
+        `${block.file}: the line this plugin inserts after appears ${matches} times — expected exactly one:\n  ${block.after.trim()}`,
+      );
+    }
+    const index = lines.indexOf(block.after);
+    lines.splice(index + 1, 0, ...body.split('\n'));
+    const text = lines.join('\n');
+    try {
+      JSON.parse(text);
+    } catch (error) {
+      fail(`${block.file}: putting the lines back did not produce valid JSON — ${error.message}`);
+    }
+    console.log(`  json   ${block.file} (after ${block.after.trim()})`);
+    if (!dryRun) writeFileSync(target, text);
+    if (!touched.includes(block.file)) touched.push(block.file);
+  }
+  return touched;
+}
+
 function insertBlocks(manifest, dryRun) {
   const touched = [];
   for (const block of manifest.blocks ?? []) {
@@ -380,25 +425,57 @@ function widenCoOwned(manifest, dryRun) {
     const source = join(manifest.dir, block.source);
     if (!existsSync(source)) fail(`${manifest.id}: shared block "${block.source}" is missing`);
 
-    const widened = readFileSync(source, 'utf8').replace(/\n$/, '');
-    const mine = new Set([manifest.id]);
-    const narrowed = widened
-      .split('\n')
-      .map((line) => narrowMarker(line, mine))
-      .join('\n');
-    if (narrowed === widened) {
+    // The pruner narrows the *spec* and leaves the body alone, so the body is
+    // what identifies the block and the spec is the only thing to change.
+    // Adding this plugin's id to whatever spec is there — rather than swapping
+    // a stored narrowed text for a stored widened one — is what lets two
+    // plugins that share a block both install: the second finds a spec the
+    // first already widened, instead of looking for a text that is now gone.
+    const stored = readFileSync(source, 'utf8').replace(/\n$/, '').split('\n');
+    const canonical = MARKER_RE.exec(stored[0]);
+    if (!canonical) fail(`${manifest.id}: shared block for ${block.file} has no opening marker`);
+    const order = canonical[2].split('|');
+    if (!order.includes(manifest.id)) {
       fail(`${manifest.id}: shared block for ${block.file} does not name "${manifest.id}"`);
     }
+    const body = stored.slice(1, -1).join('\n');
 
-    const content = readFileSync(target, 'utf8');
-    const occurrences = content.split(narrowed).length - 1;
-    if (occurrences !== 1) {
+    const lines = readFileSync(target, 'utf8').split('\n');
+    const starts = lines
+      .map((line, index) => ({ line, index, match: MARKER_RE.exec(line) }))
+      // The body identifies the block, not the spec: another plugin may have
+      // already added an owner this one has never heard of, and the pruner
+      // only ever narrows the spec, so the body is the part that holds still.
+      .filter(
+        (entry) =>
+          entry.match?.[1] === 'begin' &&
+          lines.slice(entry.index + 1, entry.index + 1 + stored.length - 2).join('\n') === body,
+      );
+    if (starts.length !== 1) {
       fail(
-        `${block.file}: found ${occurrences} copies of the shared block to widen; expected exactly one`,
+        `${block.file}: found ${starts.length} copies of the shared block to widen; expected exactly one`,
       );
     }
-    console.log(`  widen  ${block.file} (shared block)`);
-    if (!dryRun) writeFileSync(target, content.replace(narrowed, widened));
+
+    const [{ index, match }] = starts;
+    const current = match[2].split('|');
+    if (current.includes(manifest.id)) {
+      fail(`${block.file}: the shared block already names "${manifest.id}"`);
+    }
+    // Insert after the last owner this plugin knows comes before it, rather
+    // than rebuilding the spec from its own order: another plugin installed
+    // earlier may have added an owner this one has never heard of, and
+    // rebuilding would silently drop it.
+    const before = order.slice(0, order.indexOf(manifest.id));
+    const at = current.filter((owner) => before.includes(owner)).length;
+    const spec = [...current.slice(0, at), manifest.id, ...current.slice(at)].join('|');
+    const end = index + stored.length - 1;
+    console.log(`  widen  ${block.file} (shared block → ${spec})`);
+    if (!dryRun) {
+      lines[index] = lines[index].replace(match[2], spec);
+      lines[end] = lines[end].replace(MARKER_RE.exec(lines[end])[2], spec);
+      writeFileSync(target, lines.join('\n'));
+    }
   }
 }
 
@@ -472,6 +549,7 @@ function add(manifest, options) {
   }
 
   insertBlocks(manifest, dryRun);
+  insertJsonBlocks(manifest, dryRun);
   if (!dryRun) widenCoOwned(manifest, dryRun);
 
   console.log(`  edit   .flama-plugins.json (+${manifest.id})`);

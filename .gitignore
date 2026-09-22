@@ -60,10 +60,7 @@ scratchpad/
 /CRM SaaS Design Pages.zip
 /Adri Rodrigo - Design System.html
 
-# flama:begin qa
-# QA pack run output. The curated copy under docs/screenshots/ is committed.
-qa/artifacts/
-# flama:end qa
+# flama:plugins qa
 
 # Redis snapshot, written when a local redis-server is used instead of docker.
 dump.rdb

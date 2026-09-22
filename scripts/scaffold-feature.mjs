@@ -33,15 +33,6 @@ const APPS = {
     platform: 'web',
   },
   // flama:end web
-  // flama:begin admin-web
-  'admin-web': {
-    dir: 'apps/admin-web',
-    features: 'src/features',
-    product: 'admin',
-    allow: [],
-    platform: 'web',
-  },
-  // flama:end admin-web
   // flama:plugins admin-web
   // flama:begin mobile
   mobile: {
@@ -114,10 +105,10 @@ const isMobile = app.platform === 'mobile';
 const MOBILE_SCREEN = `import { View } from 'react-native';\nimport { ${component}Panel } from '@/features/${args.module}/sections/${screen}-panel';\n\n/** The ${screen} screen. Mount it from app/…/${screen}.tsx. It composes; the section below fetches. */\nexport function ${component}Screen() {\n  return (\n    <View className="flex-1 p-6">\n      <${component}Panel />\n    </View>\n  );\n}\n`;
 const MOBILE_SECTION = `import { Text } from '@flama/design-system-mobile/text';\nimport { View } from 'react-native';\nimport { useTranslation } from 'react-i18next';\n\n/**\n * The ${screen} pane.\n *\n * A query belongs to whatever draws its result, and that is not automatically\n * this file. Call it here when this pane renders the result itself; when one\n * child does, the query goes in that child rather than being threaded down.\n * See .agents/rules/frontend-architecture.md.\n */\nexport function ${component}Panel() {\n  const { t } = useTranslation();\n\n  return (\n    <View>\n      <Text>{t('common.appName')}</Text>\n    </View>\n  );\n}\n`;
 // flama:end mobile
-// flama:begin web|admin-web
+// flama:begin web
 const WEB_SCREEN = `import { PageHead } from '@flama/frontend-web';\nimport { useTranslation } from 'react-i18next';\nimport { ${component}Panel } from '@/features/${args.module}/sections/${screen}-panel';\n\n/** The ${screen} screen. Mount it from a route: \`component: () => <${component}Screen />\`. It composes; the section below fetches. */\nexport function ${component}Screen() {\n  const { t } = useTranslation();\n\n  return (\n    <>\n      <PageHead title={t('common.appName')} />\n      <${component}Panel />\n    </>\n  );\n}\n`;
 const WEB_SECTION = `import { useTranslation } from 'react-i18next';\n\n/**\n * The ${screen} pane.\n *\n * A query belongs to whatever draws its result, and that is not automatically\n * this file. Call it here when this pane renders the result; when one child\n * does — a cell waiting on its own row, a dialog that needs a list only while\n * it is open — the query goes in that child, not here with the value threaded\n * down. \`pnpm check:structure\` catches the single-consumer case; the rest is\n * judgement. See .agents/rules/frontend-architecture.md.\n */\nexport function ${component}Panel() {\n  const { t } = useTranslation();\n\n  return <p>{t('common.appName')}</p>;\n}\n`;
-// flama:end web|admin-web
+// flama:end web
 writeFileSync(join(featureDir, 'screens', `${screen}.tsx`), isMobile ? MOBILE_SCREEN : WEB_SCREEN);
 writeFileSync(
   join(featureDir, 'sections', `${screen}-panel.tsx`),

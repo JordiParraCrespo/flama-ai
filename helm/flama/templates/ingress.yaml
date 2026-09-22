@@ -14,9 +14,6 @@ spec:
         # flama:begin web
         - {{ .Values.ingress.hosts.web }}
         # flama:end web
-        # flama:begin admin-web
-        - {{ .Values.ingress.hosts.adminWeb }}
-        # flama:end admin-web
         # flama:plugins admin-web
         # flama:plugins docs
       secretName: {{ .Release.Name }}-tls
@@ -44,18 +41,6 @@ spec:
                 port:
                   number: {{ .Values.web.port }}
     # flama:end web
-    # flama:begin admin-web
-    - host: {{ .Values.ingress.hosts.adminWeb }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-admin-web
-                port:
-                  number: {{ .Values.adminWeb.port }}
-    # flama:end admin-web
     # flama:plugins admin-web-2
     # flama:plugins docs-2
 {{- end }}
