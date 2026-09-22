@@ -87,6 +87,9 @@ jobs:
       - name: Frontend structure
         run: pnpm check:structure
       # flama:end web|admin-web|mobile|admin-mobile
+      # The marker grammar in `scripts/lib/`, which outlives a prune.
+      - name: Repo scripts
+        run: pnpm test:scripts
       # flama:begin starter
       # The starter's feature manifest must keep describing the repo: every
       # optional app referenced only inside its own paths or a marker block.

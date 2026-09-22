@@ -16,7 +16,6 @@ below is optional except the API — keep what you're building, prune the rest
 | `apps/admin-web`         | Admin control plane (web) — users, roles and permissions                 |
 | `apps/admin-mobile`      | Admin control plane (Expo) — users and roles                             |
 | `apps/docs`              | Docusaurus — project documentation                                       |
-| `apps/cli`               | `flama` command-line interface — commander, scoped API tokens            |
 | `apps/mcp`               | MCP server — stdio + Streamable HTTP, scope-filtered tools                |
 | `apps/runner`            | Go service template (REST + WS, API keys) the API delegates long-lived work to |
 | `apps/web-showcase`      | Next.js showcase for the web design system                                |

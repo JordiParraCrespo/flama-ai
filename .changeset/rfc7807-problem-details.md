@@ -5,7 +5,6 @@
 "@flama/frontend-core": minor
 "@flama/api-client": minor
 "@flama/api": minor
-"@flama/cli": minor
 "@flama/mcp": minor
 ---
 

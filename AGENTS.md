@@ -12,7 +12,6 @@ flama/
 │   ├── api/              # NestJS REST API
 │   ├── admin-mobile/     # Expo control plane for users and roles
 │   ├── admin-web/        # Vite control plane for users and roles
-│   ├── cli/              # `flama` command-line interface
 │   ├── docs/             # Docusaurus documentation
 │   ├── mcp/              # MCP server (stdio + Streamable HTTP)
 │   ├── mobile/           # Consumer Expo app
@@ -67,6 +66,53 @@ When you add a file that mentions an optional app (CI, compose, Helm,
 `.env.example`, a sidebar), wrap the lines in `# flama:begin <id>` /
 `# flama:end <id>`; `pnpm starter:check` fails otherwise.
 <!-- flama:end starter -->
+
+The marker grammar itself — the regex and the block parser — lives in
+`scripts/lib/markers.mjs`, outside the starter apparatus a one-shot prune
+deletes. It is the grammar and nothing else; `prune.mjs` owns its own git,
+JSON and filesystem helpers.
+
+### Plugins
+
+Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
+something the starter deliberately does not ship — the `flama` CLI is the first
+— packaged so a project can add it back:
+
+```bash
+pnpm plugin:list                  # what is on offer
+pnpm plugin:add cli               # install it
+pnpm plugin:remove cli            # take it back out
+```
+
+The plugins live in their own repository, so `list` and `add` **fetch** it —
+a depth-1 clone into a temporary directory, thrown away when the command
+ends. A project generated from this starter has no checkout of that repository
+beside it, so nothing is assumed about what sits next to the project on disk.
+`--ref <branch|tag|commit>` picks what to fetch, `--repo <url>` a fork, and
+`--from <path>` a checkout that already exists — the offline route, and how
+the plugins repo tests itself. `remove` never fetches: it is the pruner, so
+uninstalling works offline and long after the source is gone.
+
+An installed plugin is a feature in every way that matters. Its entry lands in
+`.flama-plugins.json`, which `prune.mjs` merges into the manifest at load, so
+`pnpm starter:check` covers it and `pnpm starter:prune --without cli` removes
+it. That is deliberate: **removal is the pruner**, so there is no second
+implementation to keep in step.
+
+Two things a plugin needs from this repo:
+
+- **An anchor** (`# flama:plugins <slot>`) wherever it inserts a block —
+  `.env.example` and `apps/docs/sidebars.ts` today. Anchors are lone comments,
+  inert to the pruner, and they survive a prune because the installer still has
+  to work in a pruned project. Move the list an anchor sits in and the anchor
+  moves with it, or installing fails loudly rather than guessing.
+- **A narrowing marker.** `flama:begin mcp|cli` belongs to both; when one goes
+  the block stays and the spec narrows to whoever is left (`narrowMarker`).
+  Installing widens it again.
+
+Plugins live in the `flama-ai-plugins` repo, are generated from this one by
+`scripts/extract.mjs`, and are proven by `scripts/roundtrip.mjs`: install,
+run this repo's checks, remove, and require the tree to be byte-identical.
 
 ## Key conventions
 
@@ -140,17 +186,13 @@ Database-backed dynamic RBAC: roles and permissions live in the `role` table,
 a user holds many, and routes are guarded with `@CheckPolicies`. The full
 guide is `.agents/rules/rbac-roles.md`.
 
-### CLI (`apps/cli`) and MCP server (`apps/mcp`)
+### MCP server (`apps/mcp`)
 
-Both are governed by the **scope catalog** in `packages/shared/src/scopes/`.
-Roles say what a person may do; scopes say what a credential may do on their
-behalf, and effective access is the intersection — see
+Governed by the **scope catalog** in `packages/shared/src/scopes/`. Roles say
+what a person may do; scopes say what a credential may do on their behalf, and
+effective access is the intersection — see
 `.agents/rules/scopes-and-credentials.md` and the "CLI & MCP" docs section.
 
-- `apps/cli` — commander-based; commands in `src/commands/`, shared plumbing in
-  `src/lib/` (config profiles, HTTP client, output, prompts). Exit codes are a
-  public contract: 0 ok, 1 failure, 2 usage, 3 auth, 4 forbidden, 5 not found,
-  6 unreachable.
 - `apps/mcp` — one tool registry in `src/tools/`, two entrypoints in `src/bin/`.
   Every tool declares `requiredScopes`; the tool list is filtered by the
   credential's effective scopes.

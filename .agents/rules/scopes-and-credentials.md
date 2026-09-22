@@ -2,7 +2,6 @@
 paths:
   - "apps/api/**/*"
   - "apps/mcp/**/*"
-  - "apps/cli/**/*"
   - "packages/shared/**/*"
 ---
 
@@ -124,7 +123,8 @@ Annotate honestly: `readOnlyHint` only for tools whose scopes are all `:read`,
 
 ## Changing the CLI
 
-Exit codes in `apps/cli/src/lib/errors.ts` are a public contract (scripts
-branch on them); a test pins the numbering. Commands never read the config or
-environment directly — `contextFor()` resolves the profile so precedence lives
-in one place.
+The CLI is not in this repo — it is the `cli` plugin (`pnpm plugin:add cli`),
+and its rules travel with it in `apps/cli/AGENTS.md`. What stays true here is
+the contract it consumes: the scope catalog above is what a credential is
+scoped against, so a scope removed from `packages/shared/src/scopes/` breaks
+installed CLIs as surely as it breaks `apps/mcp`.

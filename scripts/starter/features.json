@@ -71,12 +71,6 @@
         "apps/api/src/__tests__/error-catalog-coverage.spec.ts"
       ]
     },
-    "cli": {
-      "title": "Command-line interface",
-      "summary": "apps/cli — `flama` CLI driven by scoped API tokens",
-      "identifiers": ["apps/cli", "@flama/cli"],
-      "paths": ["apps/cli", "apps/docs/docs/tooling/cli.md"]
-    },
     "mcp": {
       "title": "MCP server",
       "summary": "apps/mcp — Model Context Protocol server (stdio + Streamable HTTP) over the API",
@@ -165,7 +159,7 @@
     },
     "apps/docs/docs/tooling/permissions.md": {
       "identifiers": [],
-      "neededBy": ["cli", "mcp"]
+      "neededBy": ["mcp"]
     },
     "scripts/check-bundle-size.mjs": {
       "identifiers": ["check-bundle-size", "check:bundle"],

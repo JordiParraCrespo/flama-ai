@@ -28,21 +28,19 @@ const sidebars: SidebarsConfig = {
       ],
     },
     'errors',
-    // flama:begin cli|mcp
+    // flama:begin mcp
     {
       type: 'category',
       label: 'CLI & MCP',
       items: [
         'tooling/permissions',
-        // flama:begin cli
-        'tooling/cli',
-        // flama:end cli
+        // flama:plugins docs-tooling
         // flama:begin mcp
         'tooling/mcp',
         // flama:end mcp
       ],
     },
-    // flama:end cli|mcp
+    // flama:end mcp
     {
       type: 'category',
       label: 'Deployment',

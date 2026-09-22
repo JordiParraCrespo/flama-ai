@@ -1,3 +1,4 @@
+import { AuthzModule as AuthzKernelModule } from '@flama/backend-authz';
 import { Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,6 +7,7 @@ import {
   PAYMENT_GATEWAY,
   SUBSCRIPTION_REPOSITORY,
 } from './billing.di-tokens';
+import { BillingResource } from './billing.resource';
 import { BillingCustomerMapper } from './billing-customer.mapper';
 import { CreateCheckoutCommandHandler } from './commands/create-checkout/create-checkout.command-handler';
 import { CreateCheckoutHttpController } from './commands/create-checkout/create-checkout.http.controller';
@@ -65,6 +67,7 @@ const repositories: Provider[] = [
   imports: [
     CqrsModule,
     TypeOrmModule.forFeature([SubscriptionOrmEntity, BillingCustomerOrmEntity]),
+    AuthzKernelModule.forFeature([BillingResource]),
   ],
   controllers: [...httpControllers],
   providers: [...commandHandlers, ...queryHandlers, ...mappers, ...repositories],
