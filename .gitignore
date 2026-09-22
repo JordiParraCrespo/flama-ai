@@ -11,13 +11,12 @@ build/
 .expo/
 apps/mobile/ios/
 apps/mobile/android/
-apps/admin-mobile/ios/
-apps/admin-mobile/android/
 apps/mobile-showcase/ios/
 apps/mobile-showcase/android/
 packages/frontend/design-system/mobile/assets/icons/nanoicons/
 # flama:end mobile|mobile-showcase
-.docusaurus/
+# flama:plugins admin-mobile
+# flama:plugins docs
 *.tsbuildinfo
 node-compile-cache/
 
