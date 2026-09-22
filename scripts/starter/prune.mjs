@@ -99,9 +99,20 @@ function loadManifest() {
       manifest.features[id] = feature;
     }
     // A plugin does not own a shared path, it joins the list of dependants.
-    for (const [path, dependants] of Object.entries(installed.shared ?? {})) {
-      const entry = manifest.shared[path];
-      if (!entry) fail(`.flama-plugins.json: shared "${path}" is not in features.json`);
+    // Two shapes: a list of dependants joins a path this starter still has,
+    // and an object carries the entry itself, for a path whose every
+    // dependant was optional and left together — the control plane's domain
+    // package belongs to both admin apps and to nothing else, so a starter
+    // without them has no entry to join.
+    for (const [path, value] of Object.entries(installed.shared ?? {})) {
+      const carried = Array.isArray(value) ? null : value;
+      const dependants = carried ? carried.neededBy : value;
+      let entry = manifest.shared[path];
+      if (!entry) {
+        if (!carried) fail(`.flama-plugins.json: shared "${path}" is not in features.json`);
+        entry = { identifiers: carried.identifiers ?? [], neededBy: [] };
+        manifest.shared[path] = entry;
+      }
       for (const id of dependants) {
         if (!entry.neededBy.includes(id)) entry.neededBy.push(id);
       }

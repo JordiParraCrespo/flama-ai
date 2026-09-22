@@ -42,6 +42,7 @@ const APPS = {
     platform: 'web',
   },
   // flama:end admin-web
+  // flama:plugins admin-web
   // flama:begin mobile
   mobile: {
     dir: 'apps/mobile',
@@ -60,6 +61,7 @@ const APPS = {
     platform: 'mobile',
   },
   // flama:end admin-mobile
+  // flama:plugins admin-mobile
 };
 const app = APPS[args.app];
 if (!app || !args.module) {

@@ -67,6 +67,7 @@ const APPS = [
     kit: 'web',
   },
   // flama:end admin-web
+  // flama:plugins admin-web
   // flama:begin mobile
   {
     app: 'apps/mobile',
@@ -87,6 +88,7 @@ const APPS = [
     kit: 'mobile',
   },
   // flama:end admin-mobile
+  // flama:plugins admin-mobile
 ];
 /** The platform kits, documented like the apps they serve. */
 const KITS = [

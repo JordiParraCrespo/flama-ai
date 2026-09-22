@@ -17,6 +17,7 @@ spec:
         # flama:begin admin-web
         - {{ .Values.ingress.hosts.adminWeb }}
         # flama:end admin-web
+        # flama:plugins admin-web
         # flama:plugins docs
       secretName: {{ .Release.Name }}-tls
   {{- end }}
@@ -55,5 +56,6 @@ spec:
                 port:
                   number: {{ .Values.adminWeb.port }}
     # flama:end admin-web
+    # flama:plugins admin-web-2
     # flama:plugins docs-2
 {{- end }}

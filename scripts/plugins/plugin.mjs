@@ -243,17 +243,24 @@ export function featureEntry(manifest, landed) {
  */
 function joinShared(installed, manifest) {
   for (const entry of manifest.feature.shared ?? []) {
-    const dependants = installed.shared[entry.path] ?? [];
+    const carried = Boolean(manifest.sharedFiles?.[entry.path]);
+    const current = installed.shared[entry.path];
+    const dependants = (Array.isArray(current) ? current : current?.neededBy) ?? [];
     if (!dependants.includes(manifest.id)) dependants.push(manifest.id);
-    installed.shared[entry.path] = dependants;
+    // A carried path has no entry in features.json to join — every dependant
+    // was optional and they all left — so the record carries the entry too.
+    installed.shared[entry.path] = carried
+      ? { identifiers: entry.identifiers ?? [], neededBy: dependants }
+      : dependants;
   }
 }
 
 function leaveShared(installed, id) {
-  for (const [path, dependants] of Object.entries(installed.shared)) {
-    const rest = dependants.filter((dependant) => dependant !== id);
-    if (rest.length) installed.shared[path] = rest;
-    else delete installed.shared[path];
+  for (const [path, value] of Object.entries(installed.shared)) {
+    const carried = Array.isArray(value) ? null : value;
+    const rest = (carried ? carried.neededBy : value).filter((dep) => dep !== id);
+    if (!rest.length) delete installed.shared[path];
+    else installed.shared[path] = carried ? { ...carried, neededBy: rest } : rest;
   }
 }
 
@@ -437,6 +444,19 @@ function add(manifest, options) {
   }
 
   console.log(`\nInstalling ${manifest.id}: ${manifest.feature.summary}\n`);
+  for (const [destination, from] of Object.entries(manifest.sharedFiles ?? {})) {
+    if (existsSync(join(ROOT, destination))) {
+      console.log(`  keep   ${destination} (already here for another feature)`);
+      continue;
+    }
+    const source = join(manifest.dir, from);
+    if (!existsSync(source)) fail(`${manifest.id}: shared "${from}" is missing from the plugin`);
+    console.log(`  copy   ${destination} (shared)`);
+    if (!dryRun) {
+      mkdirSync(dirname(join(ROOT, destination)), { recursive: true });
+      cpSync(source, join(ROOT, destination), { recursive: true, verbatimSymlinks: true });
+    }
+  }
   for (const [destination, from] of Object.entries(manifest.files)) {
     if (absent(destination)) {
       console.log(`  skip   ${destination} (no ${manifest.filesNeed[destination]} in this project)`);

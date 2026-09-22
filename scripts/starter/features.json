@@ -16,7 +16,7 @@
       "title": "Consumer mobile app",
       "summary": "apps/mobile — Expo app for end users (NativeWind, expo-router)",
       "identifiers": ["apps/mobile", "@flama/mobile"],
-      "paths": ["apps/mobile", "packages/frontend/nitro-app-info"]
+      "paths": ["apps/mobile"]
     },
     "admin-web": {
       "title": "Admin control plane (web)",
@@ -28,7 +28,7 @@
       "title": "Admin control plane (mobile)",
       "summary": "apps/admin-mobile — Expo control plane for users and roles",
       "identifiers": ["apps/admin-mobile", "@flama/admin-mobile"],
-      "paths": ["apps/admin-mobile", "packages/frontend/nitro-app-info"]
+      "paths": ["apps/admin-mobile"]
     },
     "web-showcase": {
       "title": "Web design-system showcase",
@@ -136,6 +136,10 @@
     "packages/frontend/web": {
       "identifiers": ["packages/frontend/web", "@flama/frontend-web"],
       "neededBy": ["web", "admin-web"]
+    },
+    "packages/frontend/nitro-app-info": {
+      "identifiers": ["packages/frontend/nitro-app-info", "@flama/nitro-app-info"],
+      "neededBy": ["mobile", "admin-mobile"]
     },
     "packages/frontend/mobile": {
       "identifiers": ["packages/frontend/mobile", "@flama/frontend-mobile"],

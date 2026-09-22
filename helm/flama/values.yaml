@@ -16,12 +16,14 @@ api:
     # flama:begin admin-web
     ADMIN_FRONTEND_URL: https://control.flama.dev
     # flama:end admin-web
+    # flama:plugins admin-web
     # flama:begin mobile
     MOBILE_SCHEME: flama
     # flama:end mobile
     # flama:begin admin-mobile
     ADMIN_MOBILE_SCHEME: flama-admin
     # flama:end admin-mobile
+    # flama:plugins admin-mobile
     DB_HOST: flama-postgres
     DB_PORT: "5432"
     REDIS_HOST: flama-redis
@@ -64,6 +66,7 @@ adminWeb:
       cpu: 300m
       memory: 256Mi
 # flama:end admin-web
+# flama:plugins admin-web-2
 
 # flama:begin runner
 runner:
@@ -112,6 +115,7 @@ ingress:
     # flama:begin admin-web
     adminWeb: control.flama.dev
     # flama:end admin-web
+    # flama:plugins admin-web-3
     # flama:plugins docs-2
   tls:
     enabled: false

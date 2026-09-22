@@ -41,6 +41,7 @@ const APPS = [
     budgetKB: 375,
   },
   // flama:end admin-web
+  // flama:plugins admin-web
 ];
 
 /** Script and stylesheet URLs the entry HTML pulls in, as site-root paths. */

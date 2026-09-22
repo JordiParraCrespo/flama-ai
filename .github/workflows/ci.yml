@@ -171,6 +171,7 @@ jobs:
           # flama:begin admin-web
           filters+=(--filter=@flama/admin-web)
           # flama:end admin-web
+          # flama:plugins admin-web
           pnpm turbo run build "${filters[@]}"
           pnpm check:bundle
       # flama:end web|admin-web
