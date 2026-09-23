@@ -11,7 +11,7 @@ describe('resolveCapabilities', () => {
     expect(resolveCapabilities(configWith({ 'email.provider': 'console' }))).toEqual({
       google_oauth: false,
       github_oauth: false,
-      stripe_billing: false,
+      // flama:plugins bare-capabilities
       s3_storage: false,
       email_delivery: false,
     });
@@ -29,12 +29,7 @@ describe('resolveCapabilities', () => {
     expect(resolveCapabilities(complete).github_oauth).toBe(false);
   });
 
-  it('enables stripe_billing on the secret key alone', () => {
-    expect(resolveCapabilities(configWith({ 'stripe.secretKey': 'sk_test' })).stripe_billing).toBe(
-      true,
-    );
-  });
-
+  // flama:plugins capability-tests
   it('only counts s3_storage when the provider is s3 AND credentials exist', () => {
     const credsButLocalProvider = configWith({
       'storage.provider': 'local',

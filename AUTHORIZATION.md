@@ -22,7 +22,6 @@
 | Generic `access_grant` table | `apps/api/src/migrations/1781500000000-AddAccessGrants.ts` |
 | `canGrant` / `canGrantScope` containment | `packages/backend/authz/src/grants/`, `apps/api/src/roles/application/role-grant.policy.ts` |
 | `GET /v1/authz/catalog` | `apps/api/src/authz/queries/find-catalog/` |
-| `leads` reference module | `apps/api/src/leads/` |
 
 ---
 
@@ -1104,6 +1103,12 @@ DDD-compliant from the start, then:
 This is simultaneously the proof the kernel is reusable, the copy-paste template
 for the next module, and the regression suite for the whole design. It is not
 optional, and it is not last-if-there-is-time.
+
+> **Since removed from the starter.** `leads` was built and proved the kernel,
+> then taken out: a CRM record is a product's domain, and every project
+> started from Flama carried it. The kernel's own suites in
+> `packages/backend/authz` hold what it proved; a project's first scoped
+> resource follows the README's recipe.
 
 ### Deliberately out of scope
 

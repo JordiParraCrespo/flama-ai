@@ -94,9 +94,9 @@ code, keeping the upstream code as an `upstreamCode` extension. Throwing a bare
 ## Config
 
 Config is composed from `registerAs` factories in `src/config/` (`app`,
-`database`, `redis`, `email`, `storage`, `oauth`, `stripe`), loaded in
+`database`, `redis`, `email`, `storage`, `oauth`), loaded in
 `AppModule` and read via `ConfigService`. Optional-credential config (OAuth,
-Stripe, S3, SMTP) uses genuinely optional schema keys (`z.string().optional()`,
+S3, SMTP) uses genuinely optional schema keys (`z.string().optional()`,
 never a sentinel default or `getOrThrow`) so the app boots without those env
 vars; each such feature is declared in `src/capabilities/capabilities.module.ts`,
 logged at startup, and the client-facing subset (`CLIENT_CAPABILITIES`) is

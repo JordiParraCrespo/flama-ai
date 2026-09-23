@@ -53,7 +53,7 @@ export const KNOWN_SUBJECTS = [
   'Invitation',
   'ApiToken',
   'AuditLog',
-  'Billing',
+  // flama:plugins known-subjects
   'all',
 ] as const;
 

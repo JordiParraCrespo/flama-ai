@@ -10,7 +10,7 @@ export interface PermissionPickerProps<TFieldValues extends FieldValues> {
   /**
    * The form this picker writes into. Each row takes its own field off it, so a
    * click re-renders the row it happened in and nothing else — the rule is
-   * "subscribe at the leaf", and eleven groups is where it starts to show.
+   * "subscribe at the leaf", and nine groups is where it starts to show.
    */
   control: Control<TFieldValues>;
   /** The field holding the `ScopeSelection`, e.g. `permissions`. */

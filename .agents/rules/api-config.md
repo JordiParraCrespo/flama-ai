@@ -30,8 +30,8 @@ its documentation. Never add a per-package `.env` or `.env.example`.
 
 ## Optional capabilities: a missing key removes a feature, it never throws
 
-Anything a self-hoster might not have — OAuth credentials, Stripe, S3,
-SMTP/Resend — is **optional capability config**, and the code must work
+Anything a self-hoster might not have — OAuth credentials, S3, SMTP/Resend,
+an integration's API key — is **optional capability config**, and the code must work
 without it. Model absence honestly:
 
 - Optional keys are genuinely optional in the Zod schema
@@ -50,11 +50,11 @@ without it. Model absence honestly:
   which reads `process.env` directly. Do not add a trim here or at a call site.
 - Declare the feature in `resolveCapabilities()`
   (`src/capabilities/capabilities.module.ts`). The resolved set — currently
-  `google_oauth`, `github_oauth`, `stripe_billing`, `s3_storage`,
-  `email_delivery` — is computed once at boot and logged at startup, so a
+  `google_oauth`, `github_oauth`, `s3_storage`, `email_delivery`, plus any a
+  plugin adds (`billing` brings `stripe_billing`) — is computed once at boot and logged at startup, so a
   self-hoster learns what the deployment can do from the log. Only the
   **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`:
-  the OAuth providers and `stripe_billing`) is served by
+  the OAuth providers) is served by
   `GET /health/capabilities`, so clients can hide UI for capabilities that are
   off (the web login page only renders configured providers). Server-internal
   capabilities (`s3_storage`, `email_delivery`) never go over the wire — a
@@ -62,8 +62,9 @@ without it. Model absence honestly:
   its UI already reveals. Add a capability to `CLIENT_CAPABILITIES` only when
   a client has a UI decision hanging on it.
 - Feature code that would need a missing key fails fast with a clear domain
-  error ("Billing is not configured on this server"), the way
-  `StripePaymentGateway` does — never by passing a placeholder downstream.
+  error ("Billing is not configured on this server", as the `billing`
+  plugin's `StripePaymentGateway` does) — never by passing a placeholder
+  downstream.
 
 ```typescript
 // WRONG — crashes at boot if env var is empty

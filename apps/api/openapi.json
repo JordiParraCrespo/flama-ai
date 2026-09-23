@@ -4452,172 +4452,6 @@
         "tags": ["Workspaces"]
       }
     },
-    "/api/v1/leads": {
-      "get": {
-        "operationId": "list",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LeadResponseDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List the leads the caller can reach",
-        "tags": ["Leads"]
-      },
-      "post": {
-        "description": "The lead is filed into the caller’s active organization; the body cannot name a different one.",
-        "operationId": "create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateLeadRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeadResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a lead",
-        "tags": ["Leads"]
-      }
-    },
-    "/api/v1/leads/{id}": {
-      "get": {
-        "operationId": "get",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LeadResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "LEAD_001 — Lead not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get one lead",
-        "tags": ["Leads"]
-      }
-    },
     "/api/v1/admin/users": {
       "get": {
         "operationId": "listUsers",
@@ -6176,7 +6010,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Which client-relevant optional features (OAuth providers, Stripe billing) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.",
+            "description": "Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6343,222 +6177,6 @@
         },
         "summary": "Readiness check",
         "tags": ["Health"]
-      }
-    },
-    "/api/v1/billing/checkout": {
-      "post": {
-        "operationId": "checkout",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCheckoutRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BillingSessionResponseDto"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "BILLING_006 — This user already has an active subscription",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "BILLING_001 — Billing is not configured",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a Stripe Checkout session for a subscription",
-        "tags": ["Billing"]
-      }
-    },
-    "/api/v1/billing/portal": {
-      "post": {
-        "operationId": "portal",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePortalRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BillingSessionResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "BILLING_002 — No billing customer exists for this user",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Open a Stripe Customer Portal session",
-        "tags": ["Billing"]
-      }
-    },
-    "/api/v1/billing/subscription": {
-      "get": {
-        "operationId": "getSubscription",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SubscriptionResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get the current user's subscription (null if none)",
-        "tags": ["Billing"]
-      }
-    },
-    "/api/v1/billing/subscriptions": {
-      "get": {
-        "operationId": "findAll",
-        "parameters": [
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Filter by status",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Items per page (default: 20, max: 100)",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "Page number (default: 1)",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          },
-          "403": {
-            "description": "AUTH_002 — The caller's roles do not permit this",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List all subscriptions (admin)",
-        "tags": ["Billing"]
-      }
-    },
-    "/api/v1/billing/metrics": {
-      "get": {
-        "operationId": "metrics",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RevenueMetricsResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "AUTH_002 — The caller's roles do not permit this",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetailsDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get aggregate revenue metrics (admin)",
-        "tags": ["Billing"]
       }
     }
   },
@@ -6985,7 +6603,7 @@
           },
           "label": {
             "type": "string",
-            "example": "View leads"
+            "example": "View workspaces"
           },
           "sensitive": {
             "type": "boolean",
@@ -7000,15 +6618,15 @@
         "properties": {
           "subject": {
             "type": "string",
-            "example": "Lead"
+            "example": "Workspace"
           },
           "label": {
             "type": "string",
-            "example": "Leads"
+            "example": "Workspaces"
           },
           "group": {
             "type": "string",
-            "example": "crm"
+            "example": "organization"
           },
           "actions": {
             "type": "array",
@@ -7018,7 +6636,7 @@
           },
           "fields": {
             "description": "Attributes that may be granted or denied individually.",
-            "example": ["value", "notes"],
+            "example": ["name"],
             "type": "array",
             "items": {
               "type": "string"
@@ -7026,7 +6644,7 @@
           },
           "scopes": {
             "description": "Scope dimensions this resource can be narrowed by.",
-            "example": ["organization", "team"],
+            "example": ["organization"],
             "type": "array",
             "items": {
               "type": "string"
@@ -7035,7 +6653,7 @@
           "credentialScope": {
             "type": "string",
             "description": "Credential-scope group, when the resource is reachable by API tokens.",
-            "example": "leads"
+            "example": "workspaces"
           }
         },
         "required": ["subject", "label", "group", "actions", "scopes"]
@@ -7045,7 +6663,7 @@
         "properties": {
           "group": {
             "type": "string",
-            "example": "crm"
+            "example": "organization"
           },
           "resources": {
             "type": "array",
@@ -7065,7 +6683,7 @@
           },
           "subject": {
             "type": "string",
-            "example": "Lead"
+            "example": "Workspace"
           }
         },
         "required": ["action", "subject"]
@@ -7110,7 +6728,7 @@
           },
           "resourceType": {
             "type": "string",
-            "example": "Lead",
+            "example": "Workspace",
             "description": "A registry subject."
           },
           "resourceId": {
@@ -7210,11 +6828,7 @@
                 "workspaces:read",
                 "workspaces:write",
                 "tokens:read",
-                "tokens:write",
-                "billing:read",
-                "billing:write",
-                "leads:read",
-                "leads:write"
+                "tokens:write"
               ]
             }
           },
@@ -7241,11 +6855,7 @@
                 "workspaces:read",
                 "workspaces:write",
                 "tokens:read",
-                "tokens:write",
-                "billing:read",
-                "billing:write",
-                "leads:read",
-                "leads:write"
+                "tokens:write"
               ]
             }
           },
@@ -7311,11 +6921,7 @@
                 "workspaces:read",
                 "workspaces:write",
                 "tokens:read",
-                "tokens:write",
-                "billing:read",
-                "billing:write",
-                "leads:read",
-                "leads:write"
+                "tokens:write"
               ]
             }
           },
@@ -7405,11 +7011,7 @@
               "workspaces:read",
               "workspaces:write",
               "tokens:read",
-              "tokens:write",
-              "billing:read",
-              "billing:write",
-              "leads:read",
-              "leads:write"
+              "tokens:write"
             ],
             "example": "users:read"
           },
@@ -7457,9 +7059,7 @@
               "members",
               "invitations",
               "workspaces",
-              "tokens",
-              "billing",
-              "leads"
+              "tokens"
             ],
             "example": "users"
           },
@@ -7515,11 +7115,7 @@
                 "workspaces:read",
                 "workspaces:write",
                 "tokens:read",
-                "tokens:write",
-                "billing:read",
-                "billing:write",
-                "leads:read",
-                "leads:write"
+                "tokens:write"
               ]
             }
           }
@@ -7557,11 +7153,7 @@
                 "workspaces:read",
                 "workspaces:write",
                 "tokens:read",
-                "tokens:write",
-                "billing:read",
-                "billing:write",
-                "leads:read",
-                "leads:write"
+                "tokens:write"
               ]
             }
           },
@@ -7631,11 +7223,7 @@
                 "workspaces:read",
                 "workspaces:write",
                 "tokens:read",
-                "tokens:write",
-                "billing:read",
-                "billing:write",
-                "leads:read",
-                "leads:write"
+                "tokens:write"
               ]
             }
           },
@@ -8322,91 +7910,6 @@
         },
         "required": ["userId"]
       },
-      "LeadResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "organizationId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "teamId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "ownerId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "example": "Acme Corp"
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "value": {
-            "type": "number",
-            "description": "Deal value in minor units.",
-            "example": 250000
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": ["id", "organizationId", "name", "value", "createdAt", "updatedAt"]
-      },
-      "CreateLeadRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "nullable": true
-          },
-          "teamId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "ownerId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "value": {
-            "type": "integer",
-            "minimum": 0,
-            "exclusiveMinimum": false
-          },
-          "notes": {
-            "type": "string",
-            "maxLength": 5000,
-            "nullable": true
-          }
-        },
-        "required": ["name"]
-      },
       "AdminUserResponseDto": {
         "type": "object",
         "properties": {
@@ -8631,198 +8134,9 @@
           "github_oauth": {
             "type": "boolean",
             "description": "Sign-in with GitHub is configured."
-          },
-          "stripe_billing": {
-            "type": "boolean",
-            "description": "Stripe billing is configured."
           }
         },
-        "required": ["google_oauth", "github_oauth", "stripe_billing"]
-      },
-      "CreateCheckoutRequest": {
-        "type": "object",
-        "properties": {
-          "priceId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "successUrl": {
-            "type": "string",
-            "format": "uri"
-          },
-          "cancelUrl": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        "required": ["priceId"]
-      },
-      "BillingSessionResponseDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "Stripe-hosted URL to redirect the browser to."
-          }
-        },
-        "required": ["url"]
-      },
-      "CreatePortalRequest": {
-        "type": "object",
-        "properties": {
-          "returnUrl": {
-            "type": "string",
-            "format": "uri"
-          }
-        }
-      },
-      "SubscriptionResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "trialing",
-              "active",
-              "past_due",
-              "canceled",
-              "unpaid",
-              "incomplete",
-              "incomplete_expired",
-              "paused"
-            ]
-          },
-          "priceId": {
-            "type": "string",
-            "nullable": true
-          },
-          "plan": {
-            "type": "string",
-            "nullable": true,
-            "description": "Human-readable plan name."
-          },
-          "unitAmount": {
-            "type": "number",
-            "nullable": true,
-            "description": "Recurring amount in the currency's minor unit (e.g. cents)."
-          },
-          "currency": {
-            "type": "string",
-            "nullable": true
-          },
-          "interval": {
-            "type": "string",
-            "nullable": true,
-            "enum": ["day", "week", "month", "year"]
-          },
-          "currentPeriodEnd": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "cancelAtPeriodEnd": {
-            "type": "boolean"
-          },
-          "canceledAt": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "priceId",
-          "plan",
-          "unitAmount",
-          "currency",
-          "interval",
-          "currentPeriodEnd",
-          "cancelAtPeriodEnd",
-          "canceledAt",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "CurrencyMrrDto": {
-        "type": "object",
-        "properties": {
-          "currency": {
-            "type": "string"
-          },
-          "mrr": {
-            "type": "number",
-            "description": "MRR for this currency in its minor unit (e.g. cents)."
-          }
-        },
-        "required": ["currency", "mrr"]
-      },
-      "RevenueMetricsResponseDto": {
-        "type": "object",
-        "properties": {
-          "currency": {
-            "type": "string",
-            "description": "Currency of the headline mrr/arr — the currency with the highest MRR."
-          },
-          "mrr": {
-            "type": "number",
-            "description": "Headline Monthly Recurring Revenue in minor units (yearly plans normalized /12)."
-          },
-          "arr": {
-            "type": "number",
-            "description": "Headline Annual Recurring Revenue in minor units (mrr * 12)."
-          },
-          "mrrByCurrency": {
-            "description": "Per-currency MRR breakdown (never mixes currencies into one total).",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CurrencyMrrDto"
-            }
-          },
-          "activeSubscriptions": {
-            "type": "number"
-          },
-          "trialingSubscriptions": {
-            "type": "number"
-          },
-          "pastDueSubscriptions": {
-            "type": "number"
-          },
-          "canceledSubscriptions": {
-            "type": "number"
-          },
-          "canceledLast30Days": {
-            "type": "number",
-            "description": "Subscriptions canceled within the trailing 30 days."
-          },
-          "churnRate": {
-            "type": "number",
-            "description": "Approximate monthly churn: canceledLast30Days / (active + canceledLast30Days), in [0, 1]."
-          }
-        },
-        "required": [
-          "currency",
-          "mrr",
-          "arr",
-          "mrrByCurrency",
-          "activeSubscriptions",
-          "trialingSubscriptions",
-          "pastDueSubscriptions",
-          "canceledSubscriptions",
-          "canceledLast30Days",
-          "churnRate"
-        ]
+        "required": ["google_oauth", "github_oauth"]
       }
     }
   }

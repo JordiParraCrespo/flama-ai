@@ -8,8 +8,8 @@ Consumed by `@flama/frontend-core`, `@flama/frontend-consumer` and
 
 ## Important: generated code
 
-Most of `src/data-access/api/openapi/` is **generated — do not hand-edit it**.
-It is regenerated from `apps/api`'s OpenAPI spec:
+`src/generated/` is **generated — do not hand-edit it**. It is regenerated from
+`apps/api`'s OpenAPI spec:
 
 ```bash
 # from repo root, after API controller/DTO changes:
@@ -18,16 +18,20 @@ pnpm generate:api-client
 pnpm --filter @flama/api-client generate
 ```
 
-The `generate` script runs `openapi` against `apps/api/openapi.json`, then a
-post-processing step (`scripts/openapi-postprocess.mjs`). Uses union types and
-`Api`-postfixed services.
+The `generate` script runs `openapi-ts` against `apps/api/openapi.json`, then a
+post-processing step (`scripts/openapi-postprocess.mjs`) that rebuilds the
+index files of the legacy client. That legacy layer — `src/data-access/` and
+`src/common/models/` — is no longer regenerated: delete a model with the
+endpoint it served, and keep its scope and capability types imported from
+`@flama/shared` (`Scope`, `ScopeResource`, `ClientCapabilities`), never
+spelled out.
 
 ## Layout
 
 ```
 src/
 ├── generated/       # hey-api SDK/client/react-query output (re-exported as heyApiSdk/heyApiClient/heyApiQuery)
-├── data-access/     # legacy generated client (models + services)
+├── data-access/     # legacy client (services), no longer regenerated
 ├── common/          # hand-written wrappers/config that survive regeneration
 ├── configure.ts     # ApiClientConfig, auth header helpers
 └── index.ts

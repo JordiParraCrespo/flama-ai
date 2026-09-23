@@ -17,7 +17,7 @@ export type ScopeLevel = ScopeAccessLevel | 'none';
  * The form's permission value: one level per resource.
  *
  * It used to be the flat `Scope[]` the API takes, which made the whole picker
- * one controlled value — eleven groups and thirty-three toggles re-rendering
+ * one controlled value — nine groups and twenty-seven toggles re-rendering
  * because one of them changed. Keyed by resource, each row is its own field and
  * a click costs one row. The flattening happens once, on submit.
  *
@@ -41,7 +41,7 @@ export function scopesFromSelection(
  * Whether anything at all is granted. A token with no scopes can call nothing.
  *
  * `undefined` counts as nothing, and that is not pedantry: a row registers its
- * field on mount without a value, so an untouched picker reads back as eleven
+ * field on mount without a value, so an untouched picker reads back as nine
  * keys holding `undefined`. Testing `!== 'none'` alone called that fully
  * granted and waved an empty token straight through.
  */

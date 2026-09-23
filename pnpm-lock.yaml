@@ -481,9 +481,6 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
-      stripe:
-        specifier: ^22.0.0
-        version: 22.3.2(@types/node@26.5.1)
       typeorm:
         specifier: ^0.3.31
         version: 0.3.31(ioredis@5.11.1)(pg@8.22.0)(ts-node@10.9.2(@swc/core@1.15.24(@swc/helpers@0.5.23))(@types/node@26.5.1)(typescript@6.0.3))
@@ -1618,6 +1615,9 @@ importers:
         specifier: ^0.13.1
         version: 0.13.1(@hey-api/openapi-ts@0.99.0(typescript@6.0.3))
     devDependencies:
+      '@flama/shared':
+        specifier: workspace:^
+        version: link:../../shared
       '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../tsconfig
@@ -15103,15 +15103,6 @@ packages:
 
   strip-literal@3.1.0:
     resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
-
-  stripe@22.3.2:
-    resolution: {integrity: sha512-O13QOvgEIQvDlTy6Ubb5kB980wpbhmoZNsgCXKILjCMZS67f+bW+6w99k3gnSi/N1lkryoj1WYdpGT5Wc5edjg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@types/node': '>=18'
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
 
   strtok3@10.3.5:
     resolution: {integrity: sha512-ki4hZQfh5rX0QDLLkOCj+h+CVNkqmp/CMf8v8kZpkNVK6jGQooMytqzLZYUVYIZcFZ6yDB70EfD8POcFXiF5oA==}
@@ -31663,10 +31654,6 @@ snapshots:
   strip-literal@3.1.0:
     dependencies:
       js-tokens: 9.0.1
-
-  stripe@22.3.2(@types/node@26.5.1):
-    optionalDependencies:
-      '@types/node': 26.5.1
 
   strtok3@10.3.5:
     dependencies:

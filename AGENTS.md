@@ -3,8 +3,8 @@
 ## Project overview
 
 Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It
-ships 7 apps and 15 shared packages, and five more apps are available as
-plugins.
+ships 7 apps and 15 shared packages; five more apps and Stripe billing are
+available as plugins.
 
 ## Monorepo structure
 
@@ -87,7 +87,8 @@ by those fences.
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
-it back. Five today: `cli`, `docs`, `admin-web`, `admin-mobile` and `qa`.
+it back. Six today: `cli`, `docs`, `admin-web`, `admin-mobile`, `qa` and
+`billing`, the one that is a module of the API rather than an app.
 
 ```bash
 pnpm plugin:list                  # what is on offer, and what is installed
@@ -106,7 +107,10 @@ text at a `flama:plugins <slot>` anchor; this plugin joining a block several
 features share — widening its fence, or, where every other owner was pruned
 and the block with them, op 1 again with the body the plugin carries; and the
 entry's own `json` edits run backwards. Copied files arrive trimmed by the
-prune's own edit. The shape of all of it is the header of
+prune's own edit. Generated files — `apps/api/openapi.json` and the
+API client — carry no markers and neither direction edits them: a feature
+with endpoints declares `regenerate`, and the prune, the installer and
+`starter:init` print it as the next step. The shape of all of it is the header of
 `scripts/plugins/plugin.mjs`, which is the only document. `plugin.mjs` is the
 command, `ops.mjs` the three ops, `source.mjs` where plugins come from and the
 one rule for whether a project can take one — which `pnpm starter:init` plans

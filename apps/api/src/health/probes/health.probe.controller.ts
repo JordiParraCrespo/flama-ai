@@ -48,7 +48,7 @@ export class HealthProbeController {
     status: 200,
     type: CapabilitiesResponseDto,
     description:
-      'Which client-relevant optional features (OAuth providers, Stripe billing) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.',
+      'Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.',
   })
   deploymentCapabilities(): CapabilitiesResponseDto {
     // Only the client-facing subset goes over the wire; the full registry

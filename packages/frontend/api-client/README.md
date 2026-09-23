@@ -17,8 +17,12 @@ Query `queryOptions` / `queryKeys`). Screens still go through
 and entity mapping stay in one place.
 
 Regenerate after any change to an API endpoint or its Swagger decorators. The
-legacy class client under `src/data-access/` remains until call sites finish
-moving to the SDK.
+legacy class client under `src/data-access/` (models in `src/common/models/`)
+remains until call sites finish moving to the SDK. Nothing regenerates it any
+more — the post-processing step only rebuilds its index files — so its scope
+and capability types are imported from `@flama/shared` rather than spelled
+out: a plugin that adds a scope or a capability reaches them without anyone
+editing this package.
 
 ## What's inside
 
