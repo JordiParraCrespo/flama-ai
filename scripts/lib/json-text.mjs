@@ -295,11 +295,17 @@ export function insertJsonEntry(text, path, entry, at) {
   }
 
   // Member boundaries: a line at the object's own member indentation opens a
-  // member, whether it is a one-liner or a block.
+  // member, whether it is a one-liner or a block — but only while nothing else
+  // is open. The `},` closing a nested value sits at that same indentation and
+  // is not a member, so counting by indentation alone puts `at` one slot late
+  // for every block member above it and inserts inside the next value.
   const indent = `${/^\s*/.exec(lines[opening])?.[0] ?? ''}  `;
+  const opensMember = new RegExp(`^${indent}\\S`);
   const starts = [];
+  let depth = 0;
   for (let i = opening + 1; i < close; i++) {
-    if (new RegExp(`^${indent}\\S`).test(lines[i])) starts.push(i);
+    if (depth === 0 && opensMember.test(lines[i])) starts.push(i);
+    depth += depthOf(lines[i]);
   }
   const index = at === undefined || at >= starts.length ? close : starts[at];
   if (at !== undefined && at > starts.length) return null;

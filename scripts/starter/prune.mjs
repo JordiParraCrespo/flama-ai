@@ -785,7 +785,11 @@ function main() {
   } else {
     fail('nothing to do: pass --without <ids>, --keep <ids>, --check or --list');
   }
-  if (!removed.length) fail('nothing to remove');
+  // `--init` is an operation in its own right: it retires the starter
+  // apparatus. A project that keeps every app still wants that done, so an
+  // init-only run is not "nothing to remove" — it is the one case where the
+  // removal list is legitimately empty.
+  if (!removed.length && !options.init) fail('nothing to remove');
 
   prune(manifest, removed, options);
 }

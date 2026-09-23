@@ -228,3 +228,32 @@ test('an empty object opens for a member and closes again when it goes', () => {
   const second = insertJsonEntry(trailing, ['scripts'], entry, 0);
   assert.equal(deleteJsonEntry(second, ['scripts'], 'beta'), trailing);
 });
+
+test('a member is counted at the object, not inside its values', () => {
+  // `at` counts members of the object, so the scan has to skip everything
+  // nested in one. The `},` closing a block member sits at the same
+  // indentation as a member start and is not one — count it and every `at`
+  // below a block member lands one slot late, inside the next value.
+  const text = [
+    '{',
+    '  "tasks": {',
+    '    "build": {',
+    '      "outputs": ["dist"]',
+    '    },',
+    '    "test": {}',
+    '  }',
+    '}',
+    '',
+  ].join('\n');
+  const entry = renderJsonEntry('lint', { cache: true }, 2);
+
+  const middle = insertJsonEntry(text, ['tasks'], entry, 1);
+  assert.deepEqual(Object.keys(JSON.parse(middle).tasks), ['build', 'lint', 'test']);
+  assert.equal(deleteJsonEntry(middle, ['tasks'], 'lint'), text);
+
+  // The end, past the block member, is the position that used to land inside
+  // `build` rather than after `test`.
+  const last = insertJsonEntry(text, ['tasks'], entry, 2);
+  assert.deepEqual(Object.keys(JSON.parse(last).tasks), ['build', 'test', 'lint']);
+  assert.equal(deleteJsonEntry(last, ['tasks'], 'lint'), text);
+});
