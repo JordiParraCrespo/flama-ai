@@ -337,9 +337,14 @@ test('removing the plugin returns the project to its exact bytes', () => {
 
 test('a feature that shapes generated files says how to rebuild them, both ways', () => {
   // The OpenAPI document and the client carry no markers, so neither the
-  // install nor the removal edits them; what they do is name the step.
+  // install nor the removal edits them; what they do is name the step. The
+  // step is the first script the project has — this one pruned the fuller one,
+  // the way an API-only project has no `generate:api-client`.
   const project = fixture();
-  const manifest = { ...BETA, feature: { ...BETA.feature, regenerate: ['pnpm generate:x'] } };
+  const pkg = join(project, 'package.json');
+  writeFileSync(pkg, `${JSON.stringify({ scripts: { 'generate:x': 'true' } }, null, 2)}\n`);
+  const regenerate = ['generate:full', 'generate:x'];
+  const manifest = { ...BETA, feature: { ...BETA.feature, regenerate } };
   const { result } = install(project, [], manifest);
   assert.equal(result.code, 0, result.out);
   assert.match(result.out, /Installed beta\. Next: pnpm install, pnpm generate:x/);

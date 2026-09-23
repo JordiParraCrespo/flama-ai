@@ -46,10 +46,11 @@
  *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }],
  *       //   A key is always declared with its value (`set`), so every edit
  *       //   runs both ways; `starter:check` keeps the value true to the file.
- *       "regenerate": ["pnpm generate:api-client"]
- *       //   What rebuilds the generated files this feature shapes — the
- *       //   OpenAPI document and the client — once it has come or gone. They
- *       //   carry no markers, so neither direction edits them; both say this.
+ *       "regenerate": ["generate:api-client", "generate:openapi"]
+ *       //   The root scripts that rebuild the generated files this feature
+ *       //   shapes — the OpenAPI document and the client — most complete
+ *       //   first; the step is the first one the project has. They carry no
+ *       //   markers, so neither direction edits them; both name the step.
  *     },
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
@@ -88,6 +89,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { regenerateSteps } from '../starter/prune.mjs';
 import {
   applyJsonEdits,
   insertBlocks,
@@ -223,7 +225,9 @@ function add(manifest, options) {
 }
 
 function followUps(manifest) {
-  return (manifest.feature.regenerate ?? []).map((step) => `, ${step}`).join('');
+  return regenerateSteps([manifest.feature])
+    .map((step) => `, ${step}`)
+    .join('');
 }
 
 // ---------------------------------------------------------------------------

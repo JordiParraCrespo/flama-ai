@@ -41,7 +41,7 @@ import {
   pluginIds,
   resolveSource,
 } from '../plugins/source.mjs';
-import { expandKeep, mentions, printMentions, resolveRemoval } from './prune.mjs';
+import { expandKeep, mentions, printMentions, regenerateSteps, resolveRemoval } from './prune.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -317,12 +317,10 @@ async function main() {
         ...removal.shared.flatMap((path) => manifest.shared[path].identifiers),
       ]),
     );
-    const followUps = [
-      ...new Set([
-        ...removal.features.flatMap((id) => manifest.features[id].regenerate ?? []),
-        ...result.add.flatMap((id) => plugins[id].feature.regenerate ?? []),
-      ]),
-    ];
+    const followUps = regenerateSteps([
+      ...removal.features.map((id) => manifest.features[id]),
+      ...result.add.map((id) => plugins[id].feature),
+    ]);
     const kept = result.keep.length ? `, ${result.keep.join(', ')}` : '';
     const added = result.add.length ? `, and ${result.add.join(', ')}` : '';
     console.log(`
