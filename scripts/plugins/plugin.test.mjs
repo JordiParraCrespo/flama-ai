@@ -291,3 +291,31 @@ test('removing the plugin returns the project to its exact bytes', () => {
   const dirty = status();
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
 });
+
+test('a plugin cannot declare the one JSON shape that has no inverse', () => {
+  // `deleteKeys` names a key without its value, so a prune can drop it and no
+  // install can put it back. That is right for a shipped feature, where the
+  // value lives in the file and duplicating it into the manifest would be the
+  // worse bug — and a trap for a plugin, whose install would silently do
+  // nothing. Better to refuse the manifest than to let it look like it works.
+  const project = fixture();
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, {
+    ...BETA,
+    feature: {
+      ...BETA.feature,
+      json: [{ file: 'package.json', path: ['scripts'], deleteKeys: ['beta'] }],
+    },
+  });
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  let code = 0;
+  let out = '';
+  try {
+    out = execFileSync('node', [script, 'add', 'beta', '--from', from], { encoding: 'utf8' });
+  } catch (error) {
+    code = error.status;
+    out = `${error.stdout ?? ''}${error.stderr ?? ''}`;
+  }
+  assert.equal(code, 2);
+  assert.match(out, /deleteKeys.*cannot install/s);
+});

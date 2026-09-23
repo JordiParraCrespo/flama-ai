@@ -42,6 +42,8 @@
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],
  *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }]
+ *       //   `deleteKeys` is prune-only and rejected here: it names a key
+ *       //   without its value, so no install could put it back.
  *     },
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
@@ -214,6 +216,19 @@ function loadPlugin(source, id) {
   for (const field of ['identifiers', 'paths']) {
     if (!Array.isArray(manifest.feature[field])) {
       fail(`${manifestPath}: feature.${field} must be an array`);
+    }
+  }
+  // `deleteKeys` is the one `json` shape with no inverse — it names a key
+  // whose value the starter owns, so the pruner can drop it and nothing can
+  // put it back. That is right for a shipped feature and a trap for a plugin:
+  // an install would silently do nothing and the key would never appear.
+  // Better to say so here than to let a manifest look like it works.
+  for (const edit of manifest.feature.json ?? []) {
+    if (edit.deleteKeys) {
+      fail(
+        `${manifestPath}: ${edit.file} uses "deleteKeys", which a plugin cannot install — ` +
+          'it names a key without its value. Use "set" so the edit runs in both directions.',
+      );
     }
   }
   return { ...manifest, dir };
