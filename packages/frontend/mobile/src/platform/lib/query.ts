@@ -4,8 +4,9 @@ import {
   type QueryPersistConfig,
 } from '@flama/frontend-core/react';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { QueryClient } from '@tanstack/react-query';
+import { focusManager, QueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
+import { AppState, Platform } from 'react-native';
 import { createMMKV } from 'react-native-mmkv';
 
 /**
@@ -19,6 +20,8 @@ import { createMMKV } from 'react-native-mmkv';
  * expo-secure-store.
  */
 export function createQueryPersistence(config: QueryPersistConfig = {}) {
+  followAppState();
+
   const queryClient = new QueryClient({
     defaultOptions: defaultQueryClientOptions(1000 * 60 * 5),
   });
@@ -46,4 +49,24 @@ export function createQueryPersistence(config: QueryPersistConfig = {}) {
   };
 
   return { queryClient, persistOptions };
+}
+
+/**
+ * Tells TanStack Query the app is "focused" while it is in the foreground.
+ *
+ * React Query's focus detection listens for the browser's `visibilitychange`,
+ * which React Native does not have — so without this, `refetchOnWindowFocus`
+ * never fires on a phone and a query only refreshes when a screen remounts.
+ * That matters most for feature flags: a kill switch pulled while the app sat
+ * in the background has to land when the user comes back to it.
+ */
+function followAppState(): void {
+  if (Platform.OS === 'web') return;
+
+  focusManager.setEventListener((handleFocus) => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      handleFocus(state === 'active');
+    });
+    return () => subscription.remove();
+  });
 }
