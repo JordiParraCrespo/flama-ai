@@ -33,12 +33,12 @@
       "json": [
         {
           "file": "turbo.json",
-          "path": "tasks.build.outputs",
+          "path": ["tasks", "build", "outputs"],
           "remove": [".next/**", "!.next/cache/**"]
         },
         {
           "file": "biome.json",
-          "path": "files.includes",
+          "path": ["files", "includes"],
           "remove": ["!**/.next"]
         }
       ]
@@ -133,22 +133,22 @@
       "json": [
         {
           "file": "turbo.json",
-          "path": "tasks.build.env",
+          "path": ["tasks", "build", "env"],
           "remove": ["EXPO_PUBLIC_*"]
         },
         {
           "file": "package.json",
-          "path": "pnpm.overrides",
+          "path": ["pnpm", "overrides"],
           "deleteKeys": ["react-native"]
         },
         {
           "file": "apps/api/package.json",
-          "path": "dependencies",
+          "path": ["dependencies"],
           "deleteKeys": ["@better-auth/expo"]
         },
         {
           "file": "biome.json",
-          "path": "files.includes",
+          "path": ["files", "includes"],
           "remove": ["!**/.expo"]
         }
       ]

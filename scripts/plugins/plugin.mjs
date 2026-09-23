@@ -317,48 +317,60 @@ export function checkFences(id, file, body) {
 }
 
 /**
- * Put back the lines a prune deleted from a JSON file.
+ * Apply the plugin's manifest-declared JSON edits, backwards.
  *
- * JSON holds no comments, so these have no `flama:plugins` anchor to aim at.
- * The plugin records the line the run followed instead, and it has to match
- * exactly once: a file that has drifted is one where the installer cannot
- * know where the lines belong, and guessing would corrupt it silently.
+ * A feature declares the JSON it is responsible for — a turbo env
+ * pass-through, a biome ignore, a pnpm override, a package script — and the
+ * pruner takes those out when the feature goes. Installing is the same
+ * declaration read the other way: `remove` becomes what goes back, and `at`
+ * says where, because unlike a line of text a position in an array is
+ * addressable and needs no anchor.
+ *
+ * That is the whole of it. The installer used to carry a second model for
+ * this, storing a block of JSON text plus the exact line it had to follow, on
+ * the grounds that JSON holds no comments and so no anchors. It does not need
+ * one: the edit was always declared, and a declaration runs in both
+ * directions.
  */
-function insertJsonBlocks(manifest, dryRun) {
-  const touched = [];
-  for (const block of manifest.jsonBlocks ?? []) {
-    const target = join(ROOT, block.file);
+function applyJsonEdits(manifest, dryRun) {
+  for (const edit of manifest.feature.json ?? []) {
+    const target = join(ROOT, edit.file);
     if (!existsSync(target)) {
-      if (block.needs) {
-        console.log(`  skip   ${block.file} (no ${block.needs} in this project)`);
+      if (edit.needs) {
+        console.log(`  skip   ${edit.file} (no ${edit.needs} in this project)`);
         continue;
       }
-      fail(`${block.file} does not exist; cannot put its lines back`);
+      fail(`${edit.file} does not exist; cannot apply a JSON edit`);
     }
-    const source = join(manifest.dir, block.source);
-    if (!existsSync(source)) fail(`${manifest.id}: json block "${block.source}" is missing`);
-    const body = readFileSync(source, 'utf8').replace(/\n$/, '');
+    const original = readFileSync(target, 'utf8');
+    let text = original;
 
-    const lines = readFileSync(target, 'utf8').split('\n');
-    const matches = lines.filter((line) => line === block.after).length;
-    if (matches !== 1) {
-      fail(
-        `${block.file}: the line this plugin inserts after appears ${matches} times — expected exactly one:\n  ${block.after.trim()}`,
-      );
+    // Array values go back at the index the removal recorded.
+    for (const [index, value] of (edit.remove ?? []).entries()) {
+      const at = edit.at?.[index];
+      if (at === undefined) fail(`${edit.file}: no position recorded for "${value}"`);
+      const next = insertJsonValue(text, edit.path, value, at);
+      if (next === null) fail(`${edit.file}: cannot put "${value}" back at ${edit.path.join('.')}[${at}]`);
+      text = next;
     }
-    const index = lines.indexOf(block.after);
-    lines.splice(index + 1, 0, ...body.split('\n'));
-    const text = lines.join('\n');
+    // Object keys go back as entries, rendered in the file's own style and at
+    // the position the removal recorded, so a script lands beside the ones it
+    // belongs with rather than after the last line in the file.
+    for (const [index, [key, value]] of Object.entries(edit.set ?? {}).entries()) {
+      const at = edit.at === undefined ? undefined : edit.at[index];
+      const next = insertJsonEntry(text, edit.path, renderJsonEntry(key, value, edit.path.length + 1), at);
+      if (next === null) fail(`${edit.file}: cannot put "${key}" back at ${edit.path.join('.')}`);
+      text = next;
+    }
+    if (text === original) continue;
     try {
       JSON.parse(text);
     } catch (error) {
-      fail(`${block.file}: putting the lines back did not produce valid JSON — ${error.message}`);
+      fail(`${edit.file}: the edit did not produce valid JSON (${error.message})`);
     }
-    console.log(`  json   ${block.file} (after ${block.after.trim()})`);
+    console.log(`  edit   ${edit.file}`);
     if (!dryRun) writeFileSync(target, text);
-    if (!touched.includes(block.file)) touched.push(block.file);
   }
-  return touched;
 }
 
 function insertBlocks(manifest, dryRun) {
@@ -571,7 +583,7 @@ function add(manifest, options) {
   }
 
   insertBlocks(manifest, dryRun);
-  insertJsonBlocks(manifest, dryRun);
+  applyJsonEdits(manifest, dryRun);
   if (!dryRun) widenCoOwned(manifest, dryRun);
 
   writeFeature(manifest, paths, dryRun);

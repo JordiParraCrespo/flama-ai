@@ -551,9 +551,10 @@ function prune(manifest, removedIds, options) {
     editJson(
       edit.file,
       (json) => {
-        const segments = edit.path.split('.');
-        const parent = segments.slice(0, -1).reduce((node, key) => node?.[key], json);
-        const key = segments.at(-1);
+        // `path` is an array of keys, not a dotted string: some of the keys
+        // these edits address are file paths, and a dot there is data.
+        const parent = edit.path.slice(0, -1).reduce((node, key) => node?.[key], json);
+        const key = edit.path.at(-1);
         const target = parent?.[key];
         if (target === undefined) return [];
         if (Array.isArray(target) && edit.remove) {
@@ -562,9 +563,13 @@ function prune(manifest, removedIds, options) {
           parent[key] = kept;
           return target.filter((value) => !kept.includes(value));
         }
-        if (edit.deleteKeys && typeof target === 'object') {
+        // `set` declares the keys *and* their values, so an install can put
+        // them back; here only the names matter. One declaration, read in
+        // whichever direction the caller is going.
+        const keys = edit.deleteKeys ?? Object.keys(edit.set ?? {});
+        if (keys.length && typeof target === 'object') {
           const deleted = [];
-          for (const name of edit.deleteKeys) {
+          for (const name of keys) {
             if (name in target) {
               delete target[name];
               deleted.push(name);

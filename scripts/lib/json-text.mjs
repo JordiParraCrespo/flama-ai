@@ -220,6 +220,27 @@ function findArray(lines, path) {
   return null;
 }
 
+/**
+ * How many brackets the line opens and does not close, ignoring any inside a
+ * string — `"qa": "pnpm --filter {x} qa"` opens nothing.
+ */
+function depthOf(line) {
+  let depth = 0;
+  let inString = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (inString) {
+      if (char === '\\') i++;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === '{' || char === '[') depth++;
+    else if (char === '}' || char === ']') depth--;
+  }
+  return depth;
+}
+
 /** The line closing the block opened on `index`, by indentation. */
 function closingOf(lines, index) {
   const indent = /^\s*/.exec(lines[index])?.[0] ?? '';
@@ -267,24 +288,39 @@ export function deleteJsonEntry(text, path, key) {
 }
 
 /**
- * Append `entry` — the verbatim text `readJsonEntry` returned — to the object
- * at `path`, as its last member.
+ * Put `entry` — text of the shape `readJsonEntry` returns — into the object at
+ * `path`, at member `at`, or last when `at` is omitted.
  *
- * Last rather than in its old position: order in these files is not semantic,
- * and appending is the one position that needs nothing recorded and cannot
- * drift as other entries come and go.
+ * Order in these files is not semantic, so appending is always correct; `at`
+ * is for putting something back where a reader would expect it, next to the
+ * scripts it belongs with rather than after the last one in the file.
  */
-export function insertJsonEntry(text, path, entry) {
+export function insertJsonEntry(text, path, entry, at) {
   const lines = text.split('\n');
   const opening = findObject(lines, path);
   if (opening === null) return null;
   const close = closingOf(lines, opening);
   if (close === -1) return null;
-  // The previous last member now has a neighbour.
-  if (close - 1 > opening) {
-    lines[close - 1] = `${lines[close - 1].replace(/\s*$/, '')},`;
+
+  // Member boundaries: a line at the object's own member indentation opens a
+  // member, whether it is a one-liner or a block.
+  const indent = `${/^\s*/.exec(lines[opening])?.[0] ?? ''}  `;
+  const starts = [];
+  for (let i = opening + 1; i < close; i++) {
+    if (new RegExp(`^${indent}\\S`).test(lines[i])) starts.push(i);
   }
-  lines.splice(close, 0, ...entry.split('\n'));
+  const index = at === undefined || at >= starts.length ? close : starts[at];
+  if (at !== undefined && at > starts.length) return null;
+
+  const body = entry.split('\n');
+  const last = index === close;
+  if (last && starts.length) {
+    // The previous last member now has a neighbour.
+    lines[close - 1] = `${lines[close - 1].replace(/\s*$/, '')},`;
+  } else if (!last) {
+    body[body.length - 1] = `${body[body.length - 1].replace(/\s*$/, '')},`;
+  }
+  lines.splice(index, 0, ...body);
   return lines.join('\n');
 }
 
@@ -297,8 +333,10 @@ function findEntry(lines, path, key) {
   const match = new RegExp(`^\\s*${quote(key)}\\s*:`);
   const start = lines.findIndex((line, i) => i > opening && i < close && match.test(line));
   if (start === -1) return null;
-  // A one-line entry closes on its own line; a block closes by indentation.
-  const end = /[}\]],?\s*$/.test(lines[start]) ? start : closingOf(lines, start);
+  // A one-line entry — a string, a number, a short array or object — closes on
+  // its own line, which is to say its brackets balance there. Anything else is
+  // a block, and closes by indentation.
+  const end = depthOf(lines[start]) === 0 ? start : closingOf(lines, start);
   return end === -1 ? null : [start, end];
 }
 

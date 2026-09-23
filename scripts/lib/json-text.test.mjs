@@ -163,3 +163,28 @@ test('renderJsonEntry breaks an array only when it stops fitting', () => {
   assert.equal(rendered.split('\n').length, long.length + 2);
   assert.equal(renderJsonEntry('paths', [], 0), '"paths": []');
 });
+
+test('insertJsonEntry puts a member back where a reader expects it', () => {
+  const text = [
+    '{',
+    '  "scripts": {',
+    '    "build": "turbo build",',
+    '    "test": "turbo test",',
+    '    "release": "changeset publish"',
+    '  }',
+    '}',
+  ].join('\n');
+
+  // Out of the middle and back into the middle.
+  const entry = readJsonEntry(text, ['scripts'], 'test');
+  const without = deleteJsonEntry(text, ['scripts'], 'test');
+  assert.equal(insertJsonEntry(without, ['scripts'], entry, 1), text);
+
+  // Appended when no position is given, and still valid JSON.
+  const appended = insertJsonEntry(without, ['scripts'], entry);
+  assert.deepEqual(Object.keys(JSON.parse(appended).scripts), ['build', 'release', 'test']);
+
+  // First.
+  const first = insertJsonEntry(without, ['scripts'], entry, 0);
+  assert.deepEqual(Object.keys(JSON.parse(first).scripts), ['test', 'build', 'release']);
+});
