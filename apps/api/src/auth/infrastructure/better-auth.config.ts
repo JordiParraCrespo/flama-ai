@@ -41,7 +41,6 @@ const superadminAc = defaultAc.newRole({
 const OAUTH_SCOPES_SUPPORTED = ['openid', 'profile', 'email', 'offline_access', ...SCOPES];
 
 const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
-const adminFrontendUrl = process.env.ADMIN_FRONTEND_URL ?? 'http://localhost:3003';
 // flama:begin mobile
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
 // flama:end mobile
@@ -103,7 +102,6 @@ export const auth = betterAuth({
   database: pool,
   trustedOrigins: [
     frontendUrl,
-    adminFrontendUrl,
     // flama:begin mobile
     `${mobileScheme}://`,
     // flama:end mobile
