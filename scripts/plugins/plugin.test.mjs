@@ -27,7 +27,17 @@ test('featureEntry keeps the manifest key order and drops empty lists', () => {
       scripts: ['widget'],
     },
   });
-  assert.deepEqual(Object.keys(entry), ['title', 'summary', 'identifiers', 'paths', 'scripts']);
+  // `plugin` marks the entry as installed rather than shipped — the one thing
+  // that tells the two apart now that they share features.json.
+  assert.deepEqual(Object.keys(entry), [
+    'title',
+    'summary',
+    'plugin',
+    'identifiers',
+    'paths',
+    'scripts',
+  ]);
+  assert.equal(entry.plugin, true);
   assert.deepEqual(entry.scripts, ['widget']);
 });
 

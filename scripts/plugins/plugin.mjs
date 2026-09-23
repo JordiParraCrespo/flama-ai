@@ -54,8 +54,9 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { insertJsonEntry, insertJsonValue, renderJsonEntry } from '../lib/json-text.mjs';
 import { findAnchor, MARKER_RE, MarkerError } from '../lib/markers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -67,7 +68,6 @@ const FEATURES_PATH = join(ROOT, 'scripts', 'starter', 'features.json');
  * every install would churn it. `prune.mjs` merges this one at load, so an
  * installed plugin is a feature in every way that matters.
  */
-const INSTALLED_PATH = join(ROOT, '.flama-plugins.json');
 const PRUNE_PATH = join(ROOT, 'scripts', 'starter', 'prune.mjs');
 /** Where plugins come from when `--from` is not given. */
 const DEFAULT_REPO = 'https://github.com/JordiParraCrespo/flama-ai-plugins.git';
@@ -189,42 +189,20 @@ function loadPlugin(source, id) {
 }
 
 /**
- * The starter's own features, if the starter apparatus is still here.
+ * The project's manifest: every optional feature it has, the starter's and the
+ * installed alike.
  *
- * A one-shot `/starter-init` prune deletes `scripts/starter/`, and a finished
- * project is exactly where plugins are meant to be useful. Nothing in an
- * install actually needs the starter's manifest — what a project has is its
- * own `.flama-plugins.json` — so its absence is a project that has been
- * initialised, not an error.
+ * One catalog, which is why `scripts/starter` outlives a one-shot prune — the
+ * pruner reads this file, and removal is the pruner. A plugin's entry is
+ * written in here on install and taken out by the prune that removes it.
  */
 function loadFeatures() {
-  if (!existsSync(FEATURES_PATH)) return { features: {}, shared: {} };
   return JSON.parse(readFileSync(FEATURES_PATH, 'utf8'));
 }
 
-/** Whether the pruner survived the project's initialisation. */
-function hasPruner() {
-  return existsSync(PRUNE_PATH);
-}
-
-function loadInstalled() {
-  if (!existsSync(INSTALLED_PATH)) return { features: {}, shared: {} };
-  const installed = JSON.parse(readFileSync(INSTALLED_PATH, 'utf8'));
-  return { features: installed.features ?? {}, shared: installed.shared ?? {} };
-}
-
-function writeInstalled(installed, dryRun) {
-  if (dryRun) return;
-  if (!Object.keys(installed.features).length) {
-    if (existsSync(INSTALLED_PATH)) rmSync(INSTALLED_PATH);
-    return;
-  }
-  writeFileSync(INSTALLED_PATH, `${JSON.stringify(installed, null, 2)}\n`);
-}
-
-/** Every feature this project has: the starter's, plus what was installed. */
+/** Every feature this project has. */
 function allFeatures() {
-  return { ...loadFeatures().features, ...loadInstalled().features };
+  return loadFeatures().features;
 }
 
 /**
@@ -236,6 +214,10 @@ export function featureEntry(manifest, landed) {
   return {
     title,
     summary,
+    // What tells the two apart now that they share a catalog: `starter:prune`
+    // treats every feature alike, but `plugin:remove` only removes what a
+    // plugin installed, and `plugin:list` only calls those installed.
+    plugin: true,
     identifiers,
     // The paths that actually landed, which is all of them unless a file was
     // skipped for want of the feature whose tree it lives in.
@@ -247,36 +229,60 @@ export function featureEntry(manifest, landed) {
 }
 
 /**
- * The `shared` entries in `features.json` that name this plugin.
+ * Write the plugin's entry into `features.json`, in the file's own style.
  *
- * A shared path — the design system, `packages/frontend/core` —
- * belongs to no single feature and survives while any dependant remains. A
- * plugin therefore does not own those paths; it owns its *membership* of
- * their `neededBy` lists, and installing or removing it edits those lists.
- * Leave one stale and `starter:check` fails on a feature that no longer
- * exists, which is how this was found.
+ * The entry is rendered from the object the plugin declares rather than pasted
+ * from a stored blob, so an installed feature reads exactly like one that
+ * shipped — and the prune that removes it deletes the lines this added, which
+ * is what keeps the file byte-identical across an install and a remove.
+ *
+ * A shared path is not owned, it is *joined*: the design system belongs to
+ * whichever apps remain, so a plugin appends itself to `neededBy` and the
+ * prune takes it back out. The exception is a path whose every dependant was
+ * optional and left together — the control plane's domain package belongs to
+ * both admin apps and nothing else — and then there is no entry to join, so
+ * the plugin carries one.
  */
-function joinShared(installed, manifest) {
-  for (const entry of manifest.feature.shared ?? []) {
-    const carried = Boolean(manifest.sharedFiles?.[entry.path]);
-    const current = installed.shared[entry.path];
-    const dependants = (Array.isArray(current) ? current : current?.neededBy) ?? [];
-    if (!dependants.includes(manifest.id)) dependants.push(manifest.id);
-    // A carried path has no entry in features.json to join — every dependant
-    // was optional and they all left — so the record carries the entry too.
-    installed.shared[entry.path] = carried
-      ? { identifiers: entry.identifiers ?? [], neededBy: dependants }
-      : dependants;
-  }
-}
+function writeFeature(manifest, landed, dryRun) {
+  console.log(`  edit   ${relative(ROOT, FEATURES_PATH)} (+${manifest.id})`);
+  const original = readFileSync(FEATURES_PATH, 'utf8');
+  let text = original;
 
-function leaveShared(installed, id) {
-  for (const [path, value] of Object.entries(installed.shared)) {
-    const carried = Array.isArray(value) ? null : value;
-    const rest = (carried ? carried.neededBy : value).filter((dep) => dep !== id);
-    if (!rest.length) delete installed.shared[path];
-    else installed.shared[path] = carried ? { ...carried, neededBy: rest } : rest;
+  const entry = featureEntry(manifest, landed);
+  if (loadFeatures().features[manifest.id]) {
+    fail(`"${manifest.id}" is already a feature of this project — nothing to install`);
   }
+  const inserted = insertJsonEntry(text, ['features'], renderJsonEntry(manifest.id, entry, 2));
+  if (inserted === null) fail('features.json: no "features" object to add the entry to');
+  text = inserted;
+
+  for (const shared of manifest.feature.shared ?? []) {
+    const current = JSON.parse(text).shared[shared.path];
+    if (current) {
+      if (current.neededBy.includes(manifest.id)) continue;
+      const next = insertJsonValue(
+        text,
+        ['shared', shared.path, 'neededBy'],
+        manifest.id,
+        current.neededBy.length,
+      );
+      if (next === null) fail(`features.json: cannot join shared "${shared.path}"`);
+      text = next;
+      continue;
+    }
+    const carried = { identifiers: shared.identifiers ?? [], neededBy: [manifest.id] };
+    const next = insertJsonEntry(text, ['shared'], renderJsonEntry(shared.path, carried, 2));
+    if (next === null) fail('features.json: no "shared" object to carry an entry into');
+    text = next;
+  }
+
+  // Parsing it back is the cheap half of the check; `--check` is the rest.
+  try {
+    JSON.parse(text);
+  } catch (error) {
+    fail(`features.json: the entry did not produce valid JSON (${error.message})`);
+  }
+  if (!dryRun) writeFileSync(FEATURES_PATH, text);
 }
 
 // ---------------------------------------------------------------------------
@@ -525,7 +531,7 @@ function add(manifest, options) {
     }
   }
   // Only the paths that actually land are declared: the entry goes into
-  // `.flama-plugins.json`, which the honesty check reads, and a path that was
+  // `features.json`, which the honesty check reads, and a path that was
   // skipped would read there as a file the project has lost.
   const paths = manifest.feature.paths.filter((path) => !absent(path));
   for (const path of paths) {
@@ -567,11 +573,7 @@ function add(manifest, options) {
   insertJsonBlocks(manifest, dryRun);
   if (!dryRun) widenCoOwned(manifest, dryRun);
 
-  console.log(`  edit   .flama-plugins.json (+${manifest.id})`);
-  const installed = loadInstalled();
-  installed.features[manifest.id] = featureEntry(manifest, paths);
-  joinShared(installed, manifest);
-  writeInstalled(installed, dryRun);
+  writeFeature(manifest, paths, dryRun);
 
   if (dryRun) {
     console.log('\nDry run: nothing was changed.');
@@ -581,14 +583,8 @@ function add(manifest, options) {
   // fails if the plugin left a mention of itself outside its own paths and
   // blocks. An install that passes it is indistinguishable from a feature
   // that shipped in the box.
-  // The honesty check is the pruner's, so a project that pruned it away
-  // cannot run it. The install still stands; it just goes unverified.
-  if (hasPruner()) {
-    console.log('\nChecking the manifest still describes the repo…');
-    runPrune(['--check']);
-  } else {
-    console.log('\nNo scripts/starter here, so the manifest check is skipped.');
-  }
+  console.log('\nChecking the manifest still describes the repo…');
+  runPrune(['--check']);
   console.log(`\nInstalled ${manifest.id}. Next: pnpm install${followUps(manifest)}`);
 }
 
@@ -608,24 +604,14 @@ function followUps(manifest) {
  */
 function remove(id, options) {
   const { dryRun } = options;
-  const installed = loadInstalled();
-  if (!installed.features[id]) {
+  const features = allFeatures();
+  if (!features[id]?.plugin) {
     fail(
-      loadFeatures().features[id]
+      features[id]
         ? `"${id}" ships with this starter; use pnpm starter:prune to drop it`
         : `"${id}" is not installed`,
     );
   }
-  // Removal *is* the pruner, so it cannot outlive it. Say which of the two
-  // ways out applies rather than crash on a missing file.
-  if (!hasPruner()) {
-    fail(
-      `removing a plugin runs scripts/starter/prune.mjs, which this project no longer has.\n` +
-        `Delete the paths in .flama-plugins.json by hand and drop its "${id}" entry, or keep\n` +
-        `the starter apparatus next time by pruning with --keep-tooling.`,
-    );
-  }
-  const features = allFeatures();
 
   // A feature that requires this one would be pruned along with it, which is
   // a bigger change than uninstalling a plugin. `starter:prune` is the tool
@@ -639,18 +625,14 @@ function remove(id, options) {
     );
   }
 
-  const args = [PRUNE_PATH, '--without', id, '--keep-tooling', '--no-install'];
+  // Everything the install wrote — the paths, the fenced blocks, the manifest
+  // entry, this plugin's name in any `neededBy` it joined — is what
+  // `--without` already takes out. There is nothing left for the installer to
+  // undo, which is the point of there being one catalog.
+  const args = ['--without', id, '--no-install'];
   if (dryRun) args.push('--dry-run');
-  runPrune(args.slice(1));
+  runPrune(args);
 
-  // `prune.mjs` removes what a feature owns but never edits its own manifest —
-  // a one-shot prune deletes it outright instead. Here it has to survive, so
-  // the entry goes now, or `--check` would report a feature whose paths are
-  // gone.
-  console.log(`  edit   .flama-plugins.json (-${id})`);
-  delete installed.features[id];
-  leaveShared(installed, id);
-  writeInstalled(installed, dryRun);
   if (dryRun) {
     console.log('\nDry run: nothing was changed.');
     return;
@@ -664,7 +646,7 @@ function remove(id, options) {
 // ---------------------------------------------------------------------------
 
 function list(source) {
-  const installed = loadInstalled().features;
+  const features = allFeatures();
   const dir = pluginsDir(source);
   const ids = pluginIds(source);
   if (!ids.length) {
@@ -673,7 +655,7 @@ function list(source) {
   }
   for (const id of ids) {
     const manifest = JSON.parse(readFileSync(join(dir, id, 'plugin.json'), 'utf8'));
-    const state = installed[id] ? 'installed' : '-';
+    const state = features[id]?.plugin ? 'installed' : '-';
     console.log(`${id.padEnd(16)} ${state.padEnd(10)} ${manifest.feature?.summary ?? ''}`);
   }
 }

@@ -304,6 +304,8 @@ function findEntry(lines, path, key) {
 
 /** The line index where the object at `path` opens. */
 function findObject(lines, path) {
+  // The root object: the file's opening brace.
+  if (!path.length) return lines.findIndex((line) => line.trim().startsWith('{'));
   const segments = path;
   let from = 0;
   let to = lines.length;
@@ -317,4 +319,44 @@ function findObject(lines, path) {
     if (to === -1) return null;
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+/** Where an array stops fitting on one line and goes one member per line. */
+const WIDTH = 100;
+
+/**
+ * Render `value` as an entry of an object, in the style these manifests are
+ * written in: two-space indentation, and an array on one line while it fits.
+ *
+ * A plugin declares its manifest entry as an object, not as a blob of text, so
+ * it stays readable and diffable — this is what turns that object back into
+ * lines the file would have had if the entry had always been there. Removal
+ * deletes the lines insertion added, so the file returns to its exact bytes
+ * whatever this produces; matching the house style is what stops an installed
+ * plugin looking like a foreign body.
+ */
+export function renderJsonEntry(key, value, depth = 1) {
+  return `${'  '.repeat(depth)}${render(key)}: ${renderValue(value, depth)}`;
+}
+
+function renderValue(value, depth) {
+  const pad = '  '.repeat(depth);
+  if (Array.isArray(value)) {
+    if (!value.length) return '[]';
+    const inline = `[${value.map((item) => renderValue(item, depth + 1)).join(', ')}]`;
+    if (!inline.includes('\n') && pad.length + inline.length <= WIDTH) return inline;
+    const members = value.map((item) => `${pad}  ${renderValue(item, depth + 1)}`);
+    return `[\n${members.join(',\n')}\n${pad}]`;
+  }
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value);
+    if (!keys.length) return '{}';
+    const members = keys.map((key) => renderJsonEntry(key, value[key], depth + 1));
+    return `{\n${members.join(',\n')}\n${pad}}`;
+  }
+  return JSON.stringify(value);
 }

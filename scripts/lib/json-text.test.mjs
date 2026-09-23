@@ -10,6 +10,7 @@ import {
   insertJsonEntry,
   insertJsonValue,
   readJsonEntry,
+  renderJsonEntry,
 } from './json-text.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -137,4 +138,28 @@ test('the real features.json round-trips through an entry and a neededBy join', 
       assert.equal(insertJsonValue(removed.text, path, dependant, removed.at), text, sharedPath);
     }
   }
+});
+
+test('an entry rendered from its object is the entry the file already had', () => {
+  // What lets a plugin declare its manifest entry as JSON rather than as a
+  // blob of text: if rendering reproduces what the starter wrote, an installed
+  // entry is indistinguishable from a hand-written one.
+  const path = join(ROOT, 'scripts', 'starter', 'features.json');
+  const text = readFileSync(path, 'utf8');
+  const manifest = JSON.parse(text);
+
+  for (const section of ['features', 'shared']) {
+    for (const [key, value] of Object.entries(manifest[section])) {
+      assert.equal(renderJsonEntry(key, value, 2), readJsonEntry(text, [section], key), key);
+    }
+  }
+});
+
+test('renderJsonEntry breaks an array only when it stops fitting', () => {
+  assert.equal(renderJsonEntry('paths', ['a', 'b'], 0), '"paths": ["a", "b"]');
+  const long = Array.from({ length: 8 }, (_, i) => `a-rather-long-path-number-${i}`);
+  const rendered = renderJsonEntry('paths', long, 0);
+  assert.match(rendered, /^"paths": \[\n/);
+  assert.equal(rendered.split('\n').length, long.length + 2);
+  assert.equal(renderJsonEntry('paths', [], 0), '"paths": []');
 });

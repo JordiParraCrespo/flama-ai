@@ -176,8 +176,8 @@
     }
   },
   "tooling": {
-    "$comment": "The starter apparatus itself, removed at the end of a one-shot prune.",
-    "paths": ["scripts/starter", ".agents/skills/starter-init"],
-    "scripts": ["starter:prune", "starter:check"]
+    "$comment": "The one-shot half of the apparatus, removed at the end of a prune. scripts/starter and its two package scripts stay: removal is the pruner, so a project that can install a plugin can always remove one.",
+    "paths": [".agents/skills/starter-init"],
+    "scripts": []
   }
 }

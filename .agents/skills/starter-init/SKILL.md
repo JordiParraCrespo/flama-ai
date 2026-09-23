@@ -76,8 +76,8 @@ question that must block: a prune is a large deletion, and undoing it is a
 ## 3. Prune
 
 ```bash
-node scripts/starter/prune.mjs --keep <ids> --dry-run   # show the plan
-node scripts/starter/prune.mjs --keep <ids>             # do it (runs pnpm install)
+node scripts/starter/prune.mjs --keep <ids> --init --dry-run   # show the plan
+node scripts/starter/prune.mjs --keep <ids> --init             # do it (runs pnpm install)
 ```
 
 Prefer `--keep`: it names what the user asked for, and the shared packages
@@ -93,17 +93,13 @@ that cannot carry markers (root `package.json` scripts and overrides,
 `turbo.json`, `biome.json`, `apps/api/package.json`, `.changeset/config.json`),
 rewrites pending changesets that name a removed package, refreshes the
 lockfile, and prints the remaining mentions of the removed features. It also
-removes itself and this skill, and strips every marker, kept features
-included: markers exist only to serve the prune and are not meant to survive
-it.
+removes this skill, which is one-shot.
 
-**Pass `--keep-tooling` if the project may ever want a plugin removed.**
-`plugin:remove` *is* the pruner — it shells out to `prune.mjs` — so a project
-that pruned the starter apparatus away can still add plugins and list them,
-but cannot take one back out except by hand. Ask, and default to
-`--keep-tooling` whenever the user is adding plugins at all: the cost of
-keeping it is that the markers stay in the tree, and the cost of the other
-choice is a door that closes quietly.
+**Pass `--init`**, which is what retires this skill. Everything else stays,
+every time: `scripts/starter`, `features.json` and every marker. They are not
+leftovers — `plugin:remove` *is* the pruner, it reads that manifest and finds
+a plugin's lines by those fences, so a project that can add a plugin can
+always take it back out.
 
 Then prove the trimmed repo is whole:
 
@@ -128,9 +124,9 @@ pnpm plugin:add admin-web        # brings packages/frontend/admin with it
 pnpm plugin:add qa               # needs admin-web, so install that first
 ```
 
-Each copies its files, puts its blocks back at the anchors, and records
-itself in `.flama-plugins.json` — from which point it is a feature like any
-other and `pnpm starter:check` covers it. A plugin whose file belongs to a
+Each copies its files, puts its blocks back at the anchors, and writes its
+entry into `features.json` — from which point it is a feature like any other,
+marked `"plugin": true`, and `pnpm starter:check` covers it. A plugin whose file belongs to a
 feature this project pruned says so and skips that piece: installing `cli`
 without `docs` leaves out the docs page and its sidebar entry, which is
 correct rather than a failure.
