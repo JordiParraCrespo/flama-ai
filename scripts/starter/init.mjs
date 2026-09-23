@@ -33,7 +33,7 @@ import {
   pluginIds,
   resolveSource,
 } from '../plugins/plugin.mjs';
-import { expandKeep, resolveRemoval } from './prune.mjs';
+import { expandKeep, mentions, printMentions, resolveRemoval } from './prune.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -261,7 +261,7 @@ async function main() {
   }
 
   if (result.remove.length) {
-    run('node', [PRUNE, '--without', result.remove.join(','), '--no-install']);
+    run('node', [PRUNE, '--without', result.remove.join(','), '--no-install', '--no-report']);
   }
   for (const id of result.add) run('node', [PLUGIN, 'add', id, '--from', source.dir]);
   if (options.install) {
@@ -269,6 +269,18 @@ async function main() {
     run('pnpm', ['install']);
   }
   run('node', [PRUNE, '--check']);
+
+  // Last, over the finished project: the prose that still names what went,
+  // including any a plugin brought in.
+  const { features: gone, shared: goneShared } = result.remove.length
+    ? resolveRemoval(manifest, result.remove)
+    : { features: [], shared: [] };
+  printMentions(
+    mentions([
+      ...gone.flatMap((id) => manifest.features[id].identifiers),
+      ...goneShared.flatMap((path) => manifest.shared[path].identifiers),
+    ]),
+  );
 
   const followUps = result.add.flatMap((id) => plugins[id].postInstall ?? []);
   console.log(`

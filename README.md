@@ -92,6 +92,8 @@ pnpm starter:init
 It asks which apps to keep (the API always stays) and which plugins to add,
 shows the plan, and carries it out: removes what goes, installs what comes in
 the order they need each other, refreshes the lockfile and checks the result.
+Last, it lists the lines of prose that still mention what was removed, file by
+file, for you (or your agent) to reword.
 It refuses to run on uncommitted changes, so undoing it is always
 `git reset --hard && git clean -fd`. Unattended, or from an agent:
 

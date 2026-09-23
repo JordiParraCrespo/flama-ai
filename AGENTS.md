@@ -59,9 +59,15 @@ lists them with the paths and marked config blocks that go with each one, and
 keep and which plugins to add (or takes `--keep`/`--add`/`--yes` from an agent),
 then prunes, installs, refreshes the lockfile and checks the result. Asked to
 start or trim a project, run it; there is no dialog to hold beyond those two
-questions. When you add a file that mentions an optional app (CI, compose,
-Helm, `.env.example`, a sidebar), wrap the lines in `# flama:begin <id>` /
-`# flama:end <id>`; `pnpm starter:check` fails otherwise.
+questions. It ends by listing the prose lines that still name what went —
+code is held to the markers, prose is not, because rewording a sentence takes
+judgment — and those lines are yours to reword, so the docs read as if the
+project had always been this shape. When you add a file that mentions an
+optional app (CI, compose, Helm, `.env.example`, a sidebar), wrap the lines in
+`# flama:begin <id>` / `# flama:end <id>`; `pnpm starter:check` fails
+otherwise. A block several apps share (`flama:begin web|mobile`) stays until
+the last of them goes, so its lines must hold for each one alone; a line that
+names one of them gets a block of its own, and the check says so.
 
 Two pieces sit in `scripts/lib/` because both the pruner and the installer
 need them and have to agree: `markers.mjs` is the marker grammar — the regex,

@@ -25,7 +25,8 @@
  *   node scripts/starter/prune.mjs --list
  *
  * Flags: --dry-run (print the plan, touch nothing), --no-install (skip the
- * `pnpm install` that refreshes the lockfile).
+ * `pnpm install` that refreshes the lockfile), --no-report (skip the list of
+ * prose lines that still name what went).
  *
  * To start a project, `pnpm starter:init` is the front door: it asks what to
  * keep and what to add, then runs this and the plugin installer in order.
@@ -324,6 +325,20 @@ function check(manifest) {
         else if (!inBlockComment && line.includes('/*') && !line.includes('*/'))
           inBlockComment = true;
         if (marker || wasInComment || COMMENT_LINE_RE.test(line)) return;
+        // A block several features share has to read true for each of them
+        // alone, because it stays until the last one goes: a `web|mobile`
+        // line naming `apps/mobile` is stale the moment only `web` is left.
+        const inner = stack.at(-1);
+        if (inner && inner.ids.length > 1 && inner.ids.includes(owner.id) && !owner.neededBy) {
+          if (regexes.some((re) => re.test(line))) {
+            problems.push(
+              `${file}:${index + 1}: names ${owner.id} inside a block it shares ` +
+                `("flama:begin ${inner.ids.join('|')}"); give it a block of its own: ` +
+                line.trim().slice(0, 80),
+            );
+          }
+          return;
+        }
         // Shared paths are covered by the markers of the features that need them.
         const covered = stack.some(
           ({ ids }) => ids.includes(owner.id) || owner.neededBy?.some((id) => ids.includes(id)),
@@ -656,34 +671,57 @@ function prune(manifest, removedIds, options) {
     }
   }
 
-  // 6. What is left for a human (or the skill) to reconcile by hand.
-  const identifiers = [
-    ...features.flatMap((id) => manifest.features[id].identifiers),
-    ...shared.flatMap((path) => manifest.shared[path].identifiers),
-  ].map(identifierRegex);
-  const leftovers = [];
-  for (const file of trackedFiles({ untracked: false })) {
+  console.log('\nDone.');
+  if (options.report) {
+    const identifiers = [
+      ...features.flatMap((id) => manifest.features[id].identifiers),
+      ...shared.flatMap((path) => manifest.shared[path].identifiers),
+    ];
+    printMentions(mentions(identifiers));
+  }
+}
+
+/**
+ * Every line that still names one of `identifiers` — the prose a prune leaves.
+ *
+ * Code cannot name a removed feature outside its markers; `--check` sees to
+ * that. Prose can, and deliberately is not held to the same rule: fencing a
+ * sentence mid-paragraph breaks it, and rewording one takes judgment. What a
+ * script can do is find every such line, so none is missed.
+ */
+export function mentions(identifiers) {
+  const regexes = identifiers.map(identifierRegex);
+  const found = new Map();
+  for (const file of trackedFiles()) {
     if (/CHANGELOG\.md$/.test(file)) continue; // history stays history
+    // The apparatus names features in general, not this project's.
+    if (/^scripts\/(starter|plugins|lib)\//.test(file)) continue;
+    if (!existsSync(join(ROOT, file))) continue;
     const buffer = readFileSync(join(ROOT, file));
     if (!isText(buffer)) continue;
     buffer
       .toString('utf8')
       .split('\n')
       .forEach((line, index) => {
-        if (identifiers.some((re) => re.test(line)))
-          leftovers.push(`${file}:${index + 1}: ${line.trim().slice(0, 100)}`);
+        if (!regexes.some((re) => re.test(line))) return;
+        if (!found.has(file)) found.set(file, []);
+        found.get(file).push(`${index + 1}: ${line.trim().slice(0, 100)}`);
       });
   }
-  console.log('\nDone.');
-  if (leftovers.length) {
-    console.log(
-      `\n${leftovers.length} remaining mention(s) of removed features (prose to rewrite by hand):`,
-    );
-    for (const line of leftovers) console.log(`  ${line}`);
-  }
+  return found;
+}
+
+export function printMentions(found) {
+  if (!found.size) return;
+  const total = [...found.values()].reduce((sum, lines) => sum + lines.length, 0);
   console.log(
-    '\nNext: pnpm build && pnpm check && pnpm test, then rewrite AGENTS.md and README.md for the trimmed layout.',
+    `\n${total} line(s) in ${found.size} file(s) still name what was removed. Code is clean;` +
+      '\nthis is prose, and each line wants rewording rather than deleting:',
   );
+  for (const [file, lines] of found) {
+    console.log(`\n  ${file}`);
+    for (const line of lines) console.log(`    ${line}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -699,6 +737,7 @@ function parseArgs(argv) {
   const options = {
     dryRun: false,
     install: true,
+    report: true,
     check: false,
     list: false,
     without: [],
@@ -719,6 +758,7 @@ function parseArgs(argv) {
     else if (arg === '--list') options.list = true;
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--no-install') options.install = false;
+    else if (arg === '--no-report') options.report = false;
     else if (arg === '--without') options.without.push(...value());
     else if (arg.startsWith('--without=')) options.without.push(...arg.slice(10).split(','));
     else if (arg === '--keep') options.keep = value();
