@@ -1,5 +1,5 @@
 /**
- * The marker comment grammar.
+ * The marker comment grammar, and the edits made with it.
  *
  * A marker wraps the lines that exist only because of some optional piece:
  *
@@ -8,14 +8,19 @@
  *   # flama:end widget
  *
  * A marker can name several ids — `flama:begin widget|gadget` — and its block
- * belongs to all of them. (The ids here are made up: this file outlives a
- * prune, so naming a real feature would leave a dangling mention behind.)
+ * belongs to all of them. An anchor, `# flama:plugins <slot>`, is the other
+ * half: a named place a block goes. (The ids here are made up: this file is
+ * scanned by `pnpm starter:check`, and a real feature named here would read
+ * as a mention outside its markers.)
  *
- * This module is the grammar and nothing else: no filesystem, no git, no
- * process exit. `scripts/starter/prune.mjs` is its only caller today and owns
- * its own IO; a later plugin installer will parse the same markers without
- * inheriting the pruner's helpers. That separation is the reason this lives
- * outside `scripts/starter/`, which a one-shot prune deletes.
+ * Two callers need this and have to agree on every byte: the pruner
+ * (`scripts/starter/prune.mjs`), which takes blocks out, and the plugin
+ * installer (`scripts/plugins/`), which puts them in and runs the prune's own
+ * edit over what it copies. So everything that reads or rewrites a marker
+ * lives here — parsing (`annotate`), finding a slot (`findAnchor`) and the
+ * block it marks (`blockAbove`), and the three edits (`dropBlocks`,
+ * `narrowMarker`, `widenMarker`). Nothing outside this file splits a spec on
+ * `|`. No filesystem, no git, no process exit: those are the callers'.
  */
 
 export const MARKER_RE = /^\s*(?:#|\/\/|<!--|\{\{-?\s*\/\*|\/\*)\s*flama:(begin|end)\s+([\w|-]+)/;
@@ -95,6 +100,41 @@ export function findAnchor(file, content, slot) {
 }
 
 /**
+ * The block a slot marks: the one that ends immediately above its anchor,
+ * with nothing between but blank lines and other anchors. `{ ids, begin, end
+ * }` (line indexes of its two fences), or null when the slot marks nothing —
+ * which is what a prune leaves once every owner of a shared block has gone.
+ *
+ * "Immediately above" is the contract between a shared block and its anchor:
+ * the anchor is placed beside the block so an installer can find the block
+ * without reading its contents. A comment or a line of code in between means
+ * the anchor marks no block, never "the nearest one further up", which would
+ * hand the installer some other feature's lines.
+ */
+export function blockAbove(file, content, slot) {
+  const anchor = findAnchor(file, content, slot);
+  if (!anchor) return null;
+  const lines = annotate(file, content);
+  for (let i = anchor.index - 1; i >= 0; i--) {
+    const { line, stack, marker } = lines[i];
+    if (ANCHOR_RE.test(line) || !line.trim()) continue;
+    if (!marker || MARKER_RE.exec(line)[1] !== 'end') return null;
+    const { ids, begin } = stack.at(-1);
+    return { ids, begin: begin - 1, end: i };
+  }
+  return null;
+}
+
+/** Every id any marker in `content` names, once each. */
+export function markerIds(file, content) {
+  const ids = new Set();
+  for (const { stack, marker } of annotate(file, content)) {
+    if (marker) for (const id of stack.at(-1).ids) ids.add(id);
+  }
+  return ids;
+}
+
+/**
  * The same marker with some ids taken out of its spec.
  *
  * A marker naming several features outlives the first of them to go — its
@@ -128,6 +168,38 @@ export function widenMarker(line, id, at) {
   const ids = match[2].split('|');
   if (ids.includes(id)) return line;
   return line.replace(match[2], [...ids.slice(0, at), id, ...ids.slice(at)].join('|'));
+}
+
+/**
+ * `content` with every block owned only by `removed` ids taken out, and every
+ * co-owned fence narrowed to the owners that are left. Null when the file has
+ * no blocks at all, so a caller can skip rewriting it.
+ *
+ * This is the one edit a prune makes to a file that stays, and it lives here
+ * because two callers make it: the pruner over the repo, and the installer
+ * over what it copies in. A plugin's files were extracted from a starter that
+ * still had every feature, so a docs page can carry a `runner` block into a
+ * project that pruned `runner` long ago — and it should arrive the way the
+ * prune would have left it.
+ *
+ * Markers survive. `plugin:remove` is the pruner, and it finds a plugin's
+ * lines by its fences; stripping them would make an installed plugin
+ * unremovable and a co-owned block unwidenable by the next install.
+ */
+export function dropBlocks(file, content, removed) {
+  const out = [];
+  let touched = false;
+  for (const { line, stack, marker } of annotate(file, content)) {
+    if (stack.length) touched = true;
+    if (stack.some(({ ids }) => ids.every((id) => removed.has(id)))) continue;
+    out.push(marker ? narrowMarker(line, removed) : line);
+  }
+  return touched ? collapseBlankRuns(out.join('\n')) : null;
+}
+
+/** Deleting a block leaves the blank lines either side of it; keep one. */
+export function collapseBlankRuns(text) {
+  return text.replace(/\n{3,}/g, '\n\n');
 }
 
 /** Word-boundary match for an identifier such as `apps/web` or `@flama/web`. */

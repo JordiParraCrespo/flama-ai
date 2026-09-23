@@ -59,7 +59,8 @@ test('insertJsonValue is the inverse of deleteJsonValue, inline and expanded', (
     assert.equal(insertJsonValue(without, ['a', 'env'], value, index), inline, `inline ${value}`);
   }
 
-  const expanded = '{\n  "ignore": [\n    "@scope/alpha",\n    "@scope/beta",\n    "@scope/gamma"\n  ]\n}';
+  const expanded =
+    '{\n  "ignore": [\n    "@scope/alpha",\n    "@scope/beta",\n    "@scope/gamma"\n  ]\n}';
   for (const [index, value] of [
     [0, '@scope/alpha'],
     [1, '@scope/beta'],

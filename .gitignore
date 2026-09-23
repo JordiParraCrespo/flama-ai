@@ -7,12 +7,16 @@ build/
 # flama:begin web-showcase
 .next/
 # flama:end web-showcase
-# flama:begin mobile|mobile-showcase
-.expo/
+# flama:begin mobile
 apps/mobile/ios/
 apps/mobile/android/
+# flama:end mobile
+# flama:begin mobile-showcase
 apps/mobile-showcase/ios/
 apps/mobile-showcase/android/
+# flama:end mobile-showcase
+# flama:begin mobile|mobile-showcase
+.expo/
 packages/frontend/design-system/mobile/assets/icons/nanoicons/
 # flama:end mobile|mobile-showcase
 # flama:plugins admin-mobile

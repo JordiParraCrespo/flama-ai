@@ -1,5 +1,5 @@
 {
-  "$comment": "Read by scripts/starter/prune.mjs and the /starter-init skill. Every optional piece of the starter is a feature here; the paths are what goes when it is dropped, and every other place that mentions it is wrapped in `flama:begin <id>` / `flama:end <id>` markers. `pnpm starter:check` (CI) fails when a feature is referenced outside its paths and markers, so this file cannot go stale silently.",
+  "$comment": "Read by scripts/starter/prune.mjs, scripts/plugins/plugin.mjs and pnpm starter:init. Every optional piece of the starter is a feature here; the paths are what goes when it is dropped, and every other place that mentions it is wrapped in `flama:begin <id>` / `flama:end <id>` markers. `pnpm starter:check` (CI) fails when a feature is referenced outside its paths and markers, so this file cannot go stale silently. A `json` edit's `set` value is a copy of the file it edits — the version an install writes back — so bumping that dependency means bumping it here too; `starter:check` names both values until they agree.",
   "features": {
     "web": {
       "title": "Consumer web app",
@@ -139,12 +139,16 @@
         {
           "file": "package.json",
           "path": ["pnpm", "overrides"],
-          "deleteKeys": ["react-native"]
+          "set": {
+            "react-native": "0.86.3"
+          }
         },
         {
           "file": "apps/api/package.json",
           "path": ["dependencies"],
-          "deleteKeys": ["@better-auth/expo"]
+          "set": {
+            "@better-auth/expo": "^1.6.25"
+          }
         },
         {
           "file": "biome.json",
@@ -174,10 +178,5 @@
       "identifiers": ["depcruise/frontend-kit"],
       "neededBy": ["web", "mobile"]
     }
-  },
-  "tooling": {
-    "$comment": "The one-shot half of the apparatus, removed at the end of a prune. scripts/starter and its two package scripts stay: removal is the pruner, so a project that can install a plugin can always remove one.",
-    "paths": [".agents/skills/starter-init"],
-    "scripts": []
   }
 }
