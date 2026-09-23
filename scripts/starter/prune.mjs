@@ -68,9 +68,11 @@ const SCAN_SKIP = [
 ];
 /**
  * `--check` covers machine-read files only. Prose (every Markdown file, the
- * changesets, changelogs) and comments are for the /starter-init skill to
- * rewrite after a prune — a script cannot fix a `└──` in a directory tree, and
- * wrapping every sentence in markers would make the docs unreadable.
+ * changesets, changelogs) and comments are not held to the markers: a fence
+ * mid-sentence breaks the paragraph or table it sits in, and rewording one
+ * takes judgment. What a prune leaves there is reported instead — see
+ * `mentions`, which `pnpm starter:init` prints at the end for a person or an
+ * agent to reword.
  */
 const CHECK_SKIP = [/\.md$/, /^\.changeset\//, /\.spec\.ts$/, /\.test\.ts$/];
 const COMMENT_LINE_RE = /^\s*(?:#|\/\/|\/\*|\*|<!--|--|;)/;
@@ -106,24 +108,33 @@ function loadManifest() {
   return manifest;
 }
 
-/** `kept` plus everything it requires, transitively: what `--keep` really keeps. */
+/**
+ * `kept` plus everything it requires, transitively: what `--keep` really
+ * keeps. The notes say what was pulled in and why; printing them is the
+ * caller's business, so a planner and a test can call this silently.
+ */
 export function expandKeep(manifest, kept) {
   const set = new Set(kept);
   const queue = [...kept];
+  const notes = [];
   while (queue.length) {
     for (const dep of manifest.features[queue.pop()].requires ?? []) {
       if (set.has(dep)) continue;
-      console.warn(`  keeping ${dep} too: a kept feature requires it`);
+      notes.push(`keeping ${dep} too: a kept feature requires it`);
       set.add(dep);
       queue.push(dep);
     }
   }
-  return [...set];
+  return { kept: [...set], notes };
 }
 
-/** Everything that goes when `removed` goes: dependants and orphaned shared paths. */
+/**
+ * Everything that goes when `removed` goes: dependants and orphaned shared
+ * paths, and a note for each dependant that goes with what it required.
+ */
 export function resolveRemoval(manifest, removed) {
   const set = new Set(removed);
+  const notes = [];
   let grew = true;
   while (grew) {
     grew = false;
@@ -131,7 +142,7 @@ export function resolveRemoval(manifest, removed) {
       if (set.has(id)) continue;
       const lost = (feature.requires ?? []).find((dep) => set.has(dep));
       if (lost) {
-        console.warn(`  ${id} requires ${lost}, so it goes too`);
+        notes.push(`${id} requires ${lost}, so it goes too`);
         set.add(id);
         grew = true;
       }
@@ -140,7 +151,7 @@ export function resolveRemoval(manifest, removed) {
   const shared = Object.entries(manifest.shared)
     .filter(([, entry]) => entry.neededBy.every((dep) => set.has(dep)))
     .map(([path]) => path);
-  return { features: [...set], shared };
+  return { features: [...set], shared, notes };
 }
 
 // ---------------------------------------------------------------------------
@@ -282,6 +293,13 @@ function check(manifest) {
     }
   }
 
+  const featureRegexes = new Map(
+    Object.entries(manifest.features).map(([id, feature]) => [
+      id,
+      feature.identifiers.map(identifierRegex),
+    ]),
+  );
+
   const files = trackedFiles();
   for (const file of files) {
     const buffer = readFileSync(join(ROOT, file));
@@ -299,6 +317,23 @@ function check(manifest) {
       }
     }
     if (CHECK_SKIP.some((re) => re.test(file))) continue;
+
+    // A block several features share stays until the last of them goes, so
+    // every line in it has to read true for each owner alone: a `web|mobile`
+    // line naming `apps/mobile` is stale the moment only `web` is left. Read
+    // from the block's side — its owners are the ids it may not name.
+    lines.forEach(({ line, stack, marker }, index) => {
+      const inner = stack.at(-1);
+      if (marker || !inner || inner.ids.length < 2 || COMMENT_LINE_RE.test(line)) return;
+      for (const id of inner.ids) {
+        if (!(featureRegexes.get(id) ?? []).some((re) => re.test(line))) continue;
+        problems.push(
+          `${file}:${index + 1}: names ${id} inside a block it shares ` +
+            `("flama:begin ${inner.ids.join('|')}"); give it a block of its own: ` +
+            line.trim().slice(0, 80),
+        );
+      }
+    });
 
     const fileOwner = ownerOf(file);
     for (const owner of owners) {
@@ -325,20 +360,6 @@ function check(manifest) {
         else if (!inBlockComment && line.includes('/*') && !line.includes('*/'))
           inBlockComment = true;
         if (marker || wasInComment || COMMENT_LINE_RE.test(line)) return;
-        // A block several features share has to read true for each of them
-        // alone, because it stays until the last one goes: a `web|mobile`
-        // line naming `apps/mobile` is stale the moment only `web` is left.
-        const inner = stack.at(-1);
-        if (inner && inner.ids.length > 1 && inner.ids.includes(owner.id) && !owner.neededBy) {
-          if (regexes.some((re) => re.test(line))) {
-            problems.push(
-              `${file}:${index + 1}: names ${owner.id} inside a block it shares ` +
-                `("flama:begin ${inner.ids.join('|')}"); give it a block of its own: ` +
-                line.trim().slice(0, 80),
-            );
-          }
-          return;
-        }
         // Shared paths are covered by the markers of the features that need them.
         const covered = stack.some(
           ({ ids }) => ids.includes(owner.id) || owner.neededBy?.some((id) => ids.includes(id)),
@@ -460,7 +481,8 @@ function dropFromManifest(features, shared, deleted, dryRun) {
 
 function prune(manifest, removedIds, options) {
   const { dryRun, install } = options;
-  const { features, shared } = resolveRemoval(manifest, removedIds);
+  const { features, shared, notes } = resolveRemoval(manifest, removedIds);
+  for (const note of notes) console.warn(`  ${note}`);
   const removed = new Set(features);
   const pathsToDelete = [...features.flatMap((id) => manifest.features[id].paths), ...shared];
   const scriptsToDrop = [
@@ -808,7 +830,8 @@ function main() {
   if (options.keep) {
     for (const id of options.keep)
       if (!ids.includes(id)) fail(`unknown feature "${id}" (see --list)`);
-    const kept = expandKeep(manifest, options.keep);
+    const { kept, notes } = expandKeep(manifest, options.keep);
+    for (const note of notes) console.warn(`  ${note}`);
     removed = ids.filter((id) => !kept.includes(id));
   } else if (options.without.length) {
     for (const id of options.without)

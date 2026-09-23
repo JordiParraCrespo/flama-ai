@@ -70,12 +70,13 @@ the last of them goes, so its lines must hold for each one alone; a line that
 names one of them gets a block of its own, and the check says so.
 
 Two pieces sit in `scripts/lib/` because both the pruner and the installer
-need them and have to agree: `markers.mjs` is the marker grammar — the regex,
-the block parser, and the one edit a prune makes with them (`dropBlocks`), which
-the installer also runs over what it copies — and `json-text.mjs` is
-format-preserving surgery on JSON, delete and insert in pairs, so an edit does
-not reflow a file the project owns. `prune.mjs` keeps its own git and
-filesystem helpers.
+need them and have to agree: `markers.mjs` is everything that reads or
+rewrites a marker — the parser, the slot an anchor names and the block it
+marks (`blockAbove`), and the edits (`dropBlocks`, which the installer also
+runs over what it copies, `narrowMarker`, `widenMarker`) — and `json-text.mjs`
+is format-preserving surgery on JSON, delete and insert in pairs, so an edit
+does not reflow a file the project owns. Nothing else splits a marker spec.
+`prune.mjs` keeps its own git and filesystem helpers.
 
 Nothing about starting a project is one-shot. A prune keeps `scripts/starter`,
 `features.json` and every marker, and that is not leftover scaffolding:
@@ -100,12 +101,16 @@ An install writes its entry straight in, marked `"plugin": true`, so
 `pnpm starter:prune --without <id>` removes it. `pnpm plugin:list` is a view
 over what a plugins repo offers, not a second catalog.
 
-A plugin is that entry plus three ops that put it in place: a block of text at
-a `flama:plugins <slot>` anchor, this plugin joining a block several features
-share, and the entry's own `json` edits run backwards. The shape of all of it
-is the header of `scripts/plugins/plugin.mjs`, which is the only document; the
-ops themselves are `scripts/lib/markers.mjs` and `scripts/lib/json-text.mjs`,
-whose deletes and inserts come in pairs so a removal is an install backwards.
+A plugin is that entry plus three ops that put it in place: its own block of
+text at a `flama:plugins <slot>` anchor; this plugin joining a block several
+features share — widening its fence, or, where every other owner was pruned
+and the block with them, op 1 again with the body the plugin carries; and the
+entry's own `json` edits run backwards. Copied files arrive trimmed by the
+prune's own edit. The shape of all of it is the header of
+`scripts/plugins/plugin.mjs`, which is the only document. `plugin.mjs` is the
+command, `ops.mjs` the three ops, `source.mjs` where plugins come from and the
+one rule for whether a project can take one — which `pnpm starter:init` plans
+with before it touches anything.
 
 ## Key conventions
 

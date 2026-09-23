@@ -22,8 +22,10 @@ test('resolveRemoval cascades through requires', () => {
 });
 
 test('expandKeep pulls in what a kept feature requires, so --keep never removes it', () => {
-  assert.deepEqual(expandKeep(manifest, ['qa']).sort(), ['e2e', 'qa', 'web']);
-  const kept = expandKeep(manifest, ['qa']);
+  assert.deepEqual(expandKeep(manifest, ['qa']).kept.sort(), ['e2e', 'qa', 'web']);
+  const { kept, notes } = expandKeep(manifest, ['qa']);
+  // What it pulled in is reported, not printed: the caller decides.
+  assert.equal(notes.length, 2);
   const removed = Object.keys(manifest.features).filter((id) => !kept.includes(id));
   assert.ok(!resolveRemoval(manifest, removed).features.includes('qa'));
 });

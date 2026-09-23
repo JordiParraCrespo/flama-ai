@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { delimiter, dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { checkFences, featureEntry, parseArgs } from './plugin.mjs';
+import { checkFences, featureEntry } from './ops.mjs';
+import { parseArgs } from './plugin.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -59,7 +60,7 @@ test('a block must name its plugin in both fences', () => {
 
   // A half-fenced block is worse than none: the pruner would take the file apart.
   const half = '# flama:begin widget\nX=';
-  assert.match(checkFences('widget', '.env.example', half), /flama:end widget/);
+  assert.match(checkFences('widget', '.env.example', half), /never closed/);
 });
 
 test('a fence naming a longer id does not count as this plugin', () => {
@@ -131,6 +132,8 @@ test('--from is relative to the repo root, not the working directory', () => {
  */
 const APPARATUS = [
   'scripts/plugins/plugin.mjs',
+  'scripts/plugins/ops.mjs',
+  'scripts/plugins/source.mjs',
   'scripts/starter/prune.mjs',
   'scripts/lib/markers.mjs',
   'scripts/lib/json-text.mjs',
@@ -155,8 +158,14 @@ const FIXTURE_ENV = {
     .join(delimiter),
 };
 
-/** A git repo carrying this installer, a manifest, and files to edit. */
-function fixture() {
+/**
+ * A git repo carrying this installer, a manifest, and files to edit.
+ *
+ * `pruned` is the project the evaluation found broken: the shared block's
+ * other owner (`alpha`) was pruned and took the block with it, and another
+ * feature's block (`gamma`) now sits right above the slot.
+ */
+function fixture({ pruned = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'flama-installer-'));
   for (const file of APPARATUS) {
     mkdirSync(join(dir, dirname(file)), { recursive: true });
@@ -168,11 +177,17 @@ function fixture() {
     join(dir, 'scripts', 'starter', 'features.json'),
     `${JSON.stringify(
       {
-        features: {
-          alpha: { title: 'Alpha', summary: 'alpha', identifiers: ['alpha-app'], paths: ['alpha'] },
-        },
-        shared: { kit: { identifiers: ['the-kit'], neededBy: ['alpha'] } },
-        tooling: { paths: [], scripts: [] },
+        features: pruned
+          ? { gamma: { title: 'Gamma', summary: 'gamma', identifiers: ['gamma-app'], paths: [] } }
+          : {
+              alpha: {
+                title: 'Alpha',
+                summary: 'alpha',
+                identifiers: ['alpha-app'],
+                paths: ['alpha'],
+              },
+            },
+        shared: pruned ? {} : { kit: { identifiers: ['the-kit'], neededBy: ['alpha'] } },
       },
       null,
       2,
@@ -182,7 +197,9 @@ function fixture() {
   writeFileSync(join(dir, 'alpha', 'index.txt'), 'alpha\n');
   mkdirSync(join(dir, 'kit'), { recursive: true });
   writeFileSync(join(dir, 'kit', 'index.txt'), 'kit\n');
-  const owned = ['# flama:begin alpha', 'shared-line', '# flama:end alpha'];
+  const owned = pruned
+    ? ['# flama:begin gamma', 'neighbour-line', '# flama:end gamma']
+    : ['# flama:begin alpha', 'shared-line', '# flama:end alpha'];
   const config = [...owned, '# flama:plugins the-slot', ''].join('\n');
   writeFileSync(join(dir, 'config.txt'), config);
   writeFileSync(join(dir, 'slots.txt'), ['# flama:plugins own-slot', ''].join('\n'));
@@ -230,11 +247,17 @@ const BETA = {
  * The installer finds the project from its own location, so the copy inside
  * the fixture is the one to run — the same way a real project runs its own.
  */
-function install(project, extra = []) {
+function install(project, extra = [], manifest = BETA) {
   const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
-  source(from, BETA, { 'own.txt': '# flama:begin beta\nbeta-line\n# flama:end beta\n' });
+  source(from, manifest, {
+    'own.txt': '# flama:begin beta\nbeta-line\n# flama:end beta\n',
+    'shared.txt': '# flama:begin beta\nshared-line\n# flama:end beta\n',
+  });
   mkdirSync(join(from, 'plugins', 'beta', 'files', 'beta'), { recursive: true });
   writeFileSync(join(from, 'plugins', 'beta', 'files', 'beta', 'index.txt'), 'beta\n');
+  // A copied file from a starter that had a feature this project may not.
+  const notes = ['kept', '# flama:begin zeta', 'zeta-line', '# flama:end zeta', ''].join('\n');
+  writeFileSync(join(from, 'plugins', 'beta', 'files', 'beta', 'notes.txt'), notes);
   const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
   try {
     return {
@@ -339,4 +362,36 @@ test('a plugin cannot declare the one JSON shape that has no inverse', () => {
   }
   assert.equal(code, 2);
   assert.match(out, /deleteKeys.*cannot install/s);
+});
+
+test('into a project that pruned the other owner, the shared block comes back as its own', () => {
+  // The evaluation's case. The block `beta` shares with `alpha` went when
+  // `alpha` was pruned, and `gamma`'s block now ends right above the slot.
+  // Widening that would hand `beta` lines it never had; the plugin carries
+  // the body instead, and it goes in as the plugin's own block.
+  const project = fixture({ pruned: true });
+  const manifest = {
+    ...BETA,
+    feature: { ...BETA.feature, shared: [] },
+    coOwned: [{ ...BETA.coOwned[0], source: 'blocks/shared.txt' }],
+  };
+  const { result } = install(project, [], manifest);
+  assert.equal(result.code, 0, result.out);
+
+  const config = readFileSync(join(project, 'config.txt'), 'utf8');
+  assert.match(config, /^# flama:begin gamma\nneighbour-line\n# flama:end gamma\n/);
+  assert.match(
+    config,
+    /# flama:begin beta\nshared-line\n# flama:end beta\n# flama:plugins the-slot/,
+  );
+  assert.doesNotMatch(config, /gamma\|beta|beta\|gamma/);
+
+  // And the copied file arrived as the prune would have left it: `zeta` is
+  // no feature here, so its block is gone and the rest is untouched.
+  assert.equal(readFileSync(join(project, 'beta', 'notes.txt'), 'utf8'), 'kept\n');
+
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  execFileSync('node', [script, 'remove', 'beta'], { encoding: 'utf8', env: FIXTURE_ENV });
+  const dirty = execFileSync('git', ['-C', project, 'status', '--porcelain'], { encoding: 'utf8' });
+  assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
 });

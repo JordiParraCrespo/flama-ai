@@ -94,11 +94,17 @@ shows the plan, and carries it out: removes what goes, installs what comes in
 the order they need each other, refreshes the lockfile and checks the result.
 Last, it lists the lines of prose that still mention what was removed, file by
 file, for you (or your agent) to reword.
-It refuses to run on uncommitted changes, so undoing it is always
-`git reset --hard && git clean -fd`. Unattended, or from an agent:
+
+It is all or nothing: the work happens in a throwaway git worktree and reaches
+your checkout as one patch, only once every step has passed there, so a plugin
+that fails to install leaves the project as it was. (That is why it wants
+committed work: the worktree is your last commit.)
+
+Unattended, or from an agent — no `--add` means the same default the questions
+offer (`docs`), and `--add ''` means none:
 
 ```bash
-pnpm starter:init --keep web,e2e --add docs --yes
+pnpm starter:init --keep web,e2e --yes
 ```
 
 The same two directions stay available afterwards, one feature at a time:

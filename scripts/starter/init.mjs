@@ -2,48 +2,54 @@
 /**
  * Turn the starter into your project, in one command.
  *
- *   pnpm starter:init                                 # asks, then shows the plan
- *   pnpm starter:init --keep web,e2e --add docs --yes # the same, unattended
+ *   pnpm starter:init                             # asks, then shows the plan
+ *   pnpm starter:init --keep web,e2e --yes        # the same defaults, unattended
+ *   pnpm starter:init --keep web --add '' --yes   # nothing added
  *
  * Two questions decide a project: which of the apps the starter ships to
- * keep, and which plugins to add. This asks both, shows the plan, and then
- * does what used to take a skill and an afternoon: prunes what goes
- * (`prune.mjs`), installs what comes (`plugin.mjs`), in dependency order,
- * refreshes the lockfile once, and checks the manifest still describes the
- * repo. There is nothing to retire afterwards and no flag to remember; run it
- * again later and it only offers what is left.
+ * keep, and which plugins to add. This asks both (or reads `--keep` and
+ * `--add`), shows the plan, and carries it out: the prune, then each plugin
+ * after the ones it requires, the manifest check once, `pnpm install` once,
+ * and a list of the prose that still names what went. There is nothing to
+ * retire afterwards; run it again later and it offers only what is left.
  *
- * It refuses a dirty tree, so going back is always `git reset --hard` plus
- * `git clean -fd` — a prune is a large deletion, and undoing it should never
- * mean untangling it from your own work.
+ * All or nothing. The work happens in a throwaway git worktree of HEAD and
+ * reaches your checkout as one patch, only once every step has passed there —
+ * so a plugin that fails to install leaves the project exactly as it was, not
+ * pruned with half its plugins in. That is also why it wants a clean tree: the
+ * worktree is HEAD, and a patch from HEAD applies cleanly only to HEAD.
  *
- * Flags: --keep <ids> and --add <ids> (skip the questions), --yes (do not ask
- * for confirmation), --dry-run (plan only), --no-install (skip `pnpm
- * install`), and --from / --repo / --ref, passed to the plugin fetch.
+ * With no `--add`, it adds what the questions default to (`DEFAULT_ADD`);
+ * `--add ''` adds nothing. With no `--keep`, it keeps `DEFAULT_KEEP`. One
+ * default, whichever way it is run.
+ *
+ * Flags: --keep <ids>, --add <ids>, --yes (do not ask for confirmation),
+ * --dry-run (plan only), --no-install (skip `pnpm install`), and --from /
+ * --repo / --ref, for where the plugins come from.
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 import {
   DEFAULT_REF,
   DEFAULT_REPO,
+  installProblems,
   loadPlugin,
   pluginIds,
   resolveSource,
-} from '../plugins/plugin.mjs';
+} from '../plugins/source.mjs';
 import { expandKeep, mentions, printMentions, resolveRemoval } from './prune.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
-const PRUNE = join(HERE, 'prune.mjs');
-const PLUGIN = join(ROOT, 'scripts', 'plugins', 'plugin.mjs');
 
 /**
- * What a project gets when it answers nothing: the browser app and its
- * end-to-end suite, plus the docs site. Most projects start here, and the
- * rest — a phone app, the control plane, a Go service — is a question each.
+ * What a project gets when it answers nothing: the browser app, its
+ * end-to-end suite, and the docs site. Most projects start here; the rest — a
+ * phone app, the control plane, a Go service — is a question each.
  */
 export const DEFAULT_KEEP = ['web', 'e2e'];
 export const DEFAULT_ADD = ['docs'];
@@ -90,16 +96,22 @@ export function parseArgs(argv) {
   return options;
 }
 
+/** What a run keeps and adds before any question: the flags, or the defaults. */
+export function choice(options) {
+  return { keep: options.keep ?? DEFAULT_KEEP, add: options.add ?? DEFAULT_ADD };
+}
+
 /**
- * The plan for a choice, or the reason it cannot work. Pure, so the rules a
- * project has to satisfy are tested without touching a repo.
+ * The plan for a choice, or why it cannot work. Pure: it reads nothing and
+ * prints nothing, so a dry run, a test and the real run agree.
  *
  * `plugins` maps each available plugin id to its manifest. A plugin that
- * requires another plugin brings it along; one that requires a shipped
- * feature the choice drops, or builds on a shared package the prune would
- * take, is refused with the reason rather than failing halfway through.
+ * requires another plugin brings it along. Whether a plugin fits is the
+ * installer's own rule (`installProblems`), asked of the project this choice
+ * would leave; `exists` answers for paths the manifest does not track, and
+ * defaults to "there", which is what a fresh starter is.
  */
-export function plan(manifest, plugins, keep, add) {
+export function plan(manifest, plugins, keep, add, exists = () => true) {
   const shipped = Object.keys(manifest.features).filter((id) => !manifest.features[id].plugin);
   const problems = [];
   for (const id of keep) {
@@ -111,12 +123,18 @@ export function plan(manifest, plugins, keep, add) {
   }
   if (problems.length) return { problems };
 
-  const kept = expandKeep(manifest, keep).filter((id) => shipped.includes(id));
+  const expanded = expandKeep(manifest, keep);
+  const kept = expanded.kept.filter((id) => shipped.includes(id));
   const remove = shipped.filter((id) => !kept.includes(id));
-  const { shared: pruned } = remove.length ? resolveRemoval(manifest, remove) : { shared: [] };
+  const removal = remove.length ? resolveRemoval(manifest, remove) : { shared: [], notes: [] };
+  const gone = [...remove.flatMap((id) => manifest.features[id].paths), ...removal.shared];
+  const hasPath = (path) =>
+    !gone.some((path_) => path === path_ || path.startsWith(`${path_}/`)) && exists(path);
 
   // Plugins in the order they can go in: each after the plugins it requires.
   const order = [];
+  const hasFeature = (id) =>
+    kept.includes(id) || Boolean(manifest.features[id]?.plugin) || order.includes(id);
   const visit = (id, chain) => {
     if (order.includes(id)) return;
     if (chain.includes(id)) {
@@ -124,176 +142,186 @@ export function plan(manifest, plugins, keep, add) {
       return;
     }
     for (const dep of plugins[id].feature.requires ?? []) {
-      if (plugins[dep] && !manifest.features[dep]) visit(dep, [...chain, id]);
-      else if (!manifest.features[dep] || remove.includes(dep)) {
-        problems.push(`"${id}" needs "${dep}", which this project would not have`);
-      }
+      if (plugins[dep] && !hasFeature(dep)) visit(dep, [...chain, id]);
     }
-    // A control plane builds on its platform's kits; with every app of that
-    // platform pruned, there is no kit to build on.
-    const carried = new Set(Object.keys(plugins[id].sharedFiles ?? {}));
-    for (const { path } of plugins[id].feature.shared ?? []) {
-      if (pruned.includes(path) && !carried.has(path)) {
-        problems.push(`"${id}" builds on ${path}, which goes when its last app does`);
-      }
-    }
+    problems.push(...installProblems({ id, ...plugins[id] }, { hasFeature, hasPath }));
     order.push(id);
   };
   for (const id of add) visit(id, []);
-  return problems.length
-    ? { problems }
-    : { keep: kept, remove, add: order, pulled: order.filter((id) => !add.includes(id)) };
+  if (problems.length) return { problems };
+  const pulled = order.filter((id) => !add.includes(id));
+  return {
+    keep: kept,
+    remove,
+    add: order,
+    pulled,
+    notes: [
+      ...expanded.notes,
+      ...removal.notes,
+      ...pulled.map((id) => `adding ${id} too: a chosen plugin requires it`),
+    ],
+  };
 }
 
-async function ask(manifest, plugins) {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
+async function ask(rl, manifest, plugins) {
   const yesNo = async (question, fallback) => {
     const answer = (await rl.question(`${question} ${fallback ? '[Y/n]' : '[y/N]'} `))
       .trim()
       .toLowerCase();
     return answer ? answer.startsWith('y') : fallback;
   };
-  try {
-    console.log('\nWhat does this project keep? The API always stays.\n');
-    const keep = [];
-    for (const [id, feature] of Object.entries(manifest.features)) {
-      if (feature.plugin) continue;
-      if (await yesNo(`  ${id.padEnd(16)} ${feature.summary}\n  keep?`, DEFAULT_KEEP.includes(id)))
-        keep.push(id);
-    }
-    const available = Object.keys(plugins).filter((id) => !manifest.features[id]);
-    const add = [];
-    if (available.length) console.log('\nWhat does it add?\n');
-    for (const id of available) {
-      const requires = plugins[id].feature.requires ?? [];
-      const note = requires.length ? ` (needs ${requires.join(', ')})` : '';
-      if (
-        await yesNo(
-          `  ${id.padEnd(16)} ${plugins[id].feature.summary}${note}\n  add?`,
-          DEFAULT_ADD.includes(id),
-        )
-      )
-        add.push(id);
-    }
-    return { keep, add, rl };
-  } catch (error) {
-    rl.close();
-    throw error;
+  console.log('\nWhat does this project keep? The API always stays.\n');
+  const keep = [];
+  for (const [id, feature] of Object.entries(manifest.features)) {
+    if (feature.plugin) continue;
+    if (await yesNo(`  ${id.padEnd(16)} ${feature.summary}\n  keep?`, DEFAULT_KEEP.includes(id)))
+      keep.push(id);
   }
+  const available = Object.keys(plugins).filter((id) => !manifest.features[id]);
+  const add = [];
+  if (available.length) console.log('\nWhat does it add?\n');
+  for (const id of available) {
+    const requires = plugins[id].feature.requires ?? [];
+    const note = requires.length ? ` (needs ${requires.join(', ')})` : '';
+    const summary = `  ${id.padEnd(16)} ${plugins[id].feature.summary}${note}\n  add?`;
+    if (await yesNo(summary, DEFAULT_ADD.includes(id))) add.push(id);
+  }
+  return { keep, add };
+}
+
+function git(args, options = {}) {
+  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', ...options });
 }
 
 /**
- * One step of the plan. Its own output has already said what went wrong; what
- * is left to say is how to get back, which the clean-tree rule guarantees.
+ * Carry out `result` in a throwaway worktree of HEAD and hand back the patch
+ * it produced, or fail having changed nothing. The worktree runs its own copy
+ * of the scripts, which is the one at HEAD — the same as this checkout's.
  */
-function run(command, args) {
-  try {
-    execFileSync(command, args, { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    fail(
-      `${[command, ...args].join(' ')} failed, and the project is half-changed.\n` +
-        'Go back to where it started with: git reset --hard && git clean -fd',
-    );
+function stage(result, source) {
+  const dir = mkdtempSync(join(tmpdir(), 'flama-init-'));
+  rmSync(dir, { recursive: true, force: true });
+  git(['worktree', 'add', '--quiet', '--detach', dir, 'HEAD']);
+  const cleanup = () => {
+    try {
+      git(['worktree', 'remove', '--force', dir], { stdio: 'pipe' });
+    } catch {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+  process.on('exit', cleanup);
+  const step = (script, args) => {
+    try {
+      execFileSync('node', [join(dir, script), ...args], { cwd: dir, stdio: 'inherit' });
+    } catch {
+      fail(`${script} ${args.join(' ')} failed. Your project was not touched.`);
+    }
+  };
+  if (result.remove.length) {
+    const without = result.remove.join(',');
+    step('scripts/starter/prune.mjs', ['--without', without, '--no-install', '--no-report']);
   }
-}
+  for (const id of result.add) {
+    step('scripts/plugins/plugin.mjs', ['add', id, '--from', source.dir, '--no-check']);
+  }
+  // Once, over the finished tree: each install would otherwise pay for it.
+  step('scripts/starter/prune.mjs', ['--check']);
 
-function clean() {
-  try {
-    return !execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  } catch {
-    return true; // not a git checkout: nothing to protect, nothing to check
-  }
+  git(['add', '-A'], { cwd: dir });
+  const patch = execFileSync('git', ['diff', '--cached', '--binary', 'HEAD'], {
+    cwd: dir,
+    maxBuffer: 256 * 1024 * 1024,
+  });
+  cleanup();
+  process.off('exit', cleanup);
+  return patch;
 }
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  if (!options.dryRun && !clean()) {
-    fail('the working tree has changes. Commit or stash them first, so this is easy to undo.');
+  try {
+    git(['rev-parse', '--verify', '--quiet', 'HEAD'], { stdio: 'pipe' });
+  } catch {
+    fail('this needs a git checkout with a commit: the work is staged in a worktree of HEAD');
+  }
+  if (!options.dryRun && git(['status', '--porcelain']).trim()) {
+    fail('the working tree has changes. Commit or stash them first: the plan runs against HEAD.');
   }
   const manifest = JSON.parse(readFileSync(join(HERE, 'features.json'), 'utf8'));
 
   const interactive = options.keep === null && options.add === null;
   if (interactive && !process.stdin.isTTY) {
-    fail('no terminal to ask in: pass --keep <ids> and --add <ids>');
+    fail('no terminal to ask in: pass --keep <ids> and --add <ids> (or --add "" for none)');
   }
-  // Fetched once, and only when there is a plugin to look at; every install
-  // below reads the same checkout.
-  const wantsPlugins = interactive || (options.add ?? []).length > 0;
-  const source = wantsPlugins ? resolveSource(options.source) : null;
-  const plugins = Object.fromEntries(
-    (source ? pluginIds(source) : []).map((id) => [id, loadPlugin(source, id)]),
-  );
+  const rl = process.stdin.isTTY
+    ? createInterface({ input: process.stdin, output: process.stdout })
+    : null;
+  try {
+    let { keep, add } = choice(options);
+    // Fetched once, and only when a plugin is in play; every install reads it.
+    const source = interactive || add.length ? resolveSource(options.source) : null;
+    const plugins = Object.fromEntries(
+      (source ? pluginIds(source) : []).map((id) => [id, loadPlugin(source, id)]),
+    );
+    if (interactive) ({ keep, add } = await ask(rl, manifest, plugins));
 
-  let keep = options.keep ?? DEFAULT_KEEP;
-  let add = options.add ?? [];
-  let rl = null;
-  if (interactive) ({ keep, add, rl } = await ask(manifest, plugins));
-
-  const result = plan(manifest, plugins, keep, add);
-  if (result.problems) {
-    rl?.close();
-    fail(`that combination cannot work:\n  ${result.problems.join('\n  ')}`);
-  }
-
-  console.log('\nThe plan:\n');
-  console.log(`  keep    api, ${result.keep.join(', ') || '(nothing else)'}`);
-  console.log(`  remove  ${result.remove.join(', ') || '(nothing)'}`);
-  console.log(`  add     ${result.add.join(', ') || '(nothing)'}`);
-  if (result.pulled.length)
-    console.log(`          (${result.pulled.join(', ')}: required by another)`);
-  if (options.dryRun) {
-    rl?.close();
-    console.log('\nDry run: nothing was changed.');
-    return;
-  }
-  if (!options.yes) {
-    const rlConfirm = rl ?? createInterface({ input: process.stdin, output: process.stdout });
-    const answer = process.stdin.isTTY
-      ? (await rlConfirm.question('\nGo ahead? [y/N] ')).trim().toLowerCase()
-      : '';
-    rlConfirm.close();
-    if (!answer.startsWith('y')) {
-      console.log(process.stdin.isTTY ? 'Nothing was changed.' : 'Pass --yes to go ahead.');
+    const result = plan(manifest, plugins, keep, add, (path) => existsSync(join(ROOT, path)));
+    if (result.problems) fail(`that combination cannot work:\n  ${result.problems.join('\n  ')}`);
+    console.log('\nThe plan:\n');
+    console.log(`  keep    api${result.keep.length ? `, ${result.keep.join(', ')}` : ''}`);
+    console.log(`  remove  ${result.remove.join(', ') || '(nothing)'}`);
+    console.log(`  add     ${result.add.join(', ') || '(nothing)'}`);
+    for (const note of result.notes) console.log(`          ${note}`);
+    if (options.dryRun) {
+      console.log('\nDry run: nothing was changed.');
       return;
     }
-  } else {
+    if (!options.yes) {
+      const answer = rl ? (await rl.question('\nGo ahead? [y/N] ')).trim().toLowerCase() : '';
+      if (!answer.startsWith('y')) {
+        console.log(rl ? 'Nothing was changed.' : 'Pass --yes to go ahead.');
+        return;
+      }
+    }
     rl?.close();
-  }
 
-  if (result.remove.length) {
-    run('node', [PRUNE, '--without', result.remove.join(','), '--no-install', '--no-report']);
-  }
-  for (const id of result.add) run('node', [PLUGIN, 'add', id, '--from', source.dir]);
-  if (options.install) {
-    console.log('\npnpm install (the lockfile follows the tree)...');
-    run('pnpm', ['install']);
-  }
-  run('node', [PRUNE, '--check']);
+    if (result.remove.length || result.add.length) {
+      const patch = stage(result, source);
+      if (patch.length) git(['apply', '--binary'], { input: patch });
+    }
+    if (options.install) {
+      console.log('\npnpm install (the lockfile follows the tree)...');
+      try {
+        execFileSync('pnpm', ['install'], { cwd: ROOT, stdio: 'inherit' });
+      } catch {
+        fail('pnpm install failed. The tree is initialised; run it again once the cause is fixed.');
+      }
+    }
 
-  // Last, over the finished project: the prose that still names what went,
-  // including any a plugin brought in.
-  const { features: gone, shared: goneShared } = result.remove.length
-    ? resolveRemoval(manifest, result.remove)
-    : { features: [], shared: [] };
-  printMentions(
-    mentions([
-      ...gone.flatMap((id) => manifest.features[id].identifiers),
-      ...goneShared.flatMap((path) => manifest.shared[path].identifiers),
-    ]),
-  );
-
-  const followUps = result.add.flatMap((id) => plugins[id].postInstall ?? []);
-  console.log(`
-Your project: api${result.keep.length ? `, ${result.keep.join(', ')}` : ''}${
-    result.add.length ? `, and ${result.add.join(', ')}` : ''
-  }.
+    // Last, over the finished project: the prose that still names what went,
+    // including any a plugin brought in.
+    const removal = result.remove.length
+      ? resolveRemoval(manifest, result.remove)
+      : { features: [], shared: [] };
+    printMentions(
+      mentions([
+        ...removal.features.flatMap((id) => manifest.features[id].identifiers),
+        ...removal.shared.flatMap((path) => manifest.shared[path].identifiers),
+      ]),
+    );
+    const followUps = [...new Set(result.add.flatMap((id) => plugins[id].postInstall ?? []))];
+    const kept = result.keep.length ? `, ${result.keep.join(', ')}` : '';
+    const added = result.add.length ? `, and ${result.add.join(', ')}` : '';
+    console.log(`
+Your project: api${kept}${added}.
 
 Next:
   cp .env.example .env            then set the secrets it asks for
-  pnpm docker:dev && pnpm dev     Postgres, Redis and every app${
-    followUps.length ? `\n  ${[...new Set(followUps)].join('\n  ')}` : ''
-  }
+  pnpm docker:dev && pnpm dev     Postgres, Redis and every app${followUps.map((step) => `\n  ${step}`).join('')}
   git add -A && git commit -m "chore: initialize project from the starter"`);
+  } finally {
+    rl?.close();
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

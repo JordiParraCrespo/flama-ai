@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   annotate,
+  blockAbove,
   dropBlocks,
   identifierRegex,
   MARKER_RE,
   MarkerError,
+  markerIds,
   widenMarker,
 } from './markers.mjs';
 
@@ -126,4 +128,46 @@ test('dropBlocks takes out what only the removed own, and narrows what they shar
   );
   // A file with no blocks is not a rewrite; the caller skips it.
   assert.equal(dropBlocks('f', 'plain\n', new Set(['gone'])), null);
+});
+
+test('blockAbove finds the block a slot marks, and only that one', () => {
+  const shared = [
+    '# flama:begin alpha|beta',
+    'x',
+    '# flama:end alpha|beta',
+    '',
+    '# flama:plugins other-slot',
+    '# flama:plugins the-slot',
+  ].join('\n');
+  // Blank lines and other anchors may sit between; the block is still marked.
+  assert.deepEqual(blockAbove('f', shared, 'the-slot'), {
+    ids: ['alpha', 'beta'],
+    begin: 0,
+    end: 2,
+  });
+
+  // With the shared block pruned, the slot marks nothing — even though some
+  // other feature's block now sits further up. Reaching past it would widen
+  // lines this slot never marked.
+  const pruned = [
+    '# flama:begin gamma',
+    'y',
+    '# flama:end gamma',
+    'code',
+    '# flama:plugins the-slot',
+  ];
+  assert.equal(blockAbove('f', pruned.join('\n'), 'the-slot'), null);
+  assert.equal(blockAbove('f', '# flama:plugins the-slot', 'the-slot'), null);
+  assert.equal(blockAbove('f', 'nothing here', 'the-slot'), null);
+
+  // A nested block ending right above: the innermost block is the one marked.
+  const nested = ['# flama:begin alpha', '# flama:begin beta', 'z', '# flama:end beta'];
+  const withAnchor = [...nested, '# flama:plugins the-slot', '# flama:end alpha'].join('\n');
+  assert.deepEqual(blockAbove('f', withAnchor, 'the-slot'), { ids: ['beta'], begin: 1, end: 3 });
+});
+
+test('markerIds reads the owners from the fences, not from the text', () => {
+  const text =
+    '# flama:begin alpha|beta\n# flama:begin gamma\n# flama:end gamma\n# flama:end alpha|beta';
+  assert.deepEqual([...markerIds('f', text)].sort(), ['alpha', 'beta', 'gamma']);
 });
