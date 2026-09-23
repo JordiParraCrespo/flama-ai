@@ -28,7 +28,7 @@ export class AccessGrantOrmEntity {
   @Column({ type: 'uuid' })
   principalId!: string;
 
-  /** A registry subject, e.g. `Lead`. */
+  /** A registry subject, e.g. `Workspace`. */
   @Column({ type: 'varchar' })
   resourceType!: string;
 

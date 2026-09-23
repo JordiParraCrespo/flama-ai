@@ -31,6 +31,7 @@ added when a project wants them, with `pnpm plugin:add <id>`:
 | `admin-web`     | `apps/admin-web` — control plane for users, roles and permissions     |
 | `admin-mobile`  | `apps/admin-mobile` — the Expo control plane                          |
 | `qa`            | `qa/` — the scenario-driven Playwright pack (needs `admin-web`)       |
+| `billing`       | Stripe subscriptions in the API: checkout, portal, webhooks, metrics  |
 
 `pnpm plugin:list` shows them and marks what is already installed, and
 `pnpm plugin:remove <id>` takes one back out — see

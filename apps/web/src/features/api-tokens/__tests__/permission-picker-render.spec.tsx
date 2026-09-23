@@ -6,8 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 /**
  * The permission picker's render budget, measured through the form that ships.
  *
- * The catalog has eleven groups and each offers three levels, so the picker is
- * thirty-three toggles. It used to hold one flat `Scope[]` for all of them,
+ * The catalog has nine groups and each offers three levels, so the picker is
+ * twenty-seven toggles. It used to hold one flat `Scope[]` for all of them,
  * which made every click a re-render of the whole thing; each row takes its own
  * field off the form now, so a click costs the three toggles of one row.
  *
@@ -71,8 +71,6 @@ const RESOURCES = [
   'invitations',
   'workspaces',
   'tokens',
-  'billing',
-  'leads',
 ] as const;
 
 const GROUPS = RESOURCES.map((resource, index) => ({

@@ -1,7 +1,6 @@
 import { Badge, ToggleGroup, ToggleGroupItem } from '@flama/design-system-web';
 import {
   Building2,
-  CreditCard,
   KeyRound,
   Mail,
   Shield,
@@ -14,7 +13,9 @@ import { type Control, type FieldPath, type FieldValues, useController } from 'r
 import { useTranslation } from 'react-i18next';
 import type { ScopeLevel, ScopeResource } from '@/features/api-tokens/lib/scope-selection';
 
-const PERMISSION_ICONS: Record<ScopeResource, typeof UserRound> = {
+// Partial on purpose: a resource added later — a plugin's — gets the generic
+// key until someone picks it an icon, rather than failing the build here.
+const PERMISSION_ICONS: Partial<Record<ScopeResource, typeof UserRound>> = {
   profile: UserRound,
   users: Users,
   admin: Shield,
@@ -24,8 +25,6 @@ const PERMISSION_ICONS: Record<ScopeResource, typeof UserRound> = {
   invitations: Mail,
   workspaces: Workflow,
   tokens: KeyRound,
-  billing: CreditCard,
-  leads: Users,
 };
 
 /**
@@ -33,13 +32,13 @@ const PERMISSION_ICONS: Record<ScopeResource, typeof UserRound> = {
  *
  * This is where the leaf subscription pays: `useController` here means a click
  * on "Edit" for `tokens` re-renders the tokens row. While the picker held one
- * flat `Scope[]`, the same click re-rendered all eleven rows and their
- * thirty-three toggles.
+ * flat `Scope[]`, the same click re-rendered all nine rows and their
+ * twenty-seven toggles.
  *
  * It takes two booleans rather than the catalog of grantable scopes for the
  * same reason. A row that held the whole array rebuilt a `Set` of it on every
- * render and took a new identity whenever the catalog settled — eleven rows
- * waiting on a list ten of them do not read.
+ * render and took a new identity whenever the catalog settled — nine rows
+ * waiting on a list eight of them do not read.
  */
 export function PermissionGroupRow<TFieldValues extends FieldValues>({
   group,
@@ -63,7 +62,7 @@ export function PermissionGroupRow<TFieldValues extends FieldValues>({
   const { field } = useController({ control, name });
 
   const level = (field.value ?? 'none') as ScopeLevel;
-  const Icon = PERMISSION_ICONS[group.resource];
+  const Icon = PERMISSION_ICONS[group.resource] ?? KeyRound;
 
   return (
     <div className="flex flex-wrap items-center gap-3 px-3 py-3">

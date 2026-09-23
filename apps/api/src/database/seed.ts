@@ -12,7 +12,6 @@ import { Session } from '../auth/database/session.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
 import { auth, closeAuthConnections } from '../auth/infrastructure/better-auth.config';
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
-import { LeadOrmEntity } from '../leads/database/lead.orm-entity';
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
@@ -42,7 +41,6 @@ const dataSource = new DataSource({
     OAuthConsentOrmEntity,
     RoleOrmEntity,
     AccessGrantOrmEntity,
-    LeadOrmEntity,
     UserRoleOrmEntity,
     OrganizationOrmEntity,
     MemberOrmEntity,

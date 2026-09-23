@@ -63,6 +63,13 @@ const MANIFEST_PATH = join(HERE, 'features.json');
 /** Never scanned for references: binary, generated, or the apparatus itself. */
 const SCAN_SKIP = [
   /^pnpm-lock\.yaml$/,
+  // The API's OpenAPI document and the client generated from it. They follow
+  // the code, not the markers: regenerating rewrites both after a feature with
+  // endpoints comes or goes, which is what `regenerate` says. Only what the
+  // generator writes — the legacy client beside it is edited by hand now, and
+  // is held to the markers like any other code.
+  /^apps\/api\/openapi\.json$/,
+  /^packages\/frontend\/api-client\/src\/generated\//,
   /^scripts\/starter\//,
   /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|zip|pdf)$/i,
 ];
@@ -694,6 +701,10 @@ function prune(manifest, removedIds, options) {
   }
 
   console.log('\nDone.');
+  // Generated files follow the code, not the markers (see SCAN_SKIP), so a
+  // feature that shaped them says how to rebuild them without it.
+  const regenerate = regenerateSteps(features.map((id) => manifest.features[id]));
+  if (regenerate.length) console.log(`Next: ${regenerate.join(', ')}`);
   if (options.report) {
     const identifiers = [
       ...features.flatMap((id) => manifest.features[id].identifiers),
@@ -711,6 +722,22 @@ function prune(manifest, removedIds, options) {
  * sentence mid-paragraph breaks it, and rewording one takes judgment. What a
  * script can do is find every such line, so none is missed.
  */
+/**
+ * How to rebuild the generated files once `features` have come or gone.
+ *
+ * A feature's `regenerate` names root scripts, most complete first, and the
+ * step is the first one this project still has: an API-only project pruned the
+ * client and its `generate:api-client`, and rebuilds the OpenAPI document with
+ * `generate:openapi` alone.
+ */
+export function regenerateSteps(features) {
+  const scripts = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).scripts ?? {};
+  const steps = features.map((feature) =>
+    (feature.regenerate ?? []).find((script) => scripts[script]),
+  );
+  return [...new Set(steps.filter(Boolean))].map((script) => `pnpm ${script}`);
+}
+
 export function mentions(identifiers) {
   const regexes = identifiers.map(identifierRegex);
   const found = new Map();

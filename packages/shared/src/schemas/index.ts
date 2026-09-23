@@ -2,8 +2,7 @@ export * from './admin.schema';
 export * from './api-token.schema';
 export * from './auth.schema';
 export * from './authz.schema';
-export * from './billing.schema';
-export * from './lead.schema';
+// flama:plugins schema-exports
 export * from './organization.schema';
 export * from './pagination.schema';
 export * from './profile.schema';

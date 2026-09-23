@@ -27,7 +27,7 @@ import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
 import { auth } from './auth/infrastructure/better-auth.config';
 import { AuthzModule } from './authz/authz.module';
-import { BillingModule } from './billing/billing.module';
+// flama:plugins api-module-imports
 import { CapabilitiesModule } from './capabilities/capabilities.module';
 import {
   appConfig,
@@ -36,11 +36,10 @@ import {
   oauthConfig,
   redisConfig,
   storageConfig,
-  stripeConfig,
 } from './config';
+// flama:plugins api-config-imports
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
 import { HealthModule } from './health/health.module';
-import { LeadsModule } from './leads/leads.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { OutboxModule } from './outbox/outbox.module';
 import { ProfileModule } from './profile/profile.module';
@@ -62,7 +61,7 @@ import { UsersModule } from './users/user.module';
         emailConfig,
         storageConfig,
         oauthConfig,
-        stripeConfig,
+        // flama:plugins api-config
       ],
     }),
     // Request logging with hardened defaults (credential redaction, no
@@ -141,7 +140,7 @@ import { UsersModule } from './users/user.module';
     StorageModule.register(),
     CacheModule.register(),
     // `bodyParser.rawBody` attaches the raw request buffer to `req.rawBody`,
-    // which the Stripe webhook controller needs for signature verification.
+    // which a webhook controller needs to verify the sender's signature.
     //
     // `middleware` is what gets `/api/auth/*` into the request log: Better
     // Auth mounts its handler straight onto the HTTP adapter before Nest
@@ -175,11 +174,10 @@ import { UsersModule } from './users/user.module';
     ProfileModule,
     RolesModule,
     OrganizationsModule,
-    LeadsModule,
     AdminModule,
     HealthModule,
     QueueModule,
-    BillingModule,
+    // flama:plugins api-modules
   ],
   providers: [
     // Keyed on the calling credential, not the source IP — see the guard.

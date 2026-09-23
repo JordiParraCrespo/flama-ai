@@ -16,7 +16,5 @@ export class CapabilitiesResponseDto implements ClientCapabilities {
 
   @ApiProperty({ description: 'Sign-in with GitHub is configured.' })
   github_oauth!: boolean;
-
-  @ApiProperty({ description: 'Stripe billing is configured.' })
-  stripe_billing!: boolean;
+  // flama:plugins client-capabilities
 }

@@ -252,11 +252,11 @@ export type CurrentCredentialResponseDto = {
     /**
      * Scopes the credential carries. Null for a browser session, which is not scope-restricted.
      */
-    grantedScopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'billing:read' | 'billing:write' | 'leads:read' | 'leads:write'> | null;
+    grantedScopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write'> | null;
     /**
      * What the credential can actually do: its scopes intersected with the owner’s current roles.
      */
-    effectiveScopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'billing:read' | 'billing:write' | 'leads:read' | 'leads:write'>;
+    effectiveScopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write'>;
     /**
      * Organizations the credential is restricted to, or null when unrestricted.
      */
@@ -274,7 +274,7 @@ export type ApiTokenResponseDto = {
     /**
      * Granted permissions.
      */
-    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'billing:read' | 'billing:write' | 'leads:read' | 'leads:write'>;
+    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write'>;
     /**
      * Organizations this token is restricted to. Null means it follows the owner’s memberships.
      */
@@ -295,7 +295,7 @@ export type ScopePolicyDto = {
 };
 
 export type ScopeLevelDto = {
-    scope: 'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'billing:read' | 'billing:write' | 'leads:read' | 'leads:write';
+    scope: 'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write';
     label: string;
     description: string;
     /**
@@ -310,7 +310,7 @@ export type ScopeLevelsDto = {
 };
 
 export type PermissionGroupDto = {
-    resource: 'profile' | 'users' | 'admin' | 'roles' | 'organizations' | 'members' | 'invitations' | 'workspaces' | 'tokens' | 'billing' | 'leads';
+    resource: 'profile' | 'users' | 'admin' | 'roles' | 'organizations' | 'members' | 'invitations' | 'workspaces' | 'tokens';
     label: string;
     description: string;
     /**
@@ -328,12 +328,12 @@ export type PermissionCatalogResponseDto = {
     /**
      * Scopes the caller may put on a token. Anything outside this list is refused at creation.
      */
-    grantable: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'billing:read' | 'billing:write' | 'leads:read' | 'leads:write'>;
+    grantable: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write'>;
 };
 
 export type CreateApiTokenRequest = {
     name: string;
-    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'billing:read' | 'billing:write' | 'leads:read' | 'leads:write'>;
+    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write'>;
     organizationIds?: Array<string>;
     expiresInDays?: number | null;
     ipAllowlist?: Array<string>;
@@ -349,7 +349,7 @@ export type CreatedApiTokenResponseDto = {
     /**
      * Granted permissions.
      */
-    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'billing:read' | 'billing:write' | 'leads:read' | 'leads:write'>;
+    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'admin:read' | 'admin:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write'>;
     /**
      * Organizations this token is restricted to. Null means it follows the owner’s memberships.
      */
@@ -589,31 +589,6 @@ export type AddWorkspaceMemberRequest = {
     userId: string;
 };
 
-export type LeadResponseDto = {
-    id: string;
-    organizationId: string;
-    teamId?: string | null;
-    ownerId?: string | null;
-    name: string;
-    email?: string | null;
-    /**
-     * Deal value in minor units.
-     */
-    value: number;
-    notes?: string | null;
-    createdAt: string;
-    updatedAt: string;
-};
-
-export type CreateLeadRequest = {
-    name: string;
-    email?: string | null;
-    teamId?: string | null;
-    ownerId?: string | null;
-    value?: number;
-    notes?: string | null;
-};
-
 export type AdminUserResponseDto = {
     id: string;
     email: string;
@@ -689,87 +664,6 @@ export type CapabilitiesResponseDto = {
      * Sign-in with GitHub is configured.
      */
     github_oauth: boolean;
-    /**
-     * Stripe billing is configured.
-     */
-    stripe_billing: boolean;
-};
-
-export type CreateCheckoutRequest = {
-    priceId: string;
-    successUrl?: string;
-    cancelUrl?: string;
-};
-
-export type BillingSessionResponseDto = {
-    /**
-     * Stripe-hosted URL to redirect the browser to.
-     */
-    url: string;
-};
-
-export type CreatePortalRequest = {
-    returnUrl?: string;
-};
-
-export type SubscriptionResponseDto = {
-    id: string;
-    status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused';
-    priceId: string | null;
-    /**
-     * Human-readable plan name.
-     */
-    plan: string | null;
-    /**
-     * Recurring amount in the currency's minor unit (e.g. cents).
-     */
-    unitAmount: number | null;
-    currency: string | null;
-    interval: 'day' | 'week' | 'month' | 'year';
-    currentPeriodEnd: string | null;
-    cancelAtPeriodEnd: boolean;
-    canceledAt: string | null;
-    createdAt: string;
-    updatedAt: string;
-};
-
-export type CurrencyMrrDto = {
-    currency: string;
-    /**
-     * MRR for this currency in its minor unit (e.g. cents).
-     */
-    mrr: number;
-};
-
-export type RevenueMetricsResponseDto = {
-    /**
-     * Currency of the headline mrr/arr — the currency with the highest MRR.
-     */
-    currency: string;
-    /**
-     * Headline Monthly Recurring Revenue in minor units (yearly plans normalized /12).
-     */
-    mrr: number;
-    /**
-     * Headline Annual Recurring Revenue in minor units (mrr * 12).
-     */
-    arr: number;
-    /**
-     * Per-currency MRR breakdown (never mixes currencies into one total).
-     */
-    mrrByCurrency: Array<CurrencyMrrDto>;
-    activeSubscriptions: number;
-    trialingSubscriptions: number;
-    pastDueSubscriptions: number;
-    canceledSubscriptions: number;
-    /**
-     * Subscriptions canceled within the trailing 30 days.
-     */
-    canceledLast30Days: number;
-    /**
-     * Approximate monthly churn: canceledLast30Days / (active + canceledLast30Days), in [0, 1].
-     */
-    churnRate: number;
 };
 
 export type GetSettingsData = {
@@ -3003,90 +2897,6 @@ export type RemoveMemberResponses = {
 
 export type RemoveMemberResponse = RemoveMemberResponses[keyof RemoveMemberResponses];
 
-export type List6Data = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/leads';
-};
-
-export type List6Errors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type List6Error = List6Errors[keyof List6Errors];
-
-export type List6Responses = {
-    200: Array<LeadResponseDto>;
-};
-
-export type List6Response = List6Responses[keyof List6Responses];
-
-export type Create6Data = {
-    body: CreateLeadRequest;
-    path?: never;
-    query?: never;
-    url: '/api/v1/leads';
-};
-
-export type Create6Errors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type Create6Error = Create6Errors[keyof Create6Errors];
-
-export type Create6Responses = {
-    201: LeadResponseDto;
-};
-
-export type Create6Response = Create6Responses[keyof Create6Responses];
-
-export type Get2Data = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/leads/{id}';
-};
-
-export type Get2Errors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * LEAD_001 — Lead not found
-     */
-    404: ProblemDetailsDto;
-};
-
-export type Get2Error = Get2Errors[keyof Get2Errors];
-
-export type Get2Responses = {
-    200: LeadResponseDto;
-};
-
-export type Get2Response = Get2Responses[keyof Get2Responses];
-
 export type ListUsersData = {
     body?: never;
     path?: never;
@@ -3808,7 +3618,7 @@ export type DeploymentCapabilitiesData = {
 
 export type DeploymentCapabilitiesResponses = {
     /**
-     * Which client-relevant optional features (OAuth providers, Stripe billing) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
+     * Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
      */
     200: CapabilitiesResponseDto;
 };
@@ -3881,119 +3691,3 @@ export type ReadinessResponses = {
 };
 
 export type ReadinessResponse = ReadinessResponses[keyof ReadinessResponses];
-
-export type CheckoutData = {
-    body: CreateCheckoutRequest;
-    path?: never;
-    query?: never;
-    url: '/api/v1/billing/checkout';
-};
-
-export type CheckoutErrors = {
-    /**
-     * BILLING_006 — This user already has an active subscription
-     */
-    409: ProblemDetailsDto;
-    /**
-     * BILLING_001 — Billing is not configured
-     */
-    503: ProblemDetailsDto;
-};
-
-export type CheckoutError = CheckoutErrors[keyof CheckoutErrors];
-
-export type CheckoutResponses = {
-    201: BillingSessionResponseDto;
-};
-
-export type CheckoutResponse = CheckoutResponses[keyof CheckoutResponses];
-
-export type PortalData = {
-    body: CreatePortalRequest;
-    path?: never;
-    query?: never;
-    url: '/api/v1/billing/portal';
-};
-
-export type PortalErrors = {
-    /**
-     * BILLING_002 — No billing customer exists for this user
-     */
-    404: ProblemDetailsDto;
-};
-
-export type PortalError = PortalErrors[keyof PortalErrors];
-
-export type PortalResponses = {
-    201: BillingSessionResponseDto;
-};
-
-export type PortalResponse = PortalResponses[keyof PortalResponses];
-
-export type GetSubscriptionData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/billing/subscription';
-};
-
-export type GetSubscriptionResponses = {
-    200: SubscriptionResponseDto;
-};
-
-export type GetSubscriptionResponse = GetSubscriptionResponses[keyof GetSubscriptionResponses];
-
-export type FindAll4Data = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Filter by status
-         */
-        status?: string;
-        /**
-         * Items per page (default: 20, max: 100)
-         */
-        limit?: number;
-        /**
-         * Page number (default: 1)
-         */
-        page?: number;
-    };
-    url: '/api/v1/billing/subscriptions';
-};
-
-export type FindAll4Errors = {
-    /**
-     * AUTH_002 — The caller's roles do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type FindAll4Error = FindAll4Errors[keyof FindAll4Errors];
-
-export type FindAll4Responses = {
-    200: unknown;
-};
-
-export type MetricsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/billing/metrics';
-};
-
-export type MetricsErrors = {
-    /**
-     * AUTH_002 — The caller's roles do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type MetricsError = MetricsErrors[keyof MetricsErrors];
-
-export type MetricsResponses = {
-    200: RevenueMetricsResponseDto;
-};
-
-export type MetricsResponse = MetricsResponses[keyof MetricsResponses];

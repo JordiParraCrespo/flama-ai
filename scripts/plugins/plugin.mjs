@@ -43,9 +43,14 @@
  *       "requires": ["<feature id>"],
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],
- *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }]
+ *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }],
  *       //   A key is always declared with its value (`set`), so every edit
  *       //   runs both ways; `starter:check` keeps the value true to the file.
+ *       "regenerate": ["generate:api-client", "generate:openapi"]
+ *       //   The root scripts that rebuild the generated files this feature
+ *       //   shapes — the OpenAPI document and the client — most complete
+ *       //   first; the step is the first one the project has. They carry no
+ *       //   markers, so neither direction edits them; both name the step.
  *     },
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
@@ -65,9 +70,7 @@
  *     "coOwned": [{ "file", "anchor", "order", "source", "needs" }],
  *
  *     // A path carried in because every feature that needed it has left.
- *     "sharedFiles": { "<destination>": "<path inside the plugin>" },
- *
- *     "postInstall": ["pnpm generate:api-client"]
+ *     "sharedFiles": { "<destination>": "<path inside the plugin>" }
  *   }
  *
  * OP 3 is the `json` list above, run backwards: what a prune removes, an
@@ -86,6 +89,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { regenerateSteps } from '../starter/prune.mjs';
 import {
   applyJsonEdits,
   insertBlocks,
@@ -221,7 +225,9 @@ function add(manifest, options) {
 }
 
 function followUps(manifest) {
-  return (manifest.postInstall ?? []).map((step) => `, ${step}`).join('');
+  return regenerateSteps([manifest.feature])
+    .map((step) => `, ${step}`)
+    .join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -270,7 +276,7 @@ function remove(id, options) {
     return;
   }
   runPrune(['--check']);
-  console.log(`\nRemoved ${id}. Next: pnpm install`);
+  console.log(`\nRemoved ${id}. Next: pnpm install${followUps({ feature: features[id] })}`);
 }
 
 // ---------------------------------------------------------------------------
