@@ -53,28 +53,28 @@ usage, and an `AGENTS.md` with the rules an agent needs there. Every `CLAUDE.md`
 in the repo is a symlink to the `AGENTS.md` beside it: edit the `AGENTS.md`,
 never the link.
 
-<!-- flama:begin starter -->
 Every app above except `api` is optional. `scripts/starter/features.json`
 lists them with the paths and marked config blocks that go with each one, and
-`/starter-init` is the skill that turns the starter into a project: a short
-dialog about what the user is building, a proposal of what to keep, then
-`scripts/starter/prune.mjs` removes the rest and the skill rewrites the prose.
-When you add a file that mentions an optional app (CI, compose, Helm,
-`.env.example`, a sidebar), wrap the lines in `# flama:begin <id>` /
+**`pnpm starter:init`** turns the starter into a project: it asks which apps to
+keep and which plugins to add (or takes `--keep`/`--add`/`--yes` from an agent),
+then prunes, installs, refreshes the lockfile and checks the result. Asked to
+start or trim a project, run it; there is no dialog to hold beyond those two
+questions. When you add a file that mentions an optional app (CI, compose,
+Helm, `.env.example`, a sidebar), wrap the lines in `# flama:begin <id>` /
 `# flama:end <id>`; `pnpm starter:check` fails otherwise.
-<!-- flama:end starter -->
 
 Two pieces sit in `scripts/lib/` because both the pruner and the installer
-need them and have to agree: `markers.mjs` is the marker grammar — the regex
-and the block parser, and nothing else — and `json-text.mjs` is
+need them and have to agree: `markers.mjs` is the marker grammar — the regex,
+the block parser, and the one edit a prune makes with them (`dropBlocks`), which
+the installer also runs over what it copies — and `json-text.mjs` is
 format-preserving surgery on JSON, delete and insert in pairs, so an edit does
 not reflow a file the project owns. `prune.mjs` keeps its own git and
 filesystem helpers.
 
-A prune retires `/starter-init`, which is one-shot, and keeps everything else
-— `scripts/starter`, `features.json`, every marker. That is not leftover
-scaffolding: **removal is the pruner**, so it reads that manifest and finds a
-plugin's lines by those fences.
+Nothing about starting a project is one-shot. A prune keeps `scripts/starter`,
+`features.json` and every marker, and that is not leftover scaffolding:
+**removal is the pruner**, so it reads that manifest and finds a plugin's lines
+by those fences.
 
 ### Plugins
 

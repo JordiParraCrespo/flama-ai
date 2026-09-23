@@ -1,5 +1,5 @@
 {
-  "$comment": "Read by scripts/starter/prune.mjs and the /starter-init skill. Every optional piece of the starter is a feature here; the paths are what goes when it is dropped, and every other place that mentions it is wrapped in `flama:begin <id>` / `flama:end <id>` markers. `pnpm starter:check` (CI) fails when a feature is referenced outside its paths and markers, so this file cannot go stale silently.",
+  "$comment": "Read by scripts/starter/prune.mjs, scripts/plugins/plugin.mjs and pnpm starter:init. Every optional piece of the starter is a feature here; the paths are what goes when it is dropped, and every other place that mentions it is wrapped in `flama:begin <id>` / `flama:end <id>` markers. `pnpm starter:check` (CI) fails when a feature is referenced outside its paths and markers, so this file cannot go stale silently.",
   "features": {
     "web": {
       "title": "Consumer web app",
@@ -174,10 +174,5 @@
       "identifiers": ["depcruise/frontend-kit"],
       "neededBy": ["web", "mobile"]
     }
-  },
-  "tooling": {
-    "$comment": "The one-shot half of the apparatus, removed at the end of a prune. scripts/starter and its two package scripts stay: removal is the pruner, so a project that can install a plugin can always remove one.",
-    "paths": [".agents/skills/starter-init"],
-    "scripts": []
   }
 }

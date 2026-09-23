@@ -92,12 +92,11 @@ jobs:
       # The marker grammar in `scripts/lib/`, which outlives a prune.
       - name: Repo scripts
         run: pnpm test:scripts
-      # flama:begin starter
-      # The starter's feature manifest must keep describing the repo: every
-      # optional app referenced only inside its own paths or a marker block.
+      # The feature manifest must keep describing the repo: every optional app
+      # referenced only inside its own paths or a marker block. It outlives
+      # initialisation, because removing a plugin is a prune.
       - name: Starter manifest
         run: pnpm starter:check
-      # flama:end starter
 
   # flama:begin runner
   go:

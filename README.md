@@ -80,36 +80,40 @@ cp .env.example .env
 pnpm dev
 ```
 
-<!-- flama:begin starter -->
 ## Starting your own project
 
 The starter ships every app it knows how to build; a real project keeps a few.
-Ask your coding agent to initialize the project (the `/starter-init` skill):
-it asks what you are building, proposes which apps and tools to keep, then
-removes the rest with `scripts/starter/prune.mjs` and rewrites the docs so no
-dead reference survives. Without an agent:
+On a fresh clone:
 
 ```bash
-pnpm starter:prune --list                       # what can go
-pnpm starter:prune --without mobile,runner,mcp  # remove some, refresh the lockfile
+pnpm starter:init
 ```
 
-Trimming is one direction; adding is the other. What the starter leaves out
-is a plugin, fetched from its own repository when you ask for it:
+It asks which apps to keep (the API always stays) and which plugins to add,
+shows the plan, and carries it out: removes what goes, installs what comes in
+the order they need each other, refreshes the lockfile and checks the result.
+It refuses to run on uncommitted changes, so undoing it is always
+`git reset --hard && git clean -fd`. Unattended, or from an agent:
 
 ```bash
-pnpm plugin:list            # what is on offer, and what you already have
-pnpm plugin:add admin-web   # the control plane, back in your project
-pnpm plugin:remove qa
+pnpm starter:init --keep web,e2e --add docs --yes
 ```
 
-Both directions run on one mechanism. Every optional app is a feature in
+The same two directions stay available afterwards, one feature at a time:
+
+```bash
+pnpm starter:prune --without mcp   # take out something the starter shipped
+pnpm plugin:list                   # what is on offer, and what you already have
+pnpm plugin:add admin-web          # the control plane, back in your project
+pnpm plugin:remove admin-web
+```
+
+Both run on one mechanism. Every optional app is a feature in
 `scripts/starter/features.json`, every file that mentions one wraps those
 lines in `flama:begin`/`flama:end` markers, and an installed plugin becomes a
 feature too — so `pnpm starter:check` (run in CI) fails when a reference
 escapes them either way, and removing a plugin *is* the pruner rather than a
 second implementation of it.
-<!-- flama:end starter -->
 
 ## Services
 

@@ -25,8 +25,10 @@
  *   node scripts/starter/prune.mjs --list
  *
  * Flags: --dry-run (print the plan, touch nothing), --no-install (skip the
- * `pnpm install` that refreshes the lockfile), --init (this is the one-shot
- * initialisation, so retire the /starter-init skill afterwards).
+ * `pnpm install` that refreshes the lockfile).
+ *
+ * To start a project, `pnpm starter:init` is the front door: it asks what to
+ * keep and what to add, then runs this and the plugin installer in order.
  *
  * Everything else stays, every time: this script, `features.json` and every
  * marker. `pnpm plugin:remove` is this script, and it finds a plugin's lines
@@ -44,28 +46,23 @@ import {
 } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deleteJsonEntry, deleteJsonValueAt } from '../lib/json-text.mjs';
 // The grammar only. Everything below — git, JSON, the filesystem, exiting —
 // is this script's own, and stays here.
 import {
+  dropBlocks,
   identifierRegex,
   MarkerError,
-  narrowMarker,
   annotate as parseMarkers,
 } from '../lib/markers.mjs';
-import { deleteJsonEntry, deleteJsonValueAt } from '../lib/json-text.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
 const MANIFEST_PATH = join(HERE, 'features.json');
-/** Marker id for the starter apparatus itself (`flama:begin starter`). */
-const TOOLING_ID = 'starter';
 /** Never scanned for references: binary, generated, or the apparatus itself. */
 const SCAN_SKIP = [
   /^pnpm-lock\.yaml$/,
   /^scripts\/starter\//,
-  // Naming a feature is this skill's whole job, like the manifest beside this
-  // script.
-  /^\.agents\/skills\/starter-init\//,
   /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|zip|pdf)$/i,
 ];
 /**
@@ -187,18 +184,27 @@ function annotate(file, content) {
   }
 }
 
+/** `dropBlocks`, reporting a malformed marker the same way. */
+function dropBlocksReported(file, content, removed) {
+  try {
+    return dropBlocks(file, content, removed);
+  } catch (error) {
+    if (error instanceof MarkerError) fail(error.message);
+    throw error;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // --check
 // ---------------------------------------------------------------------------
 
 function check(manifest) {
   const problems = [];
-  const knownIds = new Set([...Object.keys(manifest.features), TOOLING_ID]);
+  const knownIds = new Set(Object.keys(manifest.features));
 
   const allPaths = [
     ...Object.values(manifest.features).flatMap((feature) => feature.paths),
     ...Object.keys(manifest.shared),
-    ...(manifest.tooling?.paths ?? []),
   ];
   for (const path of allPaths) {
     if (!existsSync(join(ROOT, path)))
@@ -228,7 +234,6 @@ function check(manifest) {
   const manifestScripts = new Set([
     ...Object.values(manifest.features).flatMap((feature) => feature.scripts ?? []),
     ...Object.values(manifest.shared).flatMap((entry) => entry.scripts ?? []),
-    ...(manifest.tooling?.scripts ?? []),
   ]);
   const scriptLineRe = /^\s*"([^"]+)":/;
   // A JSON value or key the manifest removes itself counts as covered.
@@ -359,7 +364,7 @@ function editJson(file, at, plan, dryRun) {
  * on the one path that used to keep the manifest, and nobody noticed because
  * nobody took that path.
  */
-function dropFromManifest(features, shared, deleted, init, dryRun) {
+function dropFromManifest(features, shared, deleted, dryRun) {
   if (!existsSync(MANIFEST_PATH)) return;
   const original = readFileSync(MANIFEST_PATH, 'utf8');
   let text = original;
@@ -401,37 +406,19 @@ function dropFromManifest(features, shared, deleted, init, dryRun) {
     }
   }
 
-  // The `tooling` entry describes the one-shot half, which this prune just
-  // removed. Leaving it behind would have the honesty check looking for a
-  // skill that is gone — the one staleness the old prune could not hide by
-  // deleting the file.
-  if (init && JSON.parse(text).tooling) {
-    const next = deleteJsonEntry(text, [], 'tooling');
-    if (next === null) fail('features.json: could not remove the "tooling" entry');
-    text = next;
-  }
-
   if (text === original) return;
   console.log(`  edit   ${relative(ROOT, MANIFEST_PATH)}`);
   if (!dryRun) writeFileSync(MANIFEST_PATH, text);
 }
 
 function prune(manifest, removedIds, options) {
-  const { dryRun, install, init } = options;
+  const { dryRun, install } = options;
   const { features, shared } = resolveRemoval(manifest, removedIds);
   const removed = new Set(features);
-  // Only an initialisation retires the one-shot half. A plugin removal is a
-  // prune too, and it has no business deleting the init skill.
-  if (init) removed.add(TOOLING_ID);
-  const pathsToDelete = [
-    ...features.flatMap((id) => manifest.features[id].paths),
-    ...shared,
-    ...(init ? (manifest.tooling?.paths ?? []) : []),
-  ];
+  const pathsToDelete = [...features.flatMap((id) => manifest.features[id].paths), ...shared];
   const scriptsToDrop = [
     ...features.flatMap((id) => manifest.features[id].scripts ?? []),
     ...shared.flatMap((path) => manifest.shared[path].scripts ?? []),
-    ...(init ? (manifest.tooling?.scripts ?? []) : []),
   ];
   const packageNames = [
     ...features.flatMap((id) =>
@@ -455,22 +442,11 @@ function prune(manifest, removedIds, options) {
     if (!isText(buffer)) continue;
     const content = buffer.toString('utf8');
     if (!content.includes('flama:begin')) continue;
-    const out = [];
-    let touched = false;
-    for (const { line, stack, marker } of annotate(file, content)) {
-      if (stack.length) touched = true;
-      if (stack.some(({ ids }) => ids.every((id) => removed.has(id)))) continue;
-      // Markers survive. They served this prune, but they also serve the next
-      // one: `pnpm plugin:remove` is this script, and it finds a plugin's
-      // lines by its fences. Stripping them would make an installed plugin
-      // unremovable, and a co-owned block unwidenable by the next install.
-
-      out.push(marker ? narrowMarker(line, removed) : line);
-    }
-    if (!touched) continue;
+    const text = dropBlocksReported(file, content, removed);
+    if (text === null) continue;
     console.log(`  edit   ${file}`);
     edited.push(file);
-    if (!dryRun) writeFileSync(join(ROOT, file), collapseBlankRuns(out.join('\n')));
+    if (!dryRun) writeFileSync(join(ROOT, file), text);
   }
 
   // 2. Paths, then any directory the deletions left empty.
@@ -496,7 +472,7 @@ function prune(manifest, removedIds, options) {
   }
 
   // 3. The manifest itself, which now outlives the prune.
-  dropFromManifest(features, shared, pathsToDelete, init, dryRun);
+  dropFromManifest(features, shared, pathsToDelete, dryRun);
 
   // 4. JSON files that cannot carry markers.
   editJson(
@@ -667,16 +643,6 @@ function prune(manifest, removedIds, options) {
       });
   }
   console.log('\nDone.');
-  // `--init` is a flag someone has to remember, so say when it was the one
-  // that mattered. A project that meant to finish initialising and left the
-  // skill behind would otherwise find out much later, and the inverse of the
-  // old quiet door is a quiet door in the other direction.
-  if (!init && existsSync(join(ROOT, '.agents', 'skills', 'starter-init'))) {
-    console.log(
-      'The /starter-init skill is still here. Pass --init if this was the one-shot\n' +
-        'initialisation; a plugin removal is a prune too, and has no business retiring it.',
-    );
-  }
   if (leftovers.length) {
     console.log(
       `\n${leftovers.length} remaining mention(s) of removed features (prose to rewrite by hand):`,
@@ -686,10 +652,6 @@ function prune(manifest, removedIds, options) {
   console.log(
     '\nNext: pnpm build && pnpm check && pnpm test, then rewrite AGENTS.md and README.md for the trimmed layout.',
   );
-}
-
-function collapseBlankRuns(text) {
-  return text.replace(/\n{3,}/g, '\n\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -705,7 +667,6 @@ function parseArgs(argv) {
   const options = {
     dryRun: false,
     install: true,
-    init: false,
     check: false,
     list: false,
     without: [],
@@ -726,7 +687,6 @@ function parseArgs(argv) {
     else if (arg === '--list') options.list = true;
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--no-install') options.install = false;
-    else if (arg === '--init') options.init = true;
     else if (arg === '--without') options.without.push(...value());
     else if (arg.startsWith('--without=')) options.without.push(...arg.slice(10).split(','));
     else if (arg === '--keep') options.keep = value();
@@ -785,11 +745,7 @@ function main() {
   } else {
     fail('nothing to do: pass --without <ids>, --keep <ids>, --check or --list');
   }
-  // `--init` is an operation in its own right: it retires the starter
-  // apparatus. A project that keeps every app still wants that done, so an
-  // init-only run is not "nothing to remove" — it is the one case where the
-  // removal list is legitimately empty.
-  if (!removed.length && !options.init) fail('nothing to remove');
+  if (!removed.length) fail('nothing to remove');
 
   prune(manifest, removed, options);
 }
