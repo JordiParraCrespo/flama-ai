@@ -52,20 +52,19 @@ import {
   narrowMarker,
   annotate as parseMarkers,
 } from '../lib/markers.mjs';
-import { deleteJsonEntry, deleteJsonValue, deleteJsonValueAt } from '../lib/json-text.mjs';
+import { deleteJsonEntry, deleteJsonValueAt } from '../lib/json-text.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
 const MANIFEST_PATH = join(HERE, 'features.json');
-/** What `pnpm plugin:add` installed, merged into the manifest at load. */
 /** Marker id for the starter apparatus itself (`flama:begin starter`). */
 const TOOLING_ID = 'starter';
 /** Never scanned for references: binary, generated, or the apparatus itself. */
 const SCAN_SKIP = [
   /^pnpm-lock\.yaml$/,
   /^scripts\/starter\//,
-  // The installed-plugin registry, like the manifest beside this script:
-  // naming a feature is its whole job.
+  // Naming a feature is this skill's whole job, like the manifest beside this
+  // script.
   /^\.agents\/skills\/starter-init\//,
   /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|zip|pdf)$/i,
 ];
@@ -319,7 +318,7 @@ const edited = [];
  * the object would have produced — otherwise the surgery missed something and
  * this stops rather than write a file it cannot vouch for.
  */
-function editJson(file, plan, dryRun) {
+function editJson(file, at, plan, dryRun) {
   const path = join(ROOT, file);
   if (!existsSync(path)) return;
   const original = readFileSync(path, 'utf8');
@@ -332,8 +331,15 @@ function editJson(file, plan, dryRun) {
 
   let text = original;
   for (const literal of deletions) {
-    const next = deleteJsonValue(text, literal);
-    if (next === null) fail(`${file}: could not find "${literal}"`);
+    // Scoped, always. An unscoped search takes the first match in the file,
+    // and `"web"` is a feature key as well as a member of half the `neededBy`
+    // lists — that is how you delete a feature when you meant a dependant.
+    // A literal is either a member of the array at `at` or a key of the object
+    // there; nothing else can be deleted from a JSON file.
+    const next = deleteJsonValueAt(text, at, literal)?.text ?? deleteJsonEntry(text, at, literal);
+    if (next === null || next === undefined) {
+      fail(`${file}: could not find "${literal}" in ${at.join(' → ')}`);
+    }
     text = next;
   }
   if (JSON.stringify(JSON.parse(text)) !== JSON.stringify(json)) {
@@ -495,6 +501,7 @@ function prune(manifest, removedIds, options) {
   // 4. JSON files that cannot carry markers.
   editJson(
     'package.json',
+    ['scripts'],
     (json) => {
       const deleted = [];
       for (const name of scriptsToDrop) {
@@ -509,6 +516,7 @@ function prune(manifest, removedIds, options) {
   );
   editJson(
     'biome.json',
+    ['files', 'includes'],
     (json) => {
       const includes = json.files?.includes;
       if (!Array.isArray(includes)) return [];
@@ -530,6 +538,7 @@ function prune(manifest, removedIds, options) {
   );
   editJson(
     '.changeset/config.json',
+    ['ignore'],
     (json) => {
       if (!Array.isArray(json.ignore)) return [];
       const kept = json.ignore.filter((name) => !packageNames.includes(name));
@@ -550,6 +559,7 @@ function prune(manifest, removedIds, options) {
   for (const edit of jsonEdits) {
     editJson(
       edit.file,
+      edit.path,
       (json) => {
         // `path` is an array of keys, not a dotted string: some of the keys
         // these edits address are file paths, and a dot there is data.
@@ -657,6 +667,16 @@ function prune(manifest, removedIds, options) {
       });
   }
   console.log('\nDone.');
+  // `--init` is a flag someone has to remember, so say when it was the one
+  // that mattered. A project that meant to finish initialising and left the
+  // skill behind would otherwise find out much later, and the inverse of the
+  // old quiet door is a quiet door in the other direction.
+  if (!init && existsSync(join(ROOT, '.agents', 'skills', 'starter-init'))) {
+    console.log(
+      'The /starter-init skill is still here. Pass --init if this was the one-shot\n' +
+        'initialisation; a plugin removal is a prune too, and has no business retiring it.',
+    );
+  }
   if (leftovers.length) {
     console.log(
       `\n${leftovers.length} remaining mention(s) of removed features (prose to rewrite by hand):`,
