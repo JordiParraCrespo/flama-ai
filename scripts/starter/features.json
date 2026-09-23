@@ -139,12 +139,16 @@
         {
           "file": "package.json",
           "path": ["pnpm", "overrides"],
-          "deleteKeys": ["react-native"]
+          "set": {
+            "react-native": "0.86.3"
+          }
         },
         {
           "file": "apps/api/package.json",
           "path": ["dependencies"],
-          "deleteKeys": ["@better-auth/expo"]
+          "set": {
+            "@better-auth/expo": "^1.6.25"
+          }
         },
         {
           "file": "biome.json",

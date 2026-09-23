@@ -246,8 +246,40 @@ function check(manifest) {
       (edit) =>
         edit.file === file &&
         ((edit.remove ?? []).some((value) => line.includes(`"${value}"`)) ||
-          (edit.deleteKeys ?? []).some((key) => line.includes(`"${key}":`))),
+          Object.keys(edit.set ?? {}).some((key) => line.includes(`"${key}":`))),
     );
+
+  // A JSON edit is only reversible if it is true. `set` carries the value a
+  // key has, so an install can write it back — which makes that value a copy
+  // of the file's, and a copy can drift: bump a dependency and the manifest
+  // would restore the old version. So while the edit's owner is here, the
+  // manifest has to agree with the file, value for value.
+  for (const edit of jsonEdits) {
+    if (edit.deleteKeys) {
+      problems.push(
+        `${edit.file}: "deleteKeys" names keys without their values, so nothing could put ` +
+          'them back; declare them with "set"',
+      );
+      continue;
+    }
+    if (!existsSync(join(ROOT, edit.file))) continue;
+    const target = edit.path.reduce(
+      (node, key) => node?.[key],
+      JSON.parse(readFileSync(join(ROOT, edit.file), 'utf8')),
+    );
+    const where = `${edit.file} → ${edit.path.join(' → ')}`;
+    for (const value of edit.remove ?? []) {
+      if (!Array.isArray(target) || !target.includes(value))
+        problems.push(`features.json removes "${value}" from ${where}, which does not hold it`);
+    }
+    for (const [key, value] of Object.entries(edit.set ?? {})) {
+      if (JSON.stringify(target?.[key]) !== JSON.stringify(value))
+        problems.push(
+          `features.json sets ${where} → "${key}" to ${JSON.stringify(value)}, but the file ` +
+            `has ${JSON.stringify(target?.[key])}`,
+        );
+    }
+  }
 
   const files = trackedFiles();
   for (const file of files) {
@@ -552,7 +584,7 @@ function prune(manifest, removedIds, options) {
         // `set` declares the keys *and* their values, so an install can put
         // them back; here only the names matter. One declaration, read in
         // whichever direction the caller is going.
-        const keys = edit.deleteKeys ?? Object.keys(edit.set ?? {});
+        const keys = Object.keys(edit.set ?? {});
         if (keys.length && typeof target === 'object') {
           const deleted = [];
           for (const name of keys) {
