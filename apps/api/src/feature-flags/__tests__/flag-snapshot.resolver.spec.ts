@@ -76,6 +76,20 @@ describe('FlagSnapshotResolver', () => {
     expect(after.flags.api_token_creation).toBe(false);
   });
 
+  it('reports every outage, even when nothing changed during the last one', async () => {
+    const warn = vi.spyOn((resolver as unknown as { logger: { warn: () => void } }).logger, 'warn');
+    const poll = () => (resolver as unknown as { reloadIfStale(): Promise<void> }).reloadIfStale();
+    await resolver.refresh();
+
+    vi.mocked(flags.fingerprint).mockRejectedValueOnce(new Error('down'));
+    await poll();
+    await poll(); // back up, same data
+    vi.mocked(flags.fingerprint).mockRejectedValueOnce(new Error('down again'));
+    await poll();
+
+    expect(warn).toHaveBeenCalledTimes(2);
+  });
+
   it('coalesces concurrent refreshes into one load', async () => {
     await Promise.all([resolver.refresh(), resolver.refresh(), resolver.refresh()]);
     expect(flags.findAll).toHaveBeenCalledTimes(1);

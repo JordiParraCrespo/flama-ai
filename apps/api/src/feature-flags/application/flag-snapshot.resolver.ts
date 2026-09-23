@@ -144,7 +144,14 @@ export class FlagSnapshotResolver
 
   private async reloadIfStale(): Promise<void> {
     try {
-      if ((await this.fingerprint()) !== this.snapshot.fingerprint) await this.refresh();
+      const fingerprint = await this.fingerprint();
+      if (fingerprint !== this.snapshot.fingerprint) {
+        await this.refresh();
+      } else {
+        // The database answered, so the outage is over even though nothing
+        // changed during it — without this the next outage would go unlogged.
+        this.recovered();
+      }
     } catch (error) {
       this.reportFailure(error);
     }
@@ -182,11 +189,15 @@ export class FlagSnapshotResolver
         segments: new Map(segments.map((segment) => [segment.key, segment.toSegment()])),
       };
 
-      if (this.failing) this.logger.log('Feature flag snapshot recovered');
-      this.failing = false;
+      this.recovered();
     } catch (error) {
       this.reportFailure(error);
     }
+  }
+
+  private recovered(): void {
+    if (this.failing) this.logger.log('Feature flag snapshot recovered');
+    this.failing = false;
   }
 
   /** Once per outage, not once per poll. */
