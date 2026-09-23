@@ -49,6 +49,7 @@ import {
   narrowMarker,
   annotate as parseMarkers,
 } from '../lib/markers.mjs';
+import { deleteJsonValue } from '../lib/json-text.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -338,63 +339,6 @@ function check(manifest) {
 
 /** Files rewritten by the current prune, formatted at the end. */
 const edited = [];
-
-/**
- * Delete a value from a JSON text, keeping the rest byte-for-byte.
- *
- * Re-serialising with `JSON.stringify` reformats the whole file — it expands
- * every array the author kept on one line — so a prune that drops a single
- * pattern from `biome.json` rewrites unrelated parts of it. Biome accepts
- * either shape, so nothing complained, but it means removing a plugin does
- * not return the file to where it started, and byte-identical removal is the
- * guarantee the whole plugin format rests on.
- *
- * Every edit here deletes a value from an array or a key from an object.
- * Sometimes it has its own line; sometimes the author kept the whole array on
- * one — `"outputs": ["dist/**", ".next/**", "build/**"]` — and then the value
- * has to come out of the middle of that line. Both shapes, and the comma each
- * leaves behind.
- */
-export function deleteJsonValue(text, literal) {
-  const quoted = `"${literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`;
-  return (
-    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*,?\\s*$`)) ??
-    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*:`)) ??
-    deleteInline(text, quoted)
-  );
-}
-
-/** The value (or `"key": value` pair) occupies the line by itself. */
-function deleteOwnLine(text, match) {
-  const lines = text.split('\n');
-  const index = lines.findIndex((line) => match.test(line));
-  if (index === -1) return null;
-  lines.splice(index, 1);
-  const previous = index - 1;
-  const next = lines[index]?.trim();
-  if (previous >= 0 && lines[previous].trimEnd().endsWith(',') && /^[\]}]/.test(next ?? '')) {
-    lines[previous] = lines[previous].replace(/,(\s*)$/, '$1');
-  }
-  return lines.join('\n');
-}
-
-/**
- * The value is one member of an array written on a single line. It takes the
- * comma that follows it, or — if it is last — the one before it, so the array
- * is still well-formed. The quotes in `quoted` are what keep `".next/**"` from
- * matching inside `"!.next/cache/**"`.
- */
-function deleteInline(text, quoted) {
-  for (const pattern of [
-    new RegExp(`${quoted}\\s*,\\s*`),
-    new RegExp(`\\s*,\\s*${quoted}`),
-    new RegExp(quoted),
-  ]) {
-    const match = pattern.exec(text);
-    if (match) return text.slice(0, match.index) + text.slice(match.index + match[0].length);
-  }
-  return null;
-}
 
 /**
  * `plan(json)` returns the literal values and keys to delete. Nothing else in
