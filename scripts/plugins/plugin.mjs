@@ -26,21 +26,50 @@
  *
  * ## What a plugin carries
  *
- * `plugin.json` holds the `features.json` entry the plugin becomes once
- * installed, the files to copy, and the blocks to insert:
+ * A plugin is a `features.json` entry plus the three ops that put it in place.
+ * Everything below is either the entry, a file to copy, or one of those ops:
  *
  *   {
- *     "id": "cli",
- *     "feature": { "title", "summary", "identifiers", "paths", "requires" },
- *     "files":  { "<destination path>": "<path inside the plugin>" },
- *     "blocks": [{ "file", "anchor", "source" }]
+ *     "id": "admin-web",
+ *
+ *     // The features.json entry, written verbatim on install and deleted by
+ *     // the prune that removes it. `shared` joins a path's `neededBy` rather
+ *     // than owning it; `json` declares what this feature owns in files that
+ *     // cannot carry a marker, and is read backwards here (see below).
+ *     "feature": {
+ *       "title", "summary", "identifiers", "paths",
+ *       "requires": ["<feature id>"],
+ *       "scripts":  ["<package.json script>"],
+ *       "shared":   [{ "path", "identifiers" }],
+ *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }]
+ *     },
+ *
+ *     // Whole trees, copied. `filesNeed` marks one that belongs inside
+ *     // another optional feature's tree and is skipped without it.
+ *     "files":     { "<destination>": "<path inside the plugin>" },
+ *     "filesNeed": { "<destination>": "<feature id>" },
+ *
+ *     // OP 1 — a block of text at an anchor. Inserted immediately above the
+ *     // `flama:plugins <anchor>` comment, fenced with this plugin's id.
+ *     "blocks":  [{ "file", "anchor", "source", "needs" }],
+ *
+ *     // OP 2 — this plugin joining a block several features share. The anchor
+ *     // beside the block says which one; `order` is the canonical owner order
+ *     // so two plugins agree on where each name goes.
+ *     "coOwned": [{ "file", "anchor", "order", "needs" }],
+ *
+ *     // A path carried in because every feature that needed it has left.
+ *     "sharedFiles": { "<destination>": "<path inside the plugin>" },
+ *
+ *     "postInstall": ["pnpm generate:api-client"]
  *   }
  *
- * Files are copied whole. Blocks are inserted immediately above their
- * `flama:plugins <anchor>` comment, wrapped in `flama:begin <id>` /
- * `flama:end <id>` so the pruner owns them from that moment on. The feature
- * entry is merged into `features.json`, which is what makes the install
- * visible to `pnpm starter:check` and removable by `pnpm starter:prune`.
+ * OP 3 is the `json` list above, run backwards: what a prune removes, an
+ * install puts back. There is no fourth. Text goes through `markers.mjs`
+ * (`widenMarker` is `narrowMarker`'s inverse) and JSON through
+ * `json-text.mjs`, whose delete and insert come in pairs — that is what makes
+ * an install and a removal exact inverses, and the round trip in the plugins
+ * repo is what proves it.
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -57,17 +86,19 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { insertJsonEntry, insertJsonValue, renderJsonEntry } from '../lib/json-text.mjs';
-import { ANCHOR_RE, findAnchor, MARKER_RE, MarkerError } from '../lib/markers.mjs';
+import {
+  annotate,
+  ANCHOR_RE,
+  findAnchor,
+  MARKER_RE,
+  MarkerError,
+  widenMarker,
+} from '../lib/markers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
 const FEATURES_PATH = join(ROOT, 'scripts', 'starter', 'features.json');
-/**
- * What this script installed. Separate from `features.json` because that file
- * is the starter's own and a project owns its formatting; rewriting it on
- * every install would churn it. `prune.mjs` merges this one at load, so an
- * installed plugin is a feature in every way that matters.
- */
+/** Removal shells out here: `plugin:remove` is `prune.mjs --without <id>`. */
 const PRUNE_PATH = join(ROOT, 'scripts', 'starter', 'prune.mjs');
 /** Where plugins come from when `--from` is not given. */
 const DEFAULT_REPO = 'https://github.com/JordiParraCrespo/flama-ai-plugins.git';
@@ -345,21 +376,28 @@ function applyJsonEdits(manifest, dryRun) {
     const original = readFileSync(target, 'utf8');
     let text = original;
 
-    // Array values go back at the index the removal recorded.
+    // Array values go back at the index the removal recorded. `at` is
+    // optional: without it a value is appended, which is always valid JSON and
+    // is what a hand-written starter edit — one the pruner reads and the
+    // installer never sees — leaves unstated.
     for (const [index, value] of (edit.remove ?? []).entries()) {
-      const at = edit.at?.[index];
-      if (at === undefined) fail(`${edit.file}: no position recorded for "${value}"`);
-      const next = insertJsonValue(text, edit.path, value, at);
-      if (next === null) fail(`${edit.file}: cannot put "${value}" back at ${edit.path.join('.')}[${at}]`);
+      const next = insertJsonValue(text, edit.path, value, edit.at?.[index]);
+      if (next === null) {
+        fail(`${edit.file}: cannot put "${value}" back into ${edit.path.join(' → ')}`);
+      }
       text = next;
     }
-    // Object keys go back as entries, rendered in the file's own style and at
-    // the position the removal recorded, so a script lands beside the ones it
-    // belongs with rather than after the last line in the file.
+    // Object keys go back as entries, rendered in the file's own style, at the
+    // positions `setAt` records. A separate field from `at` on purpose: one
+    // index list shared between an array of values and an object of keys would
+    // have the two reading each other's positions, which nothing in the shape
+    // would catch.
     for (const [index, [key, value]] of Object.entries(edit.set ?? {}).entries()) {
-      const at = edit.at === undefined ? undefined : edit.at[index];
-      const next = insertJsonEntry(text, edit.path, renderJsonEntry(key, value, edit.path.length + 1), at);
-      if (next === null) fail(`${edit.file}: cannot put "${key}" back at ${edit.path.join('.')}`);
+      const rendered = renderJsonEntry(key, value, edit.path.length + 1);
+      const next = insertJsonEntry(text, edit.path, rendered, edit.setAt?.[index]);
+      if (next === null) {
+        fail(`${edit.file}: cannot put "${key}" back into ${edit.path.join(' → ')}`);
+      }
       text = next;
     }
     if (text === original) continue;
@@ -371,6 +409,19 @@ function applyJsonEdits(manifest, dryRun) {
     console.log(`  edit   ${edit.file}`);
     if (!dryRun) writeFileSync(target, text);
   }
+}
+
+/**
+ * Whether the file already holds a block this plugin owns.
+ *
+ * Through the marker grammar, not `includes('flama:begin <id>')`: a substring
+ * test says yes to `flama:begin widget-showcase` when asked about `widget`,
+ * which is the confusion `checkFences` was written to stop.
+ */
+function carriesBlock(content, id) {
+  return content
+    .split('\n')
+    .some((line) => MARKER_RE.exec(line)?.[2].split('|').includes(id));
 }
 
 function insertBlocks(manifest, dryRun) {
@@ -396,7 +447,7 @@ function insertBlocks(manifest, dryRun) {
     // a file that already carries this plugin, so it has to mean "carried one
     // before this run started": once the first block is written the file does
     // carry one, and refusing on that would make the second block unplaceable.
-    if (!touched.includes(block.file) && content.includes(`flama:begin ${manifest.id}`)) {
+    if (!touched.includes(block.file) && carriesBlock(content, manifest.id)) {
       fail(`${block.file} already carries a "${manifest.id}" block`);
     }
     let anchor;
@@ -432,17 +483,15 @@ function insertBlocks(manifest, dryRun) {
  *
  * A co-owned block belongs to several features at once and goes only when the
  * last of them does — the design-system linter runs over every frontend app,
- * so the block stays while any remains and the pruner just narrows the spec.
- * Installing is the same edit backwards: put the id back in.
+ * so the block stays while any remains and the pruner narrows its spec.
+ * Installing is that edit backwards, and it is the same edit: `narrowMarker`
+ * and `widenMarker` are neighbours in the grammar, and `annotate` already
+ * knows how blocks nest, so nothing here counts marker depth.
  *
- * The block is named by the anchor beside it, not by its contents. Matching on
- * contents is what the installer used to do, and it made the starter's prose a
- * load-bearing part of the plugin format: taking an app's name out of an
- * `.env.example` header — because that app had left — broke every install,
- * since the stored copy no longer matched. It also meant the stored copy had
- * to be recorded *after* this plugin's own block was spliced into it, a
- * contract nothing stated and nothing could check. An anchor says which block
- * and says nothing about what is in it.
+ * The block is named by the anchor beside it, never by its contents. Matching
+ * on contents made the starter's prose part of the plugin format: taking a
+ * departed app's name out of an `.env.example` header broke every co-owned
+ * install, because the stored copy no longer matched.
  */
 function widenCoOwned(manifest, dryRun) {
   for (const block of manifest.coOwned ?? []) {
@@ -456,22 +505,23 @@ function widenCoOwned(manifest, dryRun) {
     }
 
     const content = readFileSync(target, 'utf8');
-    const lines = content.split('\n');
     const found = findAnchor(block.file, content, block.anchor);
     if (!found) {
       fail(`${block.file}: no "flama:plugins ${block.anchor}" anchor to widen a block at`);
     }
 
     // Upwards from the anchor to the block it marks, stepping over any other
-    // anchors that have gathered beside it.
-    let end = -1;
+    // anchors that have gathered beside it. `annotate` has already paired the
+    // fences and would have thrown on an imbalance, so the stack on that line
+    // is the block, and its `begin` is where the other fence sits.
+    const lines = annotate(block.file, content);
+    let closing = null;
     for (let i = found.index - 1; i >= 0; i--) {
-      if (ANCHOR_RE.test(lines[i]) || !lines[i].trim()) continue;
-      const marker = MARKER_RE.exec(lines[i]);
-      if (marker?.[1] === 'end') end = i;
+      if (ANCHOR_RE.test(lines[i].line) || !lines[i].line.trim()) continue;
+      if (lines[i].marker && MARKER_RE.exec(lines[i].line)?.[1] === 'end') closing = i;
       break;
     }
-    if (end === -1) {
+    if (closing === null) {
       // Every owner left, so the pruner took the block and left the anchor.
       // Nothing to widen, and nothing here knows what the block said.
       fail(
@@ -479,41 +529,26 @@ function widenCoOwned(manifest, dryRun) {
           `nothing for "${manifest.id}" to join. It went with the last feature that owned it.`,
       );
     }
-    const spec = MARKER_RE.exec(lines[end])[2];
-    const current = spec.split('|');
-    if (current.includes(manifest.id)) {
+    const { ids, begin } = lines[closing].stack.at(-1);
+    if (ids.includes(manifest.id)) {
       fail(`${block.file}: the shared block already names "${manifest.id}"`);
     }
-    // Backwards from the end marker, counting nesting: a file can hold several
-    // blocks of the same spec — `.env.example` has three for `mobile` — and
-    // the one being widened is the one this anchor closes, not the first.
-    let start = -1;
-    let depth = 0;
-    for (let i = end; i >= 0; i--) {
-      const marker = MARKER_RE.exec(lines[i]);
-      if (marker?.[2] !== spec) continue;
-      if (marker[1] === 'end') depth++;
-      else if (--depth === 0) {
-        start = i;
-        break;
-      }
-    }
-    if (start === -1) fail(`${block.file}: the block above "${block.anchor}" has no opening marker`);
 
     // Insert after the last owner this plugin knows comes before it, rather
     // than rebuilding the spec from its own order: another plugin installed
     // earlier may have added an owner this one has never heard of, and
     // rebuilding would silently drop it.
-    const order = block.order ?? current;
+    const order = block.order ?? ids;
     const before = order.slice(0, order.indexOf(manifest.id));
-    const at = current.filter((owner) => before.includes(owner)).length;
-    const widened = [...current.slice(0, at), manifest.id, ...current.slice(at)].join('|');
-    console.log(`  widen  ${block.file} (${spec} → ${widened})`);
-    if (!dryRun) {
-      lines[start] = lines[start].replace(spec, widened);
-      lines[end] = lines[end].replace(spec, widened);
-      writeFileSync(target, lines.join('\n'));
-    }
+    const at = ids.filter((owner) => before.includes(owner)).length;
+    console.log(
+      `  widen  ${block.file} (${ids.join('|')} → ${[...ids.slice(0, at), manifest.id, ...ids.slice(at)].join('|')})`,
+    );
+    if (dryRun) continue;
+    const out = lines.map((entry) => entry.line);
+    out[begin - 1] = widenMarker(out[begin - 1], manifest.id, at);
+    out[closing] = widenMarker(out[closing], manifest.id, at);
+    writeFileSync(target, out.join('\n'));
   }
 }
 
@@ -584,7 +619,7 @@ function add(manifest, options) {
 
   insertBlocks(manifest, dryRun);
   applyJsonEdits(manifest, dryRun);
-  if (!dryRun) widenCoOwned(manifest, dryRun);
+  widenCoOwned(manifest, dryRun);
 
   writeFeature(manifest, paths, dryRun);
 

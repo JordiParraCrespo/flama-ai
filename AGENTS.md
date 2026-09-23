@@ -88,12 +88,18 @@ pnpm plugin:add admin-web         # install it
 pnpm plugin:remove admin-web      # take it back out
 ```
 
-`pnpm plugin:list` is the catalog. The installer owns the format contract —
-what a plugin declares and how it lands — and documents it where it lives, in
-`scripts/plugins/`. An install writes its entry straight into
-`features.json`, marked `"plugin": true`; there is one catalog, so
+**`scripts/starter/features.json` is the catalog** — the one this repo has.
+An install writes its entry straight in, marked `"plugin": true`, so
 `pnpm starter:check` covers an installed plugin and
-`pnpm starter:prune --without <id>` removes it.
+`pnpm starter:prune --without <id>` removes it. `pnpm plugin:list` is a view
+over what a plugins repo offers, not a second catalog.
+
+A plugin is that entry plus three ops that put it in place: a block of text at
+a `flama:plugins <slot>` anchor, this plugin joining a block several features
+share, and the entry's own `json` edits run backwards. The shape of all of it
+is the header of `scripts/plugins/plugin.mjs`, which is the only document; the
+ops themselves are `scripts/lib/markers.mjs` and `scripts/lib/json-text.mjs`,
+whose deletes and inserts come in pairs so a removal is an install backwards.
 
 ## Key conventions
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { annotate, identifierRegex, MARKER_RE, MarkerError } from './markers.mjs';
+import { annotate, identifierRegex, MARKER_RE, MarkerError, widenMarker } from './markers.mjs';
 
 // Fixtures name no real optional feature on purpose: `pnpm starter:check`
 // scans this file, and a real id here would read as an unmarked reference.
@@ -82,4 +82,20 @@ test('identifierRegex matches whole identifiers only', () => {
   assert.ok(!scoped.test('@acme/widget-showcase'));
   const prefix = identifierRegex('@acme/mod-');
   assert.ok(prefix.test('@acme/mod-core'));
+});
+
+test('widenMarker is narrowMarker backwards', () => {
+  const line = '# flama:begin web|mobile';
+  assert.equal(widenMarker(line, 'admin-web', 1), '# flama:begin web|admin-web|mobile');
+  assert.equal(widenMarker(line, 'zeta', 2), '# flama:begin web|mobile|zeta');
+  // Already there: nothing to do, rather than a duplicate owner.
+  const already = '# flama:begin web|admin-web';
+  assert.equal(widenMarker(already, 'admin-web', 0), already);
+  // Not a marker at all.
+  assert.equal(widenMarker('const x = 1;', 'web', 0), 'const x = 1;');
+  // The indentation and comment syntax are the line's, not ours.
+  assert.equal(
+    widenMarker('      // flama:end web|mobile', 'admin-web', 1),
+    '      // flama:end web|admin-web|mobile',
+  );
 });

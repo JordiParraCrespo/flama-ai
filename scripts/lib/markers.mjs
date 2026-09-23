@@ -113,6 +113,23 @@ export function narrowMarker(line, removed) {
   return line.replace(match[2], kept.join('|'));
 }
 
+/**
+ * Put `id` back into a marker's spec, at index `at`.
+ *
+ * The inverse of `narrowMarker`, and it lives beside it because they are the
+ * same edit in two directions: a prune takes an owner out of a co-owned block,
+ * an install puts one back. Nothing outside this file should be splitting a
+ * spec on `|` — that is the grammar, and a second implementation of it is how
+ * the next co-owned shape forks.
+ */
+export function widenMarker(line, id, at) {
+  const match = MARKER_RE.exec(line);
+  if (!match) return line;
+  const ids = match[2].split('|');
+  if (ids.includes(id)) return line;
+  return line.replace(match[2], [...ids.slice(0, at), id, ...ids.slice(at)].join('|'));
+}
+
 /** Word-boundary match for an identifier such as `apps/web` or `@flama/web`. */
 export function identifierRegex(identifier) {
   const escaped = identifier.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
