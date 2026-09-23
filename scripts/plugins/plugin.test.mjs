@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { checkFences, featureEntry, parseArgs } from './plugin.mjs';
@@ -136,6 +136,25 @@ const APPARATUS = [
   'scripts/lib/json-text.mjs',
 ];
 
+/**
+ * The environment the fixture's own installer runs in: this one, minus the
+ * host repo's toolchain.
+ *
+ * A prune finishes by running Biome over what it edited, when Biome is there
+ * to run. `pnpm test:scripts` puts this repo's `node_modules/.bin` on `PATH`,
+ * so in CI it is — and the fixture has no `biome.json`, so Biome formats its
+ * files to its own defaults and the round trip reads as broken. Locally, with
+ * no install, the same test passed. The fixture is a project of its own and
+ * gets none of the host's tools.
+ */
+const FIXTURE_ENV = {
+  ...process.env,
+  PATH: (process.env.PATH ?? '')
+    .split(delimiter)
+    .filter((entry) => !entry.includes('node_modules'))
+    .join(delimiter),
+};
+
 /** A git repo carrying this installer, a manifest, and files to edit. */
 function fixture() {
   const dir = mkdtempSync(join(tmpdir(), 'flama-installer-'));
@@ -224,6 +243,7 @@ function install(project, extra = []) {
         code: 0,
         out: execFileSync('node', [script, 'add', 'beta', '--from', from, ...extra], {
           encoding: 'utf8',
+          env: FIXTURE_ENV,
         }),
       },
     };
@@ -286,7 +306,7 @@ test('removing the plugin returns the project to its exact bytes', () => {
   assert.notEqual(status(), '', 'the install changed nothing');
 
   const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  execFileSync('node', [script, 'remove', 'beta'], { encoding: 'utf8' });
+  execFileSync('node', [script, 'remove', 'beta'], { encoding: 'utf8', env: FIXTURE_ENV });
 
   const dirty = status();
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
@@ -311,7 +331,8 @@ test('a plugin cannot declare the one JSON shape that has no inverse', () => {
   let code = 0;
   let out = '';
   try {
-    out = execFileSync('node', [script, 'add', 'beta', '--from', from], { encoding: 'utf8' });
+    const args = [script, 'add', 'beta', '--from', from];
+    out = execFileSync('node', args, { encoding: 'utf8', env: FIXTURE_ENV });
   } catch (error) {
     code = error.status;
     out = `${error.stdout ?? ''}${error.stderr ?? ''}`;
