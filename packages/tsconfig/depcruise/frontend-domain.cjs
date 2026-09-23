@@ -50,6 +50,7 @@ module.exports = function frontendDomain({ role }) {
             // flama:begin mobile|mobile-showcase
             'node_modules/(react-native|expo-[a-z-]+)/',
             // flama:end mobile|mobile-showcase
+            // flama:plugins native-modules
           ],
         },
       },

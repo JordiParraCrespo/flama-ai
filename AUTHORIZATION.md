@@ -956,6 +956,7 @@ convenience. Reads first; revisit with the audit log in place.
 ---
 
 <!-- flama:end mcp -->
+<!-- flama:plugins agent-docs -->
 ## Part 13 — Testing
 
 Five layers. The kernel is not done until all five exist.

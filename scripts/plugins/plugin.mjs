@@ -57,7 +57,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { insertJsonEntry, insertJsonValue, renderJsonEntry } from '../lib/json-text.mjs';
-import { findAnchor, MARKER_RE, MarkerError } from '../lib/markers.mjs';
+import { ANCHOR_RE, findAnchor, MARKER_RE, MarkerError } from '../lib/markers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -416,93 +416,94 @@ function insertBlocks(manifest, dryRun) {
 }
 
 /**
- * Widen the blocks this plugin co-owns with features that stayed behind.
+ * Add this plugin to the owners of a block it shares.
  *
- * A `flama:begin mcp|cli` block belongs to the pair. When `cli` left, the
- * pruner narrowed the spec to `mcp` and the block stayed; installing puts the
- * name back. The plugin stores only the widened form — the narrowed one is
- * derived here by taking this plugin's own id back out of the fences, which
- * is the same transformation the pruner applied.
+ * A co-owned block belongs to several features at once and goes only when the
+ * last of them does — the design-system linter runs over every frontend app,
+ * so the block stays while any remains and the pruner just narrows the spec.
+ * Installing is the same edit backwards: put the id back in.
  *
- * Matching is on the whole block, not the fence: a narrowed `flama:begin mcp`
- * is textually identical to an mcp-only block's fence, and only the body
- * tells them apart. Which is why this runs *after* the anchored blocks are
- * inserted — in `sidebars.ts` the co-owned category encloses this plugin's
- * own entry, so the body is only complete once that entry is back.
+ * The block is named by the anchor beside it, not by its contents. Matching on
+ * contents is what the installer used to do, and it made the starter's prose a
+ * load-bearing part of the plugin format: taking an app's name out of an
+ * `.env.example` header — because that app had left — broke every install,
+ * since the stored copy no longer matched. It also meant the stored copy had
+ * to be recorded *after* this plugin's own block was spliced into it, a
+ * contract nothing stated and nothing could check. An anchor says which block
+ * and says nothing about what is in it.
  */
 function widenCoOwned(manifest, dryRun) {
   for (const block of manifest.coOwned ?? []) {
     const target = join(ROOT, block.file);
     if (!existsSync(target)) {
-      // Same rule as an owned block: absent because the project skipped the
-      // feature that brings the file is fine; absent for any other reason is
-      // an anchor that moved.
       if (block.needs) {
         console.log(`  skip   ${block.file} shared block (no ${block.needs} in this project)`);
         continue;
       }
       fail(`${block.file} does not exist; cannot widen a shared block`);
     }
-    const source = join(manifest.dir, block.source);
-    if (!existsSync(source)) fail(`${manifest.id}: shared block "${block.source}" is missing`);
 
-    // The pruner narrows the *spec* and leaves the body alone, so the body is
-    // what identifies the block and the spec is the only thing to change.
-    // Adding this plugin's id to whatever spec is there — rather than swapping
-    // a stored narrowed text for a stored widened one — is what lets two
-    // plugins that share a block both install: the second finds a spec the
-    // first already widened, instead of looking for a text that is now gone.
-    const stored = readFileSync(source, 'utf8').replace(/\n$/, '').split('\n');
-    const canonical = MARKER_RE.exec(stored[0]);
-    if (!canonical) fail(`${manifest.id}: shared block for ${block.file} has no opening marker`);
-    const order = canonical[2].split('|');
-    if (!order.includes(manifest.id)) {
-      fail(`${manifest.id}: shared block for ${block.file} does not name "${manifest.id}"`);
+    const content = readFileSync(target, 'utf8');
+    const lines = content.split('\n');
+    const found = findAnchor(block.file, content, block.anchor);
+    if (!found) {
+      fail(`${block.file}: no "flama:plugins ${block.anchor}" anchor to widen a block at`);
     }
-    const body = stored.slice(1, -1).join('\n');
 
-    const lines = readFileSync(target, 'utf8').split('\n');
-    const starts = lines
-      .map((line, index) => ({ line, index, match: MARKER_RE.exec(line) }))
-      // The body identifies the block, not the spec: another plugin may have
-      // already added an owner this one has never heard of, and the pruner
-      // only ever narrows the spec, so the body is the part that holds still.
-      .filter(
-        (entry) =>
-          entry.match?.[1] === 'begin' &&
-          lines.slice(entry.index + 1, entry.index + 1 + stored.length - 2).join('\n') === body,
-      );
-    if (starts.length !== 1) {
+    // Upwards from the anchor to the block it marks, stepping over any other
+    // anchors that have gathered beside it.
+    let end = -1;
+    for (let i = found.index - 1; i >= 0; i--) {
+      if (ANCHOR_RE.test(lines[i]) || !lines[i].trim()) continue;
+      const marker = MARKER_RE.exec(lines[i]);
+      if (marker?.[1] === 'end') end = i;
+      break;
+    }
+    if (end === -1) {
+      // Every owner left, so the pruner took the block and left the anchor.
+      // Nothing to widen, and nothing here knows what the block said.
       fail(
-        `${block.file}: found ${starts.length} copies of the shared block to widen; expected exactly one`,
+        `${block.file}: the block above "flama:plugins ${block.anchor}" is gone, so there is ` +
+          `nothing for "${manifest.id}" to join. It went with the last feature that owned it.`,
       );
     }
-
-    const [{ index, match }] = starts;
-    const current = match[2].split('|');
+    const spec = MARKER_RE.exec(lines[end])[2];
+    const current = spec.split('|');
     if (current.includes(manifest.id)) {
       fail(`${block.file}: the shared block already names "${manifest.id}"`);
     }
+    // Backwards from the end marker, counting nesting: a file can hold several
+    // blocks of the same spec — `.env.example` has three for `mobile` — and
+    // the one being widened is the one this anchor closes, not the first.
+    let start = -1;
+    let depth = 0;
+    for (let i = end; i >= 0; i--) {
+      const marker = MARKER_RE.exec(lines[i]);
+      if (marker?.[2] !== spec) continue;
+      if (marker[1] === 'end') depth++;
+      else if (--depth === 0) {
+        start = i;
+        break;
+      }
+    }
+    if (start === -1) fail(`${block.file}: the block above "${block.anchor}" has no opening marker`);
+
     // Insert after the last owner this plugin knows comes before it, rather
     // than rebuilding the spec from its own order: another plugin installed
     // earlier may have added an owner this one has never heard of, and
     // rebuilding would silently drop it.
+    const order = block.order ?? current;
     const before = order.slice(0, order.indexOf(manifest.id));
     const at = current.filter((owner) => before.includes(owner)).length;
-    const spec = [...current.slice(0, at), manifest.id, ...current.slice(at)].join('|');
-    const end = index + stored.length - 1;
-    console.log(`  widen  ${block.file} (shared block → ${spec})`);
+    const widened = [...current.slice(0, at), manifest.id, ...current.slice(at)].join('|');
+    console.log(`  widen  ${block.file} (${spec} → ${widened})`);
     if (!dryRun) {
-      lines[index] = lines[index].replace(match[2], spec);
-      lines[end] = lines[end].replace(MARKER_RE.exec(lines[end])[2], spec);
+      lines[start] = lines[start].replace(spec, widened);
+      lines[end] = lines[end].replace(spec, widened);
       writeFileSync(target, lines.join('\n'));
     }
   }
 }
-
-// ---------------------------------------------------------------------------
-// add
-// ---------------------------------------------------------------------------
 
 function add(manifest, options) {
   const { dryRun, force } = options;

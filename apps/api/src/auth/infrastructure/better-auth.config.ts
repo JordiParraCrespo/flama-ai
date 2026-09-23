@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 // flama:begin mobile
 import { expo } from '@better-auth/expo';
 // flama:end mobile
+// flama:plugins auth-imports
 import { organizationSharedOptions, userAdditionalFields } from '@flama/auth';
 import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
 import { Logger } from '@nestjs/common';
@@ -391,6 +392,7 @@ export const auth = betterAuth({
     // flama:begin mobile
     expo(),
     // flama:end mobile
+    // flama:plugins auth-plugins
     admin({
       // Users whose `role` is one of these can call the admin plugin endpoints
       // (list/ban/impersonate/set-role/...). CASL still governs the app's own
