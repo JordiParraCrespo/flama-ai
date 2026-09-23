@@ -28,7 +28,6 @@
     "@flama/frontend-consumer": "workspace:*",
     "@flama/frontend-core": "workspace:*",
     "@flama/frontend-mobile": "workspace:*",
-    "@flama/nitro-app-info": "workspace:*",
     "@flama/shared": "workspace:*",
     "@flama/translations": "workspace:*",
     "@gorhom/bottom-sheet": "github:KaikuLabs/react-native-bottom-sheet#a7ef2476b8eeb1bb6861c733571d246a29e73bac",
@@ -94,7 +93,6 @@
     "doctor": {
       "reactNativeDirectoryCheck": {
         "exclude": [
-          "@flama/nitro-app-info",
           "react-native-nitro-fetch"
         ]
       }

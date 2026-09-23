@@ -4,8 +4,8 @@ The kernel every frontend app loads. It holds the logic both products share —
 session, users, user settings, deployment capabilities, analytics — as plain
 entities, repositories and services over `@flama/api-client`, plus the React
 bindings that expose them as TanStack Query hooks. Nothing here is web or
-mobile: no DOM, no React Native, no router, so `apps/web`, `apps/admin-web`,
-`apps/mobile` and `apps/admin-mobile` all run the same code. It also owns the
+mobile: no DOM, no React Native, no router, so `apps/web` and `apps/mobile`
+(and the control-plane plugins) all run the same code. It also owns the
 InversifyJS container (`FlamaApp`, `TOKENS`) the product packages extend, the
 query-cache persistence policy, and the contracts the two products meet on.
 

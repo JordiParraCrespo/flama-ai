@@ -1,7 +1,7 @@
 # Frontend Architecture — two splits, one direction
 
 `packages/frontend` is what the four apps (`apps/web`, `apps/admin-web`,
-`apps/mobile`, `apps/admin-mobile`) share below their routes. It is split
+`apps/mobile` (and `apps/admin-mobile`, a plugin)) share below their routes. It is split
 twice, and the two splits answer different questions.
 
 This document is the source of truth for the tier. The machine-checked rules

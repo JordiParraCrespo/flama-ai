@@ -1,6 +1,5 @@
 ---
 "@flama/web": minor
-"@flama/admin-web": minor
 "@flama/translations": minor
 "@flama/auth": minor
 "@flama/tsconfig": minor

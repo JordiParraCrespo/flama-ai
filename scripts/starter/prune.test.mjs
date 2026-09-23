@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { expandKeep, resolveRemoval } from './prune.mjs';
+import { deleteJsonValue, expandKeep, resolveRemoval } from './prune.mjs';
 
 const manifest = {
   features: {
@@ -35,4 +35,35 @@ test('resolveRemoval drops a shared path only when every dependant is gone', () 
     'packages/frontend',
     'packages/frontend/design-system/web',
   ]);
+});
+
+test('deleteJsonValue takes a value off its own line, and the comma above it', () => {
+  const text = '{\n  "ignore": [\n    "@flama/web",\n    "@flama/mobile"\n  ]\n}';
+  assert.equal(
+    deleteJsonValue(text, '@flama/mobile'),
+    '{\n  "ignore": [\n    "@flama/web"\n  ]\n}',
+  );
+  assert.equal(
+    deleteJsonValue(text, '@flama/web'),
+    '{\n  "ignore": [\n    "@flama/mobile"\n  ]\n}',
+  );
+});
+
+test('deleteJsonValue takes a value out of an array written on one line', () => {
+  // The shape turbo.json keeps: the value is mid-line, and one of its
+  // neighbours is a superstring of it.
+  const outputs = '  "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"]';
+  assert.equal(
+    deleteJsonValue(outputs, '.next/**'),
+    '  "outputs": ["dist/**", "!.next/cache/**", "build/**"]',
+  );
+  // Last member: it takes the comma before it instead.
+  const env = '  "env": ["VITE_*", "EXPO_PUBLIC_*"],';
+  assert.equal(deleteJsonValue(env, 'EXPO_PUBLIC_*'), '  "env": ["VITE_*"],');
+  // Sole member.
+  assert.equal(deleteJsonValue('  "env": ["VITE_*"],', 'VITE_*'), '  "env": [],');
+});
+
+test('deleteJsonValue reports a value it cannot find rather than guessing', () => {
+  assert.equal(deleteJsonValue('  "env": ["VITE_*"],', 'NOPE_*'), null);
 });

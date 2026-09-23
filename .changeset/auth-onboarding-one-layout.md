@@ -1,6 +1,5 @@
 ---
 "@flama/web": patch
-"@flama/admin-web": patch
 "@flama/frontend-web": minor
 ---
 

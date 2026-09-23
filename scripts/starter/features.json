@@ -16,19 +16,7 @@
       "title": "Consumer mobile app",
       "summary": "apps/mobile — Expo app for end users (NativeWind, expo-router)",
       "identifiers": ["apps/mobile", "@flama/mobile"],
-      "paths": ["apps/mobile", "packages/frontend/nitro-app-info"]
-    },
-    "admin-web": {
-      "title": "Admin control plane (web)",
-      "summary": "apps/admin-web — Vite control plane for users, roles and permissions",
-      "identifiers": ["apps/admin-web", "@flama/admin-web", "flama-admin-web"],
-      "paths": ["apps/admin-web", "helm/flama/templates/admin-web-deployment.yaml"]
-    },
-    "admin-mobile": {
-      "title": "Admin control plane (mobile)",
-      "summary": "apps/admin-mobile — Expo control plane for users and roles",
-      "identifiers": ["apps/admin-mobile", "@flama/admin-mobile"],
-      "paths": ["apps/admin-mobile", "packages/frontend/nitro-app-info"]
+      "paths": ["apps/mobile"]
     },
     "web-showcase": {
       "title": "Web design-system showcase",
@@ -61,21 +49,11 @@
       "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
       "paths": ["apps/mobile-showcase"]
     },
-    "docs": {
-      "title": "Documentation site",
-      "summary": "apps/docs — Docusaurus site (architecture, deployment, error catalog)",
-      "identifiers": ["apps/docs", "@flama/docs", "flama-docs"],
-      "paths": [
-        "apps/docs",
-        "helm/flama/templates/docs-deployment.yaml",
-        "apps/api/src/__tests__/error-catalog-coverage.spec.ts"
-      ]
-    },
     "mcp": {
       "title": "MCP server",
       "summary": "apps/mcp — Model Context Protocol server (stdio + Streamable HTTP) over the API",
       "identifiers": ["apps/mcp", "@flama/mcp", "flama-mcp"],
-      "paths": ["apps/mcp", "apps/docs/docs/tooling/mcp.md"]
+      "paths": ["apps/mcp"]
     },
     "runner": {
       "title": "Go runner service",
@@ -96,7 +74,6 @@
         "go.work",
         ".golangci.yml",
         ".agents/rules/go.md",
-        "apps/docs/docs/architecture/go-services.md",
         "helm/flama/templates/runner-deployment.yaml"
       ]
     },
@@ -107,69 +84,52 @@
       "paths": ["e2e"],
       "scripts": ["test:e2e"]
     },
-    "qa": {
-      "title": "QA scenario pack",
-      "summary": "qa/ — scenario-driven Playwright QA pack with maturity tracking and screenshots",
-      "identifiers": ["@flama/qa", "qa/"],
-      "paths": ["qa", "plans", "docs/screenshots"],
-      "requires": ["web", "admin-web", "e2e"],
-      "scripts": ["qa", "qa:suite", "qa:coverage"],
-      "$comment": "plans/ holds only the QA pack's implementation plans and docs/screenshots is the curated QA run output, so both belong to it."
-    },
     "helm": {
       "title": "Kubernetes Helm chart",
       "summary": "helm/ — chart for the Tier 2 (Kubernetes) deployment",
       "identifiers": ["helm/"],
-      "paths": ["helm", "apps/docs/docs/deployment/tier-2-production.md"]
+      "paths": ["helm"]
     }
   },
   "shared": {
     "packages/frontend/design-system/web": {
       "identifiers": ["packages/frontend/design-system/web", "@flama/design-system-web"],
-      "neededBy": ["web", "admin-web", "web-showcase"]
+      "neededBy": ["web", "web-showcase"]
     },
     "packages/frontend/design-system/mobile": {
       "identifiers": ["packages/frontend/design-system/mobile", "@flama/design-system-mobile"],
-      "neededBy": ["mobile", "admin-mobile", "mobile-showcase"]
+      "neededBy": ["mobile", "mobile-showcase"]
     },
     "packages/frontend/core": {
       "identifiers": ["packages/frontend/core", "@flama/frontend-core"],
-      "neededBy": ["web", "mobile", "admin-web", "admin-mobile"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/frontend/consumer": {
       "identifiers": ["packages/frontend/consumer", "@flama/frontend-consumer"],
       "neededBy": ["web", "mobile"]
     },
-    "packages/frontend/admin": {
-      "identifiers": ["packages/frontend/admin", "@flama/frontend-admin"],
-      "neededBy": ["admin-web", "admin-mobile"]
-    },
     "packages/frontend/web": {
       "identifiers": ["packages/frontend/web", "@flama/frontend-web"],
-      "neededBy": ["web", "admin-web"]
+      "neededBy": ["web"]
     },
     "packages/frontend/mobile": {
       "identifiers": ["packages/frontend/mobile", "@flama/frontend-mobile"],
-      "neededBy": ["mobile", "admin-mobile"]
+      "neededBy": ["mobile"]
     },
     "packages/frontend/api-client": {
       "identifiers": ["packages/frontend/api-client", "@flama/api-client"],
-      "neededBy": ["web", "mobile", "admin-web", "admin-mobile"],
+      "neededBy": ["web", "mobile"],
       "scripts": ["generate:api-client"]
-    },
-    "apps/docs/docs/tooling/permissions.md": {
-      "identifiers": [],
-      "neededBy": ["mcp"]
     },
     "scripts/check-bundle-size.mjs": {
       "identifiers": ["check-bundle-size", "check:bundle"],
-      "neededBy": ["web", "admin-web"],
+      "neededBy": ["web"],
       "scripts": ["check:bundle"]
     },
     "packages/tsconfig/tsconfig.expo.json": {
       "$comment": "Everything Expo leaves in the kept apps: the Better Auth expo plugin in apps/api, the EXPO_PUBLIC_* pass-through in turbo.json, the react-native override.",
       "identifiers": ["tsconfig.expo", "EXPO_PUBLIC_", "@better-auth/expo", "react-native"],
-      "neededBy": ["mobile", "admin-mobile", "mobile-showcase"],
+      "neededBy": ["mobile", "mobile-showcase"],
       "json": [
         {
           "file": "turbo.json",
@@ -195,24 +155,24 @@
     },
     "scripts/check-frontend-structure.mjs": {
       "identifiers": ["check-frontend-structure", "check:structure"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"],
+      "neededBy": ["web", "mobile"],
       "scripts": ["check:structure"]
     },
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "mobile"]
     },
     ".agents/skills/scaffold-feature": {
       "identifiers": [".agents/skills/scaffold-feature", "/scaffold-feature"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/tsconfig/depcruise/frontend-app.cjs": {
       "identifiers": ["depcruise/frontend-app"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/tsconfig/depcruise/frontend-kit.cjs": {
       "identifiers": ["depcruise/frontend-kit"],
-      "neededBy": ["web", "admin-web", "mobile", "admin-mobile"]
+      "neededBy": ["web", "mobile"]
     }
   },
   "tooling": {

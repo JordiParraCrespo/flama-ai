@@ -13,13 +13,28 @@ below is optional except the API — keep what you're building, prune the rest
 | `apps/api`              | NestJS REST API — Domain-Driven Hexagon architecture, DB-backed RBAC, queues, caching, storage, email |
 | `apps/web`               | Consumer Vite + TanStack Router SPA                                       |
 | `apps/mobile`            | Consumer Expo app — NativeWind, i18next, SecureStore                     |
-| `apps/admin-web`         | Admin control plane (web) — users, roles and permissions                 |
-| `apps/admin-mobile`      | Admin control plane (Expo) — users and roles                             |
-| `apps/docs`              | Docusaurus — project documentation                                       |
 | `apps/mcp`               | MCP server — stdio + Streamable HTTP, scope-filtered tools                |
 | `apps/runner`            | Go service template (REST + WS, API keys) the API delegates long-lived work to |
 | `apps/web-showcase`      | Next.js showcase for the web design system                                |
 | `apps/mobile-showcase`   | Expo showcase for the mobile design system                                |
+
+### Plugins
+
+Not everything ships in the box. These are packaged in
+[`flama-ai-plugins`](https://github.com/JordiParraCrespo/flama-ai-plugins) and
+added when a project wants them, with `pnpm plugin:add <id>`:
+
+| Plugin          | What it adds                                                          |
+| --------------- | --------------------------------------------------------------------- |
+| `cli`           | `apps/cli` — the `flama` command line, driven by scoped API tokens     |
+| `docs`          | `apps/docs` — the Docusaurus site                                     |
+| `admin-web`     | `apps/admin-web` — control plane for users, roles and permissions     |
+| `admin-mobile`  | `apps/admin-mobile` — the Expo control plane                          |
+| `qa`            | `qa/` — the scenario-driven Playwright pack (needs `admin-web`)       |
+
+`pnpm plugin:list` shows them and marks what is already installed, and
+`pnpm plugin:remove <id>` takes one back out — see
+[Starting your own project](#starting-your-own-project).
 
 ### Packages
 
@@ -30,7 +45,6 @@ below is optional except the API — keep what you're building, prune the rest
 | `packages/env`                    | Root `.env` loader shared by the Node apps                         |
 | `packages/frontend/core`          | Kernel every app loads: session, users, user settings, capabilities, analytics, InversifyJS DI |
 | `packages/frontend/consumer`      | Consumer product domain: organizations, profile, api-tokens        |
-| `packages/frontend/admin`         | Control-plane domain: admin-users, roles                           |
 | `packages/frontend/web`           | What both Vite apps share below their routes, by concern           |
 | `packages/frontend/mobile`        | What both Expo apps share below their routes                       |
 | `packages/backend/*`              | Cross-cutting NestJS toolkit: errors/filters (`core`), DDD building blocks (`ddd`), authorization kernel (`authz`), Redis cache (`cache`), queues (`queue`), file storage (`storage`), email (`email`), i18n (`i18n`) |
@@ -40,14 +54,15 @@ below is optional except the API — keep what you're building, prune the rest
 | `packages/frontend/api-client`    | Auto-generated typed client from Swagger                           |
 | `packages/translations`           | Shared i18n (en/es)                                                |
 | `packages/tsconfig`               | Shared TypeScript configs                                          |
-| `packages/frontend/nitro-app-info`         | Nitro native module (Swift/Kotlin) exposing native app info to the mobile apps |
 
 ### Testing
 
 | Workspace | Description                                                                |
 | --------- | ---------------------------------------------------------------------------- |
 | `e2e`     | Playwright suites against the running API and web app                       |
-| `qa`      | Scenario-driven Playwright QA pack with maturity tracking and screenshots    |
+
+`pnpm plugin:add qa` adds `qa/`, the scenario-driven pack with maturity
+tracking and screenshots.
 
 ## Quick start
 
@@ -79,9 +94,21 @@ pnpm starter:prune --list                       # what can go
 pnpm starter:prune --without mobile,runner,mcp  # remove some, refresh the lockfile
 ```
 
-Every optional app is a feature in `scripts/starter/features.json`, and every
-file that mentions one wraps those lines in `flama:begin`/`flama:end` markers.
-`pnpm starter:check` (run in CI) fails when a reference escapes them.
+Trimming is one direction; adding is the other. What the starter leaves out
+is a plugin, fetched from its own repository when you ask for it:
+
+```bash
+pnpm plugin:list            # what is on offer, and what you already have
+pnpm plugin:add admin-web   # the control plane, back in your project
+pnpm plugin:remove qa
+```
+
+Both directions run on one mechanism. Every optional app is a feature in
+`scripts/starter/features.json`, every file that mentions one wraps those
+lines in `flama:begin`/`flama:end` markers, and an installed plugin becomes a
+feature too — so `pnpm starter:check` (run in CI) fails when a reference
+escapes them either way, and removing a plugin *is* the pruner rather than a
+second implementation of it.
 <!-- flama:end starter -->
 
 ## Services
@@ -89,10 +116,13 @@ file that mentions one wraps those lines in `flama:begin`/`flama:end` markers.
 | App                | URL                            |
 | ------------------ | ------------------------------ |
 | Web                | http://localhost:3000          |
-| Admin Web          | http://localhost:3003          |
 | API                | http://localhost:3001          |
 | API Docs (Swagger) | http://localhost:3001/api/docs |
-| Docs               | http://localhost:3003          |
+| MCP (HTTP)         | http://localhost:3005/mcp      |
+| Runner             | http://localhost:3006          |
+
+`pnpm plugin:add admin-web` serves the control plane on `:3003`, and
+`pnpm plugin:add docs` the Docusaurus site on `:3002`.
 
 ## Tech stack
 
@@ -107,8 +137,8 @@ file that mentions one wraps those lines in `flama:begin`/`flama:end` markers.
 - **Validation**: Zod
 - **State**: Zustand + TanStack Query
 - **DI**: InversifyJS (frontend), NestJS (backend)
-- **Testing**: Vitest, Testcontainers, Playwright (`e2e`, `qa`)
-- **Linting/formatting**: Biome, plus a design-system usage linter (oxlint) for `apps/web`, `apps/admin-web` and the mobile apps
+- **Testing**: Vitest, Testcontainers, Playwright (`e2e`; the `qa` pack is a plugin)
+- **Linting/formatting**: Biome, plus a design-system usage linter (oxlint) for `apps/web` and `apps/mobile`
 - **CI/CD**: GitHub Actions — a pull request runs only the packages its diff affects, with a full run on `main`
 - **Deployment**: Docker, Helm (K8s)
 
@@ -120,7 +150,6 @@ pnpm build                # Build all apps and packages
 pnpm test                 # Run unit tests
 pnpm test:integration     # Run integration tests
 pnpm test:e2e             # Run the Playwright e2e suite
-pnpm qa:suite             # Run the QA scenario pack
 pnpm lint                 # Lint all code
 pnpm arch                 # Check architecture boundaries (apps/api and the frontend, via dependency-cruiser)
 pnpm check                # Biome check + fix

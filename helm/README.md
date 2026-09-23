@@ -1,7 +1,3 @@
----
-sidebar_position: 2
----
-
 # Tier 2: Production Deployment (~€15-35/mo)
 
 For production applications with Kubernetes on Hetzner.
@@ -23,16 +19,20 @@ Use Hetzner Cloud Console or `hcloud` CLI to create a cluster.
 helm install flama ./helm/flama \
   --set api.image=ghcr.io/your-org/flama-api:latest \
   --set web.image=ghcr.io/your-org/flama-web:latest \
-  --set adminWeb.image=ghcr.io/your-org/flama-admin-web:latest \
-  --set docs.image=ghcr.io/your-org/flama-docs:latest
+  --set runner.image=ghcr.io/your-org/flama-runner:latest
 ```
+
+The chart ships what the starter ships: the API, the consumer web app, the
+runner, Postgres and Redis. `pnpm plugin:add admin-web` and
+`pnpm plugin:add docs` add their deployments, values and ingress rules back,
+and then `adminWeb.image` and `docs.image` are settable too.
 
 ### 3. Configure Ingress
 
-The Helm chart includes ingress resources for the API, consumer web app, admin
-web app, and docs. Configure each hostname under `ingress.hosts`, set the API's
-`FRONTEND_URL`, `ADMIN_FRONTEND_URL`, and `BETTER_AUTH_URL` values to match,
-then point their DNS records to the cluster's load balancer.
+The chart includes ingress resources for every service it deploys. Configure
+each hostname under `ingress.hosts`, set the API's `FRONTEND_URL` and
+`BETTER_AUTH_URL` values to match, then point their DNS records to the
+cluster's load balancer.
 
 ## Scaling
 

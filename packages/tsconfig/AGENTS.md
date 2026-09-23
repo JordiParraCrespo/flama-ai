@@ -18,7 +18,7 @@ Consumers reference the tsconfigs via
 `"extends": "@flama/tsconfig/tsconfig.*.json"` in their own `tsconfig.json`, and
 `vite-chunks.mjs` via `import { vendorChunks } from '@flama/tsconfig/vite-chunks.mjs'`
 in `vite.config.ts` (typed by the `.d.mts` beside it). It lives here rather than
-in either app because `apps/web` and `apps/admin-web` ship the same dependency
+in either app because `apps/web` (and `apps/admin-web`, a plugin) ship the same dependency
 set and must chunk it the same way.
 
 ## When modifying

@@ -71,9 +71,6 @@ importers:
       '@flama/frontend-mobile':
         specifier: workspace:*
         version: link:../../packages/frontend/mobile
-      '@flama/nitro-app-info':
-        specifier: workspace:*
-        version: link:../../packages/frontend/nitro-app-info
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -668,9 +665,6 @@ importers:
       '@flama/frontend-mobile':
         specifier: workspace:*
         version: link:../../packages/frontend/mobile
-      '@flama/nitro-app-info':
-        specifier: workspace:*
-        version: link:../../packages/frontend/nitro-app-info
       '@flama/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -2073,18 +2067,6 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
-
-  packages/frontend/nitro-app-info:
-    devDependencies:
-      nitrogen:
-        specifier: 0.37.1
-        version: 0.37.1(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
-      react-native-nitro-modules:
-        specifier: 0.37.1
-        version: 0.37.1(react-native@0.86.3(@babel/core@7.29.7)(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
 
   packages/frontend/web:
     dependencies:

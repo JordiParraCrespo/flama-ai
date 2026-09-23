@@ -7,18 +7,16 @@ build/
 # flama:begin web-showcase
 .next/
 # flama:end web-showcase
-# flama:begin mobile|admin-mobile|mobile-showcase
+# flama:begin mobile|mobile-showcase
 .expo/
 apps/mobile/ios/
 apps/mobile/android/
-apps/admin-mobile/ios/
-apps/admin-mobile/android/
 apps/mobile-showcase/ios/
 apps/mobile-showcase/android/
-packages/frontend/nitro-app-info/android/.cxx/
 packages/frontend/design-system/mobile/assets/icons/nanoicons/
-# flama:end mobile|admin-mobile|mobile-showcase
-.docusaurus/
+# flama:end mobile|mobile-showcase
+# flama:plugins admin-mobile
+# flama:plugins docs
 *.tsbuildinfo
 node-compile-cache/
 
@@ -61,10 +59,7 @@ scratchpad/
 /CRM SaaS Design Pages.zip
 /Adri Rodrigo - Design System.html
 
-# flama:begin qa
-# QA pack run output. The curated copy under docs/screenshots/ is committed.
-qa/artifacts/
-# flama:end qa
+# flama:plugins qa
 
 # Redis snapshot, written when a local redis-server is used instead of docker.
 dump.rdb

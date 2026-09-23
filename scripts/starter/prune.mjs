@@ -2,9 +2,11 @@
 /**
  * Trim the starter down to the apps you are actually going to build.
  *
- * Flama ships every app it knows how to build. A real project wants three of
- * them, and deleting the rest by hand leaves dead references in CI, compose,
- * Helm, `.env.example` and the docs — the mess this script exists to prevent.
+ * Flama ships eight optional features. A real project wants three of them, and
+ * deleting the rest by hand leaves dead references in CI, compose, Helm and
+ * `.env.example` — the mess this script exists to prevent. What the starter
+ * does not ship is a plugin: `pnpm plugin:add <id>` installs one, and removing
+ * it comes back here.
  *
  * The truth lives in `features.json` next to this file: each optional feature
  * lists the paths that go with it, and every other file that mentions it wraps
@@ -14,11 +16,11 @@
  *   ...lines that exist only because of the runner...
  *   # flama:end runner
  *
- * A marker can name several features — `flama:begin mobile|admin-mobile` —
+ * A marker can name several features — `flama:begin mobile|mobile-showcase` —
  * and its block goes only when all of them go.
  *
  *   node scripts/starter/prune.mjs --without mobile,runner,mcp
- *   node scripts/starter/prune.mjs --keep web,admin-web,docs
+ *   node scripts/starter/prune.mjs --keep web,mcp,e2e
  *   node scripts/starter/prune.mjs --check        # CI: manifest still honest?
  *   node scripts/starter/prune.mjs --list
  *
@@ -99,9 +101,20 @@ function loadManifest() {
       manifest.features[id] = feature;
     }
     // A plugin does not own a shared path, it joins the list of dependants.
-    for (const [path, dependants] of Object.entries(installed.shared ?? {})) {
-      const entry = manifest.shared[path];
-      if (!entry) fail(`.flama-plugins.json: shared "${path}" is not in features.json`);
+    // Two shapes: a list of dependants joins a path this starter still has,
+    // and an object carries the entry itself, for a path whose every
+    // dependant was optional and left together — the control plane's domain
+    // package belongs to both admin apps and to nothing else, so a starter
+    // without them has no entry to join.
+    for (const [path, value] of Object.entries(installed.shared ?? {})) {
+      const carried = Array.isArray(value) ? null : value;
+      const dependants = carried ? carried.neededBy : value;
+      let entry = manifest.shared[path];
+      if (!entry) {
+        if (!carried) fail(`.flama-plugins.json: shared "${path}" is not in features.json`);
+        entry = { identifiers: carried.identifiers ?? [], neededBy: [] };
+        manifest.shared[path] = entry;
+      }
       for (const id of dependants) {
         if (!entry.neededBy.includes(id)) entry.neededBy.push(id);
       }
@@ -326,15 +339,90 @@ function check(manifest) {
 /** Files rewritten by the current prune, formatted at the end. */
 const edited = [];
 
-function editJson(file, mutate, dryRun) {
+/**
+ * Delete a value from a JSON text, keeping the rest byte-for-byte.
+ *
+ * Re-serialising with `JSON.stringify` reformats the whole file — it expands
+ * every array the author kept on one line — so a prune that drops a single
+ * pattern from `biome.json` rewrites unrelated parts of it. Biome accepts
+ * either shape, so nothing complained, but it means removing a plugin does
+ * not return the file to where it started, and byte-identical removal is the
+ * guarantee the whole plugin format rests on.
+ *
+ * Every edit here deletes a value from an array or a key from an object.
+ * Sometimes it has its own line; sometimes the author kept the whole array on
+ * one — `"outputs": ["dist/**", ".next/**", "build/**"]` — and then the value
+ * has to come out of the middle of that line. Both shapes, and the comma each
+ * leaves behind.
+ */
+export function deleteJsonValue(text, literal) {
+  const quoted = `"${literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`;
+  return (
+    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*,?\\s*$`)) ??
+    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*:`)) ??
+    deleteInline(text, quoted)
+  );
+}
+
+/** The value (or `"key": value` pair) occupies the line by itself. */
+function deleteOwnLine(text, match) {
+  const lines = text.split('\n');
+  const index = lines.findIndex((line) => match.test(line));
+  if (index === -1) return null;
+  lines.splice(index, 1);
+  const previous = index - 1;
+  const next = lines[index]?.trim();
+  if (previous >= 0 && lines[previous].trimEnd().endsWith(',') && /^[\]}]/.test(next ?? '')) {
+    lines[previous] = lines[previous].replace(/,(\s*)$/, '$1');
+  }
+  return lines.join('\n');
+}
+
+/**
+ * The value is one member of an array written on a single line. It takes the
+ * comma that follows it, or — if it is last — the one before it, so the array
+ * is still well-formed. The quotes in `quoted` are what keep `".next/**"` from
+ * matching inside `"!.next/cache/**"`.
+ */
+function deleteInline(text, quoted) {
+  for (const pattern of [
+    new RegExp(`${quoted}\\s*,\\s*`),
+    new RegExp(`\\s*,\\s*${quoted}`),
+    new RegExp(quoted),
+  ]) {
+    const match = pattern.exec(text);
+    if (match) return text.slice(0, match.index) + text.slice(match.index + match[0].length);
+  }
+  return null;
+}
+
+/**
+ * `plan(json)` returns the literal values and keys to delete. Nothing else in
+ * the file is touched, and the result has to parse to the same thing mutating
+ * the object would have produced — otherwise the surgery missed something and
+ * this stops rather than write a file it cannot vouch for.
+ */
+function editJson(file, plan, dryRun) {
   const path = join(ROOT, file);
   if (!existsSync(path)) return;
-  const json = JSON.parse(readFileSync(path, 'utf8'));
-  const changed = mutate(json);
-  if (!changed) return;
+  const original = readFileSync(path, 'utf8');
+  const json = JSON.parse(original);
+  const deletions = plan(json) ?? [];
+  if (!deletions.length) return;
   console.log(`  edit   ${file}`);
   edited.push(file);
-  if (!dryRun) writeFileSync(path, `${JSON.stringify(json, null, 2)}\n`);
+  if (dryRun) return;
+
+  let text = original;
+  for (const literal of deletions) {
+    const next = deleteJsonValue(text, literal);
+    if (next === null) fail(`${file}: could not find "${literal}"`);
+    text = next;
+  }
+  if (JSON.stringify(JSON.parse(text)) !== JSON.stringify(json)) {
+    fail(`${file}: editing the text did not produce the intended JSON`);
+  }
+  writeFileSync(path, text);
 }
 
 function prune(manifest, removedIds, options) {
@@ -414,14 +502,14 @@ function prune(manifest, removedIds, options) {
   editJson(
     'package.json',
     (json) => {
-      let changed = false;
+      const deleted = [];
       for (const name of scriptsToDrop) {
         if (json.scripts?.[name] !== undefined) {
           delete json.scripts[name];
-          changed = true;
+          deleted.push(name);
         }
       }
-      return changed;
+      return deleted;
     },
     dryRun,
   );
@@ -429,7 +517,7 @@ function prune(manifest, removedIds, options) {
     'biome.json',
     (json) => {
       const includes = json.files?.includes;
-      if (!Array.isArray(includes)) return false;
+      if (!Array.isArray(includes)) return [];
       const kept = includes.filter((pattern) => {
         const literal = pattern.replace(/^!?\*\*\//, '').replace(/\/\*.*$/, '');
         if (!literal.includes('/') || literal.startsWith('.')) return true;
@@ -440,20 +528,21 @@ function prune(manifest, removedIds, options) {
             (path.startsWith(`${literal}/`) && !existsSync(join(ROOT, literal))),
         );
       });
-      if (kept.length === includes.length) return false;
+      if (kept.length === includes.length) return [];
       json.files.includes = kept;
-      return true;
+      return includes.filter((pattern) => !kept.includes(pattern));
     },
     dryRun,
   );
   editJson(
     '.changeset/config.json',
     (json) => {
-      if (!Array.isArray(json.ignore)) return false;
+      if (!Array.isArray(json.ignore)) return [];
       const kept = json.ignore.filter((name) => !packageNames.includes(name));
-      if (kept.length === json.ignore.length) return false;
+      if (kept.length === json.ignore.length) return [];
+      const removed = json.ignore.filter((name) => !kept.includes(name));
       json.ignore = kept;
-      return true;
+      return removed;
     },
     dryRun,
   );
@@ -472,24 +561,24 @@ function prune(manifest, removedIds, options) {
         const parent = segments.slice(0, -1).reduce((node, key) => node?.[key], json);
         const key = segments.at(-1);
         const target = parent?.[key];
-        if (target === undefined) return false;
+        if (target === undefined) return [];
         if (Array.isArray(target) && edit.remove) {
           const kept = target.filter((value) => !edit.remove.includes(value));
-          if (kept.length === target.length) return false;
+          if (kept.length === target.length) return [];
           parent[key] = kept;
-          return true;
+          return target.filter((value) => !kept.includes(value));
         }
         if (edit.deleteKeys && typeof target === 'object') {
-          let changed = false;
+          const deleted = [];
           for (const name of edit.deleteKeys) {
             if (name in target) {
               delete target[name];
-              changed = true;
+              deleted.push(name);
             }
           }
-          return changed;
+          return deleted;
         }
-        return false;
+        return [];
       },
       dryRun,
     );

@@ -1,6 +1,6 @@
 # @flama/frontend-mobile — concerns, layered
 
-The mobile kit is what `apps/mobile` and `apps/admin-mobile` share below
+The mobile kit is what `apps/mobile` (and `apps/admin-mobile`, a plugin) share below
 their routes. Its top level is **concerns**, not kinds: `src/<concern>/<kind>/`,
 where the kinds are the ones a feature has (`components/`, `hooks/`, `lib/`).
 Most of what is here is glue — native modules, storage, a bundler-level

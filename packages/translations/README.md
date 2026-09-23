@@ -35,10 +35,10 @@ import en from "@flama/translations/en";
 
 Each app wires these into its own i18next instance:
 
-- `apps/web` and `apps/admin-web` use `react-i18next`, bundling only
+- `apps/web` (and `apps/admin-web`, a plugin) use `react-i18next`, bundling only
   `defaultLocale` and serving the rest through a small backend module over
   `loadLocaleMessages` (see `packages/frontend/web/src/i18n/lib/i18n.ts`).
-- `apps/mobile` and `apps/admin-mobile` use `i18next` + `react-i18next` with
+- `apps/mobile` (and `apps/admin-mobile`, a plugin) use `i18next` + `react-i18next` with
   the eager `resources`, persisting the choice with `expo-secure-store` (see
   `packages/frontend/mobile/src/i18n/lib/i18n.ts`).
 
@@ -59,4 +59,4 @@ bundles every match or resolves nothing.
 
 ## Consumed by
 
-`apps/web`, `apps/admin-web`, `apps/mobile`, `apps/admin-mobile`, `apps/api`.
+`apps/web` and `apps/mobile` (and the control-plane plugins), `apps/api`.

@@ -1,9 +1,9 @@
 # @flama/frontend-web
 
-What both Vite apps — `apps/web` and `apps/admin-web` — share below their
-routes: the authenticated shell, the auth chrome, the data table, page
-layout, form plumbing, theming, i18n, analytics and browser glue. It is
-source-exported (`main` points at `src/index.ts`), so each app's Vite build
+What the Vite apps — `apps/web`, and `apps/admin-web` with that plugin —
+share below their routes: the authenticated shell, the auth chrome, the data
+table, page layout, form plumbing, theming, i18n, analytics and browser
+glue. It is source-exported (`main` points at `src/index.ts`), so each app's Vite build
 compiles it and tree-shakes what it does not use.
 
 The kit is organised by concern, not by kind: `src/<concern>/<kind>/`, with
@@ -82,4 +82,4 @@ pnpm --filter @flama/frontend-web typecheck   # tsc --noEmit; there is no build 
 Depends on `@flama/design-system-web`, `@flama/frontend-core`,
 `@flama/shared` and `@flama/translations`; React, React Hook Form, i18next,
 nuqs and TanStack Query/Router are peer dependencies the app provides. Used
-by `apps/web` and `apps/admin-web`.
+by `apps/web` (and `apps/admin-web`, a plugin).

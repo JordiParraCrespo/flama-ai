@@ -33,14 +33,7 @@ const APPS = [
     budgetKB: 385,
   },
   // flama:end web
-  // flama:begin admin-web
-  {
-    name: '@flama/admin-web',
-    dist: 'apps/admin-web/dist',
-    // 359KB measured — the same stack over fewer screens.
-    budgetKB: 375,
-  },
-  // flama:end admin-web
+  // flama:plugins admin-web
 ];
 
 /** Script and stylesheet URLs the entry HTML pulls in, as site-root paths. */

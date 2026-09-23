@@ -3,7 +3,6 @@
 "@flama/shared": minor
 "@flama/api": patch
 "@flama/web": patch
-"@flama/admin-web": patch
 "@flama/frontend-web": patch
 ---
 

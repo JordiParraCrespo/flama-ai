@@ -4,7 +4,7 @@ Shared design system. This directory is a **container of two publishable
 packages** plus shared tokens:
 
 - [`web/`](./web) → `@flama/design-system-web` — shadcn + Tailwind (used by `apps/web`, `apps/admin-web`, `apps/web-showcase`, `packages/frontend/web`)
-- [`mobile/`](./mobile) → `@flama/design-system-mobile` — React Native + NativeWind (used by `apps/mobile`, `apps/admin-mobile`, `apps/mobile-showcase`, `packages/frontend/mobile`)
+- [`mobile/`](./mobile) → `@flama/design-system-mobile` — React Native + NativeWind (used by `apps/mobile` (and `apps/admin-mobile`, a plugin), `apps/mobile-showcase`, `packages/frontend/mobile`)
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) first. There is no package.json
 > at this level — work inside `web/` or `mobile/`.

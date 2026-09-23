@@ -56,7 +56,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { findAnchor, MarkerError, narrowMarker } from '../lib/markers.mjs';
+import { findAnchor, MARKER_RE, MarkerError } from '../lib/markers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -188,8 +188,23 @@ function loadPlugin(source, id) {
   return { ...manifest, dir };
 }
 
+/**
+ * The starter's own features, if the starter apparatus is still here.
+ *
+ * A one-shot `/starter-init` prune deletes `scripts/starter/`, and a finished
+ * project is exactly where plugins are meant to be useful. Nothing in an
+ * install actually needs the starter's manifest — what a project has is its
+ * own `.flama-plugins.json` — so its absence is a project that has been
+ * initialised, not an error.
+ */
 function loadFeatures() {
+  if (!existsSync(FEATURES_PATH)) return { features: {}, shared: {} };
   return JSON.parse(readFileSync(FEATURES_PATH, 'utf8'));
+}
+
+/** Whether the pruner survived the project's initialisation. */
+function hasPruner() {
+  return existsSync(PRUNE_PATH);
 }
 
 function loadInstalled() {
@@ -216,13 +231,15 @@ function allFeatures() {
  * The manifest's feature entry, in `features.json` key order so an install
  * produces the same file a hand-written entry would.
  */
-export function featureEntry(manifest) {
+export function featureEntry(manifest, landed) {
   const { title, summary, identifiers, paths, requires, scripts, json } = manifest.feature;
   return {
     title,
     summary,
     identifiers,
-    paths,
+    // The paths that actually landed, which is all of them unless a file was
+    // skipped for want of the feature whose tree it lives in.
+    paths: landed ?? paths,
     ...(requires?.length ? { requires } : {}),
     ...(scripts?.length ? { scripts } : {}),
     ...(json?.length ? { json } : {}),
@@ -232,7 +249,7 @@ export function featureEntry(manifest) {
 /**
  * The `shared` entries in `features.json` that name this plugin.
  *
- * A shared path — `apps/docs/docs/tooling/permissions.md`, the design system —
+ * A shared path — the design system, `packages/frontend/core` —
  * belongs to no single feature and survives while any dependant remains. A
  * plugin therefore does not own those paths; it owns its *membership* of
  * their `neededBy` lists, and installing or removing it edits those lists.
@@ -241,17 +258,24 @@ export function featureEntry(manifest) {
  */
 function joinShared(installed, manifest) {
   for (const entry of manifest.feature.shared ?? []) {
-    const dependants = installed.shared[entry.path] ?? [];
+    const carried = Boolean(manifest.sharedFiles?.[entry.path]);
+    const current = installed.shared[entry.path];
+    const dependants = (Array.isArray(current) ? current : current?.neededBy) ?? [];
     if (!dependants.includes(manifest.id)) dependants.push(manifest.id);
-    installed.shared[entry.path] = dependants;
+    // A carried path has no entry in features.json to join — every dependant
+    // was optional and they all left — so the record carries the entry too.
+    installed.shared[entry.path] = carried
+      ? { identifiers: entry.identifiers ?? [], neededBy: dependants }
+      : dependants;
   }
 }
 
 function leaveShared(installed, id) {
-  for (const [path, dependants] of Object.entries(installed.shared)) {
-    const rest = dependants.filter((dependant) => dependant !== id);
-    if (rest.length) installed.shared[path] = rest;
-    else delete installed.shared[path];
+  for (const [path, value] of Object.entries(installed.shared)) {
+    const carried = Array.isArray(value) ? null : value;
+    const rest = (carried ? carried.neededBy : value).filter((dep) => dep !== id);
+    if (!rest.length) delete installed.shared[path];
+    else installed.shared[path] = carried ? { ...carried, neededBy: rest } : rest;
   }
 }
 
@@ -286,14 +310,75 @@ export function checkFences(id, file, body) {
   return null;
 }
 
+/**
+ * Put back the lines a prune deleted from a JSON file.
+ *
+ * JSON holds no comments, so these have no `flama:plugins` anchor to aim at.
+ * The plugin records the line the run followed instead, and it has to match
+ * exactly once: a file that has drifted is one where the installer cannot
+ * know where the lines belong, and guessing would corrupt it silently.
+ */
+function insertJsonBlocks(manifest, dryRun) {
+  const touched = [];
+  for (const block of manifest.jsonBlocks ?? []) {
+    const target = join(ROOT, block.file);
+    if (!existsSync(target)) {
+      if (block.needs) {
+        console.log(`  skip   ${block.file} (no ${block.needs} in this project)`);
+        continue;
+      }
+      fail(`${block.file} does not exist; cannot put its lines back`);
+    }
+    const source = join(manifest.dir, block.source);
+    if (!existsSync(source)) fail(`${manifest.id}: json block "${block.source}" is missing`);
+    const body = readFileSync(source, 'utf8').replace(/\n$/, '');
+
+    const lines = readFileSync(target, 'utf8').split('\n');
+    const matches = lines.filter((line) => line === block.after).length;
+    if (matches !== 1) {
+      fail(
+        `${block.file}: the line this plugin inserts after appears ${matches} times — expected exactly one:\n  ${block.after.trim()}`,
+      );
+    }
+    const index = lines.indexOf(block.after);
+    lines.splice(index + 1, 0, ...body.split('\n'));
+    const text = lines.join('\n');
+    try {
+      JSON.parse(text);
+    } catch (error) {
+      fail(`${block.file}: putting the lines back did not produce valid JSON — ${error.message}`);
+    }
+    console.log(`  json   ${block.file} (after ${block.after.trim()})`);
+    if (!dryRun) writeFileSync(target, text);
+    if (!touched.includes(block.file)) touched.push(block.file);
+  }
+  return touched;
+}
+
 function insertBlocks(manifest, dryRun) {
   const touched = [];
   for (const block of manifest.blocks ?? []) {
     const target = join(ROOT, block.file);
-    if (!existsSync(target)) fail(`${block.file} does not exist; cannot place "${block.anchor}"`);
+    if (!existsSync(target)) {
+      // A block whose file belongs to another optional feature has nothing to
+      // say in a project without it: the CLI's sidebar entry needs a docs site
+      // to sit in. Skip it and say so. With no `needs` the file is one this
+      // starter should have, so its absence means an anchor moved, and
+      // refusing is the only honest answer.
+      if (block.needs) {
+        console.log(`  skip   ${block.file} (no ${block.needs} in this project)`);
+        continue;
+      }
+      fail(`${block.file} does not exist; cannot place "${block.anchor}"`);
+    }
     const content = readFileSync(target, 'utf8');
 
-    if (content.includes(`flama:begin ${manifest.id}`)) {
+    // A feature can own several blocks in one file, each at its own anchor —
+    // `helm/values.yaml` holds one per app it deploys. The guard below refuses
+    // a file that already carries this plugin, so it has to mean "carried one
+    // before this run started": once the first block is written the file does
+    // carry one, and refusing on that would make the second block unplaceable.
+    if (!touched.includes(block.file) && content.includes(`flama:begin ${manifest.id}`)) {
       fail(`${block.file} already carries a "${manifest.id}" block`);
     }
     let anchor;
@@ -319,7 +404,7 @@ function insertBlocks(manifest, dryRun) {
     lines.splice(anchor.index, 0, body);
     console.log(`  block  ${block.file} (above flama:plugins ${block.anchor})`);
     if (!dryRun) writeFileSync(target, lines.join('\n'));
-    touched.push(block.file);
+    if (!touched.includes(block.file)) touched.push(block.file);
   }
   return touched;
 }
@@ -342,29 +427,70 @@ function insertBlocks(manifest, dryRun) {
 function widenCoOwned(manifest, dryRun) {
   for (const block of manifest.coOwned ?? []) {
     const target = join(ROOT, block.file);
-    if (!existsSync(target)) fail(`${block.file} does not exist; cannot widen a shared block`);
+    if (!existsSync(target)) {
+      // Same rule as an owned block: absent because the project skipped the
+      // feature that brings the file is fine; absent for any other reason is
+      // an anchor that moved.
+      if (block.needs) {
+        console.log(`  skip   ${block.file} shared block (no ${block.needs} in this project)`);
+        continue;
+      }
+      fail(`${block.file} does not exist; cannot widen a shared block`);
+    }
     const source = join(manifest.dir, block.source);
     if (!existsSync(source)) fail(`${manifest.id}: shared block "${block.source}" is missing`);
 
-    const widened = readFileSync(source, 'utf8').replace(/\n$/, '');
-    const mine = new Set([manifest.id]);
-    const narrowed = widened
-      .split('\n')
-      .map((line) => narrowMarker(line, mine))
-      .join('\n');
-    if (narrowed === widened) {
+    // The pruner narrows the *spec* and leaves the body alone, so the body is
+    // what identifies the block and the spec is the only thing to change.
+    // Adding this plugin's id to whatever spec is there — rather than swapping
+    // a stored narrowed text for a stored widened one — is what lets two
+    // plugins that share a block both install: the second finds a spec the
+    // first already widened, instead of looking for a text that is now gone.
+    const stored = readFileSync(source, 'utf8').replace(/\n$/, '').split('\n');
+    const canonical = MARKER_RE.exec(stored[0]);
+    if (!canonical) fail(`${manifest.id}: shared block for ${block.file} has no opening marker`);
+    const order = canonical[2].split('|');
+    if (!order.includes(manifest.id)) {
       fail(`${manifest.id}: shared block for ${block.file} does not name "${manifest.id}"`);
     }
+    const body = stored.slice(1, -1).join('\n');
 
-    const content = readFileSync(target, 'utf8');
-    const occurrences = content.split(narrowed).length - 1;
-    if (occurrences !== 1) {
+    const lines = readFileSync(target, 'utf8').split('\n');
+    const starts = lines
+      .map((line, index) => ({ line, index, match: MARKER_RE.exec(line) }))
+      // The body identifies the block, not the spec: another plugin may have
+      // already added an owner this one has never heard of, and the pruner
+      // only ever narrows the spec, so the body is the part that holds still.
+      .filter(
+        (entry) =>
+          entry.match?.[1] === 'begin' &&
+          lines.slice(entry.index + 1, entry.index + 1 + stored.length - 2).join('\n') === body,
+      );
+    if (starts.length !== 1) {
       fail(
-        `${block.file}: found ${occurrences} copies of the shared block to widen; expected exactly one`,
+        `${block.file}: found ${starts.length} copies of the shared block to widen; expected exactly one`,
       );
     }
-    console.log(`  widen  ${block.file} (shared block)`);
-    if (!dryRun) writeFileSync(target, content.replace(narrowed, widened));
+
+    const [{ index, match }] = starts;
+    const current = match[2].split('|');
+    if (current.includes(manifest.id)) {
+      fail(`${block.file}: the shared block already names "${manifest.id}"`);
+    }
+    // Insert after the last owner this plugin knows comes before it, rather
+    // than rebuilding the spec from its own order: another plugin installed
+    // earlier may have added an owner this one has never heard of, and
+    // rebuilding would silently drop it.
+    const before = order.slice(0, order.indexOf(manifest.id));
+    const at = current.filter((owner) => before.includes(owner)).length;
+    const spec = [...current.slice(0, at), manifest.id, ...current.slice(at)].join('|');
+    const end = index + stored.length - 1;
+    console.log(`  widen  ${block.file} (shared block → ${spec})`);
+    if (!dryRun) {
+      lines[index] = lines[index].replace(match[2], spec);
+      lines[end] = lines[end].replace(MARKER_RE.exec(lines[end])[2], spec);
+      writeFileSync(target, lines.join('\n'));
+    }
   }
 }
 
@@ -384,13 +510,25 @@ function add(manifest, options) {
     }
   }
 
-  const destinations = Object.keys(manifest.files);
+  // A file can belong inside another optional feature's tree — the CLI's docs
+  // page lives under `apps/docs`. In a project without that feature there is
+  // nowhere to put it and no site to read it, so it is skipped rather than
+  // dropped into an empty directory.
+  const absent = (destination) => {
+    const dep = manifest.filesNeed?.[destination];
+    return Boolean(dep) && !features[dep];
+  };
+  const destinations = Object.keys(manifest.files).filter((d) => !absent(d));
   for (const destination of destinations) {
     if (existsSync(join(ROOT, destination)) && !force) {
       fail(`${destination} already exists (pass --force to overwrite)`);
     }
   }
-  for (const path of manifest.feature.paths) {
+  // Only the paths that actually land are declared: the entry goes into
+  // `.flama-plugins.json`, which the honesty check reads, and a path that was
+  // skipped would read there as a file the project has lost.
+  const paths = manifest.feature.paths.filter((path) => !absent(path));
+  for (const path of paths) {
     if (
       !destinations.some((d) => path === d || path.startsWith(`${d}/`) || d.startsWith(`${path}/`))
     )
@@ -398,7 +536,24 @@ function add(manifest, options) {
   }
 
   console.log(`\nInstalling ${manifest.id}: ${manifest.feature.summary}\n`);
+  for (const [destination, from] of Object.entries(manifest.sharedFiles ?? {})) {
+    if (existsSync(join(ROOT, destination))) {
+      console.log(`  keep   ${destination} (already here for another feature)`);
+      continue;
+    }
+    const source = join(manifest.dir, from);
+    if (!existsSync(source)) fail(`${manifest.id}: shared "${from}" is missing from the plugin`);
+    console.log(`  copy   ${destination} (shared)`);
+    if (!dryRun) {
+      mkdirSync(dirname(join(ROOT, destination)), { recursive: true });
+      cpSync(source, join(ROOT, destination), { recursive: true, verbatimSymlinks: true });
+    }
+  }
   for (const [destination, from] of Object.entries(manifest.files)) {
+    if (absent(destination)) {
+      console.log(`  skip   ${destination} (no ${manifest.filesNeed[destination]} in this project)`);
+      continue;
+    }
     const source = join(manifest.dir, from);
     if (!existsSync(source)) fail(`${manifest.id}: "${from}" is missing from the plugin`);
     console.log(`  copy   ${destination}`);
@@ -409,11 +564,12 @@ function add(manifest, options) {
   }
 
   insertBlocks(manifest, dryRun);
+  insertJsonBlocks(manifest, dryRun);
   if (!dryRun) widenCoOwned(manifest, dryRun);
 
   console.log(`  edit   .flama-plugins.json (+${manifest.id})`);
   const installed = loadInstalled();
-  installed.features[manifest.id] = featureEntry(manifest);
+  installed.features[manifest.id] = featureEntry(manifest, paths);
   joinShared(installed, manifest);
   writeInstalled(installed, dryRun);
 
@@ -425,8 +581,14 @@ function add(manifest, options) {
   // fails if the plugin left a mention of itself outside its own paths and
   // blocks. An install that passes it is indistinguishable from a feature
   // that shipped in the box.
-  console.log('\nChecking the manifest still describes the repo…');
-  runPrune(['--check']);
+  // The honesty check is the pruner's, so a project that pruned it away
+  // cannot run it. The install still stands; it just goes unverified.
+  if (hasPruner()) {
+    console.log('\nChecking the manifest still describes the repo…');
+    runPrune(['--check']);
+  } else {
+    console.log('\nNo scripts/starter here, so the manifest check is skipped.');
+  }
   console.log(`\nInstalled ${manifest.id}. Next: pnpm install${followUps(manifest)}`);
 }
 
@@ -452,6 +614,15 @@ function remove(id, options) {
       loadFeatures().features[id]
         ? `"${id}" ships with this starter; use pnpm starter:prune to drop it`
         : `"${id}" is not installed`,
+    );
+  }
+  // Removal *is* the pruner, so it cannot outlive it. Say which of the two
+  // ways out applies rather than crash on a missing file.
+  if (!hasPruner()) {
+    fail(
+      `removing a plugin runs scripts/starter/prune.mjs, which this project no longer has.\n` +
+        `Delete the paths in .flama-plugins.json by hand and drop its "${id}" entry, or keep\n` +
+        `the starter apparatus next time by pruning with --keep-tooling.`,
     );
   }
   const features = allFeatures();

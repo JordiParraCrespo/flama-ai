@@ -1,20 +1,28 @@
 ---
 name: starter-init
-description: Turn the Flama starter into the user's project. Use on a fresh clone when the user asks to initialize, bootstrap, set up, or trim the starter, says "start my project", or asks which apps they need. Holds a short dialog to understand what they are building, proposes which apps and tools to keep, then prunes everything else with scripts/starter/prune.mjs and rewrites the docs so no dead reference survives.
+description: Turn the Flama starter into the user's project. Use on a fresh clone when the user asks to initialize, bootstrap, set up, or trim the starter, says "start my project", or asks which apps they need. Holds a short dialog to understand what they are building, proposes what to keep and what to add, prunes the rest with scripts/starter/prune.mjs, installs the plugins they asked for, and rewrites the docs so no dead reference survives.
 ---
 
 # Initialize a project from the starter
 
-Flama ships every app it knows how to build. A real project needs a few of
-them. This skill finds out which, removes the rest cleanly, and leaves the
-repo reading as if it had always been that shape.
+Flama ships most of what it knows how to build, and keeps the rest in
+`flama-ai-plugins`. A real project wants some of each. This skill finds out
+which, removes and installs cleanly, and leaves the repo reading as if it had
+always been that shape.
 
-The mechanical part is `scripts/starter/prune.mjs` and its manifest
-`scripts/starter/features.json`. **Never delete an app by hand** — the
+Two directions, one mechanism:
+
+- **Prune** what ships but is not wanted — `scripts/starter/prune.mjs` and
+  its manifest `scripts/starter/features.json`.
+- **Add** what does not ship but is — `pnpm plugin:add <id>`, fetched from
+  the plugins repository. Five today: `cli`, `docs`, `admin-web`,
+  `admin-mobile`, `qa`.
+
+**Never delete an app by hand, and never copy a plugin in by hand.** The
 manifest knows the machine-read places (CI, compose, Helm, `.env.example`,
 the JSON configs, the code the API carries for a deleted app) that mention
-each feature. Your job is the part a script cannot do: the conversation, the
-decision, and the prose.
+each feature, and a plugin knows where its blocks belong. Your job is the
+part a script cannot do: the conversation, the decision, and the prose.
 
 ## 1. Understand the project (dialog)
 
@@ -27,36 +35,39 @@ or five.
 2. **Where will people use it?** Browser, phone, both, or only through an API
    or agents. This decides `web` / `mobile`.
 3. **Will you run it for other people?** A team that manages users, roles and
-   permissions wants the control plane (`admin-web`, `admin-mobile`). A
-   single-tenant tool or a personal project usually does not.
+   permissions wants the control plane — the `admin-web` and `admin-mobile`
+   **plugins**. A single-tenant tool or a personal project usually does not.
 4. **Does anything need to run outside Node?** Long-lived connections,
    process orchestration, containers, VMs → `runner` (Go). Otherwise the
    NestJS API is the whole backend.
-5. **Will agents or scripts drive it?** A CLI or MCP server only earns its
-   place when the user or their customers will automate the product. Both
-   need the scope catalog, which stays in the API either way.
+5. **Will agents or scripts drive it?** The MCP server ships; the `cli`
+   **plugin** does not. Either only earns its place when the user or their
+   customers will automate the product. Both read the scope catalog, which
+   stays in the API regardless.
 6. **Where does it deploy?** Docker Compose on one box (Tier 1) needs no
    Helm chart. Kubernetes keeps `helm`.
-7. **Project hygiene.** A docs site (`docs`), API and browser end-to-end
-   tests (`e2e`), and the scenario-driven QA pack (`qa`). Most projects keep
-   the first two and drop `qa`; the design-system showcases
-   (`web-showcase`, `mobile-showcase`) go unless the user will evolve the
-   design system itself.
+7. **Project hygiene.** End-to-end tests (`e2e`) ship; a docs site (`docs`)
+   and the scenario-driven QA pack (`qa`) are plugins — most projects keep
+   `e2e`, add `docs`, and leave `qa` (which needs `admin-web`). The
+   design-system showcases (`web-showcase`, `mobile-showcase`) ship and go
+   unless the user will evolve the design system itself.
 
-Then `node scripts/starter/prune.mjs --list` shows the exact ids; read
-`scripts/starter/features.json` for what each one drags along
-(`requires`, and the `shared` packages that go when nobody needs them).
+Then `node scripts/starter/prune.mjs --list` shows what ships and can go, and
+`pnpm plugin:list` what does not ship and can be added. Read
+`scripts/starter/features.json` for what each feature drags along (`requires`,
+and the `shared` packages that go when nobody needs them).
 
 ## 2. Propose, then confirm
 
-Present one table: feature, keep or remove, and the reason in the user's own
-terms ("you said only a browser app, so the Expo apps go"). Recommend a
+Present one table: feature, keep / remove / add, and the reason in the user's
+own terms ("you said only a browser app, so the Expo apps go"). Recommend a
 default for each; the user decides. Defaults that fit most projects:
 
-| Keep by default | Remove unless asked for |
-| --- | --- |
-| `web`, `docs`, `e2e` | `mobile`, `admin-mobile`, `mobile-showcase` |
-| `admin-web` when there are admins | `web-showcase`, `runner`, `cli`, `mcp`, `qa`, `helm` |
+| Keep (ships) | Remove unless asked for (ships) | Add on request (plugin) |
+| --- | --- | --- |
+| `web`, `e2e` | `mobile`, `mobile-showcase` | `docs` — most projects want it |
+| | `web-showcase`, `runner`, `mcp`, `helm` | `admin-web`/`admin-mobile` when there are admins |
+| | | `cli`, `qa` — rarely |
 
 Wait for the user to agree before touching anything. This is the one
 question that must block: a prune is a large deletion, and undoing it is a
@@ -69,9 +80,12 @@ node scripts/starter/prune.mjs --keep <ids> --dry-run   # show the plan
 node scripts/starter/prune.mjs --keep <ids>             # do it (runs pnpm install)
 ```
 
-Prefer `--keep`: it names what the user asked for and pulls in what those
-features require (`qa` keeps `web`, `admin-web` and `e2e`). `--without` is
-for the rare "everything but X" prune.
+Prefer `--keep`: it names what the user asked for, and the shared packages
+those features need are worked out from `neededBy` rather than listed
+(either mobile app keeps `packages/frontend/design-system/mobile`). Only the
+eight ids in `features.json` are valid here — a plugin is not a feature until
+it is installed, so `--keep admin-web` on a fresh clone is an error.
+`--without` is for the rare "everything but X" prune.
 
 The script deletes the feature paths, drops the marked blocks in every config
 file and in the API code that existed for a removed app, edits the JSON files
@@ -81,7 +95,15 @@ rewrites pending changesets that name a removed package, refreshes the
 lockfile, and prints the remaining mentions of the removed features. It also
 removes itself and this skill, and strips every marker, kept features
 included: markers exist only to serve the prune and are not meant to survive
-it. Pass `--keep-tooling` only when the user wants a second pass later.
+it.
+
+**Pass `--keep-tooling` if the project may ever want a plugin removed.**
+`plugin:remove` *is* the pruner — it shells out to `prune.mjs` — so a project
+that pruned the starter apparatus away can still add plugins and list them,
+but cannot take one back out except by hand. Ask, and default to
+`--keep-tooling` whenever the user is adding plugins at all: the cost of
+keeping it is that the markers stay in the tree, and the cost of the other
+choice is a door that closes quietly.
 
 Then prove the trimmed repo is whole:
 
@@ -95,7 +117,29 @@ Fix what fails before going on. A failure here is the script's bug or a
 manifest gap, not something to paper over — fix it in the repo and, if the
 manifest was wrong, say so in the final message so it gets upstreamed.
 
-## 4. Rewrite the prose
+## 4. Add the plugins
+
+Anything from the "add" column, after the prune so it lands in the trimmed
+tree:
+
+```bash
+pnpm plugin:add docs
+pnpm plugin:add admin-web        # brings packages/frontend/admin with it
+pnpm plugin:add qa               # needs admin-web, so install that first
+```
+
+Each copies its files, puts its blocks back at the anchors, and records
+itself in `.flama-plugins.json` — from which point it is a feature like any
+other and `pnpm starter:check` covers it. A plugin whose file belongs to a
+feature this project pruned says so and skips that piece: installing `cli`
+without `docs` leaves out the docs page and its sidebar entry, which is
+correct rather than a failure.
+
+Then `pnpm install`, and the same proof as above. Whatever a plugin wants
+afterwards — regenerating the API client, a migration — it prints when it
+finishes.
+
+## 5. Rewrite the prose
 
 The script's closing report lists the lines that still mention removed
 features by path or package name. It is a floor, not a ceiling: after
@@ -111,7 +155,7 @@ for anything only that app used (`@better-auth/expo`, `EXPO_PUBLIC_`,
 - `README.md`: the "what's included" table, the services table, the scripts.
 - `AUTHORIZATION.md`: the design document names every app in its diagrams
   and phase plans.
-- `apps/docs/docs/**` when `docs` is kept: `intro.md`,
+- `apps/docs/docs/**` when the `docs` plugin is installed: `intro.md`,
   `getting-started/*.md` (the Google sign-in page has a whole mobile
   section), every `architecture/*.md`, `deployment/tier-1-cheap.md`, and
   `errors.md`.
@@ -127,11 +171,12 @@ for anything only that app used (`@better-auth/expo`, `EXPO_PUBLIC_`,
   grep finds): reword, do not leave a pointer to a path that no longer
   exists.
 
-Do not leave a sentence that says "web and mobile" when only web exists.
-Do not add a "removed by init" note anywhere: the repo should read as if it
-were born this way.
+Do not leave a sentence that says "web and mobile" when only web exists, and
+do not leave one that says a plugin's app is missing when it was installed —
+the prose follows the tree in both directions. Do not add a "removed by init"
+note anywhere: the repo should read as if it were born this way.
 
-## 5. Make it theirs
+## 6. Make it theirs
 
 Only if the user gave a project name: rename the brand. `flama` appears in
 package names (`@flama/*`), Docker image names, the deep-link schemes, the
@@ -148,7 +193,7 @@ examples carry the token prefix), and check that no second brand survives:
 the design system's own `AGENTS.md` names the visual language it was built
 on.
 
-## 6. Finish
+## 7. Finish
 
 - `pnpm check` once more; commit as `chore: initialize project from the
   starter` (one commit, so the deletion is easy to read and revert).

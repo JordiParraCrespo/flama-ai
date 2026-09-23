@@ -1,6 +1,6 @@
 # @flama/frontend-web — concerns, layered
 
-The web kit is what `apps/web` and `apps/admin-web` share below their routes.
+The web kit is what `apps/web` (and `apps/admin-web`, a plugin) share below their routes.
 Its top level is **concerns**, not kinds: `src/<concern>/<kind>/`, where the
 kinds are the ones a feature has (`components/`, `dialogs/`, `hooks/`,
 `lib/`). A concern is a subject the apps both have — the shell, the auth
