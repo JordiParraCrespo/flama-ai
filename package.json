@@ -16,6 +16,7 @@
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:api-structure": "node scripts/check-api-structure.mjs && node --test scripts/check-api-structure.test.mjs",
     "check:structure": "node scripts/check-frontend-structure.mjs",
+    "check:flags": "node --no-warnings scripts/check-feature-flags.mjs && node --no-warnings --test scripts/check-feature-flags.test.mjs",
     "test:scripts": "node --test scripts/lib/*.test.mjs scripts/plugins/*.test.mjs",
     "plugin:add": "node scripts/plugins/plugin.mjs add",
     "plugin:remove": "node scripts/plugins/plugin.mjs remove",
