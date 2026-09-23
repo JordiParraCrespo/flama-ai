@@ -3,6 +3,7 @@
   "description": "Tokens let scripts, CI and AI agents act on your behalf with only the permissions you choose.",
   "create": "Create a token",
   "createDescription": "A token can never do more than you can. Anything you are not permitted to do is greyed out.",
+  "creationPaused": "Creating new tokens is paused right now. The tokens you already have keep working.",
   "createButton": "Create token",
   "name": "Name",
   "namePlaceholder": "CI deploy, Claude, laptop…",

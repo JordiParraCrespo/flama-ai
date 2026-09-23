@@ -115,7 +115,14 @@
       "PROFILE_007": "You cannot sign out the device you are using right now.",
       "PROFILE_008": "We could not reach the account service. Please try again.",
       "PROFILE_CLIENT_010": "That file type cannot be used as a profile picture.",
-      "PROFILE_CLIENT_011": "That image is too large. Pick one under 2 MB."
+      "PROFILE_CLIENT_011": "That image is too large. Pick one under 2 MB.",
+      "FLAG_001": "That feature flag does not exist.",
+      "FLAG_002": "Those targeting rules are not valid for this flag.",
+      "FLAG_003": "This feature is not available right now.",
+      "FLAG_004": "That segment could not be found.",
+      "FLAG_005": "A segment with that key already exists.",
+      "FLAG_006": "That segment is still used by a flag. Remove it from the flag's rules first.",
+      "FLAG_007": "Those segment conditions are not valid."
     }
   },
   "auth": {
@@ -386,6 +393,7 @@
     "description": "Tokens let scripts, CI and AI agents act on your behalf with only the permissions you choose.",
     "create": "Create a token",
     "createDescription": "A token can never do more than you can. Anything you are not permitted to do is greyed out.",
+    "creationPaused": "Creating new tokens is paused right now. The tokens you already have keep working.",
     "createButton": "Create token",
     "name": "Name",
     "namePlaceholder": "CI deploy, Claude, laptop…",

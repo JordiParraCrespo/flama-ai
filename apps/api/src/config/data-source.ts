@@ -9,6 +9,9 @@ import { OAuthConsentOrmEntity } from '../auth/database/oauth-consent.orm-entity
 import { Session } from '../auth/database/session.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
+import { FeatureFlagOrmEntity } from '../feature-flags/database/feature-flag.orm-entity';
+import { FlagChangeOrmEntity } from '../feature-flags/database/flag-change.orm-entity';
+import { FlagSegmentOrmEntity } from '../feature-flags/database/flag-segment.orm-entity';
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
@@ -51,6 +54,9 @@ export default new DataSource({
     InvitationOrmEntity,
     TeamOrmEntity,
     TeamMemberOrmEntity,
+    FeatureFlagOrmEntity,
+    FlagSegmentOrmEntity,
+    FlagChangeOrmEntity,
     OutboxMessageSchema,
   ],
   migrations: [`${__dirname}/../migrations/*{.ts,.js}`],

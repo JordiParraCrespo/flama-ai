@@ -115,7 +115,14 @@
       "PROFILE_007": "No puedes cerrar la sesión del dispositivo que estás usando ahora.",
       "PROFILE_008": "No hemos podido contactar con el servicio de cuentas. Inténtalo de nuevo.",
       "PROFILE_CLIENT_010": "Ese tipo de archivo no se puede usar como foto de perfil.",
-      "PROFILE_CLIENT_011": "Esa imagen es demasiado grande. Elige una de menos de 2 MB."
+      "PROFILE_CLIENT_011": "Esa imagen es demasiado grande. Elige una de menos de 2 MB.",
+      "FLAG_001": "Ese feature flag no existe.",
+      "FLAG_002": "Esas reglas de segmentación no son válidas para este flag.",
+      "FLAG_003": "Esta funcionalidad no está disponible en este momento.",
+      "FLAG_004": "No se ha encontrado ese segmento.",
+      "FLAG_005": "Ya existe un segmento con esa clave.",
+      "FLAG_006": "Ese segmento todavía lo usa un flag. Quítalo primero de sus reglas.",
+      "FLAG_007": "Las condiciones de ese segmento no son válidas."
     }
   },
   "auth": {
@@ -386,6 +393,7 @@
     "description": "Los tokens permiten que scripts, CI y agentes de IA actúen en tu nombre solo con los permisos que elijas.",
     "create": "Crear un token",
     "createDescription": "Un token nunca puede hacer más que tú. Lo que no tienes permitido aparece desactivado.",
+    "creationPaused": "La creación de tokens está en pausa en este momento. Los tokens que ya tienes siguen funcionando.",
     "createButton": "Crear token",
     "name": "Nombre",
     "namePlaceholder": "Despliegue de CI, Claude, portátil…",

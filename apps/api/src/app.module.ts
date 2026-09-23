@@ -39,6 +39,7 @@ import {
 } from './config';
 // flama:plugins api-config-imports
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
+import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { OutboxModule } from './outbox/outbox.module';
@@ -175,6 +176,7 @@ import { UsersModule } from './users/user.module';
     RolesModule,
     OrganizationsModule,
     AdminModule,
+    FeatureFlagsModule,
     HealthModule,
     QueueModule,
     // flama:plugins api-modules

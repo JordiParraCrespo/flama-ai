@@ -1,4 +1,5 @@
 import { adminTools } from './admin.tools';
+import { flagTools } from './flags.tools';
 import { organizationTools } from './organizations.tools';
 import { roleTools } from './roles.tools';
 import type { ToolDefinition } from './tool';
@@ -18,6 +19,7 @@ export const ALL_TOOLS: readonly ToolDefinition[] = [
   ...organizationTools,
   ...workspaceTools,
   ...adminTools,
+  ...flagTools,
 ] as ToolDefinition[];
 
 export * from './tool';

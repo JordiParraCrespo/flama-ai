@@ -4,6 +4,7 @@ import { PATH_METADATA } from '@nestjs/common/constants';
 import { describe, expect, it } from 'vitest';
 import { AdminController } from '../../admin/admin.controller';
 import { FindApiTokensHttpController } from '../../api-tokens/queries/find-api-tokens/find-api-tokens.http.controller';
+import { FindFeatureFlagsHttpController } from '../../feature-flags/queries/find-feature-flags/find-feature-flags.http.controller';
 // flama:plugins handler-imports
 import { MembersController } from '../../organizations/members.controller';
 import { FindRolesHttpController } from '../../roles/queries/find-roles/find-roles.http.controller';
@@ -31,6 +32,10 @@ const HANDLERS: Record<GuardedEndpoint, { controller: object; handler: string }>
   '/roles': { controller: FindRolesHttpController, handler: 'findAll' },
   '/tokens': { controller: FindApiTokensHttpController, handler: 'findAll' },
   '/admin/users': { controller: AdminController, handler: 'listUsers' },
+  '/feature-flags/admin': {
+    controller: FindFeatureFlagsHttpController,
+    handler: 'findFeatureFlags',
+  },
   // flama:plugins guarded-handlers
 };
 

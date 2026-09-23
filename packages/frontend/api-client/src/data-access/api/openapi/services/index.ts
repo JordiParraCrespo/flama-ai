@@ -3,6 +3,7 @@ export { AccessGrantsApi } from './AccessGrantsApi';
 export { AdminApi } from './AdminApi';
 export { ApiTokensApi } from './ApiTokensApi';
 export { AuthorizationApi } from './AuthorizationApi';
+export { FeatureFlagsApi } from './FeatureFlagsApi';
 export { HealthApi } from './HealthApi';
 export { InvitationsApi } from './InvitationsApi';
 export { OrganizationInvitationsApi } from './OrganizationInvitationsApi';
