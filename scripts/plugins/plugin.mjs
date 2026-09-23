@@ -82,6 +82,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -89,8 +90,9 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { insertJsonEntry, insertJsonValue, renderJsonEntry } from '../lib/json-text.mjs';
 import {
-  annotate,
   ANCHOR_RE,
+  annotate,
+  dropBlocks,
   findAnchor,
   MARKER_RE,
   MarkerError,
@@ -103,8 +105,8 @@ const FEATURES_PATH = join(ROOT, 'scripts', 'starter', 'features.json');
 /** Removal shells out here: `plugin:remove` is `prune.mjs --without <id>`. */
 const PRUNE_PATH = join(ROOT, 'scripts', 'starter', 'prune.mjs');
 /** Where plugins come from when `--from` is not given. */
-const DEFAULT_REPO = 'https://github.com/JordiParraCrespo/flama-ai-plugins.git';
-const DEFAULT_REF = 'main';
+export const DEFAULT_REPO = 'https://github.com/JordiParraCrespo/flama-ai-plugins.git';
+export const DEFAULT_REF = 'main';
 
 function fail(message) {
   console.error(`error: ${message}`);
@@ -148,7 +150,7 @@ process.on('exit', () => {
  * every other path in this script is already root-relative. An absolute path
  * is unaffected, which is what the round-trip harness passes.
  */
-function resolveSource({ from, repo, ref }) {
+export function resolveSource({ from, repo, ref }) {
   if (from) {
     const dir = resolve(ROOT, from);
     if (!existsSync(dir)) fail(`--from ${from}: ${dir} does not exist`);
@@ -191,14 +193,14 @@ function pluginsDir(source) {
   return dir;
 }
 
-function pluginIds(source) {
+export function pluginIds(source) {
   return readdirSync(pluginsDir(source), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
 }
 
-function loadPlugin(source, id) {
+export function loadPlugin(source, id) {
   const dir = join(pluginsDir(source), id);
   const manifestPath = join(dir, 'plugin.json');
   if (!existsSync(manifestPath)) {
@@ -434,13 +436,13 @@ function applyJsonEdits(manifest, dryRun) {
  * which is the confusion `checkFences` was written to stop.
  */
 function carriesBlock(content, id) {
-  return content
-    .split('\n')
-    .some((line) => MARKER_RE.exec(line)?.[2].split('|').includes(id));
+  return content.split('\n').some((line) => MARKER_RE.exec(line)?.[2].split('|').includes(id));
 }
 
-function insertBlocks(manifest, dryRun) {
-  const touched = [];
+function insertBlocks(manifest, alreadyTouched, dryRun) {
+  // Files this run already wrote this plugin's name into — by widening or
+  // recreating a shared block — carry it legitimately.
+  const touched = [...alreadyTouched];
   for (const block of manifest.blocks ?? []) {
     const target = join(ROOT, block.file);
     if (!existsSync(target)) {
@@ -508,7 +510,8 @@ function insertBlocks(manifest, dryRun) {
  * departed app's name out of an `.env.example` header broke every co-owned
  * install, because the stored copy no longer matched.
  */
-function widenCoOwned(manifest, dryRun) {
+function widenCoOwned(manifest, features, dryRun) {
+  const touched = [];
   for (const block of manifest.coOwned ?? []) {
     const target = join(ROOT, block.file);
     if (!existsSync(target)) {
@@ -536,15 +539,21 @@ function widenCoOwned(manifest, dryRun) {
       if (lines[i].marker && MARKER_RE.exec(lines[i].line)?.[1] === 'end') closing = i;
       break;
     }
-    if (closing === null) {
-      // Every owner left, so the pruner took the block and left the anchor.
-      // Nothing to widen, and nothing here knows what the block said.
-      fail(
-        `${block.file}: the block above "flama:plugins ${block.anchor}" is gone, so there is ` +
-          `nothing for "${manifest.id}" to join. It went with the last feature that owned it.`,
-      );
+    // The nearest block above the anchor is the shared one only if it names
+    // an owner the plugin expects. When every owner of the shared block was
+    // pruned, the pruner took it and left the anchor, and the nearest block
+    // is now some other feature's: widening that would hand this plugin lines
+    // it never had, and its removal would take them away.
+    const nearest = closing === null ? null : lines[closing].stack.at(-1);
+    const shared = nearest?.ids.some(
+      (owner) => owner !== manifest.id && block.order?.includes(owner),
+    );
+    if (!shared) {
+      recreateCoOwned(manifest, block, content, found, features, dryRun);
+      touched.push(block.file);
+      continue;
     }
-    const { ids, begin } = lines[closing].stack.at(-1);
+    const { ids, begin } = nearest;
     if (ids.includes(manifest.id)) {
       fail(`${block.file}: the shared block already names "${manifest.id}"`);
     }
@@ -564,7 +573,96 @@ function widenCoOwned(manifest, dryRun) {
     out[begin - 1] = widenMarker(out[begin - 1], manifest.id, at);
     out[closing] = widenMarker(out[closing], manifest.id, at);
     writeFileSync(target, out.join('\n'));
+    touched.push(block.file);
   }
+  return touched;
+}
+
+/**
+ * Put a shared block back when none of its other owners is here to hold it.
+ *
+ * The block a plugin shares with a shipped feature lives in the starter, under
+ * that feature's fence, so an install usually only has to add its own name.
+ * But a project that pruned the feature pruned the block with it — the CLI
+ * shares its `.env.example` lines with the MCP server, and a project without
+ * MCP has none. The plugin carries the body for that case, fenced with its
+ * own id alone, and it goes in exactly as an owned block would.
+ *
+ * Carrying the body is not body-matching: nothing is found by it. It is only
+ * ever written, and only where the block is absent. What keeps it from
+ * drifting is the plugins repo, whose round trip compares it with the
+ * starter's block on every run.
+ */
+function recreateCoOwned(manifest, block, content, anchor, features, dryRun) {
+  if (!block.source) {
+    fail(
+      `${block.file}: the block above "flama:plugins ${block.anchor}" is gone, so there is ` +
+        `nothing for "${manifest.id}" to join, and the plugin carries no body to put back.`,
+    );
+  }
+  const source = join(manifest.dir, block.source);
+  if (!existsSync(source)) fail(`${manifest.id}: shared block source "${block.source}" is missing`);
+  // The body is the starter's, so it can hold blocks of its own for features
+  // this project dropped — the budgets step names the web app inside it.
+  const body = trimmed(manifest, block.file, readFileSync(source, 'utf8'), features).replace(
+    /\n$/,
+    '',
+  );
+  const problem = checkFences(manifest.id, block.file, body);
+  if (problem) fail(`${manifest.id}: ${problem}`);
+  const lines = content.split('\n');
+  lines.splice(anchor.index, 0, body);
+  console.log(
+    `  block  ${block.file} (above flama:plugins ${block.anchor}; its other owners are not here)`,
+  );
+  if (!dryRun) writeFileSync(join(ROOT, block.file), lines.join('\n'));
+}
+
+/**
+ * Every text file under `path` that carries a block for a feature this
+ * project does not have, as the prune would have left it.
+ */
+function trimForeignBlocks(manifest, path, known, dryRun) {
+  const root = join(ROOT, path);
+  const files = [];
+  const walk = (at) => {
+    for (const entry of readdirSync(at, { withFileTypes: true })) {
+      const full = join(at, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile()) files.push(full);
+    }
+  };
+  if (!existsSync(root)) return;
+  if (statSync(root).isDirectory()) walk(root);
+  else files.push(root);
+
+  for (const full of files) {
+    const content = readFileSync(full, 'utf8');
+    if (content.includes('\0') || !content.includes('flama:begin')) continue;
+    const file = relative(ROOT, full);
+    const text = trimmed(manifest, file, content, known, true);
+    if (!dryRun && text !== content) writeFileSync(full, text);
+  }
+}
+
+/** `content` without the blocks of features `known` does not have. */
+function trimmed(manifest, file, content, known, report = false) {
+  const foreign = new Set(
+    content
+      .split('\n')
+      .flatMap((line) => MARKER_RE.exec(line)?.[2].split('|') ?? [])
+      .filter((id) => id !== manifest.id && !known[id]),
+  );
+  if (!foreign.size) return content;
+  let text;
+  try {
+    text = dropBlocks(file, content, foreign);
+  } catch (error) {
+    if (error instanceof MarkerError) fail(error.message);
+    throw error;
+  }
+  if (report) console.log(`  trim   ${file} (no ${[...foreign].join(', ')} in this project)`);
+  return text ?? content;
 }
 
 function add(manifest, options) {
@@ -593,6 +691,20 @@ function add(manifest, options) {
       fail(`${destination} already exists (pass --force to overwrite)`);
     }
   }
+  // A shared path is joined, not brought: the mobile kits belong to whichever
+  // Expo apps remain. A project that pruned the last of them has no kit to
+  // join, and a plugin that does not carry one in `sharedFiles` cannot work
+  // there. Say so before anything is written, not after the check fails.
+  const carriedShared = new Set(Object.keys(manifest.sharedFiles ?? {}));
+  const missingShared = (manifest.feature.shared ?? [])
+    .map((shared) => shared.path)
+    .filter((path) => !carriedShared.has(path) && !existsSync(join(ROOT, path)));
+  if (missingShared.length) {
+    fail(
+      `"${manifest.id}" builds on ${missingShared.join(', ')}, which this project no longer ` +
+        'has — it went with the last feature that needed it.',
+    );
+  }
   // Only the paths that actually land are declared: the entry goes into
   // `features.json`, which the honesty check reads, and a path that was
   // skipped would read there as a file the project has lost.
@@ -620,7 +732,9 @@ function add(manifest, options) {
   }
   for (const [destination, from] of Object.entries(manifest.files)) {
     if (absent(destination)) {
-      console.log(`  skip   ${destination} (no ${manifest.filesNeed[destination]} in this project)`);
+      console.log(
+        `  skip   ${destination} (no ${manifest.filesNeed[destination]} in this project)`,
+      );
       continue;
     }
     const source = join(manifest.dir, from);
@@ -632,9 +746,19 @@ function add(manifest, options) {
     }
   }
 
-  insertBlocks(manifest, dryRun);
+  // What was copied came from a starter that had every feature; take out the
+  // blocks for the ones this project does not.
+  if (!dryRun) {
+    for (const destination of [...Object.keys(manifest.sharedFiles ?? {}), ...destinations]) {
+      trimForeignBlocks(manifest, destination, features, dryRun);
+    }
+  }
+
+  // Shared blocks first: recreating one can bring back the anchor an owned
+  // block goes at — the bundle budgets step holds the control plane's slot.
+  const shared = widenCoOwned(manifest, features, dryRun);
+  insertBlocks(manifest, shared, dryRun);
   applyJsonEdits(manifest, dryRun);
-  widenCoOwned(manifest, dryRun);
 
   writeFeature(manifest, paths, dryRun);
 

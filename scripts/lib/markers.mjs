@@ -130,6 +130,38 @@ export function widenMarker(line, id, at) {
   return line.replace(match[2], [...ids.slice(0, at), id, ...ids.slice(at)].join('|'));
 }
 
+/**
+ * `content` with every block owned only by `removed` ids taken out, and every
+ * co-owned fence narrowed to the owners that are left. Null when the file has
+ * no blocks at all, so a caller can skip rewriting it.
+ *
+ * This is the one edit a prune makes to a file that stays, and it lives here
+ * because two callers make it: the pruner over the repo, and the installer
+ * over what it copies in. A plugin's files were extracted from a starter that
+ * still had every feature, so a docs page can carry a `runner` block into a
+ * project that pruned `runner` long ago — and it should arrive the way the
+ * prune would have left it.
+ *
+ * Markers survive. `plugin:remove` is the pruner, and it finds a plugin's
+ * lines by its fences; stripping them would make an installed plugin
+ * unremovable and a co-owned block unwidenable by the next install.
+ */
+export function dropBlocks(file, content, removed) {
+  const out = [];
+  let touched = false;
+  for (const { line, stack, marker } of annotate(file, content)) {
+    if (stack.length) touched = true;
+    if (stack.some(({ ids }) => ids.every((id) => removed.has(id)))) continue;
+    out.push(marker ? narrowMarker(line, removed) : line);
+  }
+  return touched ? collapseBlankRuns(out.join('\n')) : null;
+}
+
+/** Deleting a block leaves the blank lines either side of it; keep one. */
+export function collapseBlankRuns(text) {
+  return text.replace(/\n{3,}/g, '\n\n');
+}
+
 /** Word-boundary match for an identifier such as `apps/web` or `@flama/web`. */
 export function identifierRegex(identifier) {
   const escaped = identifier.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');

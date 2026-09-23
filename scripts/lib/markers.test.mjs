@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { annotate, identifierRegex, MARKER_RE, MarkerError, widenMarker } from './markers.mjs';
+import {
+  annotate,
+  dropBlocks,
+  identifierRegex,
+  MARKER_RE,
+  MarkerError,
+  widenMarker,
+} from './markers.mjs';
 
 // Fixtures name no real optional feature on purpose: `pnpm starter:check`
 // scans this file, and a real id here would read as an unmarked reference.
@@ -98,4 +105,25 @@ test('widenMarker is narrowMarker backwards', () => {
     widenMarker('      // flama:end web|mobile', 'admin-web', 1),
     '      // flama:end web|admin-web|mobile',
   );
+});
+
+test('dropBlocks takes out what only the removed own, and narrows what they share', () => {
+  const text = [
+    'keep',
+    '# flama:begin gone',
+    'only-gone',
+    '# flama:end gone',
+    '',
+    '',
+    '# flama:begin gone|stays',
+    'shared',
+    '# flama:end gone|stays',
+    '',
+  ].join('\n');
+  assert.equal(
+    dropBlocks('f', text, new Set(['gone'])),
+    ['keep', '', '# flama:begin stays', 'shared', '# flama:end stays', ''].join('\n'),
+  );
+  // A file with no blocks is not a rewrite; the caller skips it.
+  assert.equal(dropBlocks('f', 'plain\n', new Set(['gone'])), null);
 });
