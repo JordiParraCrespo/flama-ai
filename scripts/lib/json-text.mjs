@@ -47,62 +47,14 @@ function indentOf(lines, match) {
 // ---------------------------------------------------------------------------
 
 /**
- * Delete a value from a JSON text.
- *
- * Sometimes it has its own line; sometimes the author kept the whole array on
- * one — `"outputs": ["dist/**", ".next/**", "build/**"]` — and then the value
- * has to come out of the middle of that line. Both shapes, and the comma each
- * leaves behind. Returns null when the value is not there.
- */
-export function deleteJsonValue(text, literal) {
-  const quoted = quote(literal);
-  return (
-    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*,?\\s*$`)) ??
-    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*:`)) ??
-    deleteInline(text, quoted)
-  );
-}
-
-/** The value (or `"key": value` pair) occupies the line by itself. */
-function deleteOwnLine(text, match) {
-  const lines = text.split('\n');
-  const index = lines.findIndex((line) => match.test(line));
-  if (index === -1) return null;
-  lines.splice(index, 1);
-  const previous = index - 1;
-  const next = lines[index]?.trim();
-  if (previous >= 0 && lines[previous].trimEnd().endsWith(',') && /^[\]}]/.test(next ?? '')) {
-    lines[previous] = lines[previous].replace(/,(\s*)$/, '$1');
-  }
-  return lines.join('\n');
-}
-
-/**
- * The value is one member of an array written on a single line. It takes the
- * comma that follows it, or — if it is last — the one before it, so the array
- * is still well-formed. The quotes in `quoted` are what keep `".next/**"` from
- * matching inside `"!.next/cache/**"`.
- */
-function deleteInline(text, quoted) {
-  for (const pattern of [
-    new RegExp(`${quoted}\\s*,\\s*`),
-    new RegExp(`\\s*,\\s*${quoted}`),
-    new RegExp(quoted),
-  ]) {
-    const match = pattern.exec(text);
-    if (match) return text.slice(0, match.index) + text.slice(match.index + match[0].length);
-  }
-  return null;
-}
-
-/**
  * Delete a value from the array at `path`, and report where it was.
  *
- * Scoped, unlike `deleteJsonValue`, which searches the whole file and takes
- * the first match — right for a literal that occurs once (a turbo output, a
- * biome pattern) and wrong for one that does not. `"web"` is a feature key in
- * `features.json` *and* a member of half its `neededBy` lists, so the
- * unscoped search deletes the feature.
+ * Scoped, and there is no unscoped version. Searching a whole file and taking
+ * the first match is right for a literal that occurs once and wrong for one
+ * that does not: `"web"` is a feature key in `features.json` *and* a member of
+ * half its `neededBy` lists, so an unscoped delete takes out the feature. That
+ * is a bug waiting on the next caller, so the function that could commit it
+ * does not exist.
  *
  * The index it returns is what `insertJsonValue` needs to put the value back
  * where it was, which is what makes a removal and an install exact inverses.
@@ -145,7 +97,7 @@ export function deleteJsonValueAt(text, path, literal) {
  * `path` is an array of keys, not a dotted string: the keys here are file
  * paths (`scripts/check-bundle-size.mjs`), so a dot is data.
  *
- * The mirror of `deleteJsonValue` for an array member, and the reason a JSON
+ * The mirror of `deleteJsonValueAt`, and the reason a JSON
  * edit needs no anchor: unlike a line of text, a position in an array is
  * addressable, so what a removal recorded as `at` is where the value goes
  * back. The array's shape is followed, not imposed — inline stays inline, one
@@ -157,6 +109,9 @@ export function insertJsonValue(text, path, literal, at) {
   const lines = text.split('\n');
   const opening = findArray(lines, path);
   if (opening === null) return null;
+  // No position recorded means append: always valid, and what an edit written
+  // for the pruner alone leaves unsaid.
+  const index = at ?? Number.POSITIVE_INFINITY;
 
   // Inline: the whole array is on the line that opens it.
   if (isInline(lines[opening])) {
@@ -164,8 +119,8 @@ export function insertJsonValue(text, path, literal, at) {
     const start = line.indexOf('[');
     const end = line.indexOf(']', start);
     const members = splitMembers(line.slice(start + 1, end));
-    if (at > members.length) return null;
-    members.splice(at, 0, render(literal));
+    const where = Math.min(index, members.length);
+    members.splice(where, 0, render(literal));
     lines[opening] = `${line.slice(0, start)}[${members.join(', ')}]${line.slice(end + 1)}`;
     return lines.join('\n');
   }
@@ -174,12 +129,14 @@ export function insertJsonValue(text, path, literal, at) {
   const close = closingOf(lines, opening);
   if (close === -1) return null;
   const members = close - opening - 1;
-  if (at > members) return null;
-  const indent = indentOf(lines.slice(opening + 1, close), /\S/) ?? `${/^\s*/.exec(lines[opening])?.[0] ?? ''}  `;
-  const index = opening + 1 + at;
-  const last = at === members;
-  lines.splice(index, 0, `${indent}${render(literal)}${last ? '' : ','}`);
-  if (last && members > 0) lines[index - 1] = `${lines[index - 1].replace(/\s*$/, '')},`;
+  const where = Math.min(index, members);
+  const indent =
+    indentOf(lines.slice(opening + 1, close), /\S/) ??
+    `${/^\s*/.exec(lines[opening])?.[0] ?? ''}  `;
+  const line = opening + 1 + where;
+  const last = where === members;
+  lines.splice(line, 0, `${indent}${render(literal)}${last ? '' : ','}`);
+  if (last && members > 0) lines[line - 1] = `${lines[line - 1].replace(/\s*$/, '')},`;
   return lines.join('\n');
 }
 
@@ -241,11 +198,21 @@ function depthOf(line) {
   return depth;
 }
 
-/** The line closing the block opened on `index`, by indentation. */
+/**
+ * The line closing the bracket opened on `index` — which is `index` itself for
+ * a member the author wrote on one line.
+ *
+ * By bracket depth rather than by indentation: two closers that agree on the
+ * bytes can still disagree on where an entry ends, and the one that reads the
+ * brackets is the one that is right. It also gives the one-line case an honest
+ * answer instead of "no closing line at all".
+ */
 function closingOf(lines, index) {
-  const indent = /^\s*/.exec(lines[index])?.[0] ?? '';
+  let depth = depthOf(lines[index]);
+  if (depth <= 0) return index;
   for (let i = index + 1; i < lines.length; i++) {
-    if (new RegExp(`^${indent}[}\\]]`).test(lines[i])) return i;
+    depth += depthOf(lines[i]);
+    if (depth <= 0) return i;
   }
   return -1;
 }
@@ -284,6 +251,19 @@ export function deleteJsonEntry(text, path, key) {
   if (previous >= 0 && /^\s*[}\]]/.test(lines[start] ?? '')) {
     lines[previous] = lines[previous].replace(/,(\s*)$/, '$1');
   }
+  // That may have been the last member. An object with nothing in it is
+  // written `{}` here — the same shape `insertJsonEntry` opens up to make
+  // room — so closing it again is what makes the two exact inverses.
+  const opening = findObject(lines, path);
+  if (
+    opening !== null &&
+    start === opening + 1 &&
+    /\{\s*$/.test(lines[opening]) &&
+    /^\s*\}/.test(lines[start] ?? '')
+  ) {
+    const rest = lines[start].replace(/^\s*\}/, '');
+    lines.splice(opening, 2, `${lines[opening].replace(/\{\s*$/, '{}')}${rest}`);
+  }
   return lines.join('\n');
 }
 
@@ -299,8 +279,20 @@ export function insertJsonEntry(text, path, entry, at) {
   const lines = text.split('\n');
   const opening = findObject(lines, path);
   if (opening === null) return null;
-  const close = closingOf(lines, opening);
+  let close = closingOf(lines, opening);
   if (close === -1) return null;
+
+  // An empty object is written `{}` here, and has no room between its braces.
+  // Open it up, then insert as normal — `deleteJsonEntry` closes it again when
+  // the last member goes, so a file that has never had a member of this kind
+  // reads the same as one that lost its last.
+  if (close === opening) {
+    const indent = /^\s*/.exec(lines[opening])?.[0] ?? '';
+    const [before, after] = lines[opening].split(/\{\s*\}/);
+    if (after === undefined) return null;
+    lines.splice(opening, 1, `${before}{`, `${indent}}${after}`);
+    close = opening + 1;
+  }
 
   // Member boundaries: a line at the object's own member indentation opens a
   // member, whether it is a one-liner or a block.

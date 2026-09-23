@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { checkFences, featureEntry, parseArgs } from './plugin.mjs';
 
-const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'plugin.mjs');
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(HERE, '..', '..');
+const SCRIPT = join(HERE, 'plugin.mjs');
 
 /** Run the installer and return what it printed, whether or not it succeeded. */
 function run(...args) {
@@ -104,4 +108,186 @@ test('--from is relative to the repo root, not the working directory', () => {
   const { code, out } = run('list', '--from', 'scripts/starter');
   assert.equal(code, 2);
   assert.match(out, /no plugins\/ directory in scripts\/starter/);
+});
+
+// ---------------------------------------------------------------------------
+// The installer against a fixture project
+// ---------------------------------------------------------------------------
+//
+// The round trip in the plugins repo proves a real plugin installs and
+// uninstalls; it lives in another repository and runs against five real
+// manifests. These cover the paths that used to fail by matching a stored
+// block body — a `neededBy` join, a JSON edit in both directions, a co-owned
+// widen — here, where the code is, on a project small enough to read.
+
+/**
+ * The apparatus, and only the apparatus: the installer, the pruner it shells
+ * out to, and the two libraries they share.
+ *
+ * Not the whole `scripts/` tree. Every other script in it carries markers for
+ * the real features — and this file names the fixture's ids in plain prose —
+ * so copying them wholesale hands `--check` thirty complaints about a repo
+ * that is not the one under test.
+ */
+const APPARATUS = [
+  'scripts/plugins/plugin.mjs',
+  'scripts/starter/prune.mjs',
+  'scripts/lib/markers.mjs',
+  'scripts/lib/json-text.mjs',
+];
+
+/** A git repo carrying this installer, a manifest, and files to edit. */
+function fixture() {
+  const dir = mkdtempSync(join(tmpdir(), 'flama-installer-'));
+  for (const file of APPARATUS) {
+    mkdirSync(join(dir, dirname(file)), { recursive: true });
+    cpSync(join(ROOT, file), join(dir, file));
+  }
+
+  // Ids nothing in the copied apparatus mentions, so `--check` stays honest.
+  writeFileSync(
+    join(dir, 'scripts', 'starter', 'features.json'),
+    `${JSON.stringify(
+      {
+        features: {
+          alpha: { title: 'Alpha', summary: 'alpha', identifiers: ['alpha-app'], paths: ['alpha'] },
+        },
+        shared: { kit: { identifiers: ['the-kit'], neededBy: ['alpha'] } },
+        tooling: { paths: [], scripts: [] },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  mkdirSync(join(dir, 'alpha'), { recursive: true });
+  writeFileSync(join(dir, 'alpha', 'index.txt'), 'alpha\n');
+  mkdirSync(join(dir, 'kit'), { recursive: true });
+  writeFileSync(join(dir, 'kit', 'index.txt'), 'kit\n');
+  const owned = ['# flama:begin alpha', 'shared-line', '# flama:end alpha'];
+  const config = [...owned, '# flama:plugins the-slot', ''].join('\n');
+  writeFileSync(join(dir, 'config.txt'), config);
+  writeFileSync(join(dir, 'slots.txt'), ['# flama:plugins own-slot', ''].join('\n'));
+  const data = { list: ['a', 'c'], map: {} };
+  writeFileSync(join(dir, 'data.json'), `${JSON.stringify(data, null, 2)}\n`);
+  writeFileSync(join(dir, 'package.json'), `${JSON.stringify({ scripts: {} }, null, 2)}\n`);
+
+  execFileSync('git', ['init', '--quiet', dir]);
+  execFileSync('git', ['-C', dir, 'add', '-A']);
+  const who = ['-c', 'user.name=t', '-c', 'user.email=t@t'];
+  execFileSync('git', ['-C', dir, ...who, 'commit', '-qm', 'x']);
+  return dir;
+}
+
+/** A plugin source `--from` can read. */
+function source(dir, manifest, blocks = {}) {
+  const plugins = join(dir, 'plugins', manifest.id);
+  mkdirSync(join(plugins, 'blocks'), { recursive: true });
+  writeFileSync(join(plugins, 'plugin.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  for (const [name, body] of Object.entries(blocks)) {
+    writeFileSync(join(plugins, 'blocks', name), body);
+  }
+  return dir;
+}
+
+const BETA = {
+  id: 'beta',
+  feature: {
+    title: 'Beta',
+    summary: 'beta',
+    identifiers: ['beta-app'],
+    paths: ['beta'],
+    shared: [{ path: 'kit', identifiers: ['the-kit'] }],
+    json: [
+      { file: 'data.json', path: ['list'], remove: ['b'], at: [1] },
+      { file: 'package.json', path: ['scripts'], set: { beta: 'run beta' }, setAt: [0] },
+    ],
+  },
+  files: { beta: 'files/beta' },
+  blocks: [{ file: 'slots.txt', anchor: 'own-slot', source: 'blocks/own.txt' }],
+  coOwned: [{ file: 'config.txt', anchor: 'the-slot', order: ['alpha', 'beta'] }],
+};
+
+/**
+ * The installer finds the project from its own location, so the copy inside
+ * the fixture is the one to run — the same way a real project runs its own.
+ */
+function install(project, extra = []) {
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, BETA, { 'own.txt': '# flama:begin beta\nbeta-line\n# flama:end beta\n' });
+  mkdirSync(join(from, 'plugins', 'beta', 'files', 'beta'), { recursive: true });
+  writeFileSync(join(from, 'plugins', 'beta', 'files', 'beta', 'index.txt'), 'beta\n');
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  try {
+    return {
+      from,
+      result: {
+        code: 0,
+        out: execFileSync('node', [script, 'add', 'beta', '--from', from, ...extra], {
+          encoding: 'utf8',
+        }),
+      },
+    };
+  } catch (error) {
+    const out = `${error.stdout ?? ''}${error.stderr ?? ''}`;
+    return { from, result: { code: error.status, out } };
+  }
+}
+
+test('an install joins neededBy, edits JSON both ways, and widens the shared block', () => {
+  const project = fixture();
+  const { result } = install(project);
+  assert.equal(result.code, 0, result.out);
+
+  const catalog = join(project, 'scripts/starter/features.json');
+  const manifest = JSON.parse(readFileSync(catalog, 'utf8'));
+  // The entry landed, marked as a plugin's.
+  assert.equal(manifest.features.beta.plugin, true);
+  // A shared path is joined, not owned: alpha keeps it too.
+  assert.deepEqual(manifest.shared.kit.neededBy, ['alpha', 'beta']);
+
+  // The JSON edits ran backwards, each at its own recorded position — `at` for
+  // the array value, `setAt` for the object key, so neither reads the other's.
+  assert.deepEqual(JSON.parse(readFileSync(join(project, 'data.json'), 'utf8')).list, [
+    'a',
+    'b',
+    'c',
+  ]);
+  assert.deepEqual(
+    Object.keys(JSON.parse(readFileSync(join(project, 'package.json'), 'utf8')).scripts),
+    ['beta'],
+  );
+
+  // The co-owned block gained an owner; its body is untouched.
+  const config = readFileSync(join(project, 'config.txt'), 'utf8');
+  assert.match(config, /flama:begin alpha\|beta/);
+  assert.match(config, /flama:end alpha\|beta/);
+  assert.match(config, /^shared-line$/m);
+});
+
+test('a dry run prints the widen it would make, and changes nothing', () => {
+  const project = fixture();
+  const before = readFileSync(join(project, 'config.txt'), 'utf8');
+  const { result } = install(project, ['--dry-run']);
+  assert.equal(result.code, 0, result.out);
+  // The widen is planned like every other op, not silently skipped.
+  assert.match(result.out, /widen\s+config\.txt \(alpha → alpha\|beta\)/);
+  assert.equal(readFileSync(join(project, 'config.txt'), 'utf8'), before);
+});
+
+test('removing the plugin returns the project to its exact bytes', () => {
+  // The round trip is the whole guarantee, and this is the smallest place it
+  // can be checked: the fixture is committed, so a clean `git status` after
+  // add-then-remove says every edit above was reversed to the byte — the
+  // joined `neededBy`, both JSON edits, the widened fence, the entry.
+  const project = fixture();
+  assert.equal(install(project).result.code, 0);
+  const status = () =>
+    execFileSync('git', ['-C', project, 'status', '--porcelain'], { encoding: 'utf8' });
+  assert.notEqual(status(), '', 'the install changed nothing');
+
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  execFileSync('node', [script, 'remove', 'beta'], { encoding: 'utf8' });
+
+  const dirty = status();
+  assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
 });

@@ -5,7 +5,6 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
   deleteJsonEntry,
-  deleteJsonValue,
   deleteJsonValueAt,
   insertJsonEntry,
   insertJsonValue,
@@ -15,27 +14,38 @@ import {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-test('deleteJsonValue takes a value off its own line, and the comma above it', () => {
+test('deleteJsonValueAt takes a value off its own line, and the comma above it', () => {
   const text = '{\n  "ignore": [\n    "@scope/alpha",\n    "@scope/beta"\n  ]\n}';
-  assert.equal(deleteJsonValue(text, '@scope/beta'), '{\n  "ignore": [\n    "@scope/alpha"\n  ]\n}');
-  assert.equal(deleteJsonValue(text, '@scope/alpha'), '{\n  "ignore": [\n    "@scope/beta"\n  ]\n}');
+  assert.equal(
+    deleteJsonValueAt(text, ['ignore'], '@scope/beta').text,
+    '{\n  "ignore": [\n    "@scope/alpha"\n  ]\n}',
+  );
+  assert.equal(
+    deleteJsonValueAt(text, ['ignore'], '@scope/alpha').text,
+    '{\n  "ignore": [\n    "@scope/beta"\n  ]\n}',
+  );
 });
 
-test('deleteJsonValue takes a value out of an array written on one line', () => {
+test('deleteJsonValueAt takes a value out of an array written on one line', () => {
   // The shape turbo.json keeps: the value is mid-line, and one of its
   // neighbours is a superstring of it.
-  const outputs = '  "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"]';
+  const outputs = '{\n  "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"]\n}';
   assert.equal(
-    deleteJsonValue(outputs, '.next/**'),
-    '  "outputs": ["dist/**", "!.next/cache/**", "build/**"]',
+    deleteJsonValueAt(outputs, ['outputs'], '.next/**').text,
+    '{\n  "outputs": ["dist/**", "!.next/cache/**", "build/**"]\n}',
   );
-  // Last member: it takes the comma before it instead.
-  assert.equal(deleteJsonValue('  "env": ["VITE_*", "EXPO_*"],', 'EXPO_*'), '  "env": ["VITE_*"],');
-  assert.equal(deleteJsonValue('  "env": ["VITE_*"],', 'VITE_*'), '  "env": [],');
+  // Last member, and then the only one.
+  const env = '{\n  "env": ["VITE_*", "EXPO_*"]\n}';
+  assert.equal(deleteJsonValueAt(env, ['env'], 'EXPO_*').text, '{\n  "env": ["VITE_*"]\n}');
+  assert.equal(
+    deleteJsonValueAt('{\n  "env": ["VITE_*"]\n}', ['env'], 'VITE_*').text,
+    '{\n  "env": []\n}',
+  );
 });
 
-test('deleteJsonValue reports a value it cannot find rather than guessing', () => {
-  assert.equal(deleteJsonValue('  "env": ["VITE_*"],', 'NOPE_*'), null);
+test('deleteJsonValueAt reports what it cannot find rather than guessing', () => {
+  assert.equal(deleteJsonValueAt('{\n  "env": ["VITE_*"]\n}', ['env'], 'NOPE_*'), null);
+  assert.equal(deleteJsonValueAt('{\n  "env": ["VITE_*"]\n}', ['nope'], 'VITE_*'), null);
 });
 
 test('insertJsonValue is the inverse of deleteJsonValue, inline and expanded', () => {
@@ -45,7 +55,7 @@ test('insertJsonValue is the inverse of deleteJsonValue, inline and expanded', (
     [1, 'EXPO_*'],
     [2, 'GO_*'],
   ]) {
-    const without = deleteJsonValue(inline, value);
+    const without = deleteJsonValueAt(inline, ['a', 'env'], value).text;
     assert.equal(insertJsonValue(without, ['a', 'env'], value, index), inline, `inline ${value}`);
   }
 
@@ -55,18 +65,28 @@ test('insertJsonValue is the inverse of deleteJsonValue, inline and expanded', (
     [1, '@scope/beta'],
     [2, '@scope/gamma'],
   ]) {
-    const without = deleteJsonValue(expanded, value);
+    const without = deleteJsonValueAt(expanded, ['ignore'], value).text;
     assert.equal(insertJsonValue(without, ['ignore'], value, index), expanded, `expanded ${value}`);
   }
 });
 
 test('insertJsonValue fills an array the last delete emptied', () => {
-  assert.equal(insertJsonValue('{\n  "env": []\n}', ['env'], 'VITE_*', 0), '{\n  "env": ["VITE_*"]\n}');
+  assert.equal(
+    insertJsonValue('{\n  "env": []\n}', ['env'], 'VITE_*', 0),
+    '{\n  "env": ["VITE_*"]\n}',
+  );
 });
 
-test('insertJsonValue refuses a path or a position it cannot honour', () => {
+test('insertJsonValue refuses a path it cannot find, and appends without one', () => {
   assert.equal(insertJsonValue('{\n  "env": ["A"]\n}', ['nope'], 'B', 0), null);
-  assert.equal(insertJsonValue('{\n  "env": ["A"]\n}', ['env'], 'B', 5), null);
+  // No position, or one past the end: append. An edit written for the pruner
+  // alone records no index, and refusing it would make every starter feature's
+  // `json` row uninstallable.
+  assert.equal(insertJsonValue('{\n  "env": ["A"]\n}', ['env'], 'B'), '{\n  "env": ["A", "B"]\n}');
+  assert.equal(
+    insertJsonValue('{\n  "env": ["A"]\n}', ['env'], 'B', 5),
+    '{\n  "env": ["A", "B"]\n}',
+  );
 });
 
 test('a JSON entry survives being read out and put back', () => {
@@ -187,4 +207,24 @@ test('insertJsonEntry puts a member back where a reader expects it', () => {
   // First.
   const first = insertJsonEntry(without, ['scripts'], entry, 0);
   assert.deepEqual(Object.keys(JSON.parse(first).scripts), ['test', 'build', 'release']);
+});
+
+test('an empty object opens for a member and closes again when it goes', () => {
+  // `{}` has no room between its braces, so inserting has to open it up — and
+  // deleting the last member has to close it again, or a project that adds a
+  // plugin and drops it is left holding `{\n  }` where it had `{}`. The pair
+  // keeps one invariant: an object with nothing in it is written inline.
+  const text = ['{', '  "name": "fixture",', '  "scripts": {}', '}', ''].join('\n');
+  const entry = renderJsonEntry('beta', 'run beta', 2);
+
+  const put = insertJsonEntry(text, ['scripts'], entry, 0);
+  assert.deepEqual(JSON.parse(put).scripts, { beta: 'run beta' });
+  assert.equal(put.split('\n')[2], '  "scripts": {');
+  assert.equal(deleteJsonEntry(put, ['scripts'], 'beta'), text);
+
+  // The same, with a neighbour after it: the closer's comma survives the
+  // collapse rather than being swallowed with the brace.
+  const trailing = ['{', '  "scripts": {},', '  "name": "fixture"', '}', ''].join('\n');
+  const second = insertJsonEntry(trailing, ['scripts'], entry, 0);
+  assert.equal(deleteJsonEntry(second, ['scripts'], 'beta'), trailing);
 });
