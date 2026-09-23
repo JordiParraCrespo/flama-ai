@@ -63,6 +63,11 @@ const MANIFEST_PATH = join(HERE, 'features.json');
 /** Never scanned for references: binary, generated, or the apparatus itself. */
 const SCAN_SKIP = [
   /^pnpm-lock\.yaml$/,
+  // The API's OpenAPI document and the client generated from it. They follow
+  // the code, not the markers: `pnpm generate:api-client` rewrites both after a
+  // feature with endpoints comes or goes, which is what `regenerate` says.
+  /^apps\/api\/openapi\.json$/,
+  /^packages\/frontend\/api-client\/src\//,
   /^scripts\/starter\//,
   /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|zip|pdf)$/i,
 ];
@@ -694,6 +699,10 @@ function prune(manifest, removedIds, options) {
   }
 
   console.log('\nDone.');
+  // Generated files follow the code, not the markers (see SCAN_SKIP), so a
+  // feature that shaped them says how to rebuild them without it.
+  const regenerate = [...new Set(features.flatMap((id) => manifest.features[id].regenerate ?? []))];
+  if (regenerate.length) console.log(`Next: ${regenerate.join(', ')}`);
   if (options.report) {
     const identifiers = [
       ...features.flatMap((id) => manifest.features[id].identifiers),

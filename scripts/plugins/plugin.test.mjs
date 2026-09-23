@@ -335,6 +335,23 @@ test('removing the plugin returns the project to its exact bytes', () => {
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
 });
 
+test('a feature that shapes generated files says how to rebuild them, both ways', () => {
+  // The OpenAPI document and the client carry no markers, so neither the
+  // install nor the removal edits them; what they do is name the step.
+  const project = fixture();
+  const manifest = { ...BETA, feature: { ...BETA.feature, regenerate: ['pnpm generate:x'] } };
+  const { result } = install(project, [], manifest);
+  assert.equal(result.code, 0, result.out);
+  assert.match(result.out, /Installed beta\. Next: pnpm install, pnpm generate:x/);
+
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  const out = execFileSync('node', [script, 'remove', 'beta'], {
+    encoding: 'utf8',
+    env: FIXTURE_ENV,
+  });
+  assert.match(out, /Removed beta\. Next: pnpm install, pnpm generate:x/);
+});
+
 test('a plugin cannot declare the one JSON shape that has no inverse', () => {
   // `deleteKeys` names a key without its value, so a prune can drop it and no
   // install can put it back. That is right for a shipped feature, where the

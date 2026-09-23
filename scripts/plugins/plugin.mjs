@@ -43,9 +43,13 @@
  *       "requires": ["<feature id>"],
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],
- *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }]
+ *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }],
  *       //   A key is always declared with its value (`set`), so every edit
  *       //   runs both ways; `starter:check` keeps the value true to the file.
+ *       "regenerate": ["pnpm generate:api-client"]
+ *       //   What rebuilds the generated files this feature shapes — the
+ *       //   OpenAPI document and the client — once it has come or gone. They
+ *       //   carry no markers, so neither direction edits them; both say this.
  *     },
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
@@ -65,9 +69,7 @@
  *     "coOwned": [{ "file", "anchor", "order", "source", "needs" }],
  *
  *     // A path carried in because every feature that needed it has left.
- *     "sharedFiles": { "<destination>": "<path inside the plugin>" },
- *
- *     "postInstall": ["pnpm generate:api-client"]
+ *     "sharedFiles": { "<destination>": "<path inside the plugin>" }
  *   }
  *
  * OP 3 is the `json` list above, run backwards: what a prune removes, an
@@ -221,7 +223,7 @@ function add(manifest, options) {
 }
 
 function followUps(manifest) {
-  return (manifest.postInstall ?? []).map((step) => `, ${step}`).join('');
+  return (manifest.feature.regenerate ?? []).map((step) => `, ${step}`).join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -270,7 +272,7 @@ function remove(id, options) {
     return;
   }
   runPrune(['--check']);
-  console.log(`\nRemoved ${id}. Next: pnpm install`);
+  console.log(`\nRemoved ${id}. Next: pnpm install${followUps({ feature: features[id] })}`);
 }
 
 // ---------------------------------------------------------------------------

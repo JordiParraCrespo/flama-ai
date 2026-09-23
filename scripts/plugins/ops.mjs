@@ -77,7 +77,8 @@ export function projectFeatures() {
  * produces the same file a hand-written entry would.
  */
 export function featureEntry(manifest, landed) {
-  const { title, summary, identifiers, paths, requires, scripts, json } = manifest.feature;
+  const { title, summary, identifiers, paths, requires, scripts, json, regenerate } =
+    manifest.feature;
   return {
     title,
     summary,
@@ -92,6 +93,7 @@ export function featureEntry(manifest, landed) {
     ...(requires?.length ? { requires } : {}),
     ...(scripts?.length ? { scripts } : {}),
     ...(json?.length ? { json } : {}),
+    ...(regenerate?.length ? { regenerate } : {}),
   };
 }
 

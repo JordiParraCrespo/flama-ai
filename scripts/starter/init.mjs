@@ -317,7 +317,12 @@ async function main() {
         ...removal.shared.flatMap((path) => manifest.shared[path].identifiers),
       ]),
     );
-    const followUps = [...new Set(result.add.flatMap((id) => plugins[id].postInstall ?? []))];
+    const followUps = [
+      ...new Set([
+        ...removal.features.flatMap((id) => manifest.features[id].regenerate ?? []),
+        ...result.add.flatMap((id) => plugins[id].feature.regenerate ?? []),
+      ]),
+    ];
     const kept = result.keep.length ? `, ${result.keep.join(', ')}` : '';
     const added = result.add.length ? `, and ${result.add.join(', ')}` : '';
     console.log(`
