@@ -45,7 +45,7 @@ const adminFrontendUrl = process.env.ADMIN_FRONTEND_URL ?? 'http://localhost:300
 // flama:begin mobile
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
 // flama:end mobile
-// flama:plugins admin-mobile
+// flama:plugins auth-consts
 
 // Read through `orUndefined` so a blank `DB_X=` means "unset" here exactly as
 // it does in `database.config.ts`. Better Auth owns its own pool rather than
@@ -107,7 +107,7 @@ export const auth = betterAuth({
     // flama:begin mobile
     `${mobileScheme}://`,
     // flama:end mobile
-    // flama:plugins admin-mobile-2
+    // flama:plugins trusted-origins
   ],
   // Brute-force protection on the auth surface. `/api/auth/*` is mounted on the
   // HTTP adapter before Nest binds middleware, so the NestJS ThrottlerGuard

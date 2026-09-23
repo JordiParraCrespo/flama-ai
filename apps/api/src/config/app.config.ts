@@ -15,7 +15,7 @@ const schema = z.object({
   // flama:begin mobile
   mobileScheme: z.string().default('flama'),
   // flama:end mobile
-  // flama:plugins admin-mobile
+  // flama:plugins config-schema
   // Base of the RFC 7807 `type` URIs in error responses. Point it at wherever
   // this deployment documents its error catalog.
   errorTypeBaseUrl: z.string().url().default('https://flama.dev/errors'),
@@ -45,7 +45,7 @@ export const appConfig = registerAs('app', () =>
     // flama:begin mobile
     mobileScheme: 'MOBILE_SCHEME',
     // flama:end mobile
-    // flama:plugins admin-mobile-2
+    // flama:plugins config-env
     errorTypeBaseUrl: 'ERROR_TYPE_BASE_URL',
     trustProxy: 'TRUST_PROXY',
     bullBoardUsername: 'BULL_BOARD_USERNAME',

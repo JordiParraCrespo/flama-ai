@@ -13,11 +13,10 @@ api:
     NODE_ENV: production
     BETTER_AUTH_URL: https://flama.dev
     FRONTEND_URL: https://flama.dev
-    # flama:plugins admin-web
     # flama:begin mobile
     MOBILE_SCHEME: flama
     # flama:end mobile
-    # flama:plugins admin-mobile
+    # flama:plugins api-env
     DB_HOST: flama-postgres
     DB_PORT: "5432"
     REDIS_HOST: flama-redis
@@ -42,8 +41,6 @@ web:
       memory: 256Mi
 # flama:end web
 
-# flama:plugins admin-web-2
-
 # flama:begin runner
 runner:
   image: ghcr.io/your-org/flama-runner:latest
@@ -64,7 +61,7 @@ runner:
     ERROR_TYPE_BASE_URL: https://docs.flama.dev/errors
 # flama:end runner
 
-# flama:plugins docs
+# flama:plugins services
 
 postgres:
   enabled: true
@@ -88,7 +85,6 @@ ingress:
     # flama:begin web
     web: flama.dev
     # flama:end web
-    # flama:plugins admin-web-3
-    # flama:plugins docs-2
+    # flama:plugins ingress-hosts
   tls:
     enabled: false
