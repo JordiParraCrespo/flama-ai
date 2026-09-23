@@ -46,6 +46,23 @@ function grammar(read) {
   }
 }
 
+/**
+ * The files this run has written, as it has written them. A dry run writes
+ * nothing to disk, so without this an op that depends on an earlier one — an
+ * owned block whose anchor sits inside a shared block just put back — would
+ * read the old file and fail where the real install succeeds.
+ */
+const pending = new Map();
+
+function readText(file) {
+  return pending.get(file) ?? readFileSync(join(ROOT, file), 'utf8');
+}
+
+function writeText(file, text, dryRun) {
+  pending.set(file, text);
+  if (!dryRun) writeFileSync(join(ROOT, file), text);
+}
+
 /** Every feature this project has, shipped and installed alike. */
 export function projectFeatures() {
   return JSON.parse(readFileSync(FEATURES_PATH, 'utf8')).features;
@@ -180,8 +197,7 @@ function trimText(manifest, file, content, known, report) {
  * trimmed the way the prune would have.
  */
 function insertOwned(manifest, file, slot, sourcePath, known, dryRun, note = '') {
-  const target = join(ROOT, file);
-  const content = readFileSync(target, 'utf8');
+  const content = readText(file);
   const anchor = grammar(() => findAnchor(file, content, slot));
   if (!anchor) fail(`${file} has no "flama:plugins ${slot}" anchor — the insertion point is gone`);
   const source = join(manifest.dir, sourcePath);
@@ -195,7 +211,7 @@ function insertOwned(manifest, file, slot, sourcePath, known, dryRun, note = '')
   const lines = content.split('\n');
   lines.splice(anchor.index, 0, body);
   console.log(`  block  ${file} (above flama:plugins ${slot}${note})`);
-  if (!dryRun) writeFileSync(target, lines.join('\n'));
+  writeText(file, lines.join('\n'), dryRun);
 }
 
 /** A block whose file belongs to a feature this project does not have. */
@@ -226,8 +242,7 @@ export function joinShared(manifest, known, dryRun) {
   const touched = [];
   for (const block of manifest.coOwned ?? []) {
     if (skipMissing(block, `shared block "${block.anchor}"`)) continue;
-    const target = join(ROOT, block.file);
-    const content = readFileSync(target, 'utf8');
+    const content = readText(block.file);
     const marked = grammar(() => blockAbove(block.file, content, block.anchor));
     const shared = marked?.ids.some(
       (owner) => owner !== manifest.id && block.order?.includes(owner),
@@ -265,7 +280,7 @@ export function joinShared(manifest, known, dryRun) {
     lines[marked.end] = widenMarker(lines[marked.end], manifest.id, at);
     const spec = /flama:begin\s+([\w|-]+)/.exec(lines[marked.begin])?.[1];
     console.log(`  widen  ${block.file} (${marked.ids.join('|')} → ${spec})`);
-    if (!dryRun) writeFileSync(target, lines.join('\n'));
+    writeText(block.file, lines.join('\n'), dryRun);
   }
   return touched;
 }
@@ -279,7 +294,7 @@ export function insertBlocks(manifest, alreadyTouched, known, dryRun) {
   const touched = new Set(alreadyTouched);
   for (const block of manifest.blocks ?? []) {
     if (skipMissing(block, `block "${block.anchor}"`)) continue;
-    const content = readFileSync(join(ROOT, block.file), 'utf8');
+    const content = readText(block.file);
     if (
       !touched.has(block.file) &&
       grammar(() => markerIds(block.file, content)).has(manifest.id)

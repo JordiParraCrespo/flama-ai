@@ -90,8 +90,20 @@ test('an installed plugin is not offered again, and is not a shipped app to keep
   assert.ok(
     plan(installed, plugins, ['alpha'], ['site']).problems[0].includes('already installed'),
   );
-  // Keeping nothing does not remove a plugin: the prune is of what shipped.
+  // Keeping nothing does not remove a plugin that needs nothing shipped.
   assert.ok(!plan(installed, plugins, [], []).remove.includes('site'));
+});
+
+test('a plugin that requires a dropped app is in the plan, not removed behind its back', () => {
+  // Re-running init on a project with `panel` installed, and dropping the
+  // `alpha` it requires: the prune takes `panel` too, so the plan says so.
+  const installed = {
+    ...manifest,
+    features: { ...manifest.features, panel: { paths: [], plugin: true, requires: ['alpha'] } },
+  };
+  const result = silently(() => plan(installed, plugins, ['gamma'], []));
+  assert.ok(result.remove.includes('panel'));
+  assert.ok(result.notes.includes('panel requires alpha, so it goes too'));
 });
 
 test('one default, whichever way it is run', () => {

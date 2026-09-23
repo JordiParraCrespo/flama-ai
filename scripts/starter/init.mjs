@@ -125,16 +125,24 @@ export function plan(manifest, plugins, keep, add, exists = () => true) {
 
   const expanded = expandKeep(manifest, keep);
   const kept = expanded.kept.filter((id) => shipped.includes(id));
-  const remove = shipped.filter((id) => !kept.includes(id));
-  const removal = remove.length ? resolveRemoval(manifest, remove) : { shared: [], notes: [] };
+  const dropped = shipped.filter((id) => !kept.includes(id));
+  const removal = dropped.length
+    ? resolveRemoval(manifest, dropped)
+    : { features: [], shared: [], notes: [] };
+  // Everything the prune will take, installed plugins included: one that
+  // requires a dropped app goes with it, and the plan has to say so rather
+  // than let the confirmation read as if only the shipped apps were leaving.
+  const remove = removal.features;
   const gone = [...remove.flatMap((id) => manifest.features[id].paths), ...removal.shared];
   const hasPath = (path) =>
-    !gone.some((path_) => path === path_ || path.startsWith(`${path_}/`)) && exists(path);
+    !gone.some((root) => path === root || path.startsWith(`${root}/`)) && exists(path);
 
   // Plugins in the order they can go in: each after the plugins it requires.
   const order = [];
   const hasFeature = (id) =>
-    kept.includes(id) || Boolean(manifest.features[id]?.plugin) || order.includes(id);
+    kept.includes(id) ||
+    (Boolean(manifest.features[id]?.plugin) && !remove.includes(id)) ||
+    order.includes(id);
   const visit = (id, chain) => {
     if (order.includes(id)) return;
     if (chain.includes(id)) {

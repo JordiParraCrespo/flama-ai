@@ -395,3 +395,31 @@ test('into a project that pruned the other owner, the shared block comes back as
   const dirty = execFileSync('git', ['-C', project, 'status', '--porcelain'], { encoding: 'utf8' });
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
 });
+
+test('a dry run sees the shared block it puts back, and places blocks inside it', () => {
+  // The carried body holds an anchor of its own; the plugin's owned block
+  // goes at it. A dry run writes nothing, so the second op must read what the
+  // first would have written — or it fails where the real install succeeds.
+  const project = fixture({ pruned: true });
+  const manifest = {
+    ...BETA,
+    feature: { ...BETA.feature, shared: [], json: [] },
+    blocks: [{ file: 'config.txt', anchor: 'inner-slot', source: 'blocks/own.txt' }],
+    coOwned: [{ ...BETA.coOwned[0], source: 'blocks/nested.txt' }],
+  };
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, manifest, {
+    'own.txt': '# flama:begin beta\nbeta-line\n# flama:end beta\n',
+    'nested.txt': '# flama:begin beta\nshared-line\n# flama:plugins inner-slot\n# flama:end beta\n',
+  });
+  mkdirSync(join(from, 'plugins', 'beta', 'files', 'beta'), { recursive: true });
+  writeFileSync(join(from, 'plugins', 'beta', 'files', 'beta', 'index.txt'), 'beta\n');
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  const before = readFileSync(join(project, 'config.txt'), 'utf8');
+  const out = execFileSync('node', [script, 'add', 'beta', '--from', from, '--dry-run'], {
+    encoding: 'utf8',
+    env: FIXTURE_ENV,
+  });
+  assert.match(out, /block\s+config\.txt \(above flama:plugins inner-slot\)/);
+  assert.equal(readFileSync(join(project, 'config.txt'), 'utf8'), before);
+});
