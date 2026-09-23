@@ -60,7 +60,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       configService.getOrThrow<string>('app.frontendUrl'),
-      configService.getOrThrow<string>('app.adminFrontendUrl'),
+      // flama:plugins cors-origins
     ],
     credentials: true,
   });

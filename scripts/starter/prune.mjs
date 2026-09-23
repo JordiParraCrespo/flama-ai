@@ -25,9 +25,12 @@
  *   node scripts/starter/prune.mjs --list
  *
  * Flags: --dry-run (print the plan, touch nothing), --no-install (skip the
- * `pnpm install` that refreshes the lockfile), --keep-tooling (leave the
- * markers, this script and the /starter-init skill in place for a second pass;
- * by default a prune strips every marker and removes the starter apparatus).
+ * `pnpm install` that refreshes the lockfile), --init (this is the one-shot
+ * initialisation, so retire the /starter-init skill afterwards).
+ *
+ * Everything else stays, every time: this script, `features.json` and every
+ * marker. `pnpm plugin:remove` is this script, and it finds a plugin's lines
+ * by its fences.
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -39,7 +42,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 // The grammar only. Everything below — git, JSON, the filesystem, exiting —
 // is this script's own, and stays here.
@@ -49,21 +52,19 @@ import {
   narrowMarker,
   annotate as parseMarkers,
 } from '../lib/markers.mjs';
+import { deleteJsonEntry, deleteJsonValueAt } from '../lib/json-text.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
 const MANIFEST_PATH = join(HERE, 'features.json');
-/** What `pnpm plugin:add` installed, merged into the manifest at load. */
-const INSTALLED_PATH = join(ROOT, '.flama-plugins.json');
 /** Marker id for the starter apparatus itself (`flama:begin starter`). */
 const TOOLING_ID = 'starter';
 /** Never scanned for references: binary, generated, or the apparatus itself. */
 const SCAN_SKIP = [
   /^pnpm-lock\.yaml$/,
   /^scripts\/starter\//,
-  // The installed-plugin registry, like the manifest beside this script:
-  // naming a feature is its whole job.
-  /^\.flama-plugins\.json$/,
+  // Naming a feature is this skill's whole job, like the manifest beside this
+  // script.
   /^\.agents\/skills\/starter-init\//,
   /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|zip|pdf)$/i,
 ];
@@ -81,45 +82,17 @@ const COMMENT_LINE_RE = /^\s*(?:#|\/\/|\/\*|\*|<!--|--|;)/;
 // ---------------------------------------------------------------------------
 
 /**
- * The starter's manifest, plus whatever `pnpm plugin:add` installed.
+ * The manifest: every optional feature this project has, whether it shipped
+ * with the starter or arrived as a plugin.
  *
- * An installed plugin is a feature this repo did not ship with, so it cannot
- * live in `features.json` — that file is the starter's, and rewriting it on
- * every install would churn a file the project owns. It lives in
- * `.flama-plugins.json` instead, in the same shape, and is merged here. From
- * that point the two are indistinguishable: the honesty check covers an
- * installed plugin, and `--without <id>` removes one.
+ * One catalog. An installed plugin writes its entry straight in here, which is
+ * why this file and this script outlive a one-shot prune: removal *is* the
+ * pruner, and the pruner reads this. A second, sidecar catalog was the
+ * alternative, and it meant every check had to stay in lockstep with two files
+ * while a finished project could install a plugin it could not then remove.
  */
 function loadManifest() {
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
-  if (existsSync(INSTALLED_PATH)) {
-    const installed = JSON.parse(readFileSync(INSTALLED_PATH, 'utf8'));
-    for (const [id, feature] of Object.entries(installed.features ?? {})) {
-      if (manifest.features[id]) {
-        fail(`.flama-plugins.json: "${id}" is already a feature of this starter`);
-      }
-      manifest.features[id] = feature;
-    }
-    // A plugin does not own a shared path, it joins the list of dependants.
-    // Two shapes: a list of dependants joins a path this starter still has,
-    // and an object carries the entry itself, for a path whose every
-    // dependant was optional and left together — the control plane's domain
-    // package belongs to both admin apps and to nothing else, so a starter
-    // without them has no entry to join.
-    for (const [path, value] of Object.entries(installed.shared ?? {})) {
-      const carried = Array.isArray(value) ? null : value;
-      const dependants = carried ? carried.neededBy : value;
-      let entry = manifest.shared[path];
-      if (!entry) {
-        if (!carried) fail(`.flama-plugins.json: shared "${path}" is not in features.json`);
-        entry = { identifiers: carried.identifiers ?? [], neededBy: [] };
-        manifest.shared[path] = entry;
-      }
-      for (const id of dependants) {
-        if (!entry.neededBy.includes(id)) entry.neededBy.push(id);
-      }
-    }
-  }
   const features = manifest.features;
   for (const [id, feature] of Object.entries(features)) {
     for (const dep of feature.requires ?? []) {
@@ -225,7 +198,7 @@ function check(manifest) {
   const allPaths = [
     ...Object.values(manifest.features).flatMap((feature) => feature.paths),
     ...Object.keys(manifest.shared),
-    ...manifest.tooling.paths,
+    ...(manifest.tooling?.paths ?? []),
   ];
   for (const path of allPaths) {
     if (!existsSync(join(ROOT, path)))
@@ -255,7 +228,7 @@ function check(manifest) {
   const manifestScripts = new Set([
     ...Object.values(manifest.features).flatMap((feature) => feature.scripts ?? []),
     ...Object.values(manifest.shared).flatMap((entry) => entry.scripts ?? []),
-    ...manifest.tooling.scripts,
+    ...(manifest.tooling?.scripts ?? []),
   ]);
   const scriptLineRe = /^\s*"([^"]+)":/;
   // A JSON value or key the manifest removes itself counts as covered.
@@ -340,69 +313,12 @@ function check(manifest) {
 const edited = [];
 
 /**
- * Delete a value from a JSON text, keeping the rest byte-for-byte.
- *
- * Re-serialising with `JSON.stringify` reformats the whole file — it expands
- * every array the author kept on one line — so a prune that drops a single
- * pattern from `biome.json` rewrites unrelated parts of it. Biome accepts
- * either shape, so nothing complained, but it means removing a plugin does
- * not return the file to where it started, and byte-identical removal is the
- * guarantee the whole plugin format rests on.
- *
- * Every edit here deletes a value from an array or a key from an object.
- * Sometimes it has its own line; sometimes the author kept the whole array on
- * one — `"outputs": ["dist/**", ".next/**", "build/**"]` — and then the value
- * has to come out of the middle of that line. Both shapes, and the comma each
- * leaves behind.
- */
-export function deleteJsonValue(text, literal) {
-  const quoted = `"${literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`;
-  return (
-    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*,?\\s*$`)) ??
-    deleteOwnLine(text, new RegExp(`^\\s*${quoted}\\s*:`)) ??
-    deleteInline(text, quoted)
-  );
-}
-
-/** The value (or `"key": value` pair) occupies the line by itself. */
-function deleteOwnLine(text, match) {
-  const lines = text.split('\n');
-  const index = lines.findIndex((line) => match.test(line));
-  if (index === -1) return null;
-  lines.splice(index, 1);
-  const previous = index - 1;
-  const next = lines[index]?.trim();
-  if (previous >= 0 && lines[previous].trimEnd().endsWith(',') && /^[\]}]/.test(next ?? '')) {
-    lines[previous] = lines[previous].replace(/,(\s*)$/, '$1');
-  }
-  return lines.join('\n');
-}
-
-/**
- * The value is one member of an array written on a single line. It takes the
- * comma that follows it, or — if it is last — the one before it, so the array
- * is still well-formed. The quotes in `quoted` are what keep `".next/**"` from
- * matching inside `"!.next/cache/**"`.
- */
-function deleteInline(text, quoted) {
-  for (const pattern of [
-    new RegExp(`${quoted}\\s*,\\s*`),
-    new RegExp(`\\s*,\\s*${quoted}`),
-    new RegExp(quoted),
-  ]) {
-    const match = pattern.exec(text);
-    if (match) return text.slice(0, match.index) + text.slice(match.index + match[0].length);
-  }
-  return null;
-}
-
-/**
  * `plan(json)` returns the literal values and keys to delete. Nothing else in
  * the file is touched, and the result has to parse to the same thing mutating
  * the object would have produced — otherwise the surgery missed something and
  * this stops rather than write a file it cannot vouch for.
  */
-function editJson(file, plan, dryRun) {
+function editJson(file, at, plan, dryRun) {
   const path = join(ROOT, file);
   if (!existsSync(path)) return;
   const original = readFileSync(path, 'utf8');
@@ -415,8 +331,15 @@ function editJson(file, plan, dryRun) {
 
   let text = original;
   for (const literal of deletions) {
-    const next = deleteJsonValue(text, literal);
-    if (next === null) fail(`${file}: could not find "${literal}"`);
+    // Scoped, always. An unscoped search takes the first match in the file,
+    // and `"web"` is a feature key as well as a member of half the `neededBy`
+    // lists — that is how you delete a feature when you meant a dependant.
+    // A literal is either a member of the array at `at` or a key of the object
+    // there; nothing else can be deleted from a JSON file.
+    const next = deleteJsonValueAt(text, at, literal)?.text ?? deleteJsonEntry(text, at, literal);
+    if (next === null || next === undefined) {
+      fail(`${file}: could not find "${literal}" in ${at.join(' → ')}`);
+    }
     text = next;
   }
   if (JSON.stringify(JSON.parse(text)) !== JSON.stringify(json)) {
@@ -425,20 +348,90 @@ function editJson(file, plan, dryRun) {
   writeFileSync(path, text);
 }
 
+/**
+ * Take the removed features out of the manifest.
+ *
+ * The manifest used to be allowed to go stale, because a one-shot prune
+ * deleted it a moment later. It survives now, so it has to stay true: a
+ * feature that is gone keeps no entry, a shared path whose last dependant left
+ * keeps none either, and a path that still has dependants loses the ones that
+ * went. Without this, `pnpm starter:check` is red after every prune — it was,
+ * on the one path that used to keep the manifest, and nobody noticed because
+ * nobody took that path.
+ */
+function dropFromManifest(features, shared, deleted, init, dryRun) {
+  if (!existsSync(MANIFEST_PATH)) return;
+  const original = readFileSync(MANIFEST_PATH, 'utf8');
+  let text = original;
+
+  for (const id of features) {
+    const next = deleteJsonEntry(text, ['features'], id);
+    if (next === null) fail(`features.json: no entry for "${id}" to remove`);
+    text = next;
+  }
+  for (const path of shared) {
+    const next = deleteJsonEntry(text, ['shared'], path);
+    if (next === null) fail(`features.json: no shared entry for "${path}" to remove`);
+    text = next;
+  }
+  // A kept feature can own a path inside a departing one's tree — `web` has a
+  // slice of `e2e/`, `runner` a template under `helm/`. Those files are gone
+  // now, so the entries that claim them have to let go. The install side
+  // already works this way: a plugin records the paths that actually landed,
+  // not the ones it hoped to.
+  const inside = (path) => deleted.some((gone) => path === gone || path.startsWith(`${gone}/`));
+  for (const [id, feature] of Object.entries(JSON.parse(text).features)) {
+    for (const path of feature.paths) {
+      if (!inside(path)) continue;
+      const next = deleteJsonValueAt(text, ['features', id, 'paths'], path);
+      if (next === null) fail(`features.json: "${id}" has no path "${path}" to drop`);
+      text = next.text;
+    }
+  }
+
+  // Whatever shared paths remain, the departed are no longer among their
+  // dependants. A stale name here fails the honesty check on the next run.
+  const gone = new Set(features);
+  for (const [path, entry] of Object.entries(JSON.parse(text).shared)) {
+    for (const dependant of entry.neededBy) {
+      if (!gone.has(dependant)) continue;
+      const next = deleteJsonValueAt(text, ['shared', path, 'neededBy'], dependant);
+      if (next === null) fail(`features.json: shared "${path}" has no "${dependant}" to drop`);
+      text = next.text;
+    }
+  }
+
+  // The `tooling` entry describes the one-shot half, which this prune just
+  // removed. Leaving it behind would have the honesty check looking for a
+  // skill that is gone — the one staleness the old prune could not hide by
+  // deleting the file.
+  if (init && JSON.parse(text).tooling) {
+    const next = deleteJsonEntry(text, [], 'tooling');
+    if (next === null) fail('features.json: could not remove the "tooling" entry');
+    text = next;
+  }
+
+  if (text === original) return;
+  console.log(`  edit   ${relative(ROOT, MANIFEST_PATH)}`);
+  if (!dryRun) writeFileSync(MANIFEST_PATH, text);
+}
+
 function prune(manifest, removedIds, options) {
-  const { dryRun, install, keepTooling } = options;
+  const { dryRun, install, init } = options;
   const { features, shared } = resolveRemoval(manifest, removedIds);
   const removed = new Set(features);
-  if (!keepTooling) removed.add(TOOLING_ID);
+  // Only an initialisation retires the one-shot half. A plugin removal is a
+  // prune too, and it has no business deleting the init skill.
+  if (init) removed.add(TOOLING_ID);
   const pathsToDelete = [
     ...features.flatMap((id) => manifest.features[id].paths),
     ...shared,
-    ...(keepTooling ? [] : manifest.tooling.paths),
+    ...(init ? (manifest.tooling?.paths ?? []) : []),
   ];
   const scriptsToDrop = [
     ...features.flatMap((id) => manifest.features[id].scripts ?? []),
     ...shared.flatMap((path) => manifest.shared[path].scripts ?? []),
-    ...(keepTooling ? [] : manifest.tooling.scripts),
+    ...(init ? (manifest.tooling?.scripts ?? []) : []),
   ];
   const packageNames = [
     ...features.flatMap((id) =>
@@ -467,7 +460,11 @@ function prune(manifest, removedIds, options) {
     for (const { line, stack, marker } of annotate(file, content)) {
       if (stack.length) touched = true;
       if (stack.some(({ ids }) => ids.every((id) => removed.has(id)))) continue;
-      if (marker && !keepTooling) continue;
+      // Markers survive. They served this prune, but they also serve the next
+      // one: `pnpm plugin:remove` is this script, and it finds a plugin's
+      // lines by its fences. Stripping them would make an installed plugin
+      // unremovable, and a co-owned block unwidenable by the next install.
+
       out.push(marker ? narrowMarker(line, removed) : line);
     }
     if (!touched) continue;
@@ -498,9 +495,13 @@ function prune(manifest, removedIds, options) {
     }
   }
 
-  // 3. JSON files that cannot carry markers.
+  // 3. The manifest itself, which now outlives the prune.
+  dropFromManifest(features, shared, pathsToDelete, init, dryRun);
+
+  // 4. JSON files that cannot carry markers.
   editJson(
     'package.json',
+    ['scripts'],
     (json) => {
       const deleted = [];
       for (const name of scriptsToDrop) {
@@ -515,6 +516,7 @@ function prune(manifest, removedIds, options) {
   );
   editJson(
     'biome.json',
+    ['files', 'includes'],
     (json) => {
       const includes = json.files?.includes;
       if (!Array.isArray(includes)) return [];
@@ -536,6 +538,7 @@ function prune(manifest, removedIds, options) {
   );
   editJson(
     '.changeset/config.json',
+    ['ignore'],
     (json) => {
       if (!Array.isArray(json.ignore)) return [];
       const kept = json.ignore.filter((name) => !packageNames.includes(name));
@@ -556,10 +559,12 @@ function prune(manifest, removedIds, options) {
   for (const edit of jsonEdits) {
     editJson(
       edit.file,
+      edit.path,
       (json) => {
-        const segments = edit.path.split('.');
-        const parent = segments.slice(0, -1).reduce((node, key) => node?.[key], json);
-        const key = segments.at(-1);
+        // `path` is an array of keys, not a dotted string: some of the keys
+        // these edits address are file paths, and a dot there is data.
+        const parent = edit.path.slice(0, -1).reduce((node, key) => node?.[key], json);
+        const key = edit.path.at(-1);
         const target = parent?.[key];
         if (target === undefined) return [];
         if (Array.isArray(target) && edit.remove) {
@@ -568,9 +573,13 @@ function prune(manifest, removedIds, options) {
           parent[key] = kept;
           return target.filter((value) => !kept.includes(value));
         }
-        if (edit.deleteKeys && typeof target === 'object') {
+        // `set` declares the keys *and* their values, so an install can put
+        // them back; here only the names matter. One declaration, read in
+        // whichever direction the caller is going.
+        const keys = edit.deleteKeys ?? Object.keys(edit.set ?? {});
+        if (keys.length && typeof target === 'object') {
           const deleted = [];
-          for (const name of edit.deleteKeys) {
+          for (const name of keys) {
             if (name in target) {
               delete target[name];
               deleted.push(name);
@@ -621,7 +630,7 @@ function prune(manifest, removedIds, options) {
     return;
   }
 
-  // 4. Lockfile, then the repo's formatter over what was edited (a marker
+  // 5. Lockfile, then the repo's formatter over what was edited (a marker
   // block removed from a list often leaves it on one line for Biome).
   if (install) {
     console.log('\npnpm install (refreshing the lockfile)...');
@@ -639,7 +648,7 @@ function prune(manifest, removedIds, options) {
     }
   }
 
-  // 5. What is left for a human (or the skill) to reconcile by hand.
+  // 6. What is left for a human (or the skill) to reconcile by hand.
   const identifiers = [
     ...features.flatMap((id) => manifest.features[id].identifiers),
     ...shared.flatMap((path) => manifest.shared[path].identifiers),
@@ -658,9 +667,14 @@ function prune(manifest, removedIds, options) {
       });
   }
   console.log('\nDone.');
-  if (!keepTooling) {
+  // `--init` is a flag someone has to remember, so say when it was the one
+  // that mattered. A project that meant to finish initialising and left the
+  // skill behind would otherwise find out much later, and the inverse of the
+  // old quiet door is a quiet door in the other direction.
+  if (!init && existsSync(join(ROOT, '.agents', 'skills', 'starter-init'))) {
     console.log(
-      'Every flama:begin/end marker is gone, kept features included: the markers only served this prune.',
+      'The /starter-init skill is still here. Pass --init if this was the one-shot\n' +
+        'initialisation; a plugin removal is a prune too, and has no business retiring it.',
     );
   }
   if (leftovers.length) {
@@ -691,7 +705,7 @@ function parseArgs(argv) {
   const options = {
     dryRun: false,
     install: true,
-    keepTooling: false,
+    init: false,
     check: false,
     list: false,
     without: [],
@@ -712,7 +726,7 @@ function parseArgs(argv) {
     else if (arg === '--list') options.list = true;
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--no-install') options.install = false;
-    else if (arg === '--keep-tooling') options.keepTooling = true;
+    else if (arg === '--init') options.init = true;
     else if (arg === '--without') options.without.push(...value());
     else if (arg.startsWith('--without=')) options.without.push(...arg.slice(10).split(','));
     else if (arg === '--keep') options.keep = value();
@@ -771,7 +785,11 @@ function main() {
   } else {
     fail('nothing to do: pass --without <ids>, --keep <ids>, --check or --list');
   }
-  if (!removed.length) fail('nothing to remove');
+  // `--init` is an operation in its own right: it retires the starter
+  // apparatus. A project that keeps every app still wants that done, so an
+  // init-only run is not "nothing to remove" — it is the one case where the
+  // removal list is legitimately empty.
+  if (!removed.length && !options.init) fail('nothing to remove');
 
   prune(manifest, removed, options);
 }

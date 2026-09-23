@@ -75,9 +75,11 @@ const KITS = [
   // flama:begin web
   'packages/frontend/web',
   // flama:end web
+  // flama:plugins web-kits
   // flama:begin mobile
   'packages/frontend/mobile',
   // flama:end mobile
+  // flama:plugins mobile-kits
 ];
 
 function* walk(dir) {

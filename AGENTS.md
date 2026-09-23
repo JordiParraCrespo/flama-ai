@@ -64,10 +64,17 @@ When you add a file that mentions an optional app (CI, compose, Helm,
 `# flama:end <id>`; `pnpm starter:check` fails otherwise.
 <!-- flama:end starter -->
 
-The marker grammar itself — the regex and the block parser — lives in
-`scripts/lib/markers.mjs`, outside the starter apparatus a one-shot prune
-deletes. It is the grammar and nothing else; `prune.mjs` owns its own git,
-JSON and filesystem helpers.
+Two pieces sit in `scripts/lib/` because both the pruner and the installer
+need them and have to agree: `markers.mjs` is the marker grammar — the regex
+and the block parser, and nothing else — and `json-text.mjs` is
+format-preserving surgery on JSON, delete and insert in pairs, so an edit does
+not reflow a file the project owns. `prune.mjs` keeps its own git and
+filesystem helpers.
+
+A prune retires `/starter-init`, which is one-shot, and keeps everything else
+— `scripts/starter`, `features.json`, every marker. That is not leftover
+scaffolding: **removal is the pruner**, so it reads that manifest and finds a
+plugin's lines by those fences.
 
 ### Plugins
 
@@ -81,11 +88,18 @@ pnpm plugin:add admin-web         # install it
 pnpm plugin:remove admin-web      # take it back out
 ```
 
-`pnpm plugin:list` is the catalog. The installer owns the format contract —
-what a plugin declares and how it lands — and documents it where it lives, in
-`scripts/plugins/`. **Removal is the pruner**, so an installed plugin behaves
-like any other feature: `pnpm starter:check` covers it and
-`pnpm starter:prune --without <id>` removes it.
+**`scripts/starter/features.json` is the catalog** — the one this repo has.
+An install writes its entry straight in, marked `"plugin": true`, so
+`pnpm starter:check` covers an installed plugin and
+`pnpm starter:prune --without <id>` removes it. `pnpm plugin:list` is a view
+over what a plugins repo offers, not a second catalog.
+
+A plugin is that entry plus three ops that put it in place: a block of text at
+a `flama:plugins <slot>` anchor, this plugin joining a block several features
+share, and the entry's own `json` edits run backwards. The shape of all of it
+is the header of `scripts/plugins/plugin.mjs`, which is the only document; the
+ops themselves are `scripts/lib/markers.mjs` and `scripts/lib/json-text.mjs`,
+whose deletes and inserts come in pairs so a removal is an install backwards.
 
 ## Key conventions
 

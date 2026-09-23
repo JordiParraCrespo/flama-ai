@@ -14,8 +14,7 @@ spec:
         # flama:begin web
         - {{ .Values.ingress.hosts.web }}
         # flama:end web
-        # flama:plugins admin-web
-        # flama:plugins docs
+        # flama:plugins ingress-tls
       secretName: {{ .Release.Name }}-tls
   {{- end }}
   rules:
@@ -41,6 +40,5 @@ spec:
                 port:
                   number: {{ .Values.web.port }}
     # flama:end web
-    # flama:plugins admin-web-2
-    # flama:plugins docs-2
+    # flama:plugins ingress-rules
 {{- end }}

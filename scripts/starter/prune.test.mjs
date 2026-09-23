@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { deleteJsonValue, expandKeep, resolveRemoval } from './prune.mjs';
+import { fileURLToPath } from 'node:url';
+import { expandKeep, resolveRemoval } from './prune.mjs';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const SCRIPT = join(HERE, 'prune.mjs');
+const MANIFEST = JSON.parse(readFileSync(join(HERE, 'features.json'), 'utf8'));
 
 const manifest = {
   features: {
@@ -37,33 +45,17 @@ test('resolveRemoval drops a shared path only when every dependant is gone', () 
   ]);
 });
 
-test('deleteJsonValue takes a value off its own line, and the comma above it', () => {
-  const text = '{\n  "ignore": [\n    "@flama/web",\n    "@flama/mobile"\n  ]\n}';
-  assert.equal(
-    deleteJsonValue(text, '@flama/mobile'),
-    '{\n  "ignore": [\n    "@flama/web"\n  ]\n}',
+test('--init is an operation, so it runs with nothing to remove', () => {
+  // A project that keeps every app still wants the starter apparatus retired.
+  // `--keep <all ids> --init` computes an empty removal list, which used to
+  // exit early as "nothing to remove" — so the one command documented for
+  // initialisation could never do the one thing it is named for.
+  const keep = Object.keys(MANIFEST.features).join(',');
+  const out = execFileSync(
+    'node',
+    [SCRIPT, '--keep', keep, '--init', '--dry-run', '--no-install'],
+    { encoding: 'utf8' },
   );
-  assert.equal(
-    deleteJsonValue(text, '@flama/web'),
-    '{\n  "ignore": [\n    "@flama/mobile"\n  ]\n}',
-  );
-});
-
-test('deleteJsonValue takes a value out of an array written on one line', () => {
-  // The shape turbo.json keeps: the value is mid-line, and one of its
-  // neighbours is a superstring of it.
-  const outputs = '  "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"]';
-  assert.equal(
-    deleteJsonValue(outputs, '.next/**'),
-    '  "outputs": ["dist/**", "!.next/cache/**", "build/**"]',
-  );
-  // Last member: it takes the comma before it instead.
-  const env = '  "env": ["VITE_*", "EXPO_PUBLIC_*"],';
-  assert.equal(deleteJsonValue(env, 'EXPO_PUBLIC_*'), '  "env": ["VITE_*"],');
-  // Sole member.
-  assert.equal(deleteJsonValue('  "env": ["VITE_*"],', 'VITE_*'), '  "env": [],');
-});
-
-test('deleteJsonValue reports a value it cannot find rather than guessing', () => {
-  assert.equal(deleteJsonValue('  "env": ["VITE_*"],', 'NOPE_*'), null);
+  assert.match(out, /delete\s+\.agents\/skills\/starter-init/);
+  assert.doesNotMatch(out, /nothing to remove/);
 });

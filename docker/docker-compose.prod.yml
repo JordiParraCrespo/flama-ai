@@ -46,11 +46,10 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       FRONTEND_URL: ${FRONTEND_URL}
-      # flama:plugins admin-web
       # flama:begin mobile
       MOBILE_SCHEME: ${MOBILE_SCHEME:-flama}
       # flama:end mobile
-      # flama:plugins admin-mobile
+      # flama:plugins api-env
       # OAuth providers. The image does not ship the root `.env`, so anything
       # the API must read has to be forwarded here. Empty is the "not
       # configured" value — the provider simply stays off (see
@@ -79,9 +78,7 @@ services:
       - "3000:3000"
   # flama:end web
 
-  # flama:plugins admin-web-2
-
-  # flama:plugins docs
+  # flama:plugins services
 
   # flama:begin runner
   runner:

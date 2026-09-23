@@ -11,11 +11,10 @@ const schema = z.object({
   betterAuthSecret: z.string().min(8),
   betterAuthUrl: z.string().url().default('http://localhost:3001'),
   frontendUrl: z.string().url().default('http://localhost:3000'),
-  adminFrontendUrl: z.string().url().default('http://localhost:3003'),
   // flama:begin mobile
   mobileScheme: z.string().default('flama'),
   // flama:end mobile
-  // flama:plugins admin-mobile
+  // flama:plugins config-schema
   // Base of the RFC 7807 `type` URIs in error responses. Point it at wherever
   // this deployment documents its error catalog.
   errorTypeBaseUrl: z.string().url().default('https://flama.dev/errors'),
@@ -41,11 +40,10 @@ export const appConfig = registerAs('app', () =>
     betterAuthSecret: 'BETTER_AUTH_SECRET',
     betterAuthUrl: 'BETTER_AUTH_URL',
     frontendUrl: 'FRONTEND_URL',
-    adminFrontendUrl: 'ADMIN_FRONTEND_URL',
     // flama:begin mobile
     mobileScheme: 'MOBILE_SCHEME',
     // flama:end mobile
-    // flama:plugins admin-mobile-2
+    // flama:plugins config-env
     errorTypeBaseUrl: 'ERROR_TYPE_BASE_URL',
     trustProxy: 'TRUST_PROXY',
     bullBoardUsername: 'BULL_BOARD_USERNAME',

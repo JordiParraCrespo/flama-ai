@@ -70,6 +70,7 @@ jobs:
       - name: Design-system lint
         run: pnpm lint:design
       # flama:end web|web-showcase|mobile|mobile-showcase
+      # flama:plugins design-lint
       # Empty filters mean "every package" to Turborepo, so an empty affected
       # list has to skip the step rather than pass nothing.
       - name: Architecture boundaries
@@ -87,6 +88,7 @@ jobs:
       - name: Frontend structure
         run: pnpm check:structure
       # flama:end web|mobile
+      # flama:plugins frontend-structure
       # The marker grammar in `scripts/lib/`, which outlives a prune.
       - name: Repo scripts
         run: pnpm test:scripts
@@ -178,6 +180,7 @@ jobs:
           pnpm turbo run build "${filters[@]}"
           pnpm check:bundle
       # flama:end web
+      # flama:plugins bundle-budgets
 
   test-integration:
     name: Integration Tests
@@ -284,7 +287,7 @@ jobs:
       # is the first thing worth knowing when an auth route answers 403.
       - name: Resolved origins
         run: |
-          pnpm --filter @flama/e2e exec node -e "require('@flama/env/load');console.log(JSON.stringify({FRONTEND_URL:process.env.FRONTEND_URL,ADMIN_FRONTEND_URL:process.env.ADMIN_FRONTEND_URL,BETTER_AUTH_URL:process.env.BETTER_AUTH_URL,NODE_ENV:process.env.NODE_ENV,API_URL:process.env.API_URL,WEB_URL:process.env.WEB_URL},null,2))"
+          pnpm --filter @flama/e2e exec node -e "require('@flama/env/load');console.log(JSON.stringify({FRONTEND_URL:process.env.FRONTEND_URL,BETTER_AUTH_URL:process.env.BETTER_AUTH_URL,NODE_ENV:process.env.NODE_ENV,API_URL:process.env.API_URL,WEB_URL:process.env.WEB_URL},null,2))"
       - run: pnpm --filter @flama/e2e e2e:api
       # The API log is this suite's mailbox, and it is also where Better Auth
       # writes why it refused a request. Grepped rather than tailed: the first
