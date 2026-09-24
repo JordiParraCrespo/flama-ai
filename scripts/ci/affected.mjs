@@ -53,6 +53,7 @@ const GLOBAL_PATHS = [
   /^\.npmrc$/,
   /^\.env\.example$/,
   /^biome\.json$/,
+  /^biome-plugins\//,
   /^tsconfig\.base\.json$/,
   /^scripts\//,
   // flama:begin runner
