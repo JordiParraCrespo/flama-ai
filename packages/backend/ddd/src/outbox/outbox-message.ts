@@ -73,13 +73,13 @@ export const OutboxMessageSchema = new EntitySchema<OutboxMessageRecord>({
     reason: { type: 'text' },
     status: { type: 'varchar', length: 16, default: 'pending' },
     attempts: { type: 'int', default: 0 },
-    availableAt: { type: 'timestamp', default: () => 'now()' },
+    availableAt: { type: 'timestamptz', default: () => 'now()' },
     lockedBy: { type: 'varchar', nullable: true },
-    lockedUntil: { type: 'timestamp', nullable: true },
+    lockedUntil: { type: 'timestamptz', nullable: true },
     lastError: { type: 'text', nullable: true },
     correlationId: { type: 'varchar', nullable: true },
-    createdAt: { type: 'timestamp', createDate: true },
-    processedAt: { type: 'timestamp', nullable: true },
+    createdAt: { type: 'timestamptz', createDate: true },
+    processedAt: { type: 'timestamptz', nullable: true },
   },
   indices: [
     // The relay's claim query filters on exactly this pair.

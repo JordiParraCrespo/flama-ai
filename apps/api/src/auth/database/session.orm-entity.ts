@@ -1,21 +1,33 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
 /**
  * Maps the Better Auth `session` table. Owned by Better Auth; declared here so
  * TypeORM creates/migrates the table alongside the rest of the schema.
+ * `userId` references `user` (`FK_session_user`, ON DELETE CASCADE); the
+ * foreign key lives in the migration, as for every entity here.
  */
 @Entity('session')
+@Unique('UQ_session_token', ['token'])
+@Index('IDX_session_userId', ['userId'])
 export class Session {
-  @PrimaryColumn({ type: 'uuid' })
+  @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'PK_session' })
   id!: string;
 
   @Column({ type: 'uuid' })
   userId!: string;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar' })
   token!: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz' })
   expiresAt!: Date;
 
   @Column({ type: 'varchar', nullable: true })
@@ -51,9 +63,9 @@ export class Session {
   @Column({ type: 'uuid', nullable: true })
   activeTeamId!: string | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }

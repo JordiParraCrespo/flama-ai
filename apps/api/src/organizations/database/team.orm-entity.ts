@@ -16,9 +16,9 @@ export class TeamOrmEntity {
   @Column({ type: 'uuid' })
   organizationId!: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   updatedAt!: Date | null;
 }

@@ -126,8 +126,10 @@ explains why this is a table of its own). Read one before writing a new one.
 | Structured value the database never filters on | `jsonb` | `json`, `text` holding JSON |
 | Epoch-millisecond value (only where Better Auth demands it) | `bigint` | |
 
-- Timestamps are `timestamptz` in every new table. The existing tables use
-  `timestamp` without a zone; do not copy that. In TypeORM:
+- Timestamps are `timestamptz` in every table. Migrations before
+  `1788800000000-TimestampsWithTimeZone` created `timestamp` without a zone
+  and that migration converted them; do not copy the old migrations' SQL.
+  In TypeORM:
   `@CreateDateColumn({ type: 'timestamptz' })`,
   `@Column({ type: 'timestamptz', nullable: true })`.
 - `NOT NULL` is the default. A column is nullable only when "unknown" or "not

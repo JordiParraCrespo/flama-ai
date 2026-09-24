@@ -30,9 +30,9 @@ export class UserSettingsOrmEntity {
   @Column({ type: 'boolean', default: false })
   productUpdates!: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }
