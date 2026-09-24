@@ -31,8 +31,12 @@ describe('organizationsKeys.memberList', () => {
   });
 
   it('treats an empty facet as no facet', () => {
-    expect(organizationsKeys.memberList(ORG, { roleIds: [] })).toEqual(organizationsKeys.memberList(ORG));
-    expect(organizationsKeys.memberList(ORG, { search: '' })).toEqual(organizationsKeys.memberList(ORG));
+    expect(organizationsKeys.memberList(ORG, { roleIds: [] })).toEqual(
+      organizationsKeys.memberList(ORG),
+    );
+    expect(organizationsKeys.memberList(ORG, { search: '' })).toEqual(
+      organizationsKeys.memberList(ORG),
+    );
   });
 
   it('separates two different narrowings', () => {
