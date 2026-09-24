@@ -3,7 +3,7 @@
  * Run the checks a frontend change has to pass, in the order a reviewer would
  * care about them, and stop at the first that fails.
  *
- *   node .agents/skills/scaffold-feature/scripts/verify-feature.mjs --app web [--module api-tokens]
+ *   node .agents/skills/scaffold-feature/scripts/verify-feature.mjs --app web [--module api-tokens] [--base main]
  *
  * 1. pnpm check:structure: placement, names, the render-topology scans and
  *    the tests that pin them
@@ -74,10 +74,13 @@ function bin(dir, name) {
   return existsSync(local) ? local : null;
 }
 
-/** The frontend packages the branch changed, against the default branch when there is one. */
+/**
+ * The frontend packages this change touches: the working tree against HEAD
+ * (what you are about to commit) plus untracked files. `--base <ref>` widens it
+ * to everything since that ref, for a branch with several commits.
+ */
 function touchedPackages() {
-  const base = spawnSync('git', ['merge-base', 'HEAD', 'origin/main'], { cwd: root, encoding: 'utf8' });
-  const since = base.status === 0 ? base.stdout.trim() : 'HEAD';
+  const since = args.base ?? 'HEAD';
   const diff = spawnSync('git', ['diff', '--name-only', since], { cwd: root, encoding: 'utf8' });
   const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], {
     cwd: root,

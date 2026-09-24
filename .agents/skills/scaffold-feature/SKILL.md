@@ -268,7 +268,7 @@ Fix what this finds before presenting.
 Run the checks for the app you touched:
 
 ```bash
-node .agents/skills/scaffold-feature/scripts/verify-feature.mjs --app <app> [--module <module>]
+node .agents/skills/scaffold-feature/scripts/verify-feature.mjs --app <app> [--module <module>] [--base <ref>]
 ```
 
 It runs the checks a contributor runs, in order, and stops at the first
