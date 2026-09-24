@@ -13,6 +13,7 @@
   "team": "Equipo",
   "users": "Usuarios",
   "roles": "Roles",
+  "featureFlags": "Feature flags",
   "toggleSidebar": "Mostrar u ocultar el menú",
   "viewProfile": "Ver perfil"
 }

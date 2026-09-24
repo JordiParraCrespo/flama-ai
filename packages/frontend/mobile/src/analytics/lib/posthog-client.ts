@@ -1,9 +1,4 @@
-import type {
-  AnalyticsProperties,
-  AnalyticsTraits,
-  FeatureFlags,
-  IAnalyticsClient,
-} from '@flama/frontend-core';
+import type { AnalyticsProperties, AnalyticsTraits, IAnalyticsClient } from '@flama/frontend-core';
 import PostHog from 'posthog-react-native';
 
 /**
@@ -18,7 +13,7 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
   private readonly posthog: PostHog;
 
   constructor(apiKey: string, host: string) {
-    this.posthog = new PostHog(apiKey, { host });
+    this.posthog = new PostHog(apiKey, { host, preloadFeatureFlags: false });
   }
 
   capture(event: string, properties?: AnalyticsProperties): void {
@@ -35,19 +30,6 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
 
   pageView(path: string, properties?: AnalyticsProperties): void {
     void this.posthog.screen(path, properties);
-  }
-
-  /**
-   * Cached flags if the SDK already has them, otherwise a fetch. The native SDK
-   * persists the last known flag set, so the cached branch is what a returning
-   * user hits on launch — no request before the first flag read resolves.
-   */
-  async getFeatureFlags(): Promise<FeatureFlags> {
-    return this.posthog.getFeatureFlags() ?? (await this.posthog.reloadFeatureFlagsAsync()) ?? {};
-  }
-
-  onFeatureFlags(listener: () => void): () => void {
-    return this.posthog.onFeatureFlags(() => listener());
   }
 }
 

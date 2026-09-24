@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { accept, active, add, addMember, assign, ban, cancel, catalog, changePassword, check, checkSlug, create, create2, create3, create4, create5, createUser, current, deleteAvatar, deploymentCapabilities, findAll, findAll2, findAll3, findOne, findOne2, findSessions, findUserRoles, get, getFull, getProfile, getSettings, getUser, impersonate, invite, leave, list, list2, list3, list4, list5, listMembers, listMine, listMine2, listSessions, listUsers, me, type Options, permissions, permissions2, readiness, reject, remove, remove2, remove3, remove4, remove5, removeMember, removeUser, revoke, revoke2, revokeOtherSessions, revokeSession, revokeSession2, revokeSessions, setActive, setActive2, setPassword, setRole, stopImpersonating, unban, update, update2, update3, update4, updatePermissions, updateProfile, updateRole, updateSettings, updateUser, uploadAvatar } from '../sdk.gen';
-import type { AcceptData, AcceptError, AcceptResponse, ActiveData, ActiveError, ActiveResponse, AddData, AddError, AddMemberData, AddMemberError, AddMemberResponse, AddResponse, AssignData, AssignError, AssignResponse, BanData, BanError, BanResponse, CancelData, CancelError, CancelResponse, CatalogData, CatalogError, CatalogResponse, ChangePasswordData, ChangePasswordError, ChangePasswordResponse, CheckData, CheckError, CheckResponse, CheckSlugData, CheckSlugError, CheckSlugResponse, Create2Data, Create2Error, Create2Response, Create3Data, Create3Error, Create3Response, Create4Data, Create4Error, Create4Response, Create5Data, Create5Error, Create5Response, CreateData, CreateError, CreateResponse, CreateUserData, CreateUserError, CreateUserResponse, CurrentData, CurrentError, CurrentResponse, DeleteAvatarData, DeleteAvatarError, DeleteAvatarResponse, DeploymentCapabilitiesData, DeploymentCapabilitiesResponse, FindAll2Data, FindAll2Error, FindAll2Response, FindAll3Data, FindAll3Error, FindAll3Response, FindAllData, FindAllError, FindAllResponse, FindOne2Data, FindOne2Error, FindOne2Response, FindOneData, FindOneError, FindOneResponse, FindSessionsData, FindSessionsError, FindSessionsResponse, FindUserRolesData, FindUserRolesError, FindUserRolesResponse, GetData, GetError, GetFullData, GetFullError, GetFullResponse, GetProfileData, GetProfileError, GetProfileResponse, GetResponse, GetSettingsData, GetSettingsError, GetSettingsResponse, GetUserData, GetUserError, GetUserResponse, ImpersonateData, ImpersonateError, ImpersonateResponse, InviteData, InviteError, InviteResponse, LeaveData, LeaveError, LeaveResponse, List2Data, List2Error, List2Response, List3Data, List3Error, List3Response, List4Data, List4Error, List4Response, List5Data, List5Error, List5Response, ListData, ListError, ListMembersData, ListMembersError, ListMembersResponse, ListMine2Data, ListMine2Error, ListMine2Response, ListMineData, ListMineError, ListMineResponse, ListResponse, ListSessionsData, ListSessionsError, ListSessionsResponse, ListUsersData, ListUsersError, ListUsersResponse, MeData, MeError, MeResponse, Permissions2Data, Permissions2Error, Permissions2Response, PermissionsData, PermissionsError, PermissionsResponse, ReadinessData, ReadinessError, ReadinessResponse, RejectData, RejectError, RejectResponse, Remove2Data, Remove2Error, Remove3Data, Remove3Error, Remove3Response, Remove4Data, Remove4Error, Remove4Response, Remove5Data, Remove5Error, Remove5Response, RemoveData, RemoveError, RemoveMemberData, RemoveMemberError, RemoveMemberResponse, RemoveUserData, RemoveUserError, RemoveUserResponse, Revoke2Data, Revoke2Error, Revoke2Response, RevokeData, RevokeError, RevokeOtherSessionsData, RevokeOtherSessionsError, RevokeOtherSessionsResponse, RevokeResponse, RevokeSession2Data, RevokeSession2Error, RevokeSession2Response, RevokeSessionData, RevokeSessionError, RevokeSessionResponse, RevokeSessionsData, RevokeSessionsError, RevokeSessionsResponse, SetActive2Data, SetActive2Error, SetActive2Response, SetActiveData, SetActiveError, SetActiveResponse, SetPasswordData, SetPasswordError, SetPasswordResponse, SetRoleData, SetRoleError, SetRoleResponse, StopImpersonatingData, StopImpersonatingError, StopImpersonatingResponse, UnbanData, UnbanError, UnbanResponse, Update2Data, Update2Error, Update2Response, Update3Data, Update3Error, Update3Response, Update4Data, Update4Error, Update4Response, UpdateData, UpdateError, UpdatePermissionsData, UpdatePermissionsError, UpdatePermissionsResponse, UpdateProfileData, UpdateProfileError, UpdateProfileResponse, UpdateResponse, UpdateRoleData, UpdateRoleError, UpdateRoleResponse, UpdateSettingsData, UpdateSettingsError, UpdateSettingsResponse, UpdateUserData, UpdateUserError, UpdateUserResponse, UploadAvatarData, UploadAvatarError, UploadAvatarResponse } from '../types.gen';
+import { accept, active, add, addMember, assign, ban, cancel, catalog, changePassword, check, checkSlug, create, create2, create3, create4, create5, createFlagSegment, createUser, current, deleteAvatar, deleteFlagSegment, deploymentCapabilities, evaluateFeatureFlag, findAll, findAll2, findAll3, findFeatureFlag, findFeatureFlags, findFlagChanges, findFlagSegments, findOne, findOne2, findSessions, findUserRoles, get, getClientFeatureFlags, getFull, getProfile, getSettings, getUser, impersonate, invite, leave, list, list2, list3, list4, list5, listMembers, listMine, listMine2, listSessions, listUsers, me, type Options, permissions, permissions2, readiness, reject, remove, remove2, remove3, remove4, remove5, removeMember, removeUser, revoke, revoke2, revokeOtherSessions, revokeSession, revokeSession2, revokeSessions, setActive, setActive2, setPassword, setRole, stopImpersonating, toggleFeatureFlag, unban, update, update2, update3, update4, updateFeatureFlag, updateFlagSegment, updatePermissions, updateProfile, updateRole, updateSettings, updateUser, uploadAvatar } from '../sdk.gen';
+import type { AcceptData, AcceptError, AcceptResponse, ActiveData, ActiveError, ActiveResponse, AddData, AddError, AddMemberData, AddMemberError, AddMemberResponse, AddResponse, AssignData, AssignError, AssignResponse, BanData, BanError, BanResponse, CancelData, CancelError, CancelResponse, CatalogData, CatalogError, CatalogResponse, ChangePasswordData, ChangePasswordError, ChangePasswordResponse, CheckData, CheckError, CheckResponse, CheckSlugData, CheckSlugError, CheckSlugResponse, Create2Data, Create2Error, Create2Response, Create3Data, Create3Error, Create3Response, Create4Data, Create4Error, Create4Response, Create5Data, Create5Error, Create5Response, CreateData, CreateError, CreateFlagSegmentData, CreateFlagSegmentError, CreateFlagSegmentResponse, CreateResponse, CreateUserData, CreateUserError, CreateUserResponse, CurrentData, CurrentError, CurrentResponse, DeleteAvatarData, DeleteAvatarError, DeleteAvatarResponse, DeleteFlagSegmentData, DeleteFlagSegmentError, DeleteFlagSegmentResponse, DeploymentCapabilitiesData, DeploymentCapabilitiesResponse, EvaluateFeatureFlagData, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, FindAll2Data, FindAll2Error, FindAll2Response, FindAll3Data, FindAll3Error, FindAll3Response, FindAllData, FindAllError, FindAllResponse, FindFeatureFlagData, FindFeatureFlagError, FindFeatureFlagResponse, FindFeatureFlagsData, FindFeatureFlagsError, FindFeatureFlagsResponse, FindFlagChangesData, FindFlagChangesError, FindFlagChangesResponse, FindFlagSegmentsData, FindFlagSegmentsError, FindFlagSegmentsResponse, FindOne2Data, FindOne2Error, FindOne2Response, FindOneData, FindOneError, FindOneResponse, FindSessionsData, FindSessionsError, FindSessionsResponse, FindUserRolesData, FindUserRolesError, FindUserRolesResponse, GetClientFeatureFlagsData, GetClientFeatureFlagsResponse, GetData, GetError, GetFullData, GetFullError, GetFullResponse, GetProfileData, GetProfileError, GetProfileResponse, GetResponse, GetSettingsData, GetSettingsError, GetSettingsResponse, GetUserData, GetUserError, GetUserResponse, ImpersonateData, ImpersonateError, ImpersonateResponse, InviteData, InviteError, InviteResponse, LeaveData, LeaveError, LeaveResponse, List2Data, List2Error, List2Response, List3Data, List3Error, List3Response, List4Data, List4Error, List4Response, List5Data, List5Error, List5Response, ListData, ListError, ListMembersData, ListMembersError, ListMembersResponse, ListMine2Data, ListMine2Error, ListMine2Response, ListMineData, ListMineError, ListMineResponse, ListResponse, ListSessionsData, ListSessionsError, ListSessionsResponse, ListUsersData, ListUsersError, ListUsersResponse, MeData, MeError, MeResponse, Permissions2Data, Permissions2Error, Permissions2Response, PermissionsData, PermissionsError, PermissionsResponse, ReadinessData, ReadinessError, ReadinessResponse, RejectData, RejectError, RejectResponse, Remove2Data, Remove2Error, Remove3Data, Remove3Error, Remove3Response, Remove4Data, Remove4Error, Remove4Response, Remove5Data, Remove5Error, Remove5Response, RemoveData, RemoveError, RemoveMemberData, RemoveMemberError, RemoveMemberResponse, RemoveUserData, RemoveUserError, RemoveUserResponse, Revoke2Data, Revoke2Error, Revoke2Response, RevokeData, RevokeError, RevokeOtherSessionsData, RevokeOtherSessionsError, RevokeOtherSessionsResponse, RevokeResponse, RevokeSession2Data, RevokeSession2Error, RevokeSession2Response, RevokeSessionData, RevokeSessionError, RevokeSessionResponse, RevokeSessionsData, RevokeSessionsError, RevokeSessionsResponse, SetActive2Data, SetActive2Error, SetActive2Response, SetActiveData, SetActiveError, SetActiveResponse, SetPasswordData, SetPasswordError, SetPasswordResponse, SetRoleData, SetRoleError, SetRoleResponse, StopImpersonatingData, StopImpersonatingError, StopImpersonatingResponse, ToggleFeatureFlagData, ToggleFeatureFlagError, ToggleFeatureFlagResponse, UnbanData, UnbanError, UnbanResponse, Update2Data, Update2Error, Update2Response, Update3Data, Update3Error, Update3Response, Update4Data, Update4Error, Update4Response, UpdateData, UpdateError, UpdateFeatureFlagData, UpdateFeatureFlagError, UpdateFeatureFlagResponse, UpdateFlagSegmentData, UpdateFlagSegmentError, UpdateFlagSegmentResponse, UpdatePermissionsData, UpdatePermissionsError, UpdatePermissionsResponse, UpdateProfileData, UpdateProfileError, UpdateProfileResponse, UpdateResponse, UpdateRoleData, UpdateRoleError, UpdateRoleResponse, UpdateSettingsData, UpdateSettingsError, UpdateSettingsResponse, UpdateUserData, UpdateUserError, UpdateUserResponse, UploadAvatarData, UploadAvatarError, UploadAvatarResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1496,6 +1496,245 @@ export const setPasswordMutation = (options?: Partial<Options<SetPasswordData>>)
     const mutationOptions: UseMutationOptions<SetPasswordResponse, SetPasswordError, Options<SetPasswordData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await setPassword({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getClientFeatureFlagsQueryKey = (options?: Options<GetClientFeatureFlagsData>) => createQueryKey('getClientFeatureFlags', options);
+
+/**
+ * The caller’s feature flags
+ *
+ * Every client-visible flag, evaluated for the caller: their user, their active organization, and the platform and build the client reports. Values only — targeting rules never leave the server. Works signed out.
+ */
+export const getClientFeatureFlagsOptions = (options?: Options<GetClientFeatureFlagsData>) => queryOptions<GetClientFeatureFlagsResponse, DefaultError, GetClientFeatureFlagsResponse, ReturnType<typeof getClientFeatureFlagsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getClientFeatureFlags({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getClientFeatureFlagsQueryKey(options)
+});
+
+export const findFlagChangesQueryKey = (options?: Options<FindFlagChangesData>) => createQueryKey('findFlagChanges', options);
+
+/**
+ * Feature flag audit trail
+ *
+ * Who changed which flag or segment, when, why, and what it was before and after.
+ */
+export const findFlagChangesOptions = (options?: Options<FindFlagChangesData>) => queryOptions<FindFlagChangesResponse, FindFlagChangesError, FindFlagChangesResponse, ReturnType<typeof findFlagChangesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFlagChanges({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFlagChangesQueryKey(options)
+});
+
+export const findFlagChangesInfiniteQueryKey = (options?: Options<FindFlagChangesData>): QueryKey<Options<FindFlagChangesData>> => createQueryKey('findFlagChanges', options, true);
+
+/**
+ * Feature flag audit trail
+ *
+ * Who changed which flag or segment, when, why, and what it was before and after.
+ */
+export const findFlagChangesInfiniteOptions = (options?: Options<FindFlagChangesData>) => {
+    const opts = infiniteQueryOptions<FindFlagChangesResponse, FindFlagChangesError, InfiniteData<FindFlagChangesResponse>, QueryKey<Options<FindFlagChangesData>>, number | Pick<QueryKey<Options<FindFlagChangesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<FindFlagChangesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await findFlagChanges({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: findFlagChangesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const findFlagSegmentsQueryKey = (options?: Options<FindFlagSegmentsData>) => createQueryKey('findFlagSegments', options);
+
+/**
+ * List flag segments and the flags that target them
+ */
+export const findFlagSegmentsOptions = (options?: Options<FindFlagSegmentsData>) => queryOptions<FindFlagSegmentsResponse, FindFlagSegmentsError, FindFlagSegmentsResponse, ReturnType<typeof findFlagSegmentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFlagSegments({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFlagSegmentsQueryKey(options)
+});
+
+/**
+ * Create a flag segment
+ */
+export const createFlagSegmentMutation = (options?: Partial<Options<CreateFlagSegmentData>>): UseMutationOptions<CreateFlagSegmentResponse, CreateFlagSegmentError, Options<CreateFlagSegmentData>> => {
+    const mutationOptions: UseMutationOptions<CreateFlagSegmentResponse, CreateFlagSegmentError, Options<CreateFlagSegmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createFlagSegment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a flag segment no flag targets
+ */
+export const deleteFlagSegmentMutation = (options?: Partial<Options<DeleteFlagSegmentData>>): UseMutationOptions<DeleteFlagSegmentResponse, DeleteFlagSegmentError, Options<DeleteFlagSegmentData>> => {
+    const mutationOptions: UseMutationOptions<DeleteFlagSegmentResponse, DeleteFlagSegmentError, Options<DeleteFlagSegmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteFlagSegment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update a flag segment
+ *
+ * Every flag that targets the segment follows the change.
+ */
+export const updateFlagSegmentMutation = (options?: Partial<Options<UpdateFlagSegmentData>>): UseMutationOptions<UpdateFlagSegmentResponse, UpdateFlagSegmentError, Options<UpdateFlagSegmentData>> => {
+    const mutationOptions: UseMutationOptions<UpdateFlagSegmentResponse, UpdateFlagSegmentError, Options<UpdateFlagSegmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateFlagSegment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const findFeatureFlagsQueryKey = (options?: Options<FindFeatureFlagsData>) => createQueryKey('findFeatureFlags', options);
+
+/**
+ * List feature flags with their targeting
+ *
+ * Every flag the code declares, with its catalog definition and — once saved — its targeting on this deployment.
+ */
+export const findFeatureFlagsOptions = (options?: Options<FindFeatureFlagsData>) => queryOptions<FindFeatureFlagsResponse, FindFeatureFlagsError, FindFeatureFlagsResponse, ReturnType<typeof findFeatureFlagsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFeatureFlags({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFeatureFlagsQueryKey(options)
+});
+
+export const evaluateFeatureFlagQueryKey = (options: Options<EvaluateFeatureFlagData>) => createQueryKey('evaluateFeatureFlag', options);
+
+/**
+ * Explain a flag for a given context
+ *
+ * Evaluates the flag for the user, organization, platform and build described in the query — what they would get, and why.
+ */
+export const evaluateFeatureFlagOptions = (options: Options<EvaluateFeatureFlagData>) => queryOptions<EvaluateFeatureFlagResponse, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, ReturnType<typeof evaluateFeatureFlagQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evaluateFeatureFlag({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evaluateFeatureFlagQueryKey(options)
+});
+
+export const findFeatureFlagQueryKey = (options: Options<FindFeatureFlagData>) => createQueryKey('findFeatureFlag', options);
+
+/**
+ * Get a feature flag with its targeting
+ */
+export const findFeatureFlagOptions = (options: Options<FindFeatureFlagData>) => queryOptions<FindFeatureFlagResponse, FindFeatureFlagError, FindFeatureFlagResponse, ReturnType<typeof findFeatureFlagQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFeatureFlag({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFeatureFlagQueryKey(options)
+});
+
+/**
+ * Switch a feature flag on or off
+ *
+ * Flips the master switch only. Off serves `false` (or the default variant) to everyone — the kill switch. Takes effect on this replica immediately and on every other within the snapshot poll interval.
+ */
+export const toggleFeatureFlagMutation = (options?: Partial<Options<ToggleFeatureFlagData>>): UseMutationOptions<ToggleFeatureFlagResponse, ToggleFeatureFlagError, Options<ToggleFeatureFlagData>> => {
+    const mutationOptions: UseMutationOptions<ToggleFeatureFlagResponse, ToggleFeatureFlagError, Options<ToggleFeatureFlagData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await toggleFeatureFlag({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Replace a feature flag’s targeting
+ *
+ * Sets the master switch, the ordered rules and the fallthrough in one write. Recorded on the audit trail with the optional comment.
+ */
+export const updateFeatureFlagMutation = (options?: Partial<Options<UpdateFeatureFlagData>>): UseMutationOptions<UpdateFeatureFlagResponse, UpdateFeatureFlagError, Options<UpdateFeatureFlagData>> => {
+    const mutationOptions: UseMutationOptions<UpdateFeatureFlagResponse, UpdateFeatureFlagError, Options<UpdateFeatureFlagData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateFeatureFlag({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

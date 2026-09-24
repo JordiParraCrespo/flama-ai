@@ -38,6 +38,7 @@ level. Edit implies Read.
 | Invitations         | `invitations:read` `invitations:write` | Pending invitations                                      |
 | Workspaces          | `workspaces:read` `workspaces:write`   | Workspaces (teams) and their members                     |
 | API tokens          | `tokens:read` `tokens:write`           | The owner's own API tokens                               |
+| Feature flags       | `flags:read` `flags:write`             | Flag targeting, kill switches and segments               |
 
 The catalog is defined once, in `packages/shared/src/scopes/catalog.ts`, and is
 consumed by the API guard, the MCP server, the CLI and the web permission

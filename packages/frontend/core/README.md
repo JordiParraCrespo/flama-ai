@@ -18,12 +18,16 @@ query-cache persistence policy, and the contracts the two products meet on.
 
 - **di** — `FlamaApp`, `FlamaAppConfig`, `TOKENS`.
 - **modules/analytics** — `AnalyticsService`, `AnalyticsModule`,
-  `NoopAnalyticsClient`, `ANALYTICS_EVENTS`, `isFlagEnabled`,
-  `sanitizeUrlProperties`, the `IAnalyticsClient` port.
+  `NoopAnalyticsClient`, `ANALYTICS_EVENTS`, `sanitizeUrlProperties`, the
+  `IAnalyticsClient` port.
 - **modules/auth** — `AuthService`, `AuthRepository`, `AuthModule`,
   `AuthErrors`, `createAuthStore` (also at `./state`), the `IAuthClient` port.
 - **modules/capabilities** — `CapabilitiesService`, `CapabilitiesRepository`,
   `CapabilitiesModule`, `CapabilitiesErrors`.
+- **modules/feature-flags** — `FeatureFlagsService`, `FeatureFlagsRepository`,
+  `FeatureFlagsModule`, `FeatureFlagsErrors`, `resolveFlagValue`,
+  `isFlagEnabled`, the `FeatureFlagsClientContext` an app passes to
+  `FlamaApp.create({ featureFlags })`.
 - **modules/core** — `createCoreModule`, `AppError`, `toAppError`,
   `MapApiError`, `createErrorMessageResolver`, the `IStorageService` port.
 - **modules/user-settings** / **modules/users** — `UserSettingsEntity`,
@@ -40,8 +44,11 @@ query-cache persistence policy, and the contracts the two products meet on.
 - Users: `useProfile`, `useUser`, `useUsers`, `useUpdateUser`, `useDeleteUser`,
   `useMyPermissions`, `usersKeys`.
 - Settings: `useUserSettings`, `useUpdateUserSettings`, `userSettingsKeys`.
-- Analytics: `useAnalytics`, `useCaptureEvent`, `usePageView`,
-  `useFeatureFlag`, `useFeatureFlags`, `analyticsKeys`.
+- Analytics: `useAnalytics`, `useCaptureEvent`, `usePageView`, `analyticsKeys`.
+- Feature flags: `useFeatureFlag`, `useFeatureFlagValue`, `useFeatureFlags`,
+  `featureFlagKeys`, `featureFlagsQueryOptions`. Values come from the API,
+  typed by the catalog in `@flama/shared`; see
+  `.agents/rules/feature-flags.md`.
 - Capabilities: `useDeploymentCapabilities`, `capabilitiesKeys`.
 - Cache policy: `defaultQueryClientOptions`, `createQueryPersistOptions`,
   `shouldDehydrateQuery`, `KERNEL_NON_PERSISTED_FEATURES`, `cacheOwnerKey`.
