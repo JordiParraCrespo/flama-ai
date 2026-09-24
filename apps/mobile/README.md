@@ -39,9 +39,10 @@ pnpm --filter @flama/mobile build:dev    # EAS build (development profile)
 ```
 index.ts               # the nitro-fetch polyfill first, then expo-router/entry
 app/                   # expo-router routes: a default export that mounts a screen
-├── _layout.tsx        # providers, theme vars, error boundaries, AuthGate
+├── _layout.tsx        # providers, error boundaries, AuthGate
 ├── (auth)/            # login, register, forgot-password, reset-password
-└── (app)/             # the tab layout and its screens
+├── onboarding.tsx     # an account with no organization starts here
+└── (app)/             # the signed-in Stack and its screens
 features/              # <module>/{screens,sections,dialogs,forms,components,hooks,lib,__tests__}
 lib/                   # configuration only: flama.ts, auth-client.ts, query.ts
 app.config.ts          # Expo config — the source of truth for native

@@ -1,8 +1,10 @@
 # Frontend Architecture — two splits, one direction
 
-`packages/frontend` is what the four apps (`apps/web`, `apps/admin-web`,
-`apps/mobile` (and `apps/admin-mobile`, a plugin)) share below their routes. It is split
-twice, and the two splits answer different questions.
+`packages/frontend` is what the frontend apps share below their routes:
+`apps/web` and `apps/mobile` in the starter, and `apps/admin-web` and
+`apps/admin-mobile` once their plugins are installed (`packages/frontend/admin`
+arrives with them). It is split twice, and the two splits answer different
+questions.
 
 This document is the source of truth for the tier. The machine-checked rules
 in each package's `.dependency-cruiser.cjs` (built from
@@ -14,18 +16,19 @@ described here. When they disagree, fix the code or update both together.
 
 **By product, for logic.** An entity, a repository, a service or a query hook
 belongs to a product or to both. `core` is the kernel every app loads:
-session (`auth`), `users`, `user-settings`, `capabilities`, `analytics`, the
-InversifyJS container (`FlamaApp`, `TOKENS`), `config/` and `validation/`.
+session (`auth`), `users`, `user-settings`, `capabilities`, `analytics`,
+`feature-flags`, the InversifyJS container (`FlamaApp`, `TOKENS`), `config/`,
+`validation/` and `format/` (dates through `Intl`, for both platforms).
 `consumer` (`api-tokens`, `organizations`, `profile`) and `admin`
-(`admin-users`, `roles`) are the two products. An app loads exactly one, and
+(`admin-users`, `roles`, with its plugin) are the two products. An app loads exactly one, and
 the products never import each other.
 
 **By platform, for UI and glue.** A component, a hook over a browser API, an
 i18n bootstrap belong to web or to mobile. `web` is what both Vite apps share
 (`shell`, `auth`, `table`, `layout`, `forms`, `theme`, `i18n`, `analytics`,
 `platform`, `roles`); `mobile` is what both Expo apps share (`analytics`,
-`config`, `forms`, `i18n`, `layout`, `platform`, `theme`). A kit is organised
-by concern, each concern with the kind directories a feature has.
+`auth`, `config`, `forms`, `i18n`, `layout`, `platform`, `theme`). A kit is
+organised by concern, each concern with the kind directories a feature has.
 
 The split by product keeps `apps/web` from bundling the control plane's
 modules, and the split by platform keeps `react-dom` out of the packages
@@ -34,12 +37,12 @@ written once per platform and serves both products.
 
 ```
 packages/frontend/
-├── core/        @flama/frontend-core      modules/ react/ di/ config/ validation/
+├── core/        @flama/frontend-core      modules/ react/ di/ config/ validation/ format/
 ├── consumer/    @flama/frontend-consumer  modules/ react/ di/
-├── admin/       @flama/frontend-admin     modules/ react/ di/
+├── admin/       @flama/frontend-admin     modules/ react/ di/   (with the admin plugins)
 ├── api-client/  @flama/api-client         generated from the API's OpenAPI spec
 ├── web/         @flama/frontend-web       <concern>/{components,dialogs,hooks,lib}/
-└── mobile/      @flama/frontend-mobile    <concern>/{components,hooks,lib}/
+└── mobile/      @flama/frontend-mobile    <concern>/{components,forms,screens,hooks,lib}/
 ```
 
 ## The placement grid
@@ -109,7 +112,8 @@ export const app = FlamaApp.create({
 ```
 
 `FlamaApp` binds the kernel (`createCoreModule`, `AnalyticsModule`,
-`AuthModule`, `CapabilitiesModule`, `UsersModule`, `UserSettingsModule`) and
+`AuthModule`, `CapabilitiesModule`, `FeatureFlagsModule`, `UsersModule`,
+`UserSettingsModule`) and
 then whatever `modules` the app passes. `FlamaProvider` puts the app in
 context; `useFlamaApp()` reads it. The kernel only knows kernel services, so a
 product resolves its own through a wrapper over the same container:
@@ -193,9 +197,15 @@ Nothing moves before its second consumer appears; nothing is written twice.
    next to the spread kernel `TOKENS`.
 8. `src/di/consumer-app.ts` — push `ThingsModule` into `consumerModules` and
    add a `get things(): ThingsService` getter on `ConsumerApp`.
-9. `src/react/things.queries.ts` — `thingsKeys` (every key derived from
-   `all: ['things']`), query and mutation hooks over `useConsumerApp()`;
-   mutations invalidate by prefix in `onSuccess`.
+9. `src/react/things.queries.ts` — `thingsKeys`, one function per level
+   (`all → lists() → list(filters) → details() → detail(id)`, filters appended
+   only when set so `list()` stays a prefix), and query and mutation hooks over
+   `useConsumerApp()`. A query missing its input gates on `skipToken`; mutation
+   options are `HookMutationOptions`, and the cache update — `setQueryData` for
+   the row the server returned, `invalidateQueries` on the narrowest prefix —
+   goes through `withCacheOnSuccess`. The Biome plugins in `biome-plugins/`
+   hold all three. A flow that chains calls (sign up, then join) is one hook
+   here, not a `useMutation` in a screen.
 10. `src/react/index.ts` — export the keys and hooks by name.
 11. If the module's data must never reach storage, add
     `thingsKeys.all[0]` to `CONSUMER_NON_PERSISTED_FEATURES` in

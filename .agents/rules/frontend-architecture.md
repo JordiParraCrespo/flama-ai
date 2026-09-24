@@ -98,8 +98,12 @@ shared ─► core ─► consumer | admin ─► apps
 `packages/frontend/web/src/<concern>/<kind>/` — `shell`, `auth`, `table`,
 `layout`, `forms`, `theme`, `i18n`, `analytics`, `platform`, `roles`. Each
 concern has an `index.ts`; a concern imports another only through it. The
-concerns are layered (leaves → middle → top) and `pnpm arch` holds the order.
-A concern that needs a product hook is a feature, not kit.
+concerns are layered (leaves → middle → top) and `pnpm arch` holds the order:
+a leaf imports no other concern at all, so a leaf that starts needing one
+moves to the middle list in the kit's `.dependency-cruiser.cjs`. A concern that
+needs a product hook is a feature, not kit. Logic with no platform in it (date
+formatting, the CASL ability, a slug) is not kit either: it goes to core or the
+product package, and the kit may re-export it.
 
 ## Render rules
 
@@ -128,7 +132,9 @@ name the jobs and split *those*.
   picker beside it. Two siblings genuinely sharing one result is a different
   thing and passes: `profile.tsx` fetches the profile once for its hero and its
   details pane, and says so in a comment. `pnpm check:structure` flags the
-  single-consumer case, and flags a prop a component only forwards.
+  single-consumer case, in route files as well as in features, and flags a
+  data prop a `sections/` or `dialogs/` file only hands on (a `forms/` or
+  `components/` file cannot fetch, so it may).
 
 - **A live input value is never a prop of a component that renders a list.**
   What a reader is typing is the field's state until it settles. Hand the list
@@ -152,8 +158,8 @@ name the jobs and split *those*.
   take `control` and run in the component that shows the value; `select`
   narrows a query to what a row renders. A page-level `useWatch` re-rendered a
   whole register page, art panel included, on every keystroke. `PermissionPicker`
-  held one flat `Scope[]` for eleven groups, so granting one re-rendered
-  thirty-three toggles; each row takes its own field off the form now.
+  held one flat `Scope[]` for nine groups, so granting one re-rendered
+  twenty-seven toggles; each row takes its own field off the form now.
 - **A component owns one job, and the job is named by what updates it.**
   `data-table.tsx` held the search field, the rows and the selection: three
   things on three different clocks, so each one's update redrew the other two.
@@ -171,7 +177,7 @@ name the jobs and split *those*.
 
   It is an optimisation, not the structure. It memoises a badly-shaped
   component into a clean profile — measured, it took the picker above from
-  thirty-three wasted renders per click to zero, and the api-tokens screen's
+  twenty-seven wasted renders per click to zero, and the api-tokens screen's
   threaded query from one to zero — so a profiler will not show you any of
   this. That is why the two rules at the top of this list are checked rather
   than profiled, and why a `*-render.spec.tsx` runs with the compiler **off**.

@@ -36,9 +36,9 @@ they disagree, fix the code or update both together. The tier-wide model is
 ```
 
 Imports run one way down that list. A feature never imports another feature;
-the kit is imported by its package name (or one of its two side-effect
-subpaths, `@flama/frontend-mobile/polyfills` and `/i18n`), never by a path into
-its `src/`; this app loads `@flama/frontend-consumer` and would fail
+the kit is imported by its package name or one of the subpaths its
+`package.json` exports (one per concern, such as `/theme` and `/auth`, plus the
+side-effect imports `/polyfills` and `/i18n`), never by a path into its `src/`; this app loads `@flama/frontend-consumer` and would fail
 `pnpm arch` for touching `@flama/frontend-admin`.
 
 ## The anatomy of a feature
@@ -49,12 +49,12 @@ no sub-directory inside a kind.
 | Kind | What goes there | Fetch? | Router? | Example in this app |
 | --- | --- | --- | --- | --- |
 | `screens/` | the page body a route mounts | yes | yes | `auth/screens/login.tsx` |
-| `sections/` | a pane, a card group, a list | yes | yes | — none yet in this app |
+| `sections/` | a pane, a card group, a list, anything the root layout mounts | yes | yes | `dashboard/sections/account-card.tsx`, `auth/sections/auth-gate.tsx` |
 | `dialogs/` | one sheet or modal per file, owning its mutation | yes | yes | — none yet in this app |
-| `forms/` | React Hook Form over a shared Zod schema; props in, `onSubmit` out | no | no | `auth/forms/login-form.tsx` |
+| `forms/` | React Hook Form over a shared Zod schema; props in, `onSubmit` out | no | no | `auth/forms/register-form.tsx`, `organizations/forms/create-organization-form.tsx` |
 | `components/` | entity UI: a row, a header, a pill | no | no | `dashboard/components/account-row.tsx` |
 | `hooks/` | `use-*.ts` over queries and UI state; the only home of an effect | yes | yes | — none yet in this app |
-| `lib/` | types, mappers, constants; no JSX | no | no | `dashboard/lib/account.ts` |
+| `lib/` | types, mappers, constants; no JSX | no | no | — none yet in this app |
 | `__tests__/` | Vitest specs | — | — | — |
 
 `forms-and-components-stay-pure` is the cruiser rule behind the two "no"
@@ -66,7 +66,7 @@ that matters twice over — `register()` has no DOM ref to take, so a form is
 
 An expo-router file is a default-exported component that mounts a screen. There
 is no `Route` object here; the router's surface is the file's path, the
-`_layout.tsx` above it, and `Redirect` / `Tabs` / `Stack` inside a layout. It
+`_layout.tsx` above it, and `Redirect` / `Stack` inside a layout. It
 may read a feature's `lib/`, may not reach into `forms/`, `components/` or
 `hooks/`, and stays under 120 lines.
 
@@ -79,16 +79,24 @@ export default function LoginRoute() {
 }
 ```
 
-`app/index.tsx` is the one route with logic: it reads `useAuthState()` and
-redirects to `(app)` or `(auth)/login`. `app/(app)/_layout.tsx` declares the
-tabs. `app/_layout.tsx` is the composition root — the providers, the theme
-vars, the error boundaries, the `AuthGate`.
+Three files hold routing logic, and only routing logic. `app/index.tsx`
+reads `useAuthState()` and redirects to `(app)` or `(auth)/login`.
+`app/(app)/_layout.tsx` declares the signed-in `Stack` (header colours from the
+kit's `THEME`) and sends an account with no organization to
+`app/onboarding.tsx`, on a settled, successful, empty answer only.
+`app/_layout.tsx` is the composition root — the providers, the error
+boundaries, the `AuthGate` section. The colours come from `global.css`
+(light and `.dark:root`); nothing sets `vars()` over them.
 
 ## Render rules
 
 - **State lives in the lowest component that reads it.** `LoginScreen` owns the
   submit error it shows; `LoginForm` owns the field state; `AccountRow` owns
-  nothing but its props.
+  nothing but its props; the kit's `SignOutButton` owns the logout, so a
+  pending sign-out re-renders the button and not the page.
+- **A component owns one job, named by what updates it.** `AuthGate` renders
+  the navigator from `isAuthenticated`; `SessionRestoreOverlay` beside it runs
+  on the session restore's clock, so a refetch never redraws the `Stack`.
 - **Subscribe at the leaf.** A `useWatch` takes `control` and runs in the
   component that shows the value, never in the screen above it; the reference
   implementation is `PasswordChecklist` in `@flama/frontend-mobile/auth`, which
@@ -112,9 +120,10 @@ node scripts/scaffold-feature.mjs --app mobile --module organizations [--screen 
 ```
 
 It creates the eight kind directories with a note in each and a first screen.
-Then: write the screen, add a route under `app/` that mounts it, add it to the
-`Tabs` in `app/(app)/_layout.tsx` if it is a destination, and add the
-translation keys.
+Then: write the screen, add a route under `app/` that mounts it, add a
+`Stack.Screen` in `app/(app)/_layout.tsx` if it needs header options, and add
+the translation keys. `/scaffold-feature` walks the whole process, from the
+render plan to the checks.
 
 Module names this app may use: the kernel's `analytics`, `auth`,
 `capabilities`, `user-settings`, `users`; the consumer product's `api-tokens`,

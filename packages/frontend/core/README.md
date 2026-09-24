@@ -21,7 +21,9 @@ query-cache persistence policy, and the contracts the two products meet on.
   `NoopAnalyticsClient`, `ANALYTICS_EVENTS`, `sanitizeUrlProperties`, the
   `IAnalyticsClient` port.
 - **modules/auth** — `AuthService`, `AuthRepository`, `AuthModule`,
-  `AuthErrors`, `createAuthStore` (also at `./state`), the `IAuthClient` port.
+  `AuthErrors`, `createAuthStore` (also at `./state`), the `IAuthClient` port
+  (with the optional `respondToConsent` a platform hosting the OAuth consent
+  page implements).
 - **modules/capabilities** — `CapabilitiesService`, `CapabilitiesRepository`,
   `CapabilitiesModule`, `CapabilitiesErrors`.
 - **modules/feature-flags** — `FeatureFlagsService`, `FeatureFlagsRepository`,
@@ -31,30 +33,47 @@ query-cache persistence policy, and the contracts the two products meet on.
 - **modules/core** — `createCoreModule`, `AppError`, `toAppError`,
   `MapApiError`, `createErrorMessageResolver`, the `IStorageService` port.
 - **modules/user-settings** / **modules/users** — `UserSettingsEntity`,
-  `UserEntity` and their service, repository, module and errors.
+  `UserEntity` (with `fullName` and `initials`) and their service, repository,
+  module and errors; `personInitials`, the one avatar-fallback rule every
+  person entity uses.
 - **config** (`./config`) — `ConfigManager`, `deepMerge`, `getAttribute`.
 - **validation** (`./validation`) — `createZodErrorMap`,
   `ValidationMessageKey`.
+- **format** (`./format`) — the date helpers both platforms format with:
+  `dateFormatter` (cached `Intl.DateTimeFormat`), `formatShortDate`,
+  `formatMediumDate`, `formatDateTime`, `formatMonthYear`,
+  `formatRelativeTime`, `formatMessageTime`, `compactAge`. Each takes the
+  locale from `useLocale()`; the web kit re-exports them.
+- **di** also at `./di`, for code that needs the container without the rest.
 
 `@flama/frontend-core/react` (`src/react/index.ts`):
 
 - `FlamaProvider`, `useFlamaApp`, `useAuthState`.
 - Session: `useLogin`, `useLogout`, `useSessionRestore`, `useSocialLogin`,
-  `useForgotPassword`, `useResetPassword`, `useChangePassword`, `authKeys`.
+  `useForgotPassword`, `useResetPassword`, `useChangePassword`,
+  `useRespondToConsent`, `authKeys`.
+- Permissions: `useAbilityState` / `useAbility`, the caller's CASL ability
+  rebuilt from `useMyPermissions`.
+- Locale and errors: `useLocale` (the resolved language to format in),
+  `useErrorMessage` (a failure as a translated sentence).
 - Users: `useProfile`, `useUser`, `useUsers`, `useUpdateUser`, `useDeleteUser`,
   `useMyPermissions`, `usersKeys`.
 - Settings: `useUserSettings`, `useUpdateUserSettings`, `userSettingsKeys`.
-- Analytics: `useAnalytics`, `useCaptureEvent`, `usePageView`, `analyticsKeys`.
+- Analytics: `useAnalytics`, `useCaptureEvent`, `usePageView`,
+  `useCapturePageView`, `useCaptureOnMount`, `analyticsKeys`.
 - Feature flags: `useFeatureFlag`, `useFeatureFlagValue`, `useFeatureFlags`,
   `featureFlagKeys`, `featureFlagsQueryOptions`. Values come from the API,
   typed by the catalog in `@flama/shared`; see
   `.agents/rules/feature-flags.md`.
 - Capabilities: `useDeploymentCapabilities`, `capabilitiesKeys`.
 - Cache policy: `defaultQueryClientOptions`, `createQueryPersistOptions`,
-  `shouldDehydrateQuery`, `KERNEL_NON_PERSISTED_FEATURES`, `cacheOwnerKey`.
+  `shouldDehydrateQuery`, `KERNEL_NON_PERSISTED_FEATURES`, `cacheOwnerKey`,
+  `reconcileCacheOwner`, `QUERY_PERSIST_*`.
 - Contracts both products use: `MEMBER_LISTS_KEY`, `withFeaturePrefix`.
-- Mutation helper: `withCacheOnSuccess`, which runs a hook's cache update
-  before the caller's `onSuccess`.
+- Mutation helpers: `withCacheOnSuccess`, which runs a hook's cache update
+  before the caller's `onSuccess`, and `HookMutationOptions`, the type every
+  mutation hook's `options` takes (everything but `mutationFn`, which is the
+  hook's own).
 
 ## How to use it
 
