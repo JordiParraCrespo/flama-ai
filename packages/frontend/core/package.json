@@ -13,6 +13,10 @@
       "types": "./dist/di/index.d.ts",
       "import": "./dist/di/index.js"
     },
+    "./format": {
+      "types": "./dist/format/index.d.ts",
+      "import": "./dist/format/index.js"
+    },
     "./react": {
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"

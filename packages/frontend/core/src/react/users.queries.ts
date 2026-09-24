@@ -34,7 +34,19 @@ export interface UsersListParams {
 export const usersKeys = {
   all: ['users'] as const,
   lists: () => [...usersKeys.all, 'list'] as const,
-  list: (params?: UsersListParams) => [...usersKeys.lists(), params] as const,
+  /**
+   * The params are appended only when a facet is set, so `list()` stays a
+   * prefix of every narrowed list and `useUsers()` and `useUsers({})` share
+   * one cache entry instead of asking the same question twice.
+   */
+  list: (params?: UsersListParams) => {
+    const narrowed: UsersListParams = {};
+    if (params?.page !== undefined) narrowed.page = params.page;
+    if (params?.limit !== undefined) narrowed.limit = params.limit;
+    if (params?.search) narrowed.search = params.search;
+    if (params?.role) narrowed.role = params.role;
+    return [...usersKeys.lists(), ...(Object.keys(narrowed).length ? [narrowed] : [])] as const;
+  },
   details: () => [...usersKeys.all, 'detail'] as const,
   detail: (id: string | undefined) => [...usersKeys.details(), id] as const,
   me: () => [...usersKeys.all, 'me'] as const,

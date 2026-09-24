@@ -29,6 +29,13 @@ module.exports = function frontendKit({ leaves, middle, top }) {
         to: { path: group([...middle, ...top]) },
       },
       {
+        name: 'leaves-import-no-leaf',
+        comment: `A leaf (${leaves.join(', ')}) imports no other concern at all. One that needs another is a middle concern: move it in the kit's .dependency-cruiser.cjs.`,
+        severity: 'error',
+        from: { path: `^src/(${leaves.join('|')})/` },
+        to: { path: group(leaves), pathNot: '^src/$1/' },
+      },
+      {
         name: 'middle-below-top',
         comment: `${middle.join(', ')} build on the leaves and never on ${top.join(', ')}.`,
         severity: 'error',

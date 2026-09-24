@@ -8,7 +8,7 @@ import { FormField, useZodResolver } from '../../forms';
 import { AuthFormError, authControlClass } from '../components/auth-primitives';
 import { PasswordChecklist } from '../components/password-checklist';
 import { PasswordInput } from '../components/password-input';
-import { type NewPasswordValues, newPasswordSchema } from '../lib/new-password-schema';
+import { type NewPasswordValues, newPasswordSchema } from '@flama/shared/schemas/auth';
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number', 'match'];
 
