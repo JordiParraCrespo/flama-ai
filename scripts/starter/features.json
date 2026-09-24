@@ -9,7 +9,8 @@
         "apps/web",
         "e2e/tests/web",
         "helm/flama/templates/web-deployment.yaml",
-        ".agents/skills/shadcn/evals/evals.json"
+        ".agents/skills/shadcn/evals/evals.json",
+        ".agents/skills/scaffold-feature/evals"
       ]
     },
     "mobile": {

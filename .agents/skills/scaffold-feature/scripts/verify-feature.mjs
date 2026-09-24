@@ -30,16 +30,18 @@ const args = Object.fromEntries(
 );
 
 const APPS = {
+  // flama:begin web
   web: { dir: 'apps/web', features: 'src/features', arch: ['src'], typecheck: true },
+  // flama:end web
+  // flama:begin mobile
   mobile: { dir: 'apps/mobile', features: 'features', arch: ['app', 'features', 'lib'] },
-  'admin-web': { dir: 'apps/admin-web', features: 'src/features', arch: ['src'], typecheck: true },
-  'admin-mobile': { dir: 'apps/admin-mobile', features: 'features', arch: ['app', 'features', 'lib'] },
+  // flama:end mobile
 };
 
 const app = APPS[args.app];
 if (!app) {
   console.error(
-    'usage: verify-feature.mjs --app <web|mobile|admin-web|admin-mobile> [--module <name>]',
+    'usage: verify-feature.mjs --app <web|mobile> [--module <name>]',
   );
   process.exit(2);
 }
@@ -103,8 +105,7 @@ run('structure (pnpm check:structure)', 'node', ['scripts/check-frontend-structu
 run('structure checker tests', 'node', ['--test', 'scripts/check-frontend-structure.test.mjs']);
 
 // 2. dependency-cruiser
-const depcruise =
-  bin(app.dir, 'depcruise') ?? bin('packages/frontend/core', 'depcruise') ?? bin('apps/web', 'depcruise');
+const depcruise = bin(app.dir, 'depcruise') ?? bin('packages/frontend/core', 'depcruise');
 if (!depcruise) {
   skip('dependency-cruiser', 'not installed');
 } else {

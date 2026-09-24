@@ -19,7 +19,7 @@
         "Every user-facing string (column labels, buttons, dialog copy, aria-labels, empty/loading text) goes through t(), with keys added to both packages/translations/en and es area files and the assembled index regenerated",
         "No shadcn colour aliases (text-muted-foreground, bg-background, text-foreground), stock Tailwind colours or undeclared tokens in new code; roles/status shown with Badge variants from the lifecycle/neutral set",
         "No useEffect outside hooks/, no manual useMemo/useCallback/memo outside hooks/, one component per file, no feature importing another feature",
-        "An e2e spec under e2e/tests/web/ covers at least invite and remove (or the summary says why it could not be written)",
+        "An end-to-end spec in the web suite covers at least invite and remove (or the summary says why it could not be written)",
         "The final message reports which checks ran (structure, arch, biome, typecheck, tests) and their results, and names any it could not run"
       ]
     },
@@ -49,12 +49,12 @@
       "id": 3,
       "name": "mobile-devices",
       "prompt": "On the mobile app, add a screen where people see the devices signed in to their account (with when each was last active) and can sign out any device except the one they are using, or all other devices at once.",
-      "expected_output": "apps/mobile/features/profile with a route under app/(app), a screen that composes, a section calling useProfileSessions and owning the revoke mutations, confirmation through the design system AlertDialog, dates formatted with useLocale + core formatters, ink tokens, t() for all strings, Controller-free (no form), and an honest note that mobile typecheck/tests could not run if they could not.",
+      "expected_output": "the mobile app's features/profile with a route under app/(app), a screen that composes, a section calling useProfileSessions and owning the revoke mutations, confirmation through the mobile design system's AlertDialog, dates formatted with useLocale + core formatters, ink tokens, t() for all strings, Controller-free (no form), and an honest note that mobile typecheck/tests could not run if they could not.",
       "files": [],
       "expectations": [
-        "The feature is apps/mobile/features/profile (named after the consumer module) with kind directories only, and a route file under apps/mobile/app/(app) that only renders the screen",
+        "The feature is features/profile in the mobile app (named after the consumer module) with kind directories only, and a route file under its app/(app) that only renders the screen",
         "The section that lists sessions calls useProfileSessions itself; the screen does not subscribe to it only to pass it down",
-        "Signing out one device and signing out all others each ask for confirmation first (AlertDialog from @flama/design-system-mobile or the kit equivalent), and the current device cannot be signed out",
+        "Signing out one device and signing out all others each ask for confirmation first (the mobile design system's AlertDialog or the kit equivalent), and the current device cannot be signed out",
         "A pending sign-out of one row does not disable or re-label every row",
         "Last-active dates use useLocale() with a formatter from @flama/frontend-core/format (formatRelativeTime / formatMediumDate / formatDateTime), not toLocaleDateString without a locale",
         "Colours use ink/surface/status tokens (text-ink-900, text-ink-600, …); no text-foreground/text-muted-foreground, no hard-coded hsl/hex, no vars() palette",

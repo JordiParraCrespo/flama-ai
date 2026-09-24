@@ -5,7 +5,10 @@
  * today; it cannot exercise a rule nothing currently breaks. The script reads
  * the tree beside it, so each case copies it into a scratch root with a
  * minimal app and asserts on what it reports.
+ *
+ * The fixtures build `apps/web`, so the suite goes when that app does.
  */
+// flama:begin web
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -112,3 +115,4 @@ function ThingsPage() {
   });
   assert.doesNotMatch(report, /subscribes to/);
 });
+// flama:end web
