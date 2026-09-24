@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Refuse to push a commit whose tree has not passed `pnpm ci:local`.
+#
+# Enabled by `pnpm install` (the root `prepare` script points core.hooksPath
+# here), so it holds for every pusher — a person, Claude Code, Codex. The
+# record is .git/flama-ci-ok, one tree per line, written by
+# scripts/ci/local.mjs after a clean run; this checks the tree of each commit
+# being pushed, the same key it records. Deleting a remote ref pushes no code
+# and passes. GitHub Actions runs CI itself, so a push from a workflow (the
+# release job) passes too. `git push --no-verify` skips it, as with any hook.
+set -uo pipefail
+[[ -n "${GITHUB_ACTIONS:-}" ]] && exit 0
+
+record=$(git rev-parse --git-path flama-ci-ok)
+status=0
+while read -r local_ref local_sha _remote_ref _remote_sha; do
+  [[ "$local_sha" =~ ^0+$ ]] && continue
+  tree=$(git rev-parse "${local_sha}^{tree}" 2>/dev/null) || continue
+  if [[ ! -f "$record" ]] || ! grep -qx "$tree" "$record"; then
+    echo "pre-push: ${local_ref} (tree ${tree:0:12}) has not passed the local CI suite." >&2
+    status=1
+  fi
+done
+if [[ "$status" -ne 0 ]]; then
+  echo "pre-push: run \`pnpm ci:local\` on a clean working copy, fix what it reports, then push again." >&2
+fi
+exit "$status"

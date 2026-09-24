@@ -1,12 +1,10 @@
 name: CI
 
-# Two tiers, decided by scripts/ci/affected.mjs. Every pull request push gets
-# the light one: a single job that confirms lint, the contracts and the
-# affected packages' build and unit tests — the suite the author already ran
-# with `pnpm ci:local`. The heavy one (the API's integration and e2e suites,
-# the Docker images) runs on main, in a merge queue, and on a pull request
-# that changed a global path or carries the `ci:full` label. The `CI` job at
-# the end is the one check to require.
+# What runs is decided by scripts/ci/affected.mjs; scripts/ci/README.md is
+# the whole picture. The steps of the Check job after `scope` are also what
+# `pnpm ci:local` runs, read from this file, so each one is a plain `run:`
+# over $AFFECTED_PACKAGES / $AFFECTED_FILTERS — no `if:`, no expressions.
+# The `CI` job at the end is the one check to require.
 on:
   push:
     branches: [main]
@@ -28,7 +26,6 @@ jobs:
     outputs:
       scope: ${{ steps.scope.outputs.scope }}
       packages: ${{ steps.scope.outputs.packages }}
-      heavy: ${{ steps.scope.outputs.heavy }}
       images: ${{ steps.scope.outputs.images }}
     # One job rather than one per concern: every job pays a checkout, a
     # toolchain and an install before it does anything, which on a pull request
@@ -55,9 +52,10 @@ jobs:
             packages/go/*/go.sum
       # flama:end runner
       - run: pnpm install --frozen-lockfile
-      # Which packages this run touches, which tier it gets and which images
-      # it builds. A push to main, or a change to a file no package owns (this
-      # workflow, the lockfile, docker/), runs everything; see the script.
+      # Which packages this run touches and which images it builds. A push to
+      # main, or a change to a file no package owns (this workflow, the
+      # lockfile, docker/), runs everything; see the script. Every step below
+      # is `pnpm ci:local`'s too.
       - id: scope
         run: node scripts/ci/affected.mjs
       # `biome ci` fails on anything unformatted or unfixed; `pnpm check`
@@ -108,30 +106,37 @@ jobs:
       # empty filters mean "every package" to Turborepo, so an empty affected
       # list has to skip the step rather than pass nothing.
       - name: Build
-        if: steps.scope.outputs.packages != '[]'
-        run: pnpm turbo run build ${{ steps.scope.outputs.filters }}
+        run: |
+          [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run build $AFFECTED_FILTERS
       # After the build, whose outputs dependency-cruiser resolves the
       # @flama/* imports through.
       - name: Architecture boundaries
-        if: steps.scope.outputs.packages != '[]'
-        run: pnpm turbo run arch ${{ steps.scope.outputs.filters }}
+        run: |
+          [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run arch $AFFECTED_FILTERS
       - name: Unit tests
-        if: steps.scope.outputs.packages != '[]'
-        run: pnpm turbo run test ${{ steps.scope.outputs.filters }}
+        run: |
+          [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run test $AFFECTED_FILTERS
       # flama:begin runner
       # `go test` and `go build` ran above as the modules' Turborepo tasks;
       # the linters are the part with no package script. The gha-vm runners
       # ship no C compiler, and -race needs cgo; run the race detector locally
       # (make test-race).
       - name: Go vet and lint
-        if: contains(steps.scope.outputs.packages, '"@flama/go-') || contains(steps.scope.outputs.packages, '"@flama/runner"')
         run: |
+          [[ "$AFFECTED_PACKAGES" == *'"@flama/go-'* || "$AFFECTED_PACKAGES" == *'"@flama/runner"'* ]] || exit 0
           # The workspace root is not a module, so `./...` does not resolve
           # there; the module-path pattern spans every module in go.work.
           go vet github.com/jordiparracrespo/flama-ai/...
+          # A runner installs the pinned linter; a workstation is asked to.
+          if ! command -v golangci-lint > /dev/null; then
+            if [[ -z "${GITHUB_ACTIONS:-}" ]]; then
+              echo "golangci-lint is not installed: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.5.0"
+              exit 1
+            fi
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.5.0
+          fi
           # golangci-lint needs directory patterns, one per module; `go list -m`
           # in workspace mode lists exactly the modules go.work declares.
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.5.0
           golangci-lint run $(go list -m -f '{{.Dir}}/...')
       # flama:end runner
       # flama:begin web
@@ -143,10 +148,8 @@ jobs:
       # Which SPAs those are is decided inside the block, next to the filter
       # that builds them, so a plugin that adds an SPA adds both in one place.
       - name: First-load budgets
-        env:
-          PACKAGES: ${{ steps.scope.outputs.packages }}
         run: |
-          changed() { [[ "$PACKAGES" == *"\"$1\""* ]]; }
+          changed() { [[ "$AFFECTED_PACKAGES" == *"\"$1\""* ]]; }
           filters=()
           # flama:begin web
           if changed @flama/web; then filters+=(--filter=@flama/web); fi
@@ -162,10 +165,9 @@ jobs:
     name: Integration Tests
     runs-on: gha-vm
     needs: check
-    # Heavy tier (see scripts/ci/affected.mjs). apps/api is the only package
-    # with an integration suite, and Turborepo's affected list already
-    # includes it whenever one of its dependencies moved.
-    if: needs.check.outputs.heavy == 'true' && contains(needs.check.outputs.packages, '"@flama/api"')
+    # apps/api is the only package with an integration suite, and Turborepo's
+    # affected list already includes it whenever one of its dependencies moved.
+    if: contains(needs.check.outputs.packages, '"@flama/api"')
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -194,12 +196,8 @@ jobs:
     needs: check
     # The suite drives the API over HTTP and depends on nothing else in the
     # workspace, so it runs when the API (or one of its dependencies, which
-    # the affected list folds into it) or the suite itself changed, on the
-    # heavy tier only.
-    if: >-
-      needs.check.outputs.heavy == 'true'
-      && (contains(needs.check.outputs.packages, '"@flama/api"')
-      || contains(needs.check.outputs.packages, '"@flama/e2e"'))
+    # the affected list folds into it) or the suite itself changed.
+    if: contains(needs.check.outputs.packages, '"@flama/api"') || contains(needs.check.outputs.packages, '"@flama/e2e"')
     # The same Postgres and Redis `pnpm docker:up` starts locally, as service
     # containers: this runner has the Docker daemon but not the `docker
     # compose` plugin, and the ports and credentials below are the ones
@@ -298,10 +296,12 @@ jobs:
       # flama:end e2e
     # `needs` alone would skip this job whenever one of the test jobs was
     # skipped for having nothing to do; wait for them all, then require that
-    # none failed and that some image is affected at all. On the light tier
-    # the list holds only the images whose own Dockerfile changed.
+    # none failed and that some image is selected at all. `check` has to have
+    # succeeded outright: skipped (a draft), its outputs are empty, not `[]`.
+    # The selection is event-gated; see selectImages in the script.
     if: |
       !cancelled()
+      && needs.check.result == 'success'
       && !contains(needs.*.result, 'failure')
       && !contains(needs.*.result, 'cancelled')
       && needs.check.outputs.images != '[]'
@@ -310,7 +310,7 @@ jobs:
       packages: write
     strategy:
       # The apps whose package (or a dependency of it) changed, from the
-      # mapping in scripts/ci/affected.mjs; every app on main.
+      # mapping in scripts/ci/affected.mjs, as selectImages narrows them.
       matrix:
         app: ${{ fromJSON(needs.check.outputs.images) }}
     steps:
@@ -339,12 +339,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # The one check branch protection needs to require: whatever ran passed,
-  # and a job skipped for having nothing to do counts as passing.
+  # The one check branch protection needs to require. It fails closed: Check
+  # must have succeeded, and every other job succeeded or had nothing to do
+  # (skipped). A draft skips this job too, so it never reports green for a
+  # run that did nothing.
   ci:
     name: CI
     runs-on: gha-vm
-    if: always()
+    if: always() && github.event.pull_request.draft != true
     needs:
       - check
       - test-integration
@@ -353,9 +355,13 @@ jobs:
       # flama:end e2e
       - build-images
     steps:
-      - name: Every job passed or had nothing to do
+      - name: Check passed, every other job passed or had nothing to do
         env:
+          CHECK: ${{ needs.check.result }}
           RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
-          echo "$RESULTS"
-          [[ " $RESULTS " != *" failure "* && " $RESULTS " != *" cancelled "* ]]
+          echo "check: $CHECK; all: $RESULTS"
+          [[ "$CHECK" == success ]] || exit 1
+          for result in $RESULTS; do
+            [[ "$result" == success || "$result" == skipped ]] || exit 1
+          done

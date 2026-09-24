@@ -9,28 +9,20 @@
  * workflow itself, the lockfile, the Docker context), runs everything — the
  * safety net that keeps a selection mistake on a branch from reaching main.
  *
- * CI is split in two tiers, and this script says which one a run gets:
- *
- *   light  every pull request push: lint, the architecture and structure
- *          contracts, and the affected packages' build and unit tests, in
- *          one job. The agent that wrote the change has already run the same
- *          suite locally (`pnpm ci:local`, which imports this file), so this
- *          is a cheap confirmation, not the first time the code is exercised.
- *   heavy  what needs services or minutes: the API's integration and e2e
- *          suites and the Docker images. It runs on a push to main, in a
- *          merge queue, and on a pull request that changed a global path
- *          (the lockfile, the workflow, the Docker context — what images and
- *          every job depend on) or carries the `ci:full` label.
- *
- * On a light run an image is still built when its own Dockerfile changed.
+ * Services (the API's integration and e2e suites) run whenever their package
+ * is affected. Docker images are the expensive part, so they are gated by
+ * event rather than by the diff alone: see `selectImages`.
  *
  * Outputs, written to $GITHUB_OUTPUT (and printed when run by hand):
  *
  *   scope     "all" or "affected"
  *   packages  JSON array of package names to run tasks for
  *   filters   `--filter=<name>` per package, empty when scope is "all"
- *   heavy     "true" or "false"
  *   images    JSON array of apps whose Docker image to build
+ *
+ * `packages` and `filters` are also exported to later steps of the job as
+ * AFFECTED_PACKAGES and AFFECTED_FILTERS ($GITHUB_ENV), which is how the
+ * Check job's steps read them — and how `pnpm ci:local` runs the same steps.
  *
  *   node scripts/ci/affected.mjs                 # in CI: reads GITHUB_* env
  *   node scripts/ci/affected.mjs --base origin/main   # locally
@@ -39,8 +31,11 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-/** The label that asks a pull request for the heavy tier. */
-const FULL_LABEL = 'ci:full';
+/** The label that asks a pull request for every affected image. */
+export const FULL_LABEL = 'ci:full';
+
+/** The events that build every affected image: main, and a merge queue. */
+export const IMAGE_EVENTS = ['push', 'merge_group'];
 
 /** App directory under apps/ → the workspace package the image is built from. */
 export const IMAGES = {
@@ -120,22 +115,37 @@ function ciBaseRef(event, payload) {
   return `origin/${branch}`;
 }
 
+/** The changed files no package owns, which widen a run to every package. */
+export function globalChanges(changed) {
+  return changed.filter((file) => GLOBAL_PATHS.some((re) => re.test(file)));
+}
+
+/**
+ * Which images to build. On main, in a merge queue, or with the `ci:full`
+ * label: every affected image. Otherwise only an image whose own build input
+ * changed — its Dockerfile, or `.dockerignore`, which every image reads.
+ */
+export function selectImages({ packages, changed, event = null, labels = [] }) {
+  const every = IMAGE_EVENTS.includes(event) || labels.includes(FULL_LABEL);
+  const context = changed.includes('.dockerignore');
+  return Object.entries(IMAGES)
+    .filter(([, pkg]) => packages.includes(pkg))
+    .filter(([app]) => every || context || changed.includes(`apps/${app}/Dockerfile`))
+    .map(([app]) => app);
+}
+
 /**
  * What a run covers. `base` is the ref to diff against, or null for
- * everything. `event` is the GitHub event name, absent when run by hand,
- * where the heavy tier is never implied; `worktree` counts uncommitted and
- * untracked files as changed.
+ * everything. `worktree` counts uncommitted and untracked files as changed,
+ * on both sides: the global-path check here and Turbo's own detection.
  */
 export function affected({ base, event = null, labels = [], worktree = false }) {
   let scope = 'all';
   let reason = event === 'push' ? 'push to the default branch' : 'no base to diff against';
   let packages;
   let changed = [];
-  let global = [];
 
   if (base) {
-    // By hand, the working copy counts too: what is about to be committed is
-    // what has to pass. Turbo's own detection already includes it.
     const since = worktree ? [git('merge-base', base, 'HEAD')] : [`${base}...HEAD`];
     changed = git('diff', '--name-only', ...since)
       .split('\n')
@@ -144,40 +154,25 @@ export function affected({ base, event = null, labels = [], worktree = false }) 
       changed.push(
         ...git('ls-files', '--others', '--exclude-standard').split('\n').filter(Boolean),
       );
-    global = changed.filter((file) => GLOBAL_PATHS.some((re) => re.test(file)));
+    const global = globalChanges(changed);
     if (global.length > 0) {
       reason = `a change outside every package: ${global.slice(0, 5).join(', ')}${global.length > 5 ? ', …' : ''}`;
     } else {
       scope = 'affected';
       reason = `${changed.length} changed file(s) since ${base}`;
-      packages = turboPackages(['--affected'], { TURBO_SCM_BASE: base, TURBO_SCM_HEAD: 'HEAD' });
+      // Pinning the head to HEAD would hide the working copy from Turbo;
+      // left unset, its detection includes it.
+      const head = worktree ? {} : { TURBO_SCM_HEAD: 'HEAD' };
+      packages = turboPackages(['--affected'], { TURBO_SCM_BASE: base, ...head });
     }
   }
   if (scope === 'all') packages = turboPackages([]);
   packages.sort();
 
-  let heavy = false;
-  let heavyReason = 'a pull request, light tier';
-  if (event && event !== 'pull_request') {
-    heavy = true;
-    heavyReason = event;
-  } else if (labels.includes(FULL_LABEL)) {
-    heavy = true;
-    heavyReason = `labelled ${FULL_LABEL}`;
-  } else if (event && global.length > 0) {
-    heavy = true;
-    heavyReason = 'a global path changed';
-  } else if (!event) {
-    heavyReason = 'run by hand';
-  }
-
-  const images = Object.entries(IMAGES)
-    .filter(([, pkg]) => packages.includes(pkg))
-    .filter(([app]) => heavy || changed.includes(`apps/${app}/Dockerfile`))
-    .map(([app]) => app);
+  const images = selectImages({ packages, changed, event, labels });
   const filters = scope === 'all' ? '' : packages.map((name) => `--filter=${name}`).join(' ');
 
-  return { scope, reason, packages, filters, heavy, heavyReason, images };
+  return { scope, reason, packages, filters, images };
 }
 
 function main() {
@@ -192,13 +187,11 @@ function main() {
     scope: run.scope,
     packages: JSON.stringify(run.packages),
     filters: run.filters,
-    heavy: String(run.heavy),
     images: JSON.stringify(run.images),
   };
 
   const summary = [
     `**Scope:** ${run.scope} (${run.reason})`,
-    `**Tier:** ${run.heavy ? 'heavy' : 'light'} (${run.heavyReason})`,
     `**Packages (${run.packages.length}):** ${run.packages.join(', ') || 'none'}`,
     `**Images:** ${run.images.join(', ') || 'none'}`,
   ].join('\n\n');
@@ -210,6 +203,12 @@ function main() {
       Object.entries(outputs)
         .map(([key, value]) => `${key}=${value}\n`)
         .join(''),
+    );
+  }
+  if (process.env.GITHUB_ENV) {
+    appendFileSync(
+      process.env.GITHUB_ENV,
+      `AFFECTED_PACKAGES=${outputs.packages}\nAFFECTED_FILTERS=${run.filters}\n`,
     );
   }
   if (process.env.GITHUB_STEP_SUMMARY) {

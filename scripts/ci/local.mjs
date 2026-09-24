@@ -1,64 +1,80 @@
 #!/usr/bin/env node
 /**
- * The CI suite, run on this machine before a push — `pnpm ci:local`.
+ * The pull request suite, run on this machine before a push — `pnpm ci:local`.
  *
- * Pull request CI is deliberately thin (see `affected.mjs`): one job that
- * confirms lint, the contracts and the affected unit tests. The loop that
- * finds the failures is this one, run where the change was made, so a push
- * arrives green and CI is not the place an agent iterates. It is the
- * `bin/ci` idea from Rails 8.1, with one difference: nothing here reports a
- * status to GitHub. A green local run is not an attestation anyone else has
- * to trust — it only saves CI the round trip.
+ * There is one step catalog: the Check job in `.github/workflows/ci.yml`.
+ * This script reads the steps after its `scope` step and runs each `run:`
+ * body the way the runner does (`bash -eo pipefail`), with the same
+ * AFFECTED_PACKAGES / AFFECTED_FILTERS that `affected.mjs` computes, here
+ * against origin/main. A step added to the job — by hand or by a plugin at
+ * one of the job's anchors — is a step this runs, with nothing to restate.
+ * So those steps stay plain shell: one with an `if:`, a `uses:` or a
+ * GitHub expression is refused rather than guessed at.
  *
- * Every step runs over the packages `affected.mjs` selects against the base
- * branch, stops at the first failure, and prints the command to re-run it.
- * When everything passes, the tree that was tested is recorded in
- * `.git/flama-ci-ok`; the Claude Code hook `.agents/hooks/pre-push.sh` reads
- * that record and refuses a `git push` whose HEAD tree was never tested.
- * Uncommitted changes are part of the tree that is recorded, so a run before
- * the commit counts for the commit that holds exactly those changes.
+ * It stops at the first failure. When every step passes on a clean working
+ * copy, HEAD's tree is recorded in `.git/flama-ci-ok`, which the `pre-push`
+ * git hook (`.githooks/pre-push`) checks for every commit it pushes. Both
+ * sides key on the commit's tree, so an amend or rebase that does not change
+ * the content needs no second run. A run over uncommitted changes still
+ * reports, but records nothing: the tree that passed is not one a push can
+ * name yet.
  *
  *   pnpm ci:local                    # affected packages, against origin/main
  *   pnpm ci:local --base <ref>       # against another base
  *   pnpm ci:local --all              # every package
  *
- * The API's integration suite runs when the API is affected and a Docker
- * daemon answers; its e2e suite and the Docker images are CI's heavy tier
- * only, since they need services this command does not start.
+ * The API's integration and e2e suites and the Docker images are jobs of
+ * their own in CI, with services this command does not start.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parse } from 'yaml';
 import { affected } from './affected.mjs';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+export const WORKFLOW = join(ROOT, '.github/workflows/ci.yml');
 
 /** Trees kept in the record; older ones fall off. */
 const RECORD_LIMIT = 50;
+
+/**
+ * The Check job's steps after `scope`, as `{ name, run, env }`. Throws on a
+ * step this script could not run the way the runner does.
+ */
+export function catalog(workflow = readFileSync(WORKFLOW, 'utf8')) {
+  const steps = parse(workflow).jobs?.check?.steps ?? [];
+  const start = steps.findIndex((step) => step.id === 'scope');
+  if (start === -1) throw new Error('ci.yml: the check job has no `scope` step');
+  return steps.slice(start + 1).map((step, i) => {
+    const name = step.name ?? step.run?.split('\n')[0] ?? `step ${start + i + 2}`;
+    const problem = step.uses
+      ? '`uses:`'
+      : step.if !== undefined
+        ? '`if:`'
+        : !step.run
+          ? 'no `run:`'
+          : /\$\{\{/.test(JSON.stringify(step))
+            ? 'a GitHub expression'
+            : null;
+    if (problem) {
+      throw new Error(
+        `ci.yml: check step "${name}" has ${problem}; ci:local runs these steps too, so they are plain shell over $AFFECTED_PACKAGES / $AFFECTED_FILTERS`,
+      );
+    }
+    return { name, run: step.run, env: step.env ?? {} };
+  });
+}
 
 function git(...args) {
   return execFileSync('git', args, { encoding: 'utf8' }).trim();
 }
 
-function has(command, ...args) {
-  return spawnSync(command, args, { stdio: 'ignore' }).status === 0;
-}
-
-/**
- * The tree the working copy would commit as: tracked changes and untracked
- * files that are not ignored, written through a throwaway index so the real
- * one is untouched.
- */
-function workingTree() {
-  const index = join(tmpdir(), `flama-ci-index-${process.pid}`);
-  const real = git('rev-parse', '--git-path', 'index');
-  if (existsSync(real)) copyFileSync(real, index);
-  const env = { ...process.env, GIT_INDEX_FILE: index };
-  try {
-    execFileSync('git', ['add', '-A'], { env, stdio: 'ignore' });
-    return execFileSync('git', ['write-tree'], { env, encoding: 'utf8' }).trim();
-  } finally {
-    rmSync(index, { force: true });
-  }
+/** HEAD's tree when the working copy has nothing uncommitted, else null. */
+function cleanTree() {
+  if (git('status', '--porcelain')) return null;
+  return git('rev-parse', 'HEAD^{tree}');
 }
 
 function record(tree) {
@@ -68,103 +84,49 @@ function record(tree) {
   writeFileSync(file, `${kept.join('\n')}\n`);
 }
 
-const all = process.argv.includes('--all');
-const flag = process.argv.indexOf('--base');
-const base = all ? null : flag !== -1 ? process.argv[flag + 1] : 'origin/main';
+function main() {
+  const steps = catalog();
+  const all = process.argv.includes('--all');
+  const flag = process.argv.indexOf('--base');
+  const base = all ? null : flag !== -1 ? process.argv[flag + 1] : 'origin/main';
 
-const run = affected({ base, worktree: true });
-const touched = (name) => run.packages.includes(name);
-const filters = run.filters ? run.filters.split(' ') : [];
-// flama:begin runner
-const go = run.packages.some((name) => name.startsWith('@flama/go-') || name === '@flama/runner');
-// flama:end runner
+  const tree = cleanTree();
+  const run = affected({ base, worktree: true });
+  const env = {
+    ...process.env,
+    AFFECTED_PACKAGES: JSON.stringify(run.packages),
+    AFFECTED_FILTERS: run.filters,
+  };
 
-console.log(`ci:local — ${run.scope} (${run.reason}), ${run.packages.length} package(s)\n`);
-
-/** [title, command, why it is skipped — or null to run it]. */
-const steps = [
-  ['Biome', ['pnpm', 'exec', 'biome', 'ci', '.'], null],
-  ['Biome plugins', ['pnpm', 'check:biome-plugins'], null],
-  ['API structure', ['pnpm', 'check:api-structure'], null],
-  // flama:begin web|mobile
-  ['Frontend structure', ['pnpm', 'check:structure'], null],
-  // flama:end web|mobile
-  ['Feature flags', ['pnpm', 'check:flags'], null],
-  ['Repo scripts', ['pnpm', 'test:scripts'], null],
-  ['Starter manifest', ['pnpm', 'starter:check'], null],
-  [
-    'Build',
-    ['pnpm', 'turbo', 'run', 'build', ...filters],
-    run.packages.length ? null : 'nothing affected',
-  ],
-  [
-    'Architecture boundaries',
-    ['pnpm', 'turbo', 'run', 'arch', ...filters],
-    run.packages.length ? null : 'nothing affected',
-  ],
-  [
-    'Unit tests',
-    ['pnpm', 'turbo', 'run', 'test', ...filters],
-    run.packages.length ? null : 'nothing affected',
-  ],
-  // flama:begin runner
-  [
-    'Go vet',
-    ['go', 'vet', 'github.com/jordiparracrespo/flama-ai/...'],
-    !go ? 'no Go module affected' : has('go', 'version') ? null : 'no Go toolchain',
-  ],
-  [
-    'golangci-lint',
-    ['sh', '-c', `golangci-lint run $(go list -m -f '{{.Dir}}/...')`],
-    !go
-      ? 'no Go module affected'
-      : has('golangci-lint', 'version')
-        ? null
-        : 'not installed; CI runs it',
-  ],
-  // flama:end runner
-  // flama:begin web
-  [
-    'First-load budgets',
-    ['pnpm', 'check:bundle'],
-    touched('@flama/web') ? null : '@flama/web not affected',
-  ],
-  // flama:end web
-  [
-    'API integration tests',
-    ['pnpm', 'test:integration'],
-    !touched('@flama/api')
-      ? '@flama/api not affected'
-      : has('docker', 'info')
-        ? null
-        : 'no Docker daemon; CI runs it',
-  ],
-];
-
-const tree = workingTree();
-const started = Date.now();
-for (const [title, command, skip] of steps) {
-  if (skip) {
-    console.log(`\x1b[2m○ ${title} — skipped: ${skip}\x1b[0m`);
-    continue;
+  console.log(`ci:local — ${run.scope} (${run.reason}), ${run.packages.length} package(s)\n`);
+  const started = Date.now();
+  for (const step of steps) {
+    console.log(`\x1b[1m▶ ${step.name}\x1b[0m`);
+    const t = Date.now();
+    const { status } = spawnSync('bash', ['-eo', 'pipefail', '-c', step.run], {
+      cwd: ROOT,
+      stdio: 'inherit',
+      env: { ...env, ...step.env },
+    });
+    if (status !== 0) {
+      console.error(
+        `\n\x1b[31m✗ ${step.name} failed.\x1b[0m Fix it and run \`pnpm ci:local\` again.`,
+      );
+      process.exit(1);
+    }
+    console.log(`\x1b[32m✓ ${step.name}\x1b[0m (${((Date.now() - t) / 1000).toFixed(1)}s)\n`);
   }
-  console.log(`\x1b[1m▶ ${title}\x1b[0m  ${command.join(' ')}`);
-  const t = Date.now();
-  const { status } = spawnSync(command[0], command.slice(1), { stdio: 'inherit' });
-  if (status !== 0) {
-    console.error(`\n\x1b[31m✗ ${title} failed.\x1b[0m Fix it and run \`pnpm ci:local\` again.`);
-    process.exit(1);
+
+  const seconds = ((Date.now() - started) / 1000).toFixed(0);
+  if (!tree || cleanTree() !== tree) {
+    console.log(`\x1b[33m✓ Passed in ${seconds}s over uncommitted changes.\x1b[0m`);
+    console.log('  Nothing recorded: commit, then run `pnpm ci:local` again before pushing.');
+    return;
   }
-  console.log(`\x1b[32m✓ ${title}\x1b[0m (${((Date.now() - t) / 1000).toFixed(1)}s)\n`);
+  record(tree);
+  console.log(
+    `\x1b[32m✓ ci:local passed in ${seconds}s.\x1b[0m Tree ${tree.slice(0, 12)} recorded; it may be pushed.`,
+  );
 }
 
-const seconds = ((Date.now() - started) / 1000).toFixed(0);
-if (workingTree() !== tree) {
-  console.error(`\n\x1b[33m! Passed in ${seconds}s, but files changed while it ran.\x1b[0m`);
-  console.error('  Nothing recorded: run `pnpm ci:local` again on the final tree.');
-  process.exit(1);
-}
-record(tree);
-console.log(
-  `\x1b[32m✓ ci:local passed in ${seconds}s.\x1b[0m Tree ${tree.slice(0, 12)} recorded; it may be pushed.`,
-);
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();
