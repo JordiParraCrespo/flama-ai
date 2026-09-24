@@ -25,12 +25,15 @@ Biome plugins in `biome-plugins/`, and they fail `pnpm lint` and CI:
   `lists()` → `list(filters)`, `details()` → `detail(id)`. `all` is never a
   query's key; it is only ever invalidated or removed.
 - An id never sits straight after `all`, where `'list'` sits: it goes under a
-  scope word — `detail(id)`, or a cross-entity scope such as
-  `['organizations', 'members', orgId]`.
-- Two keys share a prefix only when invalidating one must refetch the other.
-  A factory level is an invitation to invalidate it. A cross-entity scope that
-  another product invalidates (`MEMBER_LISTS_KEY`, `['organizations', 'members']`)
-  is a kernel contract: its tuple does not change.
+  scope word — `detail(id)`, or a resource's list such as
+  `memberList(orgId)`.
+- Every level is a function, and a resource inside a feature repeats the
+  ladder under its own name: `members()` → `memberLists()` →
+  `memberList(orgId, filters)`; `invitations()` → `invitationLists()` →
+  `invitationList(orgId)`. Nobody hand-writes a prefix.
+- A cross-entity level another product invalidates (`MEMBER_LISTS_KEY`, which
+  is `organizationsKeys.members()`) is a kernel contract: its tuple does not
+  change.
 - Every input the `queryFn` reads is in the key; several go in an object at
   the end. An input not known yet is `undefined` in the key, never `''` or `0`.
 - No aliases (`export const profileQueryKey = usersKeys.me()`); call the factory.

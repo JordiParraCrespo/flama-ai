@@ -20,53 +20,57 @@ import type { MemberFilters } from '../modules/organizations/organizations.repos
 import { useConsumerApp } from './context';
 
 /**
- * Query key factory for the `organizations` feature.
- *
- * Members and invitations are cross-organization scopes with the organization
- * id beneath them, never an id straight after `all` where `'list'` sits:
+ * Query key factory for the `organizations` feature, one function per level.
+ * Members and invitations are resources of their own and repeat the ladder
+ * under their name, with the organization id inside the list rather than
+ * straight after `all`:
  *
  * ```
- * ['organizations', 'members', orgId, filters?]              // MEMBER_LISTS_KEY is the scope
- * ['organizations', 'invitations', 'organization', orgId]
- * ['organizations', 'invitations', 'mine']
+ * ['organizations', 'members']                          members()       — MEMBER_LISTS_KEY
+ * ['organizations', 'members', 'list']                  memberLists()
+ * ['organizations', 'members', 'list', orgId, filters?] memberList(orgId, filters)
+ * ['organizations', 'invitations']                      invitations()
+ * ['organizations', 'invitations', 'list']              invitationLists()
+ * ['organizations', 'invitations', 'list', orgId]       invitationList(orgId)
+ * ['organizations', 'invitations', 'mine']              myInvitations()
  * ```
  *
- * `'members'` sits before the id so a prefix spanning every organization
- * exists: another product invalidates `MEMBER_LISTS_KEY` when it changes what
- * those lists are filtered by (a user's roles) without knowing the
- * organization.
+ * `members()` is the kernel contract another product invalidates when it
+ * changes what member lists are filtered by (a user's roles) without knowing
+ * the organization; its tuple does not change.
  */
 export const organizationsKeys = {
   all: ['organizations'] as const,
   lists: () => [...organizationsKeys.all, 'list'] as const,
   list: () => [...organizationsKeys.lists()] as const,
-  /** Every member list there is, whatever organization and whatever filters. */
-  membersAll: () => MEMBER_LISTS_KEY,
+  members: () => MEMBER_LISTS_KEY,
+  memberLists: () => [...organizationsKeys.members(), 'list'] as const,
   /**
-   * The filters are one object appended only when a facet is set, so the
-   * unfiltered key stays a *prefix* of every narrowed one: the mutations below
-   * invalidate `members(organizationId)`, and TanStack matches by prefix.
+   * The filters are one object appended only when a facet is set, so
+   * `memberList(organizationId)` stays a *prefix* of every narrowed list: the
+   * mutations below invalidate it, and TanStack matches by prefix.
    *
    * The role ids are sorted before they go in: picking `admin` then `user`
    * asks the same question as picking them the other way round, and an unsorted
    * key would fetch it twice and cache it under two entries. An empty facet is
    * no facet, so it adds nothing to the key.
    */
-  members: (organizationId: string | undefined, filters?: MemberFilters) => {
+  memberList: (organizationId: string | undefined, filters?: MemberFilters) => {
     const narrowed: MemberFilters = {};
     if (filters?.search) narrowed.search = filters.search;
     if (filters?.roleIds?.length) narrowed.roleIds = [...filters.roleIds].sort();
     return [
-      ...organizationsKeys.membersAll(),
+      ...organizationsKeys.memberLists(),
       organizationId,
       ...(Object.keys(narrowed).length ? [narrowed] : []),
     ] as const;
   },
-  invitationsAll: () => [...organizationsKeys.all, 'invitations'] as const,
-  invitations: (organizationId: string | undefined) =>
-    [...organizationsKeys.invitationsAll(), 'organization', organizationId] as const,
+  invitations: () => [...organizationsKeys.all, 'invitations'] as const,
+  invitationLists: () => [...organizationsKeys.invitations(), 'list'] as const,
+  invitationList: (organizationId: string | undefined) =>
+    [...organizationsKeys.invitationLists(), organizationId] as const,
   /** Invitations addressed to the caller, in no organization's scope. */
-  myInvitations: () => [...organizationsKeys.invitationsAll(), 'mine'] as const,
+  myInvitations: () => [...organizationsKeys.invitations(), 'mine'] as const,
 };
 
 /** The organizations the signed-in user belongs to. */
@@ -96,7 +100,7 @@ export function useOrganizationMembers(
 ) {
   const app = useConsumerApp();
   return useQuery({
-    queryKey: organizationsKeys.members(organizationId, filters),
+    queryKey: organizationsKeys.memberList(organizationId, filters),
     queryFn: organizationId
       ? () => app.organizations.findMembers(organizationId, filters)
       : skipToken,
@@ -110,7 +114,7 @@ export function useOrganizationInvitations(
 ) {
   const app = useConsumerApp();
   return useQuery({
-    queryKey: organizationsKeys.invitations(organizationId),
+    queryKey: organizationsKeys.invitationList(organizationId),
     queryFn: organizationId ? () => app.organizations.findInvitations(organizationId) : skipToken,
     ...options,
   });
@@ -208,7 +212,7 @@ export function useInviteMembers(
     mutationFn: ({ organizationId, emails, role }) =>
       Promise.all(emails.map((email) => app.organizations.invite(organizationId, { email, role }))),
     ...withCacheOnSuccess(options, (_data, { organizationId }) => {
-      queryClient.invalidateQueries({ queryKey: organizationsKeys.invitations(organizationId) });
+      queryClient.invalidateQueries({ queryKey: organizationsKeys.invitationList(organizationId) });
     }),
   });
 }
@@ -226,7 +230,7 @@ export function useUpdateOrganizationMemberRole(
     mutationFn: ({ organizationId, memberId, role }) =>
       app.organizations.updateMemberRole(organizationId, memberId, role),
     ...withCacheOnSuccess(options, (_data, { organizationId }) => {
-      queryClient.invalidateQueries({ queryKey: organizationsKeys.members(organizationId) });
+      queryClient.invalidateQueries({ queryKey: organizationsKeys.memberList(organizationId) });
     }),
   });
 }
@@ -240,7 +244,7 @@ export function useRemoveOrganizationMember(
     mutationFn: ({ organizationId, memberId }) =>
       app.organizations.removeMember(organizationId, memberId),
     ...withCacheOnSuccess(options, (_data, { organizationId }) => {
-      queryClient.invalidateQueries({ queryKey: organizationsKeys.members(organizationId) });
+      queryClient.invalidateQueries({ queryKey: organizationsKeys.memberList(organizationId) });
     }),
   });
 }
@@ -253,7 +257,7 @@ export function useCancelOrganizationInvitation(
   return useMutation({
     mutationFn: ({ invitationId }) => app.organizations.cancelInvitation(invitationId),
     ...withCacheOnSuccess(options, (_data, { organizationId }) => {
-      queryClient.invalidateQueries({ queryKey: organizationsKeys.invitations(organizationId) });
+      queryClient.invalidateQueries({ queryKey: organizationsKeys.invitationList(organizationId) });
     }),
   });
 }

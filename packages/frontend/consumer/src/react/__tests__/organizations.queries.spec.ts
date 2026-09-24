@@ -7,15 +7,16 @@ import { organizationsKeys } from '../organizations.queries';
  * exactly what prefixes exist. What invalidating a key reaches is asked of a
  * real `QueryClient` in `query-keys.spec.ts`; this file pins the narrowing.
  */
-describe('organizationsKeys.members', () => {
+describe('organizationsKeys.memberList', () => {
   const ORG = 'org-1';
 
   it('nests from generic to specific', () => {
     expect(organizationsKeys.all).toEqual(['organizations']);
-    expect(organizationsKeys.members(ORG)).toEqual(['organizations', 'members', ORG]);
-    expect(organizationsKeys.members(ORG, { search: 'ada', roleIds: ['role-a'] })).toEqual([
+    expect(organizationsKeys.memberList(ORG)).toEqual(['organizations', 'members', 'list', ORG]);
+    expect(organizationsKeys.memberList(ORG, { search: 'ada', roleIds: ['role-a'] })).toEqual([
       'organizations',
       'members',
+      'list',
       ORG,
       { search: 'ada', roleIds: ['role-a'] },
     ]);
@@ -24,23 +25,23 @@ describe('organizationsKeys.members', () => {
   it('asks the same question once however the roles were picked', () => {
     // The facet appends in click order; an unsorted key would fetch the same
     // answer twice and cache it under two entries.
-    expect(organizationsKeys.members(ORG, { roleIds: ['b', 'a'] })).toEqual(
-      organizationsKeys.members(ORG, { roleIds: ['a', 'b'] }),
+    expect(organizationsKeys.memberList(ORG, { roleIds: ['b', 'a'] })).toEqual(
+      organizationsKeys.memberList(ORG, { roleIds: ['a', 'b'] }),
     );
   });
 
   it('treats an empty facet as no facet', () => {
-    expect(organizationsKeys.members(ORG, { roleIds: [] })).toEqual(organizationsKeys.members(ORG));
-    expect(organizationsKeys.members(ORG, { search: '' })).toEqual(organizationsKeys.members(ORG));
+    expect(organizationsKeys.memberList(ORG, { roleIds: [] })).toEqual(organizationsKeys.memberList(ORG));
+    expect(organizationsKeys.memberList(ORG, { search: '' })).toEqual(organizationsKeys.memberList(ORG));
   });
 
   it('separates two different narrowings', () => {
-    expect(organizationsKeys.members(ORG, { roleIds: ['a'] })).not.toEqual(
-      organizationsKeys.members(ORG, { roleIds: ['b'] }),
+    expect(organizationsKeys.memberList(ORG, { roleIds: ['a'] })).not.toEqual(
+      organizationsKeys.memberList(ORG, { roleIds: ['b'] }),
     );
-    expect(organizationsKeys.members(ORG, { search: 'ada' })).not.toEqual(
-      organizationsKeys.members(ORG, { search: 'bob' }),
+    expect(organizationsKeys.memberList(ORG, { search: 'ada' })).not.toEqual(
+      organizationsKeys.memberList(ORG, { search: 'bob' }),
     );
-    expect(organizationsKeys.members(ORG)).not.toEqual(organizationsKeys.members('org-2'));
+    expect(organizationsKeys.memberList(ORG)).not.toEqual(organizationsKeys.memberList('org-2'));
   });
 });
