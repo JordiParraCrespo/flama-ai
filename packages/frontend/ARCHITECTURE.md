@@ -138,9 +138,9 @@ not an import:
 
 - `MEMBER_LISTS_KEY` (`core/src/react/query-keys.ts`) is the prefix of every
   organization member list. The consumer product lists members under it
-  (`organizationsKeys.membersAll()`); the admin product invalidates it in
-  `useAssignUserRoles`, because a member list filtered by role is stale the
-  moment a role changes hands.
+  (`organizationsKeys.members()`, the top of its members ladder); the admin
+  product invalidates it in `useAssignUserRoles`, because a member list
+  filtered by role is stale the moment a role changes hands.
 - `KERNEL_NON_PERSISTED_FEATURES` names the features whose queries never
   reach storage whatever the product (`auth`, `userSettings`);
   `CONSUMER_NON_PERSISTED_FEATURES` adds the consumer's (`apiTokens`,
