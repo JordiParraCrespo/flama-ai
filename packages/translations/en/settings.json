@@ -26,16 +26,10 @@
     "notifications": "Notifications",
     "security": "Security"
   },
-  "saved": "Saved",
   "security": {
     "description": "Every device signed in to your account, and a way to end any of them.",
     "sessions": "Active sessions",
-    "sessionsNote": "Only devices appear here. API keys and connected apps are revoked under API & webhooks — signing out a device leaves them working.",
-    "signOut": "Sign out",
-    "signOutOthers": "Sign out all others",
-    "thisDevice": "This device",
-    "title": "Security",
-    "unknownDevice": "Unknown device"
+    "title": "Security"
   },
   "subtitle": "Workspace-wide configuration for {{organization}}.",
   "subtitleFallback": "Workspace-wide configuration.",

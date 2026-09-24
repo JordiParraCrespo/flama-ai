@@ -1,5 +1,3 @@
-import { AuthRequestError } from '@flama/auth/client';
-
 /** "Lucía Ferrer" → first "Lucía", last "Ferrer"; a single word becomes both. */
 export function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/);
@@ -17,11 +15,4 @@ export function initials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('');
-}
-
-export function isExistingAccountError(error: unknown): boolean {
-  if (!(error instanceof AuthRequestError)) return false;
-  return (
-    error.code === 'USER_ALREADY_EXISTS' || error.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
-  );
 }

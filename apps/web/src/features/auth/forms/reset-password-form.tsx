@@ -3,6 +3,7 @@ import {
   AuthField,
   AuthFormError,
   authControlClass,
+  PasswordChecklist,
   PasswordInput,
   type PasswordRule,
   useZodResolver,
@@ -10,7 +11,6 @@ import {
 import { type NewPasswordValues, newPasswordSchema } from '@flama/shared/schemas/auth';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { PasswordChecklist } from '@/features/auth/components/password-checklist';
 
 /**
  * The token rides in the URL, so only the two password fields are user input

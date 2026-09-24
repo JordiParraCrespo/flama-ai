@@ -1,5 +1,5 @@
 import { Button } from '@flama/design-system-web';
-import { useConsumerApp } from '@flama/frontend-consumer/react';
+import { useAcceptInvitation, useAcceptInvitationAsNewcomer } from '@flama/frontend-consumer/react';
 import { useAuthState } from '@flama/frontend-core/react';
 import {
   AuthEyebrow,
@@ -8,14 +8,13 @@ import {
   AuthSubtitle,
   AuthTitle,
   authControlClass,
+  useErrorMessage,
 } from '@flama/frontend-web';
-import type { AcceptInvitationDto } from '@flama/shared/schemas/auth';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { InviterCard } from '@/features/organizations/components/inviter-card';
 import { AcceptInvitationForm } from '@/features/organizations/forms/accept-invitation-form';
-import { isExistingAccountError, splitName } from '@/features/organizations/lib/invitation';
+import { splitName } from '@/features/organizations/lib/invitation';
 
 export interface AcceptInvitationSearch {
   id?: string;
@@ -28,8 +27,7 @@ export interface AcceptInvitationSearch {
 export function AcceptInvitationScreen({ id, email, name, role, inviter }: AcceptInvitationSearch) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const app = useConsumerApp();
-  const queryClient = useQueryClient();
+  const resolveError = useErrorMessage();
   const { isAuthenticated } = useAuthState();
 
   const invitationHref = `/accept-invitation?${new URLSearchParams(
@@ -38,48 +36,16 @@ export function AcceptInvitationScreen({ id, email, name, role, inviter }: Accep
     ),
   ).toString()}`;
 
-  const { mutate, isPending, error } = useMutation<void, Error, AcceptInvitationDto | undefined>({
-    mutationFn: async (values) => {
-      if (!id || !email) throw new Error(t('auth.acceptInvitation.invalidLink'));
+  // Both hooks refetch the workspaces before resolving, so the shell does not
+  // read a cached "you belong nowhere" and bounce the reader to onboarding.
+  const goToDashboard = () => navigate({ to: '/dashboard' });
+  // A signed-in reader only has to accept; a signed-out one registers (or
+  // signs in) first, in the same submission.
+  const accept = useAcceptInvitation({ onSuccess: goToDashboard });
+  const join = useAcceptInvitationAsNewcomer({ onSuccess: goToDashboard });
 
-      if (!isAuthenticated) {
-        if (!values) throw new Error(t('auth.acceptInvitation.invalidLink'));
-        try {
-          await app.auth.register({
-            email,
-            password: values.password,
-            ...splitName(values.fullName),
-          });
-        } catch (failure) {
-          // The registration-shaped invitation page is also the entry point
-          // for existing accounts. If Better Auth confirms the address already
-          // exists, the password the person just supplied is their login
-          // credential: authenticate and continue in the same submission.
-          // A wrong password still fails normally and never accepts the invite.
-          if (!isExistingAccountError(failure)) throw failure;
-          await app.auth.login({ email, password: values.password });
-        }
-      }
-
-      // Better Auth accepts the membership and selects its organization in one
-      // transaction. Calling the separately policy-guarded set-active endpoint
-      // here can turn a successful acceptance into a misleading 403.
-      await app.organizations.acceptInvitation(id);
-    },
-    onSuccess: async () => {
-      // Accepting is what puts this account in a workspace, and the app shell
-      // decides where to send a signed-in reader by the workspaces it can see.
-      // That list is cached for a minute and persisted across reloads, so
-      // without dropping it here an invitee who passed through onboarding
-      // first would be bounced straight back to it — asked to create a
-      // workspace seconds after joining one.
-      //
-      // Awaited: the shell redirects on a settled empty list, and navigating
-      // while the cached `[]` is still being refetched would race it.
-      await queryClient.invalidateQueries();
-      navigate({ to: '/dashboard' });
-    },
-  });
+  const isPending = accept.isPending || join.isPending;
+  const error = accept.error ?? join.error;
 
   const linkIsValid = Boolean(id && email);
 
@@ -102,9 +68,7 @@ export function AcceptInvitationScreen({ id, email, name, role, inviter }: Accep
         <div className="mb-4 flex flex-col gap-3">
           {!linkIsValid && <AuthFormError>{t('auth.acceptInvitation.invalidLink')}</AuthFormError>}
           {error && (
-            <AuthFormError>
-              {error instanceof Error ? error.message : t('auth.register.failed')}
-            </AuthFormError>
+            <AuthFormError>{resolveError(error, t('auth.register.failed')).message}</AuthFormError>
           )}
         </div>
       )}
@@ -114,7 +78,7 @@ export function AcceptInvitationScreen({ id, email, name, role, inviter }: Accep
           type="button"
           disabled={isPending || !linkIsValid}
           className={authControlClass}
-          onClick={() => mutate(undefined)}
+          onClick={() => id && accept.mutate(id)}
         >
           {isPending
             ? t('auth.acceptInvitation.joining')
@@ -126,7 +90,11 @@ export function AcceptInvitationScreen({ id, email, name, role, inviter }: Accep
           defaultName={name}
           isPending={isPending}
           linkIsValid={linkIsValid}
-          onSubmit={(values) => mutate(values)}
+          onSubmit={({ fullName, password }) => {
+            if (id && email) {
+              join.mutate({ invitationId: id, email, password, ...splitName(fullName) });
+            }
+          }}
         />
       )}
 

@@ -354,7 +354,9 @@ test.describe('the sessions pane', () => {
     const before = await sessionRows(page).count();
     expect(before).toBeGreaterThan(1);
 
+    // A row's "Sign out" only asks; the dialog is what revokes.
     await page.getByRole('button', { name: 'Sign out', exact: true }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Sign out', exact: true }).click();
     await expect(sessionRows(page)).toHaveCount(before - 1);
 
     // The row is gone because the server dropped it, not because the list
@@ -420,6 +422,10 @@ test.describe('the sessions pane', () => {
     await openPane(page, 'Sessions', 'Sessions');
 
     await page.getByRole('button', { name: 'Sign out all other sessions' }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Sign out all other sessions' })
+      .click();
 
     // Only the browser reading the page survives, and the button has nothing
     // left to do.

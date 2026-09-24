@@ -85,10 +85,8 @@ test('General renames the workspace, and the sidebar follows', async ({ page }) 
   const nextName = `${ORGANIZATION_NAME} (renamed)`;
   await page.getByLabel('Organisation name').fill(nextName);
   await page.getByRole('button', { name: 'Save changes' }).click();
-  // `exact` matters: the card's inline "Saved" is a substring of the
-  // "Organization settings saved" toast, so a loose match resolves to both and
-  // trips Playwright's strict mode.
-  await expect(page.getByText('Saved', { exact: true })).toBeVisible();
+  // Success is a toast, and only a toast.
+  await expect(page.getByText('Organization settings saved')).toBeVisible();
 
   await reloadFromServer(page);
   await expect(page.getByLabel('Organisation name')).toHaveValue(nextName, { timeout: 20_000 });

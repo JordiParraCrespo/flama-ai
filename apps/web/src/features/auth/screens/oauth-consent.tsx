@@ -9,6 +9,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  EmptyState,
+  Skeleton,
 } from '@flama/design-system-web';
 import { usePermissionCatalog } from '@flama/frontend-consumer/react';
 import { useErrorMessage, useProfile, useRespondToConsent } from '@flama/frontend-core/react';
@@ -79,8 +81,20 @@ export function OAuthConsentScreen({ search }: { search: ConsentSearch }) {
           )}
 
           <div className="divide-y rounded-md border">
-            {scopes.length === 0 && (
-              <p className="p-4 text-sm text-ink-600">{t('consent.noPermissions')}</p>
+            {/* The requested scopes are only described once the catalog lands;
+                until then an empty list would read as "asks for nothing". */}
+            {catalog.isPending && (
+              <div className="flex flex-col gap-2 p-4">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-4 w-72" />
+              </div>
+            )}
+            {!catalog.isPending && scopes.length === 0 && (
+              <EmptyState className="py-8">
+                <EmptyState.Header>
+                  <EmptyState.Title>{t('consent.noPermissions')}</EmptyState.Title>
+                </EmptyState.Header>
+              </EmptyState>
             )}
             {scopes.map(({ group, level }) => (
               <div key={`${group.resource}:${level}`} className="flex items-start gap-3 p-4">
