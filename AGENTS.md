@@ -133,14 +133,24 @@ with before it touches anything.
   already covers — see `.agents/rules/frontend-ui.md`
 - Conventional commits enforced via commitlint
 - Independent versioning per package via Changesets
-- No git hooks — CI enforces quality
-- CI runs what a pull request touches, not the whole pipeline:
-  `scripts/ci/affected.mjs` asks Turborepo which packages the diff affects
-  (a change in `packages/shared` reaches every app that imports it), and the
-  jobs build, test and package only those. A push to `main`, or a change to a
-  file no package owns (the workflow, the lockfile, `docker/`, `scripts/`),
-  runs everything. A new Docker image is a row in that script's `IMAGES`; a
-  new root-level file every package relies on is a pattern in its
+- No git hooks — CI enforces quality. The suite runs locally first:
+  **`pnpm ci:local` before every push**. It runs what pull request CI runs
+  (Biome, the contracts, build, arch and unit tests over the affected
+  packages, plus the API integration suite when Docker is up) and records the
+  tree it passed; a Claude Code `PreToolUse` hook
+  (`.agents/hooks/pre-push.sh`) refuses a `git push` whose HEAD tree is not in
+  that record. Run it and fix what it reports rather than pushing to see
+  what CI says
+- CI comes in two tiers, both chosen by `scripts/ci/affected.mjs`. Every pull
+  request push gets the light one: a single `Check` job over the packages the
+  diff affects (a change in `packages/shared` reaches every app that imports
+  it). The heavy one (API integration and e2e, Docker images) runs on a push to
+  `main`, in a merge queue, and on a pull request that changes a file no
+  package owns (the workflow, the lockfile, `docker/`, `scripts/`) or carries
+  the `ci:full` label; otherwise an image is built on a pull request only when
+  its own Dockerfile changed. Drafts skip CI until marked ready. The `CI` job
+  is the one check to require. A new Docker image is a row in that script's
+  `IMAGES`; a new root-level file every package relies on is a pattern in its
   `GLOBAL_PATHS`
 
 ### Backend (`apps/api` + `packages/backend/*`)
@@ -355,6 +365,7 @@ pnpm build              # Build everything
 pnpm test               # Unit tests
 pnpm test:integration   # Integration tests (needs Docker)
 pnpm check              # Biome lint + format
+pnpm ci:local           # The CI suite, locally, over what this branch affects — run before pushing
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
 pnpm check:flags        # Feature flags: none past expiry, none declared but unread

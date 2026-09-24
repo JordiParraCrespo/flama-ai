@@ -152,7 +152,7 @@ second implementation of it.
 - **DI**: InversifyJS (frontend), NestJS (backend)
 - **Testing**: Vitest, Testcontainers, Playwright (`e2e`; the `qa` pack is a plugin)
 - **Linting/formatting**: Biome, plus a design-system usage linter (oxlint) for `apps/web` and `apps/mobile`
-- **CI/CD**: GitHub Actions — a pull request runs only the packages its diff affects, with a full run on `main`
+- **CI/CD**: GitHub Actions in two tiers — a pull request gets one cheap job over the packages its diff affects, after the same suite ran locally (`pnpm ci:local`); integration, e2e and Docker images run on `main`, or on a pull request labelled `ci:full`
 - **Deployment**: Docker, Helm (K8s)
 
 ## Scripts
