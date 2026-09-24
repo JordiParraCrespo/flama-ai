@@ -42,6 +42,7 @@ import { useConsumerApp } from './context';
 export const organizationsKeys = {
   all: ['organizations'] as const,
   lists: () => [...organizationsKeys.all, 'list'] as const,
+  list: () => [...organizationsKeys.lists()] as const,
   members: () => MEMBER_LISTS_KEY,
   memberLists: () => [...organizationsKeys.members(), 'list'] as const,
   /**
@@ -79,7 +80,7 @@ export function useOrganizations(
   const app = useConsumerApp();
 
   return useQuery({
-    queryKey: organizationsKeys.lists(),
+    queryKey: organizationsKeys.list(),
     queryFn: () => app.organizations.findAll(),
     ...options,
   });
@@ -187,7 +188,7 @@ export function useCreateOrganization(
   return useMutation({
     mutationFn: (dto: CreateOrganizationDto) => app.organizations.create(dto),
     ...withCacheOnSuccess(options, async (organization) => {
-      queryClient.setQueryData<OrganizationEntity[]>(organizationsKeys.lists(), (current) => [
+      queryClient.setQueryData<OrganizationEntity[]>(organizationsKeys.list(), (current) => [
         ...(current ?? []),
         organization,
       ]);
@@ -284,7 +285,7 @@ export function useUpdateOrganization(
     mutationFn: ({ id, changes }: UpdateOrganizationVariables) =>
       app.organizations.update(id, changes),
     ...withCacheOnSuccess(options, (organization) => {
-      queryClient.setQueryData<OrganizationEntity[]>(organizationsKeys.lists(), (current) =>
+      queryClient.setQueryData<OrganizationEntity[]>(organizationsKeys.list(), (current) =>
         current?.map((entry) => (entry.id === organization.id ? organization : entry)),
       );
     }),

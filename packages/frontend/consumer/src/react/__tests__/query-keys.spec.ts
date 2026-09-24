@@ -40,7 +40,7 @@ describe('organizationsKeys', () => {
       'org-1',
     ]);
     expect(organizationsKeys.myInvitations()).toEqual(['organizations', 'invitations', 'mine']);
-    expect(organizationsKeys.lists()).toEqual(['organizations', 'list']);
+    expect(organizationsKeys.list()).toEqual(['organizations', 'list']);
   });
 
   it('keeps the kernel contract the plugins invalidate by', () => {
@@ -93,7 +93,7 @@ describe('organizationsKeys', () => {
       organizationsKeys.memberList('org-2', { search: 'ada' }),
     ];
     const untouched = [
-      organizationsKeys.lists(),
+      organizationsKeys.list(),
       organizationsKeys.invitationList('org-1'),
       organizationsKeys.myInvitations(),
     ];
