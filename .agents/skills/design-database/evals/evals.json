@@ -1,0 +1,98 @@
+{
+  "skill_name": "design-database",
+  "evals": [
+    {
+      "id": 1,
+      "name": "invoicing-money",
+      "prompt": "We need invoicing in the API. Organizations bill their own customers (a customer belongs to one org). An invoice has a number that humans read (INV-0042), line items with a description, quantity and unit price, a status (draft, open, paid, void), a due date, and can be paid in several partial payments. Accountants need the list of an org's open invoices sorted by due date, and a nightly job finds overdue ones. Design the tables and write the migration and ORM entities.",
+      "expected_output": "customer, invoice, invoice_line and payment tables with integer minor-unit (or numeric) money plus currency, timestamptz, status CHECK, per-org unique invoice number, RESTRICT (not CASCADE) from financial rows to customers, FK indexes, and a tenant-first index serving the open-by-due-date list.",
+      "files": [],
+      "expectations": [
+        "Money columns use bigint minor units or numeric(p,s); no float, real, double precision or money type",
+        "Invoices (or payments) carry a currency column constrained to 3 characters",
+        "Every timestamp column is timestamptz / TIMESTAMP WITH TIME ZONE (a due date may be a date)",
+        "Invoice status is constrained with a CHECK (or equivalent) listing draft, open, paid, void",
+        "Invoice number is unique per organization (UNIQUE on organizationId + number), not globally",
+        "Invoices, lines and payments are not ON DELETE CASCADE from customer: RESTRICT/NO ACTION protects financial records from a customer delete",
+        "Every foreign-key column is covered by an index whose leading column is that FK column (or by the primary key / a unique)",
+        "There is an index leading with organizationId that serves listing open invoices by due date (organizationId, status and dueOn/dueDate, or a partial index on status)",
+        "Line items store their own description and unit price (a snapshot), not only a product reference",
+        "Tables whose rows change have createdAt and updatedAt; constraints and indexes have explicit readable names",
+        "The migration has a header comment explaining the design decisions and a down() that reverses up()"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "audit-log-scale",
+      "prompt": "Add an audit log to apps/api: every change an admin makes inside an organization is recorded (who did it, what action, which record it touched, a JSON diff, their IP and when). The org's security page shows the latest events with filters by actor and by record, and we expect millions of rows per year across tenants. Design the table(s), write the migration and the ORM entity.",
+      "expected_output": "An append-only audit_event table (no updatedAt) with timestamptz, jsonb diff, inet IP, tenant-first time-ordered indexes plus actor and target lookups, no FKs (or justified) on actor/target so history survives deletes, and a written retention/partitioning plan.",
+      "files": [],
+      "expectations": [
+        "The table is treated as append-only: it has no updatedAt column and the design says rows are never updated",
+        "The time column is timestamptz / TIMESTAMP WITH TIME ZONE",
+        "The diff/metadata is stored as jsonb",
+        "IP address uses the inet type (or a bounded varchar with a stated reason)",
+        "The actor and target references either have no foreign key with a stated reason (history must survive deletes), or use ON DELETE SET NULL; they are not ON DELETE CASCADE",
+        "There is an index leading with organizationId followed by the time column (descending or used for newest-first)",
+        "There are indexes serving the filter by actor and the filter by target record, each scoped by organization or time",
+        "The design states a retention period or purge mechanism for the unbounded table",
+        "The design mentions time-based partitioning as the scaling path (or implements it)",
+        "Constraints and indexes have explicit readable names and the migration header explains the design"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "projects-members-tenancy",
+      "prompt": "In the API, organizations should be able to create projects. A project has a name and a URL slug, and users of the organization can be added to a project as viewer, editor or admin. We need: the org's project list, 'my projects' for the current user, and the member list of a project. Write the migration and the ORM entities.",
+      "expected_output": "project (tenant-scoped, unique slug per org) and project_member (composite PK or unique pair, role CHECK, reverse index on userId), timestamptz, cascades that match the relationship, and protection against cross-tenant references.",
+      "files": [],
+      "expectations": [
+        "project has organizationId NOT NULL with a foreign key to organization",
+        "The slug is unique per organization (UNIQUE on organizationId + slug), not globally",
+        "The member table prevents duplicate membership with a composite primary key or a unique on (projectId, userId)",
+        "Member role is constrained with a CHECK (or equivalent) to viewer, editor, admin",
+        "There is an index leading with userId on the member table to serve 'my projects' (the (projectId, userId) key already serves the member list)",
+        "Membership rows cascade when the project or the user is deleted (ON DELETE CASCADE)",
+        "Every timestamp column is timestamptz / TIMESTAMP WITH TIME ZONE, with createdAt on both tables and updatedAt on project",
+        "The design addresses tenancy on the member table: it carries organizationId or otherwise prevents/justifies members being added across organizations",
+        "New tables use snake_case singular names and camelCase quoted column names consistent with the repo",
+        "The ORM entities are declared with timestamptz column types and are registered in data-source.ts (or the output says to register them)"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "comments-polymorphic",
+      "prompt": "Users should be able to comment on tasks and on documents (both already exist as tenant tables `task` and `document` with organizationId). Comments can be edited and deleted; a deleted comment in a thread should show as 'deleted' if it has replies. Comments support one level of replies and emoji reactions (one reaction of each emoji per user per comment). Design the schema and write the migration and ORM entities.",
+      "expected_output": "A comment table with an explicit polymorphic strategy (preferably one FK column per target with a num_nonnulls CHECK), parentId self-FK, soft delete justified by the thread requirement, reaction table with a unique (commentId, userId, emoji), timestamptz, tenant-first indexes.",
+      "files": [],
+      "expectations": [
+        "The polymorphic target is modelled deliberately: either separate nullable FK columns with a CHECK that exactly one is set, or a type+id pair with a CHECK on the type and an index, and the choice is explained",
+        "Replies use a self-referencing parentId with a foreign key and an index",
+        "Deletion uses a deletedAt timestamp (soft delete) justified by showing 'deleted' in threads, rather than a boolean flag",
+        "Comment has createdAt and updatedAt (edits), all timestamptz",
+        "Reactions are unique per (commentId, userId, emoji) enforced by the database",
+        "The comment table carries organizationId and the listing index for a target's thread leads with the tenant or the target id",
+        "Every foreign-key column is covered by an index",
+        "Emoji and body columns have sensible types and bounds (e.g. bounded varchar for emoji, text for body with a non-empty CHECK)",
+        "The migration header explains the design decisions and down() reverses up()"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "extend-better-auth-user",
+      "prompt": "Product wants to email users who have been inactive for 30 days. Add what's needed to the database: we need to know when each user was last active (updated at most once per hour from the API) and each user's IANA timezone so the email goes out in their morning. The user table already has production data. Write the migration and update the ORM entity.",
+      "expected_output": "Nullable (or defaulted) columns added safely to the Better Auth-owned user table (or a side table with the reason), timestamptz for lastActiveAt, bounded timezone column, a partial or targeted index for the inactivity query, the additionalFields/Better Auth implication noted, and lock-safety considered.",
+      "files": [],
+      "expectations": [
+        "The design recognises that user is a Better Auth-owned table (camelCase naming, Better Auth writes the rows) and either declares new columns as Better Auth additionalFields or puts them in an app-owned side table keyed by userId, explaining why",
+        "New columns on a populated table are nullable or NOT NULL with a constant DEFAULT; no NOT NULL column without a default is added",
+        "lastActiveAt is timestamptz / TIMESTAMP WITH TIME ZONE",
+        "The timezone column is bounded (varchar with a length) or constrained, not an unlimited varchar with no reasoning",
+        "There is an index that serves the 'inactive for 30 days' query (on lastActiveAt, possibly partial)",
+        "The migration considers lock safety on a table with rows (instant ADD COLUMN, index build concurrently or a note about it)",
+        "The ORM entity is updated with matching types and nullability",
+        "down() reverses up() and the header explains the design"
+      ]
+    }
+  ]
+}

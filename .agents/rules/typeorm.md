@@ -19,8 +19,8 @@ resetPasswordToken!: string | null;
 @Column({ nullable: true, type: 'varchar' })
 resetPasswordToken!: string | null;
 
-// Also applies to Date | null without explicit type
-@Column({ nullable: true, type: 'timestamp' })
+// Also applies to Date | null without explicit type (timestamptz: see database-design.md)
+@Column({ nullable: true, type: 'timestamptz' })
 resetPasswordExpires!: Date | null;
 ```
 
@@ -36,7 +36,10 @@ record by the mapper (`toDomain` / `toPersistence`). See `nestjs-architecture.md
 - Use `@PrimaryGeneratedColumn('uuid')` for IDs the app owns. Tables owned by
   Better Auth (e.g. `user`) use `@PrimaryColumn({ type: 'uuid' })` because Better
   Auth generates the id.
-- Use `@CreateDateColumn()` and `@UpdateDateColumn()` for timestamps
+- Use `@CreateDateColumn({ type: 'timestamptz' })` and
+  `@UpdateDateColumn({ type: 'timestamptz' })` for timestamps. How a table is
+  designed (keys, types, indexes, constraints, migrations) is
+  `database-design.md`
 - Sensitive fields (password, refreshToken) must never appear on the response
   DTO — the mapper's `toResponse()` only copies safe fields
 - When writing only the columns the app owns (e.g. profile fields on a Better
