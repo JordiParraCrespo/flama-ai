@@ -1,6 +1,7 @@
 import { Button } from '@flama/design-system-mobile/button';
 import { Text } from '@flama/design-system-mobile/text';
 import type { PasswordRule } from '@flama/frontend-core';
+import { type NewPasswordValues, newPasswordSchema } from '@flama/shared/schemas/auth';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -8,7 +9,6 @@ import { FormField, useZodResolver } from '../../forms';
 import { AuthFormError, authControlClass } from '../components/auth-primitives';
 import { PasswordChecklist } from '../components/password-checklist';
 import { PasswordInput } from '../components/password-input';
-import { type NewPasswordValues, newPasswordSchema } from '@flama/shared/schemas/auth';
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number', 'match'];
 
