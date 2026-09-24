@@ -1,0 +1,107 @@
+{
+  "skill_name": "scaffold-feature",
+  "notes": "Each eval runs in a fresh worktree of this repo, with and without the skill. A grader reads the diff (and the final message) and marks each expectation true or false; an expectation that needs a command's output says so. Scenario 5 plants the files under evals/files/devices first: screens-devices.tsx -> apps/web/src/features/profile/screens/devices.tsx, sections-device-list.tsx -> .../sections/device-list.tsx, components-device-row.tsx -> .../components/device-row.tsx, route-devices.tsx -> apps/web/src/routes/_authenticated/devices.tsx.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "members-pane",
+      "prompt": "In the web app, add a Members pane to the workspace settings page: list the organization's members with their name, email and role, let the reader search them, invite someone by email, cancel a pending invitation, and remove a member. The consumer package already has the hooks for all of this.",
+      "expected_output": "A members section in the organizations feature mounted as a settings pane (URL-keyed, beside general/security/api), calling useOrganizationMembers itself with the search in the key through useTableQuery, a DataTable with row actions, invite as a form in a dialog over the shared schema, cancel and remove behind ConfirmDialog with table-owned state, all strings translated in en and es, and the checks run.",
+      "files": [],
+      "expectations": [
+        "The members list is rendered by a sections/ (or dialogs/) file in apps/web/src/features/organizations that calls useOrganizationMembers itself; no route or screen subscribes to members only to pass them down",
+        "The pane is reachable from the settings sub-nav with its key in the URL (?section=…), next to the existing panes, without a second copy of the sub-nav markup",
+        "Search goes through useTableQuery and reaches the server (passed into the members hook's filters/params), not a browser-side filter and not a useState search",
+        "The list uses the kit's DataTable (not Table primitives or a hand-rolled list), with its loading and empty states rather than a paragraph",
+        "Invite is a form in forms/ (React Hook Form + useZodResolver over a schema from @flama/shared/schemas/organization, noValidate) rendered by a dialog or section that owns useInviteMembers; the form does not import a query hook or the router",
+        "Remove member and cancel invitation each go through ConfirmDialog; which row is being acted on is held by the table/section (the row menu unmounts), and one row's pending state does not disable every row",
+        "Success is reported once, with a toast; failures go through useErrorMessage (no raw error.message rendered)",
+        "Every user-facing string (column labels, buttons, dialog copy, aria-labels, empty/loading text) goes through t(), with keys added to both packages/translations/en and es area files and the assembled index regenerated",
+        "No shadcn colour aliases (text-muted-foreground, bg-background, text-foreground), stock Tailwind colours or undeclared tokens in new code; roles/status shown with Badge variants from the lifecycle/neutral set",
+        "No useEffect outside hooks/, no manual useMemo/useCallback/memo outside hooks/, one component per file, no feature importing another feature",
+        "An e2e spec under e2e/tests/web/ covers at least invite and remove (or the summary says why it could not be written)",
+        "The final message reports which checks ran (structure, arch, biome, typecheck, tests) and their results, and names any it could not run"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "workspaces-new-module",
+      "prompt": "Organizations can have workspaces (teams). The API has /v1/workspaces endpoints but the web app shows nothing about them. Add a Workspaces screen to the web app where people see their workspaces, create one, rename one and delete one.",
+      "expected_output": "A workspaces module in packages/frontend/consumer (entity, errors, repository over @flama/api-client with MapApiError, service, ContainerModule, tokens, ConsumerApp getter, react/workspaces.queries.ts with a one-function-per-level key factory and withCacheOnSuccess mutations typed HookMutationOptions), exported and tested; then apps/web/src/features/workspaces with a route under _authenticated, a screen that composes, a table section that fetches, create/rename dialogs over forms, delete behind ConfirmDialog, translations, nav entry, and checks run.",
+      "files": [],
+      "expectations": [
+        "A workspaces module is added to packages/frontend/consumer/src/modules/workspaces with an entity class, a *.errors.ts using WORKSPACES_CLIENT_00n-style codes, a repository calling the generated @flama/api-client with @MapApiError on each method, a service, and a ContainerModule",
+        "TOKENS gain the repository and service symbols, consumerModules includes the new module, and ConsumerApp has a getter for the service",
+        "react/workspaces.queries.ts defines a key factory with one function per level derived from `all` (lists()/list()/details()/detail(id) or equivalent), and no query uses a literal array key or the root `all` key",
+        "Mutation hooks type their options as HookMutationOptions and update the cache through withCacheOnSuccess (no inline onSuccess beside ...options, no bare invalidateQueries() without a key)",
+        "Any query that needs an id gates with skipToken rather than `enabled`",
+        "The new hooks and keys are exported by name from packages/frontend/consumer/src/react/index.ts, and the module from src/modules/index.ts",
+        "The web feature lives at apps/web/src/features/workspaces (named after the module) with only kind directories; the route file under src/routes/_authenticated only mounts a screen and stays under 120 lines",
+        "The list section calls the list hook itself (the screen does not subscribe for it) and renders through DataTable",
+        "Create and rename are forms in forms/ over a Zod schema from @flama/shared (or a documented local escape hatch), rendered by dialogs that own the mutation; rename uses the form's `values` option (no effect to reset)",
+        "Delete goes through ConfirmDialog with the row being deleted held by the table",
+        "Strings are translated in en and es and the index assembled; a nav entry is added in apps/web/src/lib/nav.ts",
+        "Unit tests cover at least the key factory or the entity/repository mapping in the consumer package",
+        "The final message reports the checks it ran and their results"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "mobile-devices",
+      "prompt": "On the mobile app, add a screen where people see the devices signed in to their account (with when each was last active) and can sign out any device except the one they are using, or all other devices at once.",
+      "expected_output": "apps/mobile/features/profile with a route under app/(app), a screen that composes, a section calling useProfileSessions and owning the revoke mutations, confirmation through the design system AlertDialog, dates formatted with useLocale + core formatters, ink tokens, t() for all strings, Controller-free (no form), and an honest note that mobile typecheck/tests could not run if they could not.",
+      "files": [],
+      "expectations": [
+        "The feature is apps/mobile/features/profile (named after the consumer module) with kind directories only, and a route file under apps/mobile/app/(app) that only renders the screen",
+        "The section that lists sessions calls useProfileSessions itself; the screen does not subscribe to it only to pass it down",
+        "Signing out one device and signing out all others each ask for confirmation first (AlertDialog from @flama/design-system-mobile or the kit equivalent), and the current device cannot be signed out",
+        "A pending sign-out of one row does not disable or re-label every row",
+        "Last-active dates use useLocale() with a formatter from @flama/frontend-core/format (formatRelativeTime / formatMediumDate / formatDateTime), not toLocaleDateString without a locale",
+        "Colours use ink/surface/status tokens (text-ink-900, text-ink-600, …); no text-foreground/text-muted-foreground, no hard-coded hsl/hex, no vars() palette",
+        "Every visible string goes through t() with keys in both en and es area files",
+        "Loading and empty states use the design system (Skeleton / EmptyState), and failures go through useErrorMessage",
+        "No useEffect outside hooks/, no manual memo outside hooks/, one component per file",
+        "The final message says plainly which checks ran and which could not (mobile dependencies), without claiming a typecheck passed"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "token-rename-no-endpoint",
+      "prompt": "Let people rename an API token from the tokens table in the web app.",
+      "expected_output": "The agent finds there is no update endpoint for tokens (only GET/POST /v1/tokens and DELETE /v1/tokens/{id}), does not fake a client-side rename or write to the cache without a server call, and either stops with a clear plan (backend endpoint via /scaffold-module, then generate:api-client, then the dialog) or implements the backend endpoint first and only then the UI.",
+      "files": [],
+      "expectations": [
+        "The agent checks the API surface (openapi.json or the generated api-client) and states that no endpoint renames a token",
+        "It does not ship a rename that only changes local state or the query cache without a server call, and does not call a non-existent client method",
+        "If it stops, it gives a concrete plan: the backend endpoint (PATCH /v1/tokens/{id} with Swagger decorators and @RequireScopes), pnpm generate:api-client, the repository/service/hook in packages/frontend/consumer, then a rename dialog over a form",
+        "If it implements the UI, the rename is a dialog in apps/web/src/features/api-tokens/dialogs owning a mutation from the consumer package, over a form in forms/ using `values`, opened from the table's row menu with table-owned state",
+        "No unrelated files are changed"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "review-devices-feature",
+      "prompt": "Someone added a Devices page to the web app (apps/web/src/features/profile/screens/devices.tsx, sections/device-list.tsx, components/device-row.tsx and the /devices route). Review it against this repo's frontend rules and fix what is wrong.",
+      "expected_output": "The planted violations are fixed: the section fetches its own sessions (screen stops threading them), the effect-derived filter state is removed (derive during render, or better the existing sessions UI is reused), the unread `filter` prop is dropped from the row, per-row pending, a confirm before signing out a device, useLocale + core formatters for dates, t() for all strings with keys in en/es, ink tokens not text-muted-foreground/text-gray-500, Badge variant not secondary, PageHead instead of a raw h1, Skeleton/EmptyState for loading/empty; ideally notices the profile feature already has a sessions section and reuses it rather than keeping a duplicate.",
+      "files": [
+        "evals/files/devices/screens-devices.tsx",
+        "evals/files/devices/sections-device-list.tsx",
+        "evals/files/devices/components-device-row.tsx",
+        "evals/files/devices/route-devices.tsx"
+      ],
+      "expectations": [
+        "The screen no longer subscribes to useProfileSessions only to hand the result to DeviceList; the section (or the reused existing sessions section) calls the hook itself",
+        "The useEffect that copies filtered sessions into state is gone (the value is derived during render, or the list comes from the server/existing section)",
+        "DeviceRow no longer takes the `filter` prop it never reads (or the row is replaced by the existing one)",
+        "One row's pending sign-out no longer disables every row",
+        "Signing out a device asks for confirmation first (ConfirmDialog or the existing section's equivalent)",
+        "Dates use useLocale() and a formatter from the kit/core instead of toLocaleDateString() without a locale",
+        "Every hard-coded string ('Loading…', 'Filter', 'No devices', 'Unknown device', 'Last seen', 'This device', 'Sign out') goes through t(), with keys present in en and es",
+        "text-muted-foreground and text-gray-500 are replaced by ink tokens, and Badge uses a lifecycle/neutral variant instead of secondary",
+        "The raw <h1> is replaced by the kit's PageHead, and loading/empty use Skeleton/EmptyState",
+        "The agent notices the profile feature already renders sessions (sections/sessions.tsx) and reuses it or explains why the new page is still needed, instead of leaving two session lists",
+        "The final message lists what it changed per violation and which checks it ran"
+      ]
+    }
+  ]
+}
