@@ -230,6 +230,12 @@ query it serves, as the outbox migration does.
   and what a later partitioning or row-level-security step keys on.
 - Global rows in a table that is otherwise per-tenant (the seeded system roles)
   use `"organizationId" IS NULL`, with partial uniques for each shape.
+- Tenant-first indexes are a contract: a query that leaves out
+  `"organizationId"` cannot use them and scans the table. So every repository
+  method on such a table takes the organization and filters on it, and the
+  migration header says so next to the access-pattern list. A lookup that
+  genuinely has no tenant (a webhook finding a row by the provider's id) gets
+  its own index, and the header names it as the exception.
 
 ## Scale
 
