@@ -1,4 +1,4 @@
--- One-off, before deploying migration 1788700000000-HardenAuthTables on a
+-- One-off, before deploying migration 1788900000000-HardenAuthTables on a
 -- large database (a session/account/verification table over 100k rows or
 -- 128 MB). Small databases do not need it: the migration does the same work
 -- itself.
@@ -6,7 +6,7 @@
 -- Run it with psql in autocommit mode (the default; no -1, no BEGIN), for
 -- example:
 --
---   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/ops/1788700000000-harden-auth-tables.sql
+--   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/ops/1788900000000-harden-auth-tables.sql
 --
 -- Every step can be run again. Nothing here blocks reads or writes for more
 -- than a moment: the index builds are CONCURRENTLY, the foreign keys are added
@@ -96,7 +96,7 @@ ANALYZE "session";
 ANALYZE "account";
 ANALYZE "verification";
 
--- Rolling back migration 1788700000000 on a large database: first run
+-- Rolling back migration 1788900000000 on a large database: first run
 --   DROP INDEX CONCURRENTLY IF EXISTS "IDX_session_userId";
 --   DROP INDEX CONCURRENTLY IF EXISTS "IDX_account_userId";
 --   DROP INDEX CONCURRENTLY IF EXISTS "IDX_account_providerId_accountId";

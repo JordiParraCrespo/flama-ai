@@ -127,7 +127,7 @@ explains why this is a table of its own). Read one before writing a new one.
 | Epoch-millisecond value (only where Better Auth demands it) | `bigint` | |
 
 - Timestamps are `timestamptz` in every table. Migrations before
-  `1788800000000-TimestampsWithTimeZone` created `timestamp` without a zone
+  `1789000000000-TimestampsWithTimeZone` created `timestamp` without a zone
   and that migration converted them; do not copy the old migrations' SQL.
   In TypeORM:
   `@CreateDateColumn({ type: 'timestamptz' })`,

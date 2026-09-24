@@ -16,5 +16,5 @@ Close the schema gaps the first migrations left:
   `UQ_user_email`, `PK_session`, `UQ_session_token`, `PK_account`,
   `PK_verification`.
 
-Large databases run `apps/api/db/ops/1788700000000-harden-auth-tables.sql`
+Large databases run `apps/api/db/ops/1788900000000-harden-auth-tables.sql`
 before deploying; the migration refuses to lock a large table and says so.

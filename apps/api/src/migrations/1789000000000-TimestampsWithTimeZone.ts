@@ -7,7 +7,7 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  * means a different instant to a reader in another time zone, and comparing
  * it with `now()` (a `timestamptz`) converts through the session's zone
  * silently. Every table created since `AddAccessGrants` uses `timestamptz`;
- * this brings the 43 older columns in line (the list is `COLUMNS` below).
+ * this brings the 48 older columns in line (the list is `COLUMNS` below).
  *
  * How the existing values are read: `now()` defaults wrote them in the
  * database's `TimeZone`, and the API (through `pg`) in its process zone.
@@ -53,10 +53,13 @@ const COLUMNS: Record<string, string[]> = {
   access_grant: ['createdAt'],
   user_settings: ['createdAt', 'updatedAt'],
   outbox_message: ['availableAt', 'lockedUntil', 'createdAt', 'processedAt'],
+  feature_flag: ['createdAt', 'updatedAt'],
+  feature_flag_segment: ['createdAt', 'updatedAt'],
+  feature_flag_change: ['createdAt'],
 };
 
-export class TimestampsWithTimeZone1788800000000 implements MigrationInterface {
-  name = 'TimestampsWithTimeZone1788800000000';
+export class TimestampsWithTimeZone1789000000000 implements MigrationInterface {
+  name = 'TimestampsWithTimeZone1789000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await this.convert(queryRunner, 'timestamptz');

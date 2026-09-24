@@ -43,15 +43,15 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  * `session` inside it would block sign-ins for the whole deploy. So on a large
  * table this migration only checks that the slow work is done, and fails the
  * deploy with a pointer here if it is not. Run, with psql in autocommit mode,
- * `apps/api/db/ops/1788700000000-harden-auth-tables.sql` (every step can be
+ * `apps/api/db/ops/1788900000000-harden-auth-tables.sql` (every step can be
  * re-run). It builds the indexes `CONCURRENTLY`, adds the foreign keys
  * `NOT VALID`, deletes orphaned rows in batches and validates the keys, none
  * of which blocks reads or writes for more than a moment. On small databases
  * (development, CI, fresh installs) the migration does all of it itself.
  * ---------------------------------------------------------------------------
  */
-export class HardenAuthTables1788700000000 implements MigrationInterface {
-  name = 'HardenAuthTables1788700000000';
+export class HardenAuthTables1788900000000 implements MigrationInterface {
+  name = 'HardenAuthTables1788900000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
@@ -195,7 +195,7 @@ export class HardenAuthTables1788700000000 implements MigrationInterface {
     if (await this.isLarge(queryRunner, table)) {
       throw new Error(
         `${name} is ${existing ? 'invalid (an interrupted concurrent build)' : 'missing'} and "${table}" is too large to index at boot. ` +
-          'Run apps/api/db/ops/1788700000000-harden-auth-tables.sql first (see this migration header).',
+          'Run apps/api/db/ops/1788900000000-harden-auth-tables.sql first (see this migration header).',
       );
     }
     if (existing) await queryRunner.query(`DROP INDEX "${name}"`);
@@ -211,7 +211,7 @@ export class HardenAuthTables1788700000000 implements MigrationInterface {
     if (await this.isLarge(queryRunner, table)) {
       throw new Error(
         `${name} is ${existing ? 'not validated' : 'missing'} and "${table}" is too large to check at boot. ` +
-          'Run apps/api/db/ops/1788700000000-harden-auth-tables.sql first (see this migration header).',
+          'Run apps/api/db/ops/1788900000000-harden-auth-tables.sql first (see this migration header).',
       );
     }
     if (!existing) {
