@@ -20,7 +20,8 @@
         "Tables whose rows change have createdAt and updatedAt; constraints and indexes have explicit readable names",
         "The migration has a header comment explaining the design decisions and a down() that reverses up()",
         "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
-        "Concurrent partial payments cannot lose an update: a version column (optimistic locking) or a row lock is part of the design (in code or the documented repository contract), and status/timestamp CHECKs are logically correct for every non-draft status"
+        "Concurrent partial payments cannot lose an update: a version column (optimistic locking) or a row lock is part of the design (in code or the documented repository contract), and status/timestamp CHECKs are logically correct for every non-draft status",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -42,7 +43,8 @@
         "Constraints and indexes have explicit readable names and the migration header explains the design",
         "organizationId is not an ON DELETE CASCADE foreign key that would delete millions of audit rows in the organization-delete transaction (no FK with a reason, or tenant erasure via batched purge / partition drop)",
         "Actors that are not users (system jobs, API tokens) can be recorded: actorId is nullable or typed by an actorType",
-        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express"
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -63,7 +65,8 @@
         "New tables use snake_case singular names and camelCase quoted column names consistent with the repo",
         "The ORM entities are declared with timestamptz column types and are registered in data-source.ts (or the output says to register them)",
         "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
-        "Altering Better Auth's member table (if the design adds a unique to it) first checks for existing duplicate rows or documents the failure mode and the lock taken"
+        "Altering Better Auth's member table (if the design adds a unique to it) first checks for existing duplicate rows or documents the failure mode and the lock taken",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -85,7 +88,8 @@
         "The reply's parent foreign key does not silently delete replies: it is ON DELETE NO ACTION/RESTRICT (the database refuses to hard-delete a comment with replies), or CASCADE with a stated reason that the app never hard-deletes a parent that has replies",
         "Comments cannot reference a task, document or parent comment in another organization (composite FKs through organizationId, or an explicit trigger/check)",
         "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
-        "Adding the (organizationId, id) unique to the existing task and document tables is lock-aware: not an ALTER TABLE ADD CONSTRAINT UNIQUE that builds under ACCESS EXCLUSIVE in the boot transaction without a note, but a CREATE UNIQUE INDEX (buildable CONCURRENTLY beforehand) or an explicit lock-cost call-out"
+        "Adding the (organizationId, id) unique to the existing task and document tables is lock-aware: not an ALTER TABLE ADD CONSTRAINT UNIQUE that builds under ACCESS EXCLUSIVE in the boot transaction without a note, but a CREATE UNIQUE INDEX (buildable CONCURRENTLY beforehand) or an explicit lock-cost call-out",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -104,7 +108,8 @@
         "The ORM entity is updated with matching types and nullability",
         "down() reverses up() and the header explains the design",
         "The frequently-updated lastActiveAt does not cause write amplification on the hot user row (side table), or the design explicitly weighs that cost",
-        "The design prevents emailing the same inactive user repeatedly (e.g. a sent-at timestamp cleared on activity), and says what happens to users already inactive at launch"
+        "The design prevents emailing the same inactive user repeatedly (e.g. a sent-at timestamp cleared on activity), and says what happens to users already inactive at launch",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -123,7 +128,8 @@
         "Migrations that touch these hot tables set a lock_timeout (and reset it) or otherwise bound how long they can block traffic",
         "The ORM entities are updated to match (timestamptz types, @Index declarations or synchronize: false for the concurrent indexes)",
         "down() reverses the change (drop FKs and indexes, convert back) and the header explains the rollout order",
-        "The ACCESS EXCLUSIVE step on session is not held open by the boot transaction: it ships alone with a short lock_timeout (and retry or a clear failure), or runs as its own short transaction; migrationsTransactionMode is not switched globally as a side effect without discussing the trade-off"
+        "The ACCESS EXCLUSIVE step on session is not held open by the boot transaction: it ships alone with a short lock_timeout (and retry or a clear failure), or runs as its own short transaction; migrationsTransactionMode is not switched globally as a side effect without discussing the trade-off",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -144,7 +150,8 @@
         "An index serves the low-stock list per warehouse (e.g. (organizationId, warehouseId, ...) with a threshold predicate or ordering on available quantity)",
         "Every timestamp is timestamptz, and every foreign key is backed by an index with the FK columns leading",
         "The movement ledger's growth is addressed (retention or it is explicitly kept forever with an indexing plan for time-ordered reads)",
-        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo"
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -166,7 +173,8 @@
         "The webhook lookup is served by a unique on the provider id (ideally scoped by provider), and paid/paidAt redundancy is resolved (one source of truth or a consistency CHECK)",
         "Adds updatedAt where rows change and fixes down() to reverse everything up() does",
         "Invoices sort on the provider's own issue time (issuedAt), not on when the webhook row was inserted, and the provider id is unique per provider",
-        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo"
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -185,7 +193,8 @@
         "type is constrained (CHECK or bounded varchar with a TS union) and text columns are bounded where a limit is real",
         "'Mark all as read' is served by the unread partial index, bounded by a snapshot (createdAt <= request time) and batched",
         "Every timestamp is timestamptz and the ORM entity mirrors the migration (checks, partial index predicates, primary key name)",
-        "The organization reference does not cascade-delete millions of notifications inside the organization delete (no CASCADE FK, or an explicit batched purge), and the link column rejects open redirects such as //host and /\\host"
+        "The organization reference does not cascade-delete millions of notifications inside the organization delete (no CASCADE FK, or an explicit batched purge), and the link column rejects open redirects such as //host and /\\host",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     },
     {
@@ -206,7 +215,8 @@
         "The ORM entity declares what TypeORM cannot express (the exclusion constraint, GiST index) with synchronize: false or equivalent, and the range column type is handled (tstzrange as string or custom transformer)",
         "Every timestamp is timestamptz, and the migration header explains the design",
         "Booking length is bounded (CHECK on a maximum duration or on finite endsAt), so an open-ended booking cannot block a room forever",
-        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo"
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo",
+        "The migration applies cleanly on Postgres 16 against the repo schema with seeded rows (up in one transaction, then down, then up again), as checked by running it"
       ]
     }
   ]
