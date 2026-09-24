@@ -348,9 +348,17 @@ CONSTRAINT "CHK_stock_level_no_oversell" CHECK ("reserved" >= 0 AND "onHand" >= 
   two carts cannot deadlock.
 - Every change writes an append-only ledger row in the same transaction
   (pattern 6): signed deltas, the resulting levels, a reason with a `CHECK`,
-  the actor (without a foreign key, or with a label snapshot, so "who"
-  survives the user's deletion) and the business reference (order,
-  shipment). The ledger does not cascade from the tenant or the stock row.
+  the actor (without a foreign key, plus a label snapshot, so "who" survives
+  the user's deletion) and the business reference (order, shipment).
+- The ledger keeps a `NO ACTION` composite foreign key to the stock row
+  (`organizationId`, `warehouseId`, `productId`), and a snapshot of what a
+  reader needs (`sku`, product name). The key keeps every row inside one
+  tenant and pointing at a real stock row; `NO ACTION` means history is never
+  cascaded away. So stock rows, products and warehouses that have history are
+  archived (`archivedAt`), never deleted, and erasing a tenant purges its
+  ledger in batches first, then deletes the organization. A ledger with no
+  foreign keys at all survives anything, but accepts rows that mix tenants
+  and point at nothing (both seen in the evals).
 - Links between the ledger's subjects pin everything that must agree: a
   reservation shipped by a shipment references `(organizationId, shipmentId,
   warehouseId, orderId)`, so it cannot be shipped by another order's parcel.
