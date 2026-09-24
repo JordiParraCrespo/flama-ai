@@ -160,7 +160,9 @@ let failed = false;
 const step = async (label, fn) => {
   try {
     const note = await fn();
-    console.log(`ok    ${label}${note ? ` (${note})` : ''}`);
+    // A multi-line note (a query plan) goes under its label; a short one beside it.
+    if (note?.includes('\n')) console.log(`ok    ${label}\n${note}`);
+    else console.log(`ok    ${label}${note ? ` (${note})` : ''}`);
   } catch (e) {
     console.log(`FAIL  ${label}\n      ${e.message}`);
     failed = true;
@@ -192,7 +194,7 @@ try {
       const title = comment ? comment.replace(/^\s*--\s*/, '') : body.split('\n')[0];
       await step(`explain: ${title}`, async () => {
         const rows = await db.query(`EXPLAIN ${body}`);
-        console.log(rows.rows.map((r) => `      ${r['QUERY PLAN']}`).join('\n'));
+        return `${rows.rows.map((r) => `      ${r['QUERY PLAN']}`).join('\n')}\n`;
       });
     }
   }
