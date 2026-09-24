@@ -24,7 +24,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import { AuthGate } from '../features/auth/screens/auth-gate';
+import { AuthGate } from '../features/auth/sections/auth-gate';
 import { app } from '../lib/flama';
 import { persistOptions, queryClient } from '../lib/query';
 

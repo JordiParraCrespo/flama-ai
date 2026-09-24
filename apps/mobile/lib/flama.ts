@@ -3,10 +3,10 @@ import { FlamaApp } from '@flama/frontend-core/di';
 import { createMobileAnalyticsClient, ExpoSecureStoreService } from '@flama/frontend-mobile';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import { mobileAuthClient } from './auth-client';
+import { apiBaseUrl, mobileAuthClient } from './auth-client';
 
 export const app = FlamaApp.create({
-  apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001',
+  apiBaseUrl,
   storage: new ExpoSecureStoreService(),
   authClient: mobileAuthClient,
   analytics: createMobileAnalyticsClient(),

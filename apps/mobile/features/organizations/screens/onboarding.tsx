@@ -1,5 +1,3 @@
-import { Button } from '@flama/design-system-mobile/button';
-import { Text } from '@flama/design-system-mobile/text';
 import { toCreateOrganizationDto } from '@flama/frontend-consumer';
 import {
   useAcceptInvitation,
@@ -7,13 +5,14 @@ import {
   useMyInvitations,
   useOrganizations,
 } from '@flama/frontend-consumer/react';
-import { useErrorMessage, useLogout } from '@flama/frontend-core/react';
+import { useErrorMessage } from '@flama/frontend-core/react';
 import {
   AuthDivider,
   AuthFormError,
   AuthLayout,
   AuthSubtitle,
   AuthTitle,
+  SignOutButton,
 } from '@flama/frontend-mobile';
 import { Redirect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +37,6 @@ export function OnboardingScreen() {
   const toApp = () => router.replace('/(app)');
   const accept = useAcceptInvitation({ onSuccess: toApp });
   const create = useCreateOrganization({ onSuccess: toApp });
-  const logout = useLogout({ onSuccess: () => router.replace('/(auth)/login') });
 
   // Somebody who already has a workspace has no business here.
   if (organizations.data && organizations.data.length > 0) {
@@ -79,14 +77,12 @@ export function OnboardingScreen() {
         onSubmit={({ name }) => create.mutate(toCreateOrganizationDto(name))}
       />
 
-      <Button
+      <SignOutButton
         variant="secondary"
         className="mt-7 self-start"
-        disabled={logout.isPending}
-        onPress={() => logout.mutate()}
-      >
-        <Text>{t('onboarding.signOut')}</Text>
-      </Button>
+        loginHref="/(auth)/login"
+        label={t('onboarding.signOut')}
+      />
     </AuthLayout>
   );
 }
