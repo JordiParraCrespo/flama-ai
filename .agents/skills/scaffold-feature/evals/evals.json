@@ -60,7 +60,7 @@
       "expectations": [
         "The feature is features/profile in the mobile app (named after the consumer module) with kind directories only, and a route file under its app/(app) that only renders the screen",
         "The section that lists sessions calls useProfileSessions itself; the screen does not subscribe to it only to pass it down",
-        "Signing out one device and signing out all others each ask for confirmation first (the mobile design system's AlertDialog or the kit equivalent), and the current device cannot be signed out",
+        "Signing out one device and signing out all others each ask for confirmation first, and the current device cannot be signed out",
         "A pending sign-out of one row does not disable or re-label every row",
         "Last-active dates use useLocale() with a formatter from @flama/frontend-core/format (formatRelativeTime / formatMediumDate / formatDateTime), not toLocaleDateString without a locale",
         "Colours use ink/surface/status tokens (text-ink-900, text-ink-600, …); no text-foreground/text-muted-foreground, no hard-coded hsl/hex, no vars() palette",
