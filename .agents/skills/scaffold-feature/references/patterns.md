@@ -48,6 +48,12 @@ lib/thing-status.ts          status → variant/label maps, page size
 - Lifecycle column: `Badge variant="active" | "paused" | "ended" | "draft"`,
   never `destructive` or `secondary`.
 
+- Each row action is gated with `useAbility()` on the endpoint's rule, and on
+  any business rule. For example, Delete isn't offered on the last workspace,
+  because the API refuses it.
+- A failed list read renders an `Alert` above the table, not
+  `DataTable`'s empty state.
+
 **Common mistake:** revoking straight from the menu item, with one
 `isPending` that disables every row.
 
@@ -171,7 +177,7 @@ short list known at build time.
 | `register()` | a `Controller` per field + `FormField`, passing `field.onBlur` |
 | `PageHead` | the Stack header title (`t()`), or `AuthTitle` in auth-style screens |
 | `DataTable` | `LegendList` (design system) in a section; `EmptyState` and `Skeleton` for the empty and loading states |
-| `ConfirmDialog` | the design system's `AlertDialog` (`@flama/design-system-mobile/alert-dialog`) |
+| `ConfirmDialog` | a confirm sheet on the design system's `BottomSheetModal` (its provider is mounted by `MobileRoot`). Not `AlertDialog`: `apps/mobile` mounts no `@rn-primitives` portal host and does not depend on its alert-dialog package, so it would never appear |
 | `toast` | the design system's `toast` (`@flama/design-system-mobile/toast`) |
 | router `redirect` in `beforeLoad` | `<Redirect href=… />` in the group layout, or `Stack.Protected` |
 

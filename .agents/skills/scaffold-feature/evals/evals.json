@@ -20,7 +20,10 @@
         "No shadcn colour aliases (text-muted-foreground, bg-background, text-foreground), stock Tailwind colours or undeclared tokens in new code; roles/status shown with Badge variants from the lifecycle/neutral set",
         "No useEffect outside hooks/, no manual useMemo/useCallback/memo outside hooks/, one component per file, no feature importing another feature",
         "An end-to-end spec in the web suite covers at least invite and remove (or the summary says why it could not be written)",
-        "The final message reports which checks ran (structure, arch, biome, typecheck, tests) and their results, and names any it could not run"
+        "The final message reports which checks ran (structure, arch, biome, typecheck, tests) and their results, and names any it could not run",
+        "Each action (invite, cancel, remove, and the invitations list itself) is shown only when useAbility() grants the rule the endpoint's @CheckPolicies requires, and the reader's own row offers no Remove",
+        "A failed members or invitations read renders an error (Alert with useErrorMessage), not the table's empty state",
+        "Role names are translated for display while the role pill's colour still keys on the stored role (no colour lost in es)"
       ]
     },
     {
@@ -42,7 +45,10 @@
         "Delete goes through ConfirmDialog with the row being deleted held by the table",
         "Strings are translated in en and es and the index assembled; a nav entry is added in apps/web/src/lib/nav.ts",
         "Unit tests cover at least the key factory or the entity/repository mapping in the consumer package",
-        "The final message reports the checks it ran and their results"
+        "The final message reports the checks it ran and their results",
+        "The UI mirrors the API's business rule that an organization's last workspace cannot be deleted (Delete hidden/disabled with a reason), found by reading the API/Better Auth config",
+        "Create, rename and delete are offered only when useAbility() grants the endpoint's Workspace rule; a failed list read renders an error, not an empty table",
+        "Nothing unrequested is added: no filter, key variant, getter or column that no screen uses"
       ]
     },
     {
@@ -61,7 +67,9 @@
         "Every visible string goes through t() with keys in both en and es area files",
         "Loading and empty states use the design system (Skeleton / EmptyState), and failures go through useErrorMessage",
         "No useEffect outside hooks/, no manual memo outside hooks/, one component per file",
-        "The final message says plainly which checks ran and which could not (mobile dependencies), without claiming a typecheck passed"
+        "The final message says plainly which checks ran and which could not (mobile dependencies), without claiming a typecheck passed",
+        "The confirmation uses a primitive the mobile app can actually mount (a BottomSheetModal-based sheet, whose provider MobileRoot mounts), not the design system's AlertDialog, whose portal host and peer dependency the mobile app lacks",
+        "A successful sign-out gives feedback (toast or the row leaving), and a failure is shown inside the confirmation"
       ]
     },
     {
@@ -100,7 +108,8 @@
         "text-muted-foreground and text-gray-500 are replaced by ink tokens, and Badge uses a lifecycle/neutral variant instead of secondary",
         "The raw <h1> is replaced by the kit's PageHead, and loading/empty use Skeleton/EmptyState",
         "The agent notices the profile feature already renders sessions (sections/sessions.tsx) and reuses it or explains why the new page is still needed, instead of leaving two session lists",
-        "The final message lists what it changed per violation and which checks it ran"
+        "The final message lists what it changed per violation and which checks it ran",
+        "The final message maps each planted violation to what was changed (or why it was left)"
       ]
     }
   ]

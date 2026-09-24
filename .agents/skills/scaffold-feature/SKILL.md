@@ -46,6 +46,18 @@ new feature. Before creating anything, answer these:
   there, the backend comes first (`/scaffold-module`, then
   `pnpm generate:api-client`), or the feature waits. Never fake data: see
   "Never ship a placeholder number".
+- **What does the API allow and refuse?** Read the controller behind each
+  endpoint, not only its path:
+  - its `@CheckPolicies`, which is the permission each action needs;
+  - the errors it throws;
+  - the business rules enforced below it, in the domain entity or the Better
+    Auth config (for example, the last workspace can't be deleted, or a
+    revoked token can't be renamed).
+
+  The UI mirrors all of these (step 3). An action the server would refuse is
+  not offered, or it says why.
+- **Build what was asked.** A filter, a key variant or a column that no screen
+  uses is dead code on the day it lands. Note it as a follow-up instead.
 
 When something here changes the design and cannot be inferred, ask. Otherwise
 state your assumption in the summary and move on.
@@ -93,13 +105,29 @@ every read and write the feature makes, and for each one the **lowest
 component that draws the result**. That component is the one that calls the
 hook.
 
-| # | Hook | Drawn by | Updates on | Notes |
-| --- | --- | --- | --- | --- |
-| R1 | `useThings()` | `sections/thing-table.tsx` | refetch, a create, a revoke | the create card must not re-render on it |
-| R2 | `useThingCatalog()` | `sections/create-thing-card.tsx` | once | the table does not need it |
-| W1 | `useCreateThing()` | `sections/create-thing-card.tsx` | submit | the form below takes `onSubmit`, `isPending` and `error` |
-| W2 | `useRevokeThing()` | `dialogs/revoke-thing.tsx` | confirm | the table owns *which* row, since the row menu unmounts |
-| S1 | search, page | `useTableQuery` in the table section | typing (debounced in the field) | lives in the URL |
+| # | Hook | Drawn by | Updates on | Allowed when | Notes |
+| --- | --- | --- | --- | --- | --- |
+| R1 | `useThings()` | `sections/thing-table.tsx` | refetch, a create, a revoke | `read Thing` | the create card must not re-render on it |
+| R2 | `useThingCatalog()` | `sections/create-thing-card.tsx` | once | — | the table does not need it |
+| W1 | `useCreateThing()` | `sections/create-thing-card.tsx` | submit | `create Thing` | the form below takes `onSubmit`, `isPending` and `error` |
+| W2 | `useRevokeThing()` | `dialogs/revoke-thing.tsx` | confirm | `delete Thing`, row still active | the table owns *which* row, since the row menu unmounts |
+| S1 | search, page | `useTableQuery` in the table section | typing (debounced in the field) | — | lives in the URL |
+
+"Allowed when" is the endpoint's `@CheckPolicies` rule plus any business rule
+from step 1.
+
+- **Actions:** each action is offered only when `useAbility()` grants that
+  rule, and never offered where a business rule makes it a certain refusal.
+  Hide a row action or a button rather than letting it end in a 403.
+- **Nav rows:** a nav row for the screen takes `policies` from
+  `ENDPOINT_POLICIES[...]`.
+- **States:** every read renders four states:
+  - loading: `Skeleton`, or `DataTable`'s `isLoading`;
+  - empty: `EmptyState`, or `emptyLabel`;
+  - **failed:** an `Alert` with the `useErrorMessage()` sentence and a retry
+    where one helps. Never the empty state: "no members yet" after a failed
+    request tells the reader something false;
+  - loaded.
 
 Then check the plan against the render rules:
 
@@ -196,6 +224,10 @@ file. Then write the pieces from your plan, following `references/templates.md`:
   - Keys live in `packages/translations/{en,es}/<area>.json`.
   - Then run `pnpm --filter @flama/translations assemble`.
   - Delete the keys you stop using.
+- **Labels drawn from data** (a role name, a status) are translated for
+  display, but anything keyed on the value, such as a colour or an icon,
+  still reads the raw value. `RolePill` takes the translated text as `label`
+  and the stored role as `role`.
 - **Dates and numbers:** `useLocale()` plus the formatters
   (`formatMediumDate`, `formatDateTime`, `formatRelativeTime`) from the kit
   or `@flama/frontend-core/format`. Never `toLocaleDateString(undefined)`,
@@ -267,10 +299,15 @@ when it didn't run.
 
 ## 8. Present the feature
 
+When the task was a **review or a fix**, lead with the findings. List each
+one with the rule it broke, where it was, and what you changed; say which
+you left alone and why.
+
 End with a short summary:
 
 - The files, grouped by kind, and the module they render.
-- The render plan table, with where each hook ended up.
+- The render plan table, with where each hook ended up and what gates each
+  action.
 - The checks and their results, including any that could not run and why.
 - Decisions worth a second look (what a confirm guards, what is not
   persisted, what was assumed in step 1).
