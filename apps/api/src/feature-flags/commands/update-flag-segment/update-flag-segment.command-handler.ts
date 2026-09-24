@@ -44,7 +44,7 @@ export class UpdateFlagSegmentCommandHandler
     const segment = found.unwrap();
     segment.update(
       { name: command.name, description: command.description, conditions: command.conditions },
-      { actorId: command.actorId },
+      { actorId: command.actorId, comment: command.comment },
     );
     await this.segments.save(segment);
     return segment.id;

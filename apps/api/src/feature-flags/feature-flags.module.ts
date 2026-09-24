@@ -25,6 +25,7 @@ import {
   FLAG_CHANGE_REPOSITORY,
   FLAG_EVALUATOR,
   FLAG_SEGMENT_REPOSITORY,
+  FLAG_SNAPSHOT,
 } from './feature-flags.di-tokens';
 import { FlagSegmentMapper } from './flag-segment.mapper';
 import { FeatureFlagGuard } from './guards/feature-flag.guard';
@@ -106,7 +107,11 @@ const repositories: Provider[] = [
     ...repositories,
     FeatureFlagMapper,
     FlagSegmentMapper,
-    { provide: FLAG_EVALUATOR, useClass: FlagSnapshotResolver },
+    FlagSnapshotResolver,
+    // One instance behind both: the published evaluator, and the snapshot
+    // controls only this module's change handler uses.
+    { provide: FLAG_EVALUATOR, useExisting: FlagSnapshotResolver },
+    { provide: FLAG_SNAPSHOT, useExisting: FlagSnapshotResolver },
     FeatureFlagGuard,
   ],
   exports: [FLAG_EVALUATOR, FeatureFlagGuard],

@@ -62,6 +62,12 @@ this.flags.isEnabled('api_token_creation', flagContextOf(request));
 is not a rollout — the endpoint behind it is reachable by anyone with a token.
 Read the same key with `@RequireFlag` on the route.
 
+`useFeatureFlag`, `@RequireFlag` and `isEnabled` take **boolean flags only**.
+A variant flag has no off — its control arm is a variant like any other — so
+read it with `useFeatureFlagValue` / `valueOf` and branch on the name.
+`@RequireFlag` sees only who is calling, not the `platform` or `appVersion` a
+client reports, so gate on flags that target identity.
+
 ## Semantics that are easy to get wrong
 
 - **Off means off.** A disabled flag serves `false` (or the default variant),
@@ -71,6 +77,13 @@ Read the same key with `@RequireFlag` on the route.
   (`bucketBy: 'user'` to change it), so a workspace sees one product. The hash
   is MurmurHash3 over `key.salt.unit` — stable across replicas and languages.
 - **A split cannot bucket an anonymous caller**, so it serves the default.
+- **Split weights are percentages in 0.01 % steps** that add up to exactly
+  100: the write schema checks the integer bucket widths the evaluator walks,
+  so a saved split covers every one of the 10 000 buckets.
+- **`platformRole` is the Better Auth platform role** (`user`, `admin`,
+  `superadmin`), not the caller's role in an organization.
+- **A sticky read** holds for one key and one audience while mounted;
+  signing in or out latches afresh.
 - **Identity comes from the session**, never from the client. Clients report
   only `platform` and `appVersion`, which is fine for targeting and never for
   authorization.

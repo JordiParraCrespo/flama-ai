@@ -28,7 +28,7 @@ export function flagContextOf(
   return {
     userId: stringOf(user?.id),
     email: stringOf(user?.email),
-    role: stringOf(user?.role),
+    platformRole: stringOf(user?.role),
     organizationId: activeOrganizationIdOf(request),
     platform: reported.platform ?? null,
     appVersion: reported.appVersion ?? null,

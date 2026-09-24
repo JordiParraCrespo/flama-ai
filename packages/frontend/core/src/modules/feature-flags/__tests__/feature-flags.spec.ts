@@ -21,12 +21,11 @@ describe('isFlagEnabled', () => {
     expect(isFlagEnabled(false)).toBe(false);
   });
 
-  // A multivariate flag reports the variant name rather than `true`. Reading
-  // that as "off" would silently park every experiment on its control arm.
-  it('treats any variant as on, the empty string included', () => {
-    expect(isFlagEnabled('treatment')).toBe(true);
-    expect(isFlagEnabled('control')).toBe(true);
-    expect(isFlagEnabled('')).toBe(true);
+  // A variant flag has no off: reading its control arm as "on" would turn an
+  // experiment into a gate everyone passes.
+  it('does not treat a variant as on', () => {
+    expect(isFlagEnabled('treatment')).toBe(false);
+    expect(isFlagEnabled('control')).toBe(false);
   });
 
   it('treats an unknown value as off', () => {

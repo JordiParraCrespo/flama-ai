@@ -314,6 +314,21 @@ describe('evaluateFlag', () => {
     });
   });
 
+  it('buckets everyone into an arm when the widths are thirds', () => {
+    const thirds = config({
+      fallthrough: {
+        split: [
+          { value: 'control', weight: 33.33 },
+          { value: 'treatment', weight: 33.33 },
+          { value: 'control', weight: 33.34 },
+        ],
+      },
+    });
+    for (let i = 0; i < 2000; i++) {
+      expect(evaluateFlag('flag', variantFlag, thirds, { userId: `u${i}` }).reason).toBe('SPLIT');
+    }
+  });
+
   it('honours 0 % and 100 %', () => {
     const everyone = config({
       fallthrough: {

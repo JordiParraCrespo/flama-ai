@@ -1,5 +1,5 @@
 import { AppError } from '@flama/backend-core';
-import type { FeatureFlagKey } from '@flama/shared';
+import type { BooleanFeatureFlagKey } from '@flama/shared';
 import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { ScopedRequest } from '../../auth/domain/scope-context.types';
@@ -25,10 +25,10 @@ export class FeatureFlagGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const key = this.reflector.getAllAndOverride<FeatureFlagKey | undefined>(REQUIRE_FLAG_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const key = this.reflector.getAllAndOverride<BooleanFeatureFlagKey | undefined>(
+      REQUIRE_FLAG_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (!key) return true;
 
     const request = context.switchToHttp().getRequest<ScopedRequest>();

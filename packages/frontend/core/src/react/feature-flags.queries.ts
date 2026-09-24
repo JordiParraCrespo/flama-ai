@@ -1,6 +1,11 @@
 'use client';
 
-import type { ClientFeatureFlagKey, ClientFeatureFlags, FeatureFlagValueOf } from '@flama/shared';
+import type {
+  BooleanFeatureFlagKey,
+  ClientFeatureFlagKey,
+  ClientFeatureFlags,
+  FeatureFlagValueOf,
+} from '@flama/shared';
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { FlamaApp } from '../di/flama-app';
@@ -68,10 +73,17 @@ export function useFeatureFlags<TData = ClientFeatureFlags>(
   });
 }
 
+interface Latch<V> {
+  key: string;
+  audience: FlagAudience;
+  value: V;
+}
+
 export interface FeatureFlagReadOptions {
   /**
-   * Keep the first loaded value for as long as the component stays mounted,
-   * ignoring later refetches. For a flow a flag must not flip in the middle of
+   * Keep the first loaded value for as long as the component stays mounted
+   * and reads the same key as the same audience (signed in or out), ignoring
+   * later refetches. For a flow a flag must not flip in the middle of
    * — a checkout, a transfer, a multi-step form — which is what a mobile banking
    * app does with every flag on a payment screen. Off by default: a kill switch
    * should reach a screen that is already open.
@@ -93,17 +105,21 @@ export function useFeatureFlagValue<K extends ClientFeatureFlagKey>(
   { sticky = false }: FeatureFlagReadOptions = {},
 ): FeatureFlagValueOf<K> {
   const app = useFlamaApp();
+  const { isAuthenticated } = useAuthState();
+  const audience: FlagAudience = isAuthenticated ? 'signed-in' : 'anonymous';
   const { data, isSuccess } = useFeatureFlags({
     select: (snapshot) => resolveFlagValue(key, snapshot.flags),
   });
   const live = data ?? resolveFlagValue(key, undefined);
 
-  // Latched in state, not a ref: the first answer the server gave for as long
-  // as this component is mounted. Set during render, which React allows for a
-  // value derived from what the component already has.
-  const [latched, setLatched] = useState<FeatureFlagValueOf<K> | undefined>(undefined);
-  if (sticky && isSuccess && latched === undefined) setLatched(live);
-  const value = sticky && latched !== undefined ? latched : live;
+  // Latched in state, not a ref, with what it was latched for: a different
+  // key, or a sign-in or sign-out, is a different answer and latches afresh.
+  // Set during render, which React allows for a value derived from what the
+  // component already has.
+  const [latched, setLatched] = useState<Latch<FeatureFlagValueOf<K>> | undefined>(undefined);
+  const holds = latched?.key === key && latched.audience === audience;
+  if (sticky && isSuccess && !holds) setLatched({ key, audience, value: live });
+  const value = sticky && holds ? (latched as Latch<FeatureFlagValueOf<K>>).value : live;
 
   // Exposure is analytics — a system outside React — reported once the value
   // shown is the server's, not the pre-load default.
@@ -115,7 +131,8 @@ export function useFeatureFlagValue<K extends ClientFeatureFlagKey>(
 }
 
 /**
- * Whether a flag is on: `true`, or any variant of a multivariate flag.
+ * Whether a boolean flag is on. Variant flags are read with
+ * {@link useFeatureFlagValue}: their control arm is a value, not an off.
  *
  * Reads the catalog default until flags load, so a new feature (default
  * `false`) stays hidden and a kill switch (default `true`) stays live — never
@@ -123,7 +140,7 @@ export function useFeatureFlagValue<K extends ClientFeatureFlagKey>(
  * {@link useFeatureFlags} when rendering should wait for the answer instead.
  */
 export function useFeatureFlag(
-  key: ClientFeatureFlagKey,
+  key: Extract<ClientFeatureFlagKey, BooleanFeatureFlagKey>,
   options?: FeatureFlagReadOptions,
 ): boolean {
   return isFlagEnabled(useFeatureFlagValue(key, options));

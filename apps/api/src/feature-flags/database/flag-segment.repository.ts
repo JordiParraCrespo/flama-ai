@@ -70,12 +70,12 @@ export class FlagSegmentRepository implements FlagSegmentRepositoryPort {
   }
 
   async fingerprint(): Promise<string> {
-    const row = await this.repository
-      .createQueryBuilder('segment')
-      .select('COUNT(*)', 'count')
-      .addSelect('MAX(segment.updatedAt)', 'latest')
-      .getRawOne<{ count: string; latest: Date | string | null }>();
-    return `${row?.count ?? 0}:${row?.latest ? new Date(row.latest).getTime() : 0}`;
+    // Every column of every row, in key order — the jsonb rules and the full
+    // microsecond timestamp included — so no change can leave it standing still.
+    const [row] = await this.repository.query(
+      `SELECT count(*)::text || ':' || coalesce(md5(string_agg(to_jsonb(t)::text, ',' ORDER BY t.key)), '') AS digest FROM feature_flag_segment t`,
+    );
+    return (row as { digest: string } | undefined)?.digest ?? '';
   }
 
   async delete(entity: FlagSegmentEntity): Promise<boolean> {

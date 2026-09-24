@@ -56,6 +56,17 @@ describe('FlagSnapshotResolver', () => {
     expect(resolver.isEnabled('api_token_creation', {})).toBe(false);
   });
 
+  it('rejects a reload that fails, so the change handler is retried', async () => {
+    vi.mocked(flags.findAll).mockRejectedValue(new Error('database down'));
+    await expect(resolver.reload()).rejects.toThrow('database down');
+  });
+
+  it('is enabled only while a boolean flag serves true', async () => {
+    vi.mocked(flags.findAll).mockResolvedValue([killSwitchPulled()]);
+    await resolver.refresh();
+    expect(resolver.isEnabled('api_token_creation', {})).toBe(false);
+  });
+
   it('ignores a row whose key has left the catalog', async () => {
     vi.mocked(flags.findAll).mockResolvedValue([FeatureFlagEntity.createFor('retired_flag', true)]);
     await resolver.refresh();

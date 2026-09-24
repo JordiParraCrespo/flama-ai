@@ -44,7 +44,7 @@ export class DeleteFlagSegmentCommandHandler
     }
 
     const segment = found.unwrap();
-    segment.delete({ actorId: command.actorId });
+    segment.delete({ actorId: command.actorId, comment: command.comment });
     await this.segments.delete(segment);
     return segment.id;
   }

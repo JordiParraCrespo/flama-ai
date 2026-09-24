@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { paginationSchema } from '../schemas/pagination.schema';
+import { armWidth, FLAG_BUCKETS } from './evaluate';
 import { FLAG_ATTRIBUTES, FLAG_OPERATORS } from './types';
 
 /**
@@ -36,9 +37,19 @@ const segmentConditionSchema = z
 
 export const flagValueSchema = z.union([z.boolean(), z.string().min(1).max(64)]);
 
+/**
+ * A split arm's weight: a percentage in 0.01 % steps, the resolution of the
+ * {@link FLAG_BUCKETS} buckets a split is walked over.
+ */
 export const flagSplitArmSchema = z.object({
   value: flagValueSchema,
-  weight: z.number().min(0).max(100),
+  weight: z
+    .number()
+    .min(0)
+    .max(100)
+    .refine((weight) => Math.abs(armWidth(weight) - weight * (FLAG_BUCKETS / 100)) < 1e-6, {
+      message: 'Split weights are percentages with at most two decimals',
+    }),
 });
 
 export const flagServeSchema = z.union([
@@ -46,8 +57,10 @@ export const flagServeSchema = z.union([
   z
     .object({ split: z.array(flagSplitArmSchema).min(1).max(10) })
     .strict()
+    // The unit the evaluator walks, not the floats: widths that sum to exactly
+    // FLAG_BUCKETS leave no bucket uncovered.
     .refine(
-      (serve) => Math.abs(serve.split.reduce((sum, arm) => sum + arm.weight, 0) - 100) < 0.001,
+      (serve) => serve.split.reduce((sum, arm) => sum + armWidth(arm.weight), 0) === FLAG_BUCKETS,
       { message: 'Split weights must add up to 100', path: ['split'] },
     ),
 ]);
@@ -96,12 +109,19 @@ export const createFlagSegmentSchema = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().max(255).optional(),
   conditions: z.array(segmentConditionSchema).min(1).max(20),
+  comment: changeComment,
 });
 
 export const updateFlagSegmentSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   description: z.string().max(255).nullable().optional(),
   conditions: z.array(segmentConditionSchema).min(1).max(20).optional(),
+  comment: changeComment,
+});
+
+/** `DELETE /segments/:key?comment=` — the why, as for every other change. */
+export const deleteFlagSegmentSchema = z.object({
+  comment: changeComment,
 });
 
 /**
@@ -119,7 +139,7 @@ export const evaluateFeatureFlagSchema = z.object({
   userId: z.string().max(64).optional(),
   organizationId: z.string().max(64).optional(),
   email: z.string().max(320).optional(),
-  role: z.string().max(64).optional(),
+  platformRole: z.string().max(64).optional(),
   platform: z.enum(['web', 'ios', 'android', 'server']).optional(),
   appVersion: z.string().max(32).optional(),
 });
@@ -134,6 +154,7 @@ export type UpdateFeatureFlagInput = z.infer<typeof updateFeatureFlagSchema>;
 export type ToggleFeatureFlagInput = z.infer<typeof toggleFeatureFlagSchema>;
 export type CreateFlagSegmentInput = z.infer<typeof createFlagSegmentSchema>;
 export type UpdateFlagSegmentInput = z.infer<typeof updateFlagSegmentSchema>;
+export type DeleteFlagSegmentInput = z.infer<typeof deleteFlagSegmentSchema>;
 export type ClientFlagContextInput = z.infer<typeof clientFlagContextSchema>;
 export type FindFlagChangesInput = z.infer<typeof findFlagChangesSchema>;
 export type EvaluateFeatureFlagInput = z.infer<typeof evaluateFeatureFlagSchema>;

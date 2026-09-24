@@ -1,10 +1,10 @@
 import type {
+  BooleanFeatureFlagKey,
   ClientFeatureFlags,
   FeatureFlagKey,
   FeatureFlagValueOf,
   FlagEvaluation,
   FlagEvaluationContext,
-  FlagSegment,
 } from '@flama/shared';
 
 /**
@@ -21,12 +21,21 @@ export interface FlagEvaluatorPort {
   evaluate(key: FeatureFlagKey, context: FlagEvaluationContext): FlagEvaluation;
   /** A flag's value, typed by the catalog. */
   valueOf<K extends FeatureFlagKey>(key: K, context: FlagEvaluationContext): FeatureFlagValueOf<K>;
-  /** Whether a flag is on: `true`, or any variant. */
-  isEnabled(key: FeatureFlagKey, context: FlagEvaluationContext): boolean;
+  /**
+   * Whether a boolean flag is on. Boolean flags only: a variant flag's control
+   * arm is a value like any other, so read it with `valueOf`.
+   */
+  isEnabled(key: BooleanFeatureFlagKey, context: FlagEvaluationContext): boolean;
   /** Every client-visible flag, evaluated — what `GET /v1/feature-flags` serves. */
   evaluateClientFlags(context: FlagEvaluationContext): ClientFeatureFlags;
-  /** The segments currently loaded, keyed by segment key. */
-  segments(): ReadonlyMap<string, FlagSegment>;
-  /** Reload now, rather than at the next poll. Never rejects. */
-  refresh(): Promise<void>;
+}
+
+/**
+ * The database-backed snapshot behind the evaluator, as this module's own
+ * change handler needs it. Not part of the evaluator contract: a vendor
+ * adapter bound to `FLAG_EVALUATOR` has no Postgres snapshot to reload.
+ */
+export interface FlagSnapshotPort {
+  /** Reload now, rather than at the next poll. Rejects when the reload fails. */
+  reload(): Promise<void>;
 }

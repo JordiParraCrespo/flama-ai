@@ -4,6 +4,7 @@ import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
 import { ANALYTICS_EVENTS } from '../analytics/analytics.events';
 import type { AnalyticsService } from '../analytics/analytics.service';
+import type { AuthStore } from '../auth/auth.state';
 import type { FeatureFlagsClientContext } from './feature-flags.client';
 import type { FeatureFlagsRepository } from './feature-flags.repository';
 
@@ -31,15 +32,24 @@ export class FeatureFlagsService {
     private readonly context: FeatureFlagsClientContext,
     @inject(TOKENS.AnalyticsService)
     private readonly analytics: AnalyticsService,
-  ) {}
+    @inject(TOKENS.AuthStore)
+    auth: AuthStore,
+  ) {
+    // The exposures seen belong to whoever saw them. Signing in or out starts
+    // a new person's record, so the next user on a shared device is not
+    // skipped for a variant the last one was shown.
+    auth.subscribe((state, previous) => {
+      if (state.isAuthenticated !== previous.isAuthenticated) this.exposed.clear();
+    });
+  }
 
   get(): Promise<ClientFeatureFlags> {
     return this.repository.get(this.context);
   }
 
   /**
-   * Records that the caller saw an experiment's variant, once per variant per
-   * session. Only `experiment` flags are recorded: an exposure is what lets a
+   * Records that the caller saw an experiment's variant, once per variant for
+   * each signed-in (or signed-out) stretch. Only `experiment` flags are recorded: an exposure is what lets a
    * result be attributed to the arm someone was actually shown, and a release
    * or ops flag has no result to attribute.
    */

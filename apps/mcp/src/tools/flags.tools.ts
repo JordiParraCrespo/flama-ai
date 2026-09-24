@@ -40,7 +40,7 @@ export const flagTools = [
       userId: z.string().optional(),
       organizationId: z.string().optional(),
       email: z.string().optional(),
-      role: z.string().optional(),
+      platformRole: z.string().optional(),
       platform: z.enum(['web', 'ios', 'android', 'server']).optional(),
       appVersion: z.string().optional().describe('Semver, e.g. 2.1.0'),
     }),

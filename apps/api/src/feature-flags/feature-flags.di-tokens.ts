@@ -12,3 +12,8 @@ export const FLAG_CHANGE_REPOSITORY = Symbol('FLAG_CHANGE_REPOSITORY');
  * app may ask it whether a flag is on.
  */
 export const FLAG_EVALUATOR = Symbol('FLAG_EVALUATOR');
+/**
+ * The database-backed snapshot behind the evaluator (`FlagSnapshotPort`).
+ * Module-internal: only this module's change handler reloads it.
+ */
+export const FLAG_SNAPSHOT = Symbol('FLAG_SNAPSHOT');

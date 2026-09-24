@@ -1,4 +1,5 @@
 import {
+  type BooleanFeatureFlagKey,
   CLIENT_FEATURE_FLAG_KEYS,
   type ClientFeatureFlags,
   evaluateFlag,
@@ -24,7 +25,7 @@ import {
 import type { FeatureFlagRepositoryPort } from '../database/feature-flag.repository.port';
 import type { FlagSegmentRepositoryPort } from '../database/flag-segment.repository.port';
 import { FEATURE_FLAG_REPOSITORY, FLAG_SEGMENT_REPOSITORY } from '../feature-flags.di-tokens';
-import type { FlagEvaluatorPort } from './flag-evaluator.port';
+import type { FlagEvaluatorPort, FlagSnapshotPort } from './flag-evaluator.port';
 
 /**
  * How often a replica checks whether its snapshot is stale. A change made on
@@ -63,9 +64,9 @@ const EMPTY: Snapshot = {
  * and a hash. The table is small (one row per configured flag), so holding it
  * whole is cheap; long ID lists live in segments, which are loaded the same way.
  *
- * Staleness is detected, not guessed: a replica polls one aggregate query (the
- * row count and newest `updatedAt` of each table) and reloads only when it
- * moved. The replica that made a change reloads immediately.
+ * Staleness is detected, not guessed: a replica polls a digest of every row's
+ * content in each table and reloads only when it moved. The replica that made
+ * a change reloads immediately.
  *
  * Failure keeps the last good snapshot. A database blip must not turn every
  * flag back to its default mid-incident — that is exactly when someone is
@@ -74,7 +75,7 @@ const EMPTY: Snapshot = {
  */
 @Injectable()
 export class FlagSnapshotResolver
-  implements FlagEvaluatorPort, OnApplicationBootstrap, OnModuleDestroy
+  implements FlagEvaluatorPort, FlagSnapshotPort, OnApplicationBootstrap, OnModuleDestroy
 {
   private readonly logger = new Logger('FeatureFlags');
   private snapshot: Snapshot = EMPTY;
@@ -119,9 +120,8 @@ export class FlagSnapshotResolver
     return this.evaluate(key, context).value as FeatureFlagValueOf<K>;
   }
 
-  isEnabled(key: FeatureFlagKey, context: FlagEvaluationContext): boolean {
-    const value = this.evaluate(key, context).value;
-    return value !== false;
+  isEnabled(key: BooleanFeatureFlagKey, context: FlagEvaluationContext): boolean {
+    return this.evaluate(key, context).value === true;
   }
 
   evaluateClientFlags(context: FlagEvaluationContext): ClientFeatureFlags {
@@ -130,11 +130,21 @@ export class FlagSnapshotResolver
     return { version: this.snapshot.version, flags };
   }
 
-  segments(): ReadonlyMap<string, FlagSegment> {
-    return this.snapshot.segments;
+  /** Reload now, rather than at the next poll. Never rejects: a failure is logged. */
+  async refresh(): Promise<void> {
+    try {
+      await this.reload();
+    } catch (error) {
+      this.reportFailure(error);
+    }
   }
 
-  refresh(): Promise<void> {
+  /**
+   * Reload now, and reject if it fails — for a caller that must know, such as
+   * the change handler: a delivery whose reload failed is retried by the
+   * outbox rather than marked done while this replica serves the old rules.
+   */
+  reload(): Promise<void> {
     // Coalesce: a burst of change events is one reload, not one each.
     this.inFlight ??= this.load().finally(() => {
       this.inFlight = undefined;
@@ -166,33 +176,29 @@ export class FlagSnapshotResolver
   }
 
   private async load(): Promise<void> {
-    try {
-      // Fingerprint first: a write landing between the two reads leaves a
-      // fingerprint older than the data, which the next poll sees as stale and
-      // reloads — the safe direction to be wrong in.
-      const fingerprint = await this.fingerprint();
-      const [flags, segments] = await Promise.all([
-        this.flags.findAll(),
-        this.segmentRepository.findAll(),
-      ]);
+    // Fingerprint first: a write landing between the two reads leaves a
+    // fingerprint older than the data, which the next poll sees as stale and
+    // reloads — the safe direction to be wrong in.
+    const fingerprint = await this.fingerprint();
+    const [flags, segments] = await Promise.all([
+      this.flags.findAll(),
+      this.segmentRepository.findAll(),
+    ]);
 
-      this.snapshot = {
-        fingerprint,
-        version: `${murmur3(fingerprint).toString(36)}.${CATALOG_SIGNATURE}`,
-        // A row whose key has left the catalog is ignored: the code no longer
-        // reads it, and the database cannot invent a flag.
-        configs: new Map(
-          flags
-            .filter((flag) => isFeatureFlagKey(flag.key))
-            .map((flag) => [flag.key, flag.toConfig()]),
-        ),
-        segments: new Map(segments.map((segment) => [segment.key, segment.toSegment()])),
-      };
+    this.snapshot = {
+      fingerprint,
+      version: `${murmur3(fingerprint).toString(36)}.${CATALOG_SIGNATURE}`,
+      // A row whose key has left the catalog is ignored: the code no longer
+      // reads it, and the database cannot invent a flag.
+      configs: new Map(
+        flags
+          .filter((flag) => isFeatureFlagKey(flag.key))
+          .map((flag) => [flag.key, flag.toConfig()]),
+      ),
+      segments: new Map(segments.map((segment) => [segment.key, segment.toSegment()])),
+    };
 
-      this.recovered();
-    } catch (error) {
-      this.reportFailure(error);
-    }
+    this.recovered();
   }
 
   private recovered(): void {

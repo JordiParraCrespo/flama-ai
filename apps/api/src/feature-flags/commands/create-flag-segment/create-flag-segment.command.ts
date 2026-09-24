@@ -7,6 +7,7 @@ export class CreateFlagSegmentCommand extends CommandBase {
   readonly description?: string;
   readonly conditions: FlagCondition[];
   readonly actorId: string | null;
+  readonly comment?: string;
 
   constructor(props: CommandProps<CreateFlagSegmentCommand>) {
     super(props);
@@ -15,5 +16,6 @@ export class CreateFlagSegmentCommand extends CommandBase {
     this.description = props.description;
     this.conditions = props.conditions;
     this.actorId = props.actorId;
+    this.comment = props.comment;
   }
 }

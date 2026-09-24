@@ -700,7 +700,7 @@ export type PaginatedFlagChangesResponseDto = {
 };
 
 export type FlagConditionDto = {
-    attribute: 'userId' | 'organizationId' | 'email' | 'role' | 'platform' | 'appVersion' | 'segment';
+    attribute: 'userId' | 'organizationId' | 'email' | 'platformRole' | 'platform' | 'appVersion' | 'segment';
     operator: 'in' | 'not_in' | 'ends_with' | 'semver_gte' | 'semver_lt';
     values: Array<string>;
 };
@@ -726,20 +726,22 @@ export type CreateFlagSegmentRequest = {
     name: string;
     description?: string;
     conditions: Array<{
-        attribute: 'userId' | 'organizationId' | 'email' | 'role' | 'platform' | 'appVersion' | 'segment';
+        attribute: 'userId' | 'organizationId' | 'email' | 'platformRole' | 'platform' | 'appVersion' | 'segment';
         operator: 'in' | 'not_in' | 'ends_with' | 'semver_gte' | 'semver_lt';
         values: Array<string>;
     }>;
+    comment?: string;
 };
 
 export type UpdateFlagSegmentRequest = {
     name?: string;
     description?: string | null;
     conditions?: Array<{
-        attribute: 'userId' | 'organizationId' | 'email' | 'role' | 'platform' | 'appVersion' | 'segment';
+        attribute: 'userId' | 'organizationId' | 'email' | 'platformRole' | 'platform' | 'appVersion' | 'segment';
         operator: 'in' | 'not_in' | 'ends_with' | 'semver_gte' | 'semver_lt';
         values: Array<string>;
     }>;
+    comment?: string;
 };
 
 export type FlagSplitArmDto = {
@@ -837,7 +839,7 @@ export type UpdateFeatureFlagRequest = {
         id: string;
         description?: string;
         conditions: Array<{
-            attribute: 'userId' | 'organizationId' | 'email' | 'role' | 'platform' | 'appVersion' | 'segment';
+            attribute: 'userId' | 'organizationId' | 'email' | 'platformRole' | 'platform' | 'appVersion' | 'segment';
             operator: 'in' | 'not_in' | 'ends_with' | 'semver_gte' | 'semver_lt';
             values: Array<string>;
         }>;
@@ -3870,7 +3872,12 @@ export type DeleteFlagSegmentData = {
     path: {
         key: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Why, for the audit trail
+         */
+        comment?: string;
+    };
     url: '/api/v1/feature-flags/segments/{key}';
 };
 

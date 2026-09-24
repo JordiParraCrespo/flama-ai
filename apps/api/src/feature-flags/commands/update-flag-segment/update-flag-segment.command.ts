@@ -7,6 +7,7 @@ export class UpdateFlagSegmentCommand extends CommandBase {
   readonly description?: string | null;
   readonly conditions?: FlagCondition[];
   readonly actorId: string | null;
+  readonly comment?: string;
 
   constructor(props: CommandProps<UpdateFlagSegmentCommand>) {
     super(props);
@@ -15,5 +16,6 @@ export class UpdateFlagSegmentCommand extends CommandBase {
     this.description = props.description;
     this.conditions = props.conditions;
     this.actorId = props.actorId;
+    this.comment = props.comment;
   }
 }

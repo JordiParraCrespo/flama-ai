@@ -1,5 +1,5 @@
 import { ApiProblemResponse } from '@flama/backend-core';
-import type { FeatureFlagKey } from '@flama/shared';
+import type { BooleanFeatureFlagKey } from '@flama/shared';
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { FeatureFlagGuard, REQUIRE_FLAG_KEY } from '../guards/feature-flag.guard';
 
@@ -17,11 +17,18 @@ import { FeatureFlagGuard, REQUIRE_FLAG_KEY } from '../guards/feature-flag.guard
  * create() {}
  * ```
  *
+ * Boolean flags only — a capability gate needs an off. A variant flag's
+ * control arm is a variant like any other; branch on `valueOf` instead.
+ *
+ * Only the caller's identity reaches the gate, never what a client reports
+ * about its platform or build: a rule on `platform` or `appVersion` does not
+ * match here, so gate on flags that target identity.
+ *
  * Method-level, so it runs after the controller's `ApiAuthGuard` has resolved
  * who is calling and a per-user or per-organization rollout sees them.
  * Evaluation is in memory; the decorator adds no I/O to the route.
  */
-export function RequireFlag(key: FeatureFlagKey) {
+export function RequireFlag(key: BooleanFeatureFlagKey) {
   return applyDecorators(
     SetMetadata(REQUIRE_FLAG_KEY, key),
     UseGuards(FeatureFlagGuard),

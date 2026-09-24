@@ -197,8 +197,19 @@ function matchesCondition(
 }
 
 /**
- * The value a unit is bucketed into for a split, or `undefined` when it cannot
- * be bucketed (no unit, or weights that do not cover its bucket).
+ * How many of the {@link FLAG_BUCKETS} buckets an arm covers. A weight is a
+ * percentage in 0.01 % steps, so this is exact for every weight the write
+ * schema accepts — and the schema checks the sum of *these* widths, so what is
+ * saved is exactly what the hasher walks.
+ */
+export function armWidth(weight: number): number {
+  return Math.round(weight * (FLAG_BUCKETS / 100));
+}
+
+/**
+ * The value a unit is bucketed into for a split, or `undefined` when its
+ * bucket is past the arms' combined width — which only a config written
+ * around the schema can produce.
  */
 function pickArm(
   serve: Extract<FlagServe, { split: unknown }>,
@@ -206,7 +217,7 @@ function pickArm(
 ): FlagValue | undefined {
   let ceiling = 0;
   for (const arm of serve.split) {
-    ceiling += Math.round(arm.weight * (FLAG_BUCKETS / 100));
+    ceiling += armWidth(arm.weight);
     if (bucket < ceiling) return arm.value;
   }
   return undefined;

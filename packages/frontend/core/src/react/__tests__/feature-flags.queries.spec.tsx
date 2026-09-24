@@ -103,6 +103,19 @@ describe('sticky reads', () => {
     await waitFor(() => expect(result.current.live).toBe(false));
     expect(result.current.sticky).toBe(true);
   });
+
+  it('latch afresh when the caller signs in', async () => {
+    const { wrapper, get, store } = setup({ api_token_creation: true });
+    const { result } = renderHook(() => useFeatureFlag('api_token_creation', { sticky: true }), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current).toBe(true));
+
+    get.mockResolvedValue({ version: 'v2', flags: { api_token_creation: false } });
+    act(() => store.setState({ isAuthenticated: true }));
+
+    await waitFor(() => expect(result.current).toBe(false));
+  });
 });
 
 describe('featureFlagKeys', () => {

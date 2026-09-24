@@ -109,6 +109,34 @@ describe('updateFeatureFlagSchema', () => {
     expect(result.success).toBe(false);
   });
 
+  it('rejects weights that leave a bucket uncovered', () => {
+    const result = updateFeatureFlagSchema.safeParse({
+      ...base,
+      fallthrough: {
+        split: [
+          { value: true, weight: 33.333 },
+          { value: false, weight: 33.333 },
+          { value: false, weight: 33.334 },
+        ],
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts a three-way split in 0.01 % steps', () => {
+    const result = updateFeatureFlagSchema.safeParse({
+      ...base,
+      fallthrough: {
+        split: [
+          { value: true, weight: 33.33 },
+          { value: false, weight: 33.33 },
+          { value: false, weight: 33.34 },
+        ],
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
   it('rejects duplicate rule ids', () => {
     const rule = { id: 'r1', conditions: [], serve: { value: true } };
     expect(updateFeatureFlagSchema.safeParse({ ...base, rules: [rule, rule] }).success).toBe(false);

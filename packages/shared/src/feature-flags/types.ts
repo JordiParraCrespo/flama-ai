@@ -95,7 +95,7 @@ export const FLAG_ATTRIBUTES = [
   'userId',
   'organizationId',
   'email',
-  'role',
+  'platformRole',
   'platform',
   'appVersion',
   'segment',
@@ -118,7 +118,10 @@ export interface FlagCondition {
   values: string[];
 }
 
-/** One arm of a percentage split. Weights are percentages and sum to 100. */
+/**
+ * One arm of a percentage split. A weight is a percentage in 0.01 % steps —
+ * one of the evaluator's 10 000 buckets — and an arm's weights sum to 100.
+ */
 export interface FlagSplitArm {
   value: FlagValue;
   weight: number;
@@ -183,8 +186,12 @@ export interface FlagEvaluationContext {
   userId?: string | null;
   organizationId?: string | null;
   email?: string | null;
-  /** The platform role (`user`, `admin`, …). */
-  role?: string | null;
+  /**
+   * The Better Auth platform role (`user`, `admin`, `superadmin`) — not the
+   * caller's role in an organization. Named for that so a rule targeting
+   * `admin` cannot be read as "workspace admins".
+   */
+  platformRole?: string | null;
   platform?: FlagPlatform | null;
   /** The client build, semver (`1.4.0`). */
   appVersion?: string | null;

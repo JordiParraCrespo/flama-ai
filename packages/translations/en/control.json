@@ -172,7 +172,7 @@
       "userId": "User ID",
       "organizationId": "Organization ID",
       "email": "Email",
-      "role": "Platform role",
+      "platformRole": "Platform role",
       "platform": "Platform",
       "appVersion": "App version",
       "segment": "Segment"

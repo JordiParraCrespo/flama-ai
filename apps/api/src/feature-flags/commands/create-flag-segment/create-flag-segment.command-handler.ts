@@ -41,7 +41,7 @@ export class CreateFlagSegmentCommandHandler
         description: command.description,
         conditions: command.conditions,
       },
-      { actorId: command.actorId },
+      { actorId: command.actorId, comment: command.comment },
     );
     await this.segments.insert(segment);
     return segment.id;

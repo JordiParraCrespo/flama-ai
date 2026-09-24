@@ -14,7 +14,7 @@ describe('flagContextOf', () => {
     ).toEqual({
       userId: 'u1',
       email: 'ada@acme.com',
-      role: 'admin',
+      platformRole: 'admin',
       organizationId: 'org-1',
       platform: 'ios',
       appVersion: '2.1.0',
@@ -25,7 +25,7 @@ describe('flagContextOf', () => {
     expect(flagContextOf({ user: null, session: null })).toEqual({
       userId: null,
       email: null,
-      role: null,
+      platformRole: null,
       organizationId: null,
       platform: null,
       appVersion: null,

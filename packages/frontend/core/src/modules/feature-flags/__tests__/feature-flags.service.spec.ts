@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ANALYTICS_EVENTS } from '../../analytics/analytics.events';
 import type { AnalyticsService } from '../../analytics/analytics.service';
+import { type AuthStore, createAuthStore } from '../../auth/auth.state';
 import type { FeatureFlagsRepository } from '../feature-flags.repository';
 import { FeatureFlagsService } from '../feature-flags.service';
 
@@ -30,14 +31,17 @@ describe('FeatureFlagsService', () => {
   let repository: { get: ReturnType<typeof vi.fn> };
   let analytics: { capture: ReturnType<typeof vi.fn> };
   let service: FeatureFlagsService;
+  let auth: AuthStore;
 
   beforeEach(() => {
     repository = { get: vi.fn().mockResolvedValue({ version: 'v1', flags: {} }) };
     analytics = { capture: vi.fn() };
+    auth = createAuthStore();
     service = new FeatureFlagsService(
       repository as unknown as FeatureFlagsRepository,
       { platform: 'ios', appVersion: '2.1.0' },
       analytics as unknown as AnalyticsService,
+      auth,
     );
   });
 
@@ -63,6 +67,15 @@ describe('FeatureFlagsService', () => {
       flag: 'checkout_copy',
       variant: 'bold',
     });
+  });
+
+  it('records the same variant again for the next person to sign in', () => {
+    auth.setState({ isAuthenticated: true });
+    service.recordExposure('checkout_copy' as never, 'bold');
+    auth.setState({ isAuthenticated: false });
+    auth.setState({ isAuthenticated: true });
+    service.recordExposure('checkout_copy' as never, 'bold');
+    expect(analytics.capture).toHaveBeenCalledTimes(2);
   });
 
   it('records nothing for a flag that is not an experiment', () => {

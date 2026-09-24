@@ -470,7 +470,7 @@
         "userId": "ID de usuario",
         "organizationId": "ID de organización",
         "email": "Email",
-        "role": "Rol de plataforma",
+        "platformRole": "Rol de plataforma",
         "platform": "Plataforma",
         "appVersion": "Versión de la app",
         "segment": "Segmento"

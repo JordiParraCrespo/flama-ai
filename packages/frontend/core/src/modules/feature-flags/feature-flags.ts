@@ -27,11 +27,10 @@ export function resolveFlagValue<K extends ClientFeatureFlagKey>(
 }
 
 /**
- * Whether a resolved value counts as "on": `true`, or any variant. A
- * multivariate flag's value is its variant name and every variant is an active
- * state; only `false` is off. An empty-string variant is still a variant — the
- * check is identity, not truthiness.
+ * Whether a boolean flag's resolved value is on. Only `true` is: a variant
+ * flag has no off state (its control arm is a variant like any other), so it
+ * is read with `useFeatureFlagValue` and branched on by name.
  */
 export function isFlagEnabled(value: FlagValue | undefined): boolean {
-  return value !== undefined && value !== false;
+  return value === true;
 }

@@ -8,7 +8,8 @@ export interface FeatureFlagRepositoryPort extends RepositoryPort<FeatureFlagEnt
   /**
    * A cheap value that changes whenever any row is written or removed. Each
    * replica polls it to decide whether its in-memory snapshot is stale, so it
-   * must cost one indexed aggregate, not a table read.
+   * digests every row's content — two writes in the same millisecond, or a
+   * rules-only change, still move it — in one query that returns one value.
    */
   fingerprint(): Promise<string>;
 }

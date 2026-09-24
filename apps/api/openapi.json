@@ -6184,6 +6184,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "comment",
+            "required": false,
+            "in": "query",
+            "description": "Why, for the audit trail",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -8989,7 +8998,7 @@
               "userId",
               "organizationId",
               "email",
-              "role",
+              "platformRole",
               "platform",
               "appVersion",
               "segment"
@@ -9077,7 +9086,7 @@
                     "userId",
                     "organizationId",
                     "email",
-                    "role",
+                    "platformRole",
                     "platform",
                     "appVersion",
                     "segment"
@@ -9100,6 +9109,10 @@
               },
               "required": ["attribute", "operator", "values"]
             }
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 500
           }
         },
         "required": ["key", "name", "conditions"]
@@ -9130,7 +9143,7 @@
                     "userId",
                     "organizationId",
                     "email",
-                    "role",
+                    "platformRole",
                     "platform",
                     "appVersion",
                     "segment"
@@ -9153,6 +9166,10 @@
               },
               "required": ["attribute", "operator", "values"]
             }
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 500
           }
         }
       },
@@ -9396,7 +9413,7 @@
                           "userId",
                           "organizationId",
                           "email",
-                          "role",
+                          "platformRole",
                           "platform",
                           "appVersion",
                           "segment"

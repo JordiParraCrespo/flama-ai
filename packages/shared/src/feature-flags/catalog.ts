@@ -46,6 +46,15 @@ export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;
 
 type Catalog = typeof FEATURE_FLAGS;
 
+/**
+ * Keys of the boolean flags — the only kind that can gate a capability. A
+ * variant flag has no "off" arm (its control is a variant like any other), so
+ * asking whether one is enabled has no honest answer.
+ */
+export type BooleanFeatureFlagKey = {
+  [K in FeatureFlagKey]: Catalog[K]['type'] extends 'boolean' ? K : never;
+}[FeatureFlagKey];
+
 /** Keys a client may read. */
 export type ClientFeatureFlagKey = {
   [K in FeatureFlagKey]: Catalog[K]['client'] extends true ? K : never;
