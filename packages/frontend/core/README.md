@@ -53,6 +53,8 @@ query-cache persistence policy, and the contracts the two products meet on.
 - Cache policy: `defaultQueryClientOptions`, `createQueryPersistOptions`,
   `shouldDehydrateQuery`, `KERNEL_NON_PERSISTED_FEATURES`, `cacheOwnerKey`.
 - Contracts both products use: `MEMBER_LISTS_KEY`, `withFeaturePrefix`.
+- Mutation helper: `withCacheOnSuccess`, which runs a hook's cache update
+  before the caller's `onSuccess`.
 
 ## How to use it
 

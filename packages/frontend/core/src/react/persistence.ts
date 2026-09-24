@@ -90,10 +90,17 @@ export function reconcileCacheOwner(queryClient: QueryClient, ownerId: string | 
 
 /**
  * Increment when the persistence policy changes in a way that makes an
- * already-stored cache unsafe to hydrate. This revision drops profile/session
- * entities written before they were excluded from persistence.
+ * already-stored cache unsafe to hydrate, or changes the shape of a persisted
+ * key so an old entry would sit in storage that nothing reads. Revision 2
+ * dropped profile/session entities written before they were excluded from
+ * persistence. Revision 3 drops three key shapes nothing reads any more: the
+ * `['capabilities']` entry (now `capabilitiesKeys.deployment()`), member lists
+ * keyed `['organizations', 'members', orgId, …]` (now under
+ * `organizationsKeys.memberLists()`), and invitations keyed
+ * `['organizations', orgId, 'invitations']` (now under
+ * `organizationsKeys.invitationLists()`).
  */
-const QUERY_PERSIST_REVISION = 2;
+const QUERY_PERSIST_REVISION = 3;
 
 /**
  * Persistence options shared by web and mobile. The apps supply the platform's

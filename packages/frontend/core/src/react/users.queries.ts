@@ -2,6 +2,8 @@
 
 import type { PermissionDefinition, Role, UpdateUserDto } from '@flama/shared';
 import {
+  type QueryClient,
+  skipToken,
   type UseMutationOptions,
   type UseQueryOptions,
   useMutation,
@@ -10,6 +12,7 @@ import {
 } from '@tanstack/react-query';
 import type { UserEntity } from '../modules/users/user.entity';
 import { useFlamaApp } from './context';
+import { withCacheOnSuccess } from './mutations';
 
 export interface UsersListParams {
   page?: number;
@@ -33,12 +36,15 @@ export const usersKeys = {
   lists: () => [...usersKeys.all, 'list'] as const,
   list: (params?: UsersListParams) => [...usersKeys.lists(), params] as const,
   details: () => [...usersKeys.all, 'detail'] as const,
-  detail: (id: string) => [...usersKeys.details(), id] as const,
+  detail: (id: string | undefined) => [...usersKeys.details(), id] as const,
   me: () => [...usersKeys.all, 'me'] as const,
   permissions: () => [...usersKeys.me(), 'permissions'] as const,
 };
 
-export const profileQueryKey = usersKeys.me();
+/** Whether `id` is the signed-in user, as far as the cache knows. */
+function isCaller(queryClient: QueryClient, id: string): boolean {
+  return queryClient.getQueryData<UserEntity>(usersKeys.me())?.id === id;
+}
 
 /**
  * The caller's own effective permissions (CASL rules), used to gate which
@@ -97,15 +103,14 @@ export function useUsers(
 }
 
 export function useUser(
-  id: string,
+  id: string | undefined,
   options?: Omit<UseQueryOptions<UserEntity, Error>, 'queryKey' | 'queryFn'>,
 ) {
   const app = useFlamaApp();
 
   return useQuery({
     queryKey: usersKeys.detail(id),
-    queryFn: () => app.users.findById(id),
-    enabled: !!id,
+    queryFn: id ? () => app.users.findById(id) : skipToken,
     ...options,
   });
 }
@@ -121,12 +126,15 @@ export function useUpdateUser(
 
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateUserDto }) => app.users.update(id, dto),
-    onSuccess: (...args) => {
-      queryClient.setQueryData(usersKeys.detail(args[1].id), args[0]);
-      queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      options?.onSuccess?.(...args);
-    },
-    ...options,
+    // Write the row the server answered with, where it is cached: its detail,
+    // and the caller's own entry when the row is the caller. The lists it
+    // appears in are refetched. `UpdateUserDto` cannot touch roles, so the
+    // permissions under `me()` stay as they are.
+    ...withCacheOnSuccess(options, (user, { id }) => {
+      queryClient.setQueryData(usersKeys.detail(id), user);
+      if (isCaller(queryClient, id)) queryClient.setQueryData(usersKeys.me(), user);
+      queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
+    }),
   });
 }
 
@@ -138,10 +146,14 @@ export function useDeleteUser(
 
   return useMutation({
     mutationFn: (id: string) => app.users.delete(id),
-    onSuccess: (...args) => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      options?.onSuccess?.(...args);
-    },
-    ...options,
+    // The row is gone, so its detail is dropped rather than refetched. An
+    // admin may delete their own account: then the caller's entry and its
+    // permissions go too, or the shell keeps rendering the identity just
+    // removed.
+    ...withCacheOnSuccess(options, (_data, id) => {
+      queryClient.removeQueries({ queryKey: usersKeys.detail(id) });
+      if (isCaller(queryClient, id)) queryClient.removeQueries({ queryKey: usersKeys.me() });
+      queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
+    }),
   });
 }

@@ -18,7 +18,10 @@ The layer model is [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
   goes to `../consumer` or `../admin`.
 - A new query hook → `src/react/<module>.queries.ts` next to its key factory
   (every key derived from `all`), then exported by name from
-  `src/react/index.ts`. `src/modules/` never imports `src/react/`.
+  `src/react/index.ts`. `src/modules/` never imports `src/react/`. A
+  mutation's cache update goes through `withCacheOnSuccess(options, update)`
+  (`src/react/mutations.ts`), never a hand-written `onSuccess` beside
+  `...options`: spread in the wrong order, a caller's `onSuccess` replaces it.
 - A key two products share → `src/react/query-keys.ts` (`MEMBER_LISTS_KEY`
   lives there for exactly that reason), not a product package.
 - A feature whose responses must never reach storage → add its key prefix to

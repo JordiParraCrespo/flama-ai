@@ -60,6 +60,7 @@ jobs:
       # flama:end runner
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - run: pnpm check:biome-plugins
       # flama:begin web|web-showcase|mobile|mobile-showcase
       # The design-system linter (`@shadcn/lint` through oxlint, scoped to its
       # own rules — Biome keeps correctness) over every web and mobile app that
