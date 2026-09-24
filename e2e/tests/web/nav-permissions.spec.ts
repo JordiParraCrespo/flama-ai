@@ -8,11 +8,11 @@ import { inviteByApi, provisionedUser, signInAs } from '../../support/web';
  * API's `PoliciesGuard` checks (served by `GET /users/me/permissions`), so this
  * asserts against the real permission set of two accounts — not a stub.
  *
- * A workspace's owner holds the org-scoped owner role and sees the whole nav. A
- * plain member holds only the default `user` role, which grants nothing on
- * `Member`, so Team is hidden — not merely disabled. Dashboard and Settings
- * declare no policy: the dashboard reads only the caller's own profile, and
- * every user manages their own API tokens.
+ * Every row in `apps/web/src/lib/nav.ts` is ungated today: the dashboard reads
+ * only the caller's own profile, and every user manages their own API tokens
+ * under Settings. So an owner and a plain member are offered the same two rows,
+ * and a permission set that arrives late or not at all must not take either
+ * away. The first gated row adds its hidden-for-a-member case here.
  */
 
 /** The primary nav landmark, addressed by its accessible name. */
@@ -25,7 +25,7 @@ test('an owner sees every route', async ({ page }) => {
   await signInAs(page, owner.user);
 
   const nav = primaryNav(page);
-  for (const label of ['Dashboard', 'Team', 'Settings']) {
+  for (const label of ['Dashboard', 'Settings']) {
     await expect(nav.getByRole('link', { name: label, exact: true })).toBeVisible();
   }
 
@@ -45,9 +45,6 @@ test('a plain member sees only the routes they can reach', async ({ page }) => {
   const nav = primaryNav(page);
   await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
-  // Gone, not disabled: a row that can only answer 403 is a row nobody should
-  // be offered.
-  await expect(nav.getByRole('link', { name: 'Team', exact: true })).toHaveCount(0);
 
   await owner.api.dispose();
 });
@@ -59,12 +56,12 @@ test('the command palette offers the same destinations as the sidebar', async ({
   await page.getByRole('button', { name: 'Search' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  for (const label of ['Dashboard', 'Team', 'Settings']) {
+  for (const label of ['Dashboard', 'Settings']) {
     await expect(dialog.getByRole('option', { name: label })).toBeVisible();
   }
 
-  await dialog.getByRole('option', { name: 'Team' }).click();
-  await expect(page).toHaveURL(/\/team/);
+  await dialog.getByRole('option', { name: 'Settings' }).click();
+  await expect(page).toHaveURL(/\/settings/);
 
   await owner.api.dispose();
 });

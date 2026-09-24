@@ -71,19 +71,6 @@ test('lists every pane and moves between them', async ({ page }) => {
   await api.dispose();
 });
 
-test('opens the team page from the card', async ({ page }) => {
-  const { user, api } = await provisionedUser('profileteam');
-  await signInAs(page, user);
-  await openProfile(page);
-
-  // A link rendered through the design system's `Button`, which is what gives
-  // it `role="button"`.
-  await page.getByRole('button', { name: 'View team card' }).click();
-  await expect(page).toHaveURL(/\/team$/);
-
-  await api.dispose();
-});
-
 test.describe('the avatar', () => {
   // A 1×1 PNG is enough: the point is not the pixels but that the stored image
   // is fetched and *decoded* (`naturalWidth > 0`), which only holds if the API
