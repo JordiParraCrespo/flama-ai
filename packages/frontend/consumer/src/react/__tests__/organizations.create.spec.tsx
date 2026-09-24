@@ -33,13 +33,13 @@ describe('useCreateOrganization', () => {
     // means that even a failed refetch no longer says the caller belongs
     // nowhere.
     const { wrapper, queryClient } = setup();
-    queryClient.setQueryData(organizationsKeys.list(), []);
+    queryClient.setQueryData(organizationsKeys.lists(), []);
     const { result } = renderHook(() => useCreateOrganization(), { wrapper });
 
     result.current.mutate({ name: 'Acme' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(queryClient.getQueryData(organizationsKeys.list())).toEqual([CREATED]);
+    expect(queryClient.getQueryData(organizationsKeys.lists())).toEqual([CREATED]);
   });
 
   it('runs the caller-supplied onSuccess only once the refetch has settled', async () => {

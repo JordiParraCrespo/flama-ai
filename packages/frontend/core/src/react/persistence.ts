@@ -93,8 +93,12 @@ export function reconcileCacheOwner(queryClient: QueryClient, ownerId: string | 
  * already-stored cache unsafe to hydrate, or changes the shape of a persisted
  * key so an old entry would sit in storage that nothing reads. Revision 2
  * dropped profile/session entities written before they were excluded from
- * persistence; revision 3 drops the `['capabilities']` entry written before
- * the query moved to `capabilitiesKeys.deployment()`.
+ * persistence. Revision 3 drops three key shapes nothing reads any more: the
+ * `['capabilities']` entry (now `capabilitiesKeys.deployment()`), member lists
+ * keyed `['organizations', 'members', orgId, …]` (now under
+ * `organizationsKeys.memberLists()`), and invitations keyed
+ * `['organizations', orgId, 'invitations']` (now under
+ * `organizationsKeys.invitationLists()`).
  */
 const QUERY_PERSIST_REVISION = 3;
 

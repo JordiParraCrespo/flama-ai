@@ -25,7 +25,6 @@ import { useConsumerApp } from './context';
 export const apiTokensKeys = {
   all: ['apiTokens'] as const,
   lists: () => [...apiTokensKeys.all, 'list'] as const,
-  list: () => [...apiTokensKeys.lists()] as const,
   permissions: () => [...apiTokensKeys.all, 'permissions'] as const,
   credential: () => [...apiTokensKeys.all, 'credential'] as const,
 };
@@ -36,7 +35,7 @@ export function useApiTokens(
   const app = useConsumerApp();
 
   return useQuery({
-    queryKey: apiTokensKeys.list(),
+    queryKey: apiTokensKeys.lists(),
     queryFn: () => app.apiTokens.findAll(),
     ...options,
   });
