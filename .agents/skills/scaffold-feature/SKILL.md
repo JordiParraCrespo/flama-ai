@@ -126,7 +126,9 @@ from step 1.
   - empty: `EmptyState`, or `emptyLabel`;
   - **failed:** an `Alert` with the `useErrorMessage()` sentence and a retry
     where one helps. Never the empty state: "no members yet" after a failed
-    request tells the reader something false;
+    request tells the reader something false. `DataTable` has no error state,
+    so when the read failed and nothing is cached, render the `Alert`
+    *instead of* the table, not above an empty one;
   - loaded.
 
 Then check the plan against the render rules:
@@ -308,7 +310,8 @@ End with a short summary:
 - The files, grouped by kind, and the module they render.
 - The render plan table, with where each hook ended up and what gates each
   action.
-- The checks and their results, including any that could not run and why.
+- The checks and their results, and every check that did not run with the
+  reason, the e2e spec included (it needs the API and a database).
 - Decisions worth a second look (what a confirm guards, what is not
   persisted, what was assumed in step 1).
 - Follow-ups outside this change: an endpoint still missing, a
