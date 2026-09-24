@@ -131,13 +131,43 @@ item by item. Then check it as the person who will run it in production:
 
 Fix what this finds before presenting.
 
-## 7. Present the design
+## 7. Prove it on Postgres
+
+A review on paper misses what the database sees: a `CHECK` that allows what
+it claims to forbid, an index that cannot give the order a list needs, a
+migration that fails on a table with rows. When a Postgres is reachable
+(`pnpm docker:dev`, configured by `DB_*` in the root `.env`), run:
+
+```bash
+node --experimental-strip-types .agents/skills/design-database/scripts/check-migration.mjs \
+  apps/api/src/migrations/<your-migration>.ts \
+  [--before stubs.sql] [--fixture rows.sql] [--explain queries.sql]
+```
+
+It applies every existing migration to a scratch database, seeds a few
+production-like rows, runs your `up()`, `down()` and `up()` again, then prints
+the plan of each query in `--explain` with sequential scans switched off.
+
+- Write `queries.sql` straight from the access-pattern table, one query per
+  row, headed by a `-- Q1 ...` comment, with the exact predicates the code will
+  use. The plan must name the index you assigned. A `Sort` above it means the
+  index does not give that order; fix the index, not the table.
+- Put a few `INSERT`s that must fail in the fixture file only when you want to
+  prove them; otherwise probe the one or two rules that matter most by hand
+  with `--keep` and `psql`.
+- `--before` creates tables the design assumes but the repo does not have yet.
+
+If no database is reachable, say so in the summary and list the queries to
+check; do not claim the plans.
+
+## 8. Present the design
 
 End with a short summary for the user:
 
 - The tables and their relationships (a compact list, or a small ASCII
   diagram when there are more than three tables).
-- The access-pattern table with the index that serves each query.
+- The access-pattern table with the index that serves each query, and
+  whether `check-migration.mjs` proved it (or why it could not run).
 - The decisions worth a second look (each `ON DELETE`, soft delete or not,
   anything assumed) and the assumptions made in step 1.
 - Follow-ups outside this change (a retention job, an endpoint's

@@ -192,7 +192,9 @@ CREATE INDEX "IDX_audit_event_occurred_brin" ON "audit_event" USING BRIN ("occur
   bounds on `timestamp` values and convert with `AT TIME ZONE 'UTC'`: month
   arithmetic on `timestamptz` follows the session time zone and leaves gaps.
   The job that runs these functions is part of the design, not a
-  follow-up: without it, rows pile into the `DEFAULT` partition.
+  follow-up: without it, rows pile into the `DEFAULT` partition. The
+  retention job also deletes expired rows from the `DEFAULT` partition (a
+  partition drop never reaches them), and an alert fires when it holds any.
 - Index for the reads (per tenant timeline, per actor, per target) and
   nothing else; this table is written far more than it is read.
 

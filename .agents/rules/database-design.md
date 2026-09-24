@@ -149,8 +149,10 @@ explains why this is a table of its own). Read one before writing a new one.
   late and out of order, so the time the row was inserted is not the time the
   thing happened.
 - A range with no upper bound is a bug waiting for an `'infinity'`: bound
-  durations with a `CHECK` (`"endsAt" - "startsAt" <= interval '7 days'`)
-  wherever an open-ended row would block others.
+  durations with a named `CHECK` (`isfinite("endsAt") AND "endsAt" -
+  "startsAt" <= interval '7 days'`) wherever an open-ended row would block
+  others. Without `isfinite`, `'infinity'` fails with an arithmetic error
+  instead of the constraint's name.
 - Secrets are never stored in the clear: store a SHA-256 hex digest
   (`varchar(64)`) with a unique index, plus a short non-secret display prefix,
   as `api_token` does.
@@ -204,6 +206,11 @@ query it serves, as the outbox migration does.
 - **Partial indexes** for the hot subset: `WHERE "deletedAt" IS NULL`,
   `WHERE "status" = 'pending'`, `WHERE "expiresAt" IS NOT NULL`. They are
   smaller and faster, and they are how "unique among active rows" is said.
+- `IS NULL` is not an equality for ordering: in an index
+  `("taskId", "parentId", "createdAt")`, a query on `"parentId" IS NULL
+  ORDER BY "createdAt"` still sorts. Put a null test the query always makes
+  in the predicate instead: `("taskId", "createdAt", "id") WHERE "parentId"
+  IS NULL`. Prove the order with `EXPLAIN` (no `Sort` above the index scan).
 - Case-insensitive lookups need an expression index (`lower("email")`), and
   text search needs `pg_trgm` GIN or `tsvector`, not `LIKE '%x%'` on a
   B-tree.
@@ -291,6 +298,13 @@ Design for the table at a hundred times today's size.
     in batches, switch the code, drop the old shape in a later migration.
   - Backfills of more than a few thousand rows run in batches, not one
     `UPDATE` over the table.
+  - A batched delete or update picks its batch through an index and then
+    touches only those rows: `DELETE FROM t WHERE ctid = ANY (ARRAY(SELECT
+    ctid FROM t WHERE "occurredAt" < $cutoff LIMIT 5000))`. The plan is a
+    `Tid Scan` under an index-driven `InitPlan`. The tempting
+    `WHERE "id" IN (SELECT "id" ... LIMIT 5000)` plans as a hash semi join
+    over a sequential scan of the whole table, on every batch (checked on
+    Postgres 16).
   - Migrations run at boot, all in one transaction, so every lock a migration
     takes is held until the last one finishes. Creating a foreign key takes a
     `SHARE ROW EXCLUSIVE` lock on the referenced table, which blocks its
@@ -324,7 +338,12 @@ Design for the table at a hundred times today's size.
       `timestamptz` with `SET LOCAL TimeZone = 'UTC'` on Postgres 12+,
       widening a `varchar`) is still an `ACCESS EXCLUSIVE` lock: follow the
       point above, check the server version first, and `ANALYZE` the table
-      after.
+      after. Converting to `timestamptz` reads the stored values in the
+      migration's `TimeZone`, so check what the writers used: the database
+      default (`SELECT setting FROM pg_settings WHERE name = 'TimeZone'`
+      outside the migration's `SET LOCAL`) and the app's. When the column is
+      Better Auth's, say that Better Auth reads and writes `Date` through
+      `pg` and is unaffected.
     - Delete orphans after the `NOT VALID` constraint exists (it stops new
       ones), then validate.
 - **The migration is the source of truth**, and the ORM entity mirrors it:
@@ -365,3 +384,6 @@ Before a migration is done, each of these holds:
     partial predicates), and is registered in `data-source.ts`.
 11. Every rule of the form "may not be deleted while..." is a `NO ACTION`
     foreign key, not only an application check.
+12. The migration ran on a real Postgres (`check-migration.mjs` in the
+    `/design-database` skill): `up`, `down`, `up` against seeded rows, and
+    each access pattern's plan uses its index without an extra `Sort`.
