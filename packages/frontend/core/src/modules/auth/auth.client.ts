@@ -43,6 +43,12 @@ export type SocialProvider = 'google' | 'github';
  */
 export type SocialAuthIntent = 'sign-in' | 'sign-up';
 
+/** The OAuth client's consent request, as the authorization server hands it over. */
+export interface OAuthConsentParams {
+  consentCode: string;
+  accept: boolean;
+}
+
 export interface IAuthClient {
   /** Sign in with email and password. Rejects on failure. */
   signIn(email: string, password: string): Promise<void>;
@@ -64,6 +70,13 @@ export interface IAuthClient {
   resetPassword(token: string, newPassword: string): Promise<void>;
   /** Change the password for the currently authenticated user. */
   changePassword(currentPassword: string, newPassword: string): Promise<void>;
+  /**
+   * Answer an OAuth client's consent request and return the URI the
+   * authorization server says to send the browser to next. Only a platform
+   * that hosts the consent page implements it (web); the call goes to the same
+   * auth base URL as every other method, so a separate API origin works.
+   */
+  respondToConsent?(params: OAuthConsentParams): Promise<string>;
   /** Return the current session, or `null` if not authenticated. */
   getSession(): Promise<AuthSession | null>;
   /**

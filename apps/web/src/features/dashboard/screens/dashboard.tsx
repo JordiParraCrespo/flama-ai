@@ -6,53 +6,31 @@ import {
   CardTitle,
 } from '@flama/design-system-web';
 import { useProfile } from '@flama/frontend-core/react';
+import { PageHead } from '@flama/frontend-web';
 import { Trans, useTranslation } from 'react-i18next';
 
+/**
+ * The landing page after sign-in. It reads the profile once for the greeting
+ * and the account line: two readers of one result, so the query stays here.
+ * Metrics arrive with the endpoints that serve them, never as placeholders.
+ */
 export function DashboardScreen() {
   const { t } = useTranslation();
   const { data: user } = useProfile();
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('dashboard.title')}</h1>
-        <p className="text-muted-foreground">
-          {t('dashboard.welcome', { name: user?.firstName ?? '' })}
-        </p>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.totalUsers')}</CardDescription>
-            <CardTitle className="text-2xl">128</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.activeSessions')}</CardDescription>
-            <CardTitle className="text-2xl">24</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.apiCalls')}</CardDescription>
-            <CardTitle className="text-2xl">1,420</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.uptime')}</CardDescription>
-            <CardTitle className="text-2xl">99.9%</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+    <>
+      <PageHead
+        title={t('dashboard.title')}
+        sub={t('dashboard.welcome', { name: user?.firstName ?? '' })}
+      />
       <Card>
         <CardHeader>
           <CardTitle>{t('dashboard.gettingStarted')}</CardTitle>
           <CardDescription>{t('dashboard.gettingStartedDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-600">
             <Trans
               i18nKey="dashboard.accountStatus"
               values={{
@@ -64,6 +42,6 @@ export function DashboardScreen() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

@@ -11,58 +11,43 @@ import {
   CardTitle,
 } from '@flama/design-system-web';
 import { usePermissionCatalog } from '@flama/frontend-consumer/react';
-import { useProfile } from '@flama/frontend-core/react';
+import { useErrorMessage, useProfile, useRespondToConsent } from '@flama/frontend-core/react';
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type ConsentSearch, describeScopes, readError } from '@/features/auth/lib/consent';
+import { CenteredCard } from '@/features/auth/components/centered-card';
+import { type ConsentSearch, describeScopes } from '@/features/auth/lib/consent';
 
 /**
  * OAuth consent screen.
  *
  * Better Auth's MCP plugin sends the user here mid-authorization with the
  * client and the scopes it asked for; approving posts the consent code back and
- * follows the redirect it returns. Signing in first is required, so an
+ * follows the redirect it returns, through the core auth client so a separate
+ * API origin works. Signing in first is required, so an
  * unauthenticated visitor is bounced to the login page and returned here.
  */
 export function OAuthConsentScreen({ search }: { search: ConsentSearch }) {
   const { t } = useTranslation();
   const { data: user } = useProfile();
 
-  const [pending, setPending] = useState<'accept' | 'deny' | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const errorMessage = useErrorMessage();
+  const consent = useRespondToConsent({
+    // Hand control back to the OAuth client.
+    onSuccess: (redirectURI) => {
+      window.location.href = redirectURI;
+    },
+  });
+  // Which button is waiting: the answer in flight, or none.
+  const pending = consent.isPending ? (consent.variables.accept ? 'accept' : 'deny') : null;
 
   // The catalog comes from the API rather than the shared package: it is the
   // deployment's own answer, and it keeps this screen correct if the two drift.
   const catalog = usePermissionCatalog();
   const { scopes, unknown } = describeScopes(search.scope, catalog.data?.groups ?? []);
 
-  async function respond(accept: boolean) {
-    setPending(accept ? 'accept' : 'deny');
-    setError(null);
-
-    try {
-      const response = await fetch('/api/auth/oauth2/consent', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ accept, consent_code: search.consent_code }),
-      });
-
-      if (!response.ok) throw new Error(await readError(response));
-
-      const { redirectURI } = (await response.json()) as {
-        redirectURI?: string;
-      };
-      if (!redirectURI) throw new Error(t('consent.noRedirect'));
-
-      // Hand control back to the OAuth client.
-      window.location.href = redirectURI;
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause));
-      setPending(null);
-    }
-  }
+  const respond = (accept: boolean) => {
+    if (search.consent_code) consent.mutate({ consentCode: search.consent_code, accept });
+  };
 
   if (!search.consent_code) {
     return (
@@ -78,7 +63,7 @@ export function OAuthConsentScreen({ search }: { search: ConsentSearch }) {
         <CardHeader>
           <CardTitle>
             {t('consent.title', {
-              client: search.client_id ?? 'An application',
+              client: search.client_id ?? t('consent.unknownClient'),
             })}
           </CardTitle>
           <CardDescription>
@@ -87,9 +72,9 @@ export function OAuthConsentScreen({ search }: { search: ConsentSearch }) {
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">
-          {error && (
+          {consent.isError && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{errorMessage(consent.error).message}</AlertDescription>
             </Alert>
           )}
 
@@ -137,28 +122,6 @@ export function OAuthConsentScreen({ search }: { search: ConsentSearch }) {
             {pending === 'accept' ? t('common.loading') : t('consent.approve')}
           </Button>
         </CardFooter>
-      </Card>
-    </div>
-  );
-}
-
-function CenteredCard({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mx-auto flex min-h-svh w-full max-w-md items-center p-6">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardFooter>{children}</CardFooter>
       </Card>
     </div>
   );

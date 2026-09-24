@@ -1,14 +1,12 @@
 'use client';
 
-import { usersKeys, withCacheOnSuccess } from '@flama/frontend-core/react';
-import type { ChangeOwnPasswordDto, UpdateProfileDto } from '@flama/shared/schemas/profile';
 import {
-  type UseMutationOptions,
-  type UseQueryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+  type HookMutationOptions,
+  usersKeys,
+  withCacheOnSuccess,
+} from '@flama/frontend-core/react';
+import type { ChangeOwnPasswordDto, UpdateProfileDto } from '@flama/shared/schemas/profile';
+import { type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProfileEntity, UserSessionEntity } from '../modules/profile/profile.entity';
 import { useConsumerApp } from './context';
 
@@ -50,7 +48,7 @@ export function useMyProfile(
  */
 function useProfileWrite<TVariables>(
   mutationFn: (variables: TVariables) => Promise<ProfileEntity>,
-  options?: UseMutationOptions<ProfileEntity, Error, TVariables>,
+  options?: HookMutationOptions<ProfileEntity, Error, TVariables>,
 ) {
   const queryClient = useQueryClient();
 
@@ -64,20 +62,20 @@ function useProfileWrite<TVariables>(
 }
 
 export function useUpdateMyProfile(
-  options?: UseMutationOptions<ProfileEntity, Error, UpdateProfileDto>,
+  options?: HookMutationOptions<ProfileEntity, Error, UpdateProfileDto>,
 ) {
   const app = useConsumerApp();
 
   return useProfileWrite((dto: UpdateProfileDto) => app.profile.update(dto), options);
 }
 
-export function useUploadAvatar(options?: UseMutationOptions<ProfileEntity, Error, Blob>) {
+export function useUploadAvatar(options?: HookMutationOptions<ProfileEntity, Error, Blob>) {
   const app = useConsumerApp();
 
   return useProfileWrite((file: Blob) => app.profile.uploadAvatar(file), options);
 }
 
-export function useDeleteAvatar(options?: UseMutationOptions<ProfileEntity, Error, void>) {
+export function useDeleteAvatar(options?: HookMutationOptions<ProfileEntity, Error, void>) {
   const app = useConsumerApp();
 
   return useProfileWrite(() => app.profile.deleteAvatar(), options);
@@ -91,7 +89,7 @@ export function useDeleteAvatar(options?: UseMutationOptions<ProfileEntity, Erro
  * revoking the other sessions — so the session list is invalidated on success.
  */
 export function useChangeOwnPassword(
-  options?: UseMutationOptions<void, Error, ChangeOwnPasswordDto>,
+  options?: HookMutationOptions<void, Error, ChangeOwnPasswordDto>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -116,7 +114,7 @@ export function useProfileSessions(
   });
 }
 
-export function useRevokeProfileSession(options?: UseMutationOptions<void, Error, string>) {
+export function useRevokeProfileSession(options?: HookMutationOptions<void, Error, string>) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
 
@@ -128,7 +126,7 @@ export function useRevokeProfileSession(options?: UseMutationOptions<void, Error
   });
 }
 
-export function useRevokeOtherProfileSessions(options?: UseMutationOptions<void, Error, void>) {
+export function useRevokeOtherProfileSessions(options?: HookMutationOptions<void, Error, void>) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
 

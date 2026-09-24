@@ -1,4 +1,5 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { redirectSignedOut } from '@flama/frontend-web';
+import { createFileRoute } from '@tanstack/react-router';
 import type { ConsentSearch } from '@/features/auth/lib/consent';
 import { OAuthConsentScreen } from '@/features/auth/screens/oauth-consent';
 
@@ -14,14 +15,7 @@ export const Route = createFileRoute('/oauth/consent')({
     client_id: (search.client_id as string) || undefined,
     scope: (search.scope as string) || undefined,
   }),
-  beforeLoad: ({ context, location }) => {
-    if (!context.auth.isAuthenticated) {
-      throw redirect({
-        to: '/login',
-        search: { redirect: `${location.pathname}${location.searchStr}` },
-      });
-    }
-  },
+  beforeLoad: ({ context, location }) => redirectSignedOut({ context, location }),
   component: ConsentPage,
 });
 

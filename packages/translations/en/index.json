@@ -122,7 +122,8 @@
       "FLAG_004": "That segment could not be found.",
       "FLAG_005": "A segment with that key already exists.",
       "FLAG_006": "That segment is still used by a flag. Remove it from the flag's rules first.",
-      "FLAG_007": "Those segment conditions are not valid."
+      "FLAG_007": "Those segment conditions are not valid.",
+      "OAUTH_CONSENT_NO_REDIRECT": "The server did not say where to send you next."
     }
   },
   "auth": {
@@ -243,10 +244,6 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back, {{name}}.",
-    "totalUsers": "Total Users",
-    "activeSessions": "Active Sessions",
-    "apiCalls": "API Calls",
-    "uptime": "Uptime",
     "gettingStarted": "Getting Started",
     "gettingStartedDescription": "This is a placeholder dashboard. Connect your data and customize it.",
     "accountStatus": "Your role is <role>{{role}}</role> and your account is <status>{{status}}</status>.",
@@ -583,6 +580,8 @@
     "expired": "Expired",
     "revoked": "Revoked",
     "revoke": "Revoke",
+    "revokeTitle": "Revoke “{{name}}”?",
+    "revokeDescription": "Anything using this token stops working immediately. This cannot be undone.",
     "created": "Token created",
     "shownOnce": "Copy it now — this is the only time it is shown.",
     "copy": "Copy",
@@ -603,7 +602,7 @@
     "invalidTitle": "This link has expired",
     "invalidDescription": "Start the connection again from the application that sent you here.",
     "backToDashboard": "Back to dashboard",
-    "noRedirect": "The server did not say where to send you next."
+    "unknownClient": "An application"
   },
   "onboarding": {
     "description": "Your account is ready. Create a workspace for your team, or join one you have been invited to.",

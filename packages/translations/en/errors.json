@@ -83,6 +83,7 @@
     "FLAG_004": "That segment could not be found.",
     "FLAG_005": "A segment with that key already exists.",
     "FLAG_006": "That segment is still used by a flag. Remove it from the flag's rules first.",
-    "FLAG_007": "Those segment conditions are not valid."
+    "FLAG_007": "Those segment conditions are not valid.",
+    "OAUTH_CONSENT_NO_REDIRECT": "The server did not say where to send you next."
   }
 }

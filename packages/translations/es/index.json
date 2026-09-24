@@ -122,7 +122,8 @@
       "FLAG_004": "No se ha encontrado ese segmento.",
       "FLAG_005": "Ya existe un segmento con esa clave.",
       "FLAG_006": "Ese segmento todavía lo usa un flag. Quítalo primero de sus reglas.",
-      "FLAG_007": "Las condiciones de ese segmento no son válidas."
+      "FLAG_007": "Las condiciones de ese segmento no son válidas.",
+      "OAUTH_CONSENT_NO_REDIRECT": "El servidor no ha indicado a dónde continuar."
     }
   },
   "auth": {
@@ -243,10 +244,6 @@
   "dashboard": {
     "title": "Panel",
     "welcome": "Bienvenido de nuevo, {{name}}.",
-    "totalUsers": "Usuarios totales",
-    "activeSessions": "Sesiones activas",
-    "apiCalls": "Llamadas a la API",
-    "uptime": "Tiempo activo",
     "gettingStarted": "Primeros pasos",
     "gettingStartedDescription": "Este es un panel de ejemplo. Conecta tus datos y personalízalo.",
     "accountStatus": "Tu rol es <role>{{role}}</role> y tu cuenta está <status>{{status}}</status>.",
@@ -583,6 +580,8 @@
     "expired": "Caducado",
     "revoked": "Revocado",
     "revoke": "Revocar",
+    "revokeTitle": "¿Revocar «{{name}}»?",
+    "revokeDescription": "Todo lo que use este token dejará de funcionar de inmediato. No se puede deshacer.",
     "created": "Token creado",
     "shownOnce": "Cópialo ahora: es la única vez que se muestra.",
     "copy": "Copiar",
@@ -603,7 +602,7 @@
     "invalidTitle": "Este enlace ha caducado",
     "invalidDescription": "Vuelve a iniciar la conexión desde la aplicación que te ha traído aquí.",
     "backToDashboard": "Volver al panel",
-    "noRedirect": "El servidor no ha indicado a dónde continuar."
+    "unknownClient": "Una aplicación"
   },
   "onboarding": {
     "description": "Tu cuenta está lista. Crea un espacio de trabajo para tu equipo o únete a uno al que te hayan invitado.",

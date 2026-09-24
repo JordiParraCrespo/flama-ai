@@ -1,8 +1,8 @@
 import type { ApiTokenEntity } from '@flama/frontend-consumer';
 
 /**
- * The token's lifecycle on the brand's status set, the same way
- * `DomainStatusBadge` reads a domain's. `expired` is `paused` rather than
+ * The token's lifecycle on the brand's status set (the `Badge` variants
+ * `active`, `paused`, `ended`). `expired` is `paused` rather than
  * `ended`: it stopped working on its own and can be replaced, where `revoked`
  * was a decision someone made.
  */

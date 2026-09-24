@@ -12,7 +12,7 @@ export function PublicSiteLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-svh bg-background text-ink-900">
+    <div className="min-h-svh text-ink-900">
       <header className="border-b border-border-default">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5 lg:px-8">
           <Link to="/about" aria-label={t('public.navigation.home')}>
@@ -31,7 +31,7 @@ export function PublicSiteLayout({ children }: { children: ReactNode }) {
       <main>{children}</main>
 
       <footer className="border-t border-border-default">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 text-sm text-ink-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 text-sm text-ink-600 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <p>{t('public.footer.operator')}</p>
           <nav
             aria-label={t('public.footer.legalNavigation')}

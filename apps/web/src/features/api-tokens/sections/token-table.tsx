@@ -1,7 +1,7 @@
 import { Badge, DropdownMenuItem } from '@flama/design-system-web';
 import { Cpu } from '@flama/design-system-web/icons';
 import type { ApiTokenEntity } from '@flama/frontend-consumer';
-import { useApiTokens, useRevokeApiToken } from '@flama/frontend-consumer/react';
+import { useApiTokens } from '@flama/frontend-consumer/react';
 import {
   DataTable,
   type DataTableColumn,
@@ -11,8 +11,10 @@ import {
   useLocale,
   useTableQuery,
 } from '@flama/frontend-web';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TokenStatusBadge } from '@/features/api-tokens/components/token-status-badge';
+import { RevokeTokenDialog } from '@/features/api-tokens/dialogs/revoke-token';
 import { TOKEN_PAGE_SIZE } from '@/features/api-tokens/lib/token-status';
 
 /**
@@ -26,7 +28,8 @@ export function TokenTable() {
   const { t } = useTranslation();
   const locale = useLocale();
   const tokens = useApiTokens();
-  const revoke = useRevokeApiToken();
+  // Held here, not in the dialog: it opens from a row menu that unmounts on close.
+  const [revoking, setRevoking] = useState<ApiTokenEntity | null>(null);
 
   // Only the page is in the URL here: the list is short, has no search and no
   // filter, and the one thing worth linking to is a row further down it.
@@ -55,7 +58,7 @@ export function TokenTable() {
       label: t('apiTokens.permissions'),
       width: 320,
       render: (token) => (
-        <span className="flex max-w-[320px] flex-wrap gap-1">
+        <span className="flex max-w-80 flex-wrap gap-1">
           {token.scopes.map((scope) => (
             <Badge key={scope} variant="neutral" className="font-mono text-xs">
               {scope}
@@ -106,16 +109,13 @@ export function TokenTable() {
           // A revoked or expired token has nothing left to do to it, and a menu
           // whose only item is disabled says less than no menu at all.
           token.isActive ? (
-            <DropdownMenuItem
-              variant="destructive"
-              disabled={revoke.isPending}
-              onClick={() => revoke.mutate(token.id)}
-            >
+            <DropdownMenuItem variant="destructive" onClick={() => setRevoking(token)}>
               {t('apiTokens.revoke')}
             </DropdownMenuItem>
           ) : null
         }
       />
+      {revoking && <RevokeTokenDialog token={revoking} onClose={() => setRevoking(null)} />}
     </section>
   );
 }

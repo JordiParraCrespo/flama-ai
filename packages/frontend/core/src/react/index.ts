@@ -16,6 +16,7 @@ export {
   useLogin,
   useLogout,
   useResetPassword,
+  useRespondToConsent,
   useSessionRestore,
   useSocialLogin,
 } from './auth.queries';
@@ -34,7 +35,7 @@ export {
   useFeatureFlagValue,
 } from './feature-flags.queries';
 export { useAuthState } from './hooks';
-export { withCacheOnSuccess } from './mutations';
+export { type HookMutationOptions, withCacheOnSuccess } from './mutations';
 export {
   cacheOwnerKey,
   createQueryPersistOptions,

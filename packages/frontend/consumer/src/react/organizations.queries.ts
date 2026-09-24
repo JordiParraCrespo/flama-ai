@@ -1,11 +1,14 @@
 'use client';
 
 import type { UpdateOrganizationRequest } from '@flama/api-client';
-import { MEMBER_LISTS_KEY, withCacheOnSuccess } from '@flama/frontend-core/react';
+import {
+  type HookMutationOptions,
+  MEMBER_LISTS_KEY,
+  withCacheOnSuccess,
+} from '@flama/frontend-core/react';
 import type { CreateOrganizationDto, InviteMemberDto, OrganizationRole } from '@flama/shared';
 import {
   skipToken,
-  type UseMutationOptions,
   type UseQueryOptions,
   useMutation,
   useQuery,
@@ -149,7 +152,7 @@ export function useMyInvitations(
  * and bouncing them back to the screen they just left.
  */
 export function useAcceptInvitation(
-  options?: UseMutationOptions<OrganizationInvitationEntity, Error, string>,
+  options?: HookMutationOptions<OrganizationInvitationEntity, Error, string>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -180,7 +183,7 @@ export function useAcceptInvitation(
  * the caller belongs nowhere.
  */
 export function useCreateOrganization(
-  options?: UseMutationOptions<OrganizationEntity, Error, CreateOrganizationDto>,
+  options?: HookMutationOptions<OrganizationEntity, Error, CreateOrganizationDto>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -204,7 +207,7 @@ export interface InviteMembersVariables {
 }
 
 export function useInviteMembers(
-  options?: UseMutationOptions<OrganizationInvitationEntity[], Error, InviteMembersVariables>,
+  options?: HookMutationOptions<OrganizationInvitationEntity[], Error, InviteMembersVariables>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -218,7 +221,7 @@ export function useInviteMembers(
 }
 
 export function useUpdateOrganizationMemberRole(
-  options?: UseMutationOptions<
+  options?: HookMutationOptions<
     OrganizationMemberEntity,
     Error,
     { organizationId: string; memberId: string; role: OrganizationRole }
@@ -236,7 +239,7 @@ export function useUpdateOrganizationMemberRole(
 }
 
 export function useRemoveOrganizationMember(
-  options?: UseMutationOptions<void, Error, { organizationId: string; memberId: string }>,
+  options?: HookMutationOptions<void, Error, { organizationId: string; memberId: string }>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -250,7 +253,7 @@ export function useRemoveOrganizationMember(
 }
 
 export function useCancelOrganizationInvitation(
-  options?: UseMutationOptions<void, Error, { organizationId: string; invitationId: string }>,
+  options?: HookMutationOptions<void, Error, { organizationId: string; invitationId: string }>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -276,7 +279,7 @@ export interface UpdateOrganizationVariables {
  * takes.
  */
 export function useUpdateOrganization(
-  options?: UseMutationOptions<OrganizationEntity, Error, UpdateOrganizationVariables>,
+  options?: HookMutationOptions<OrganizationEntity, Error, UpdateOrganizationVariables>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();

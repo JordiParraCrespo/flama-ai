@@ -1,4 +1,5 @@
 import { Alert, AlertDescription, Button } from '@flama/design-system-web';
+import { toCreateOrganizationDto } from '@flama/frontend-consumer';
 import {
   useAcceptInvitation,
   useCreateOrganization,
@@ -16,7 +17,6 @@ import {
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { CreateOrganizationForm } from '@/features/organizations/forms/create-organization-form';
-import { slugify } from '@/features/organizations/lib/slugify';
 
 /**
  * Where a signed-in account with no workspace starts.
@@ -95,12 +95,7 @@ export function OnboardingScreen() {
       <CreateOrganizationForm
         disabled={busy}
         isPending={create.isPending}
-        onSubmit={({ name }) => {
-          const slug = slugify(name);
-          // A name with no slug-able characters ("日本") is the API's to name: sending
-          // `slug: ''` would fail the schema's floor for no reason the reader can fix.
-          create.mutate(slug.length >= 2 ? { name, slug } : { name });
-        }}
+        onSubmit={({ name }) => create.mutate(toCreateOrganizationDto(name))}
       />
 
       <Button

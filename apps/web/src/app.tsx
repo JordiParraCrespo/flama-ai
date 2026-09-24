@@ -86,7 +86,7 @@ function AppRoutes() {
 
   if (isPending) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-background">
+      <div className="flex min-h-svh items-center justify-center">
         <div
           role="status"
           aria-label="Loading"
@@ -116,7 +116,7 @@ function SessionRestoreError({
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-background p-6">
+    <div className="flex min-h-svh items-center justify-center p-6">
       <Alert variant="destructive" className="max-w-sm">
         <AlertTitle>{t('auth.session.errorTitle')}</AlertTitle>
         <AlertDescription>{t('auth.session.errorMessage')}</AlertDescription>
