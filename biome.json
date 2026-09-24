@@ -76,18 +76,19 @@
   },
   "overrides": [
     {
-      "includes": ["packages/frontend/*/src/react/**", "!**/__tests__/**"],
-      "plugins": ["./biome-plugins/mutation-on-success.grit"]
-    },
-    {
       "includes": [
+        "packages/frontend/*/src/**",
         "apps/*/src/**",
         "apps/*/app/**",
         "apps/*/features/**",
-        "packages/frontend/*/src/**",
-        "!**/__tests__/**"
+        "!apps/api/**",
+        "biome-plugins/fixtures/**"
       ],
-      "plugins": ["./biome-plugins/query-key-factory.grit", "./biome-plugins/query-skip-token.grit"]
+      "plugins": [
+        "./biome-plugins/mutation-on-success.grit",
+        "./biome-plugins/query-key-factory.grit",
+        "./biome-plugins/query-skip-token.grit"
+      ]
     },
     {
       "includes": [
