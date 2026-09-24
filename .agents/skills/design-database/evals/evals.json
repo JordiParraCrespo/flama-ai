@@ -122,7 +122,8 @@
         "Column names and types Better Auth reads are kept compatible (no renames), and the design notes Better Auth keeps working with timestamptz",
         "Migrations that touch these hot tables set a lock_timeout (and reset it) or otherwise bound how long they can block traffic",
         "The ORM entities are updated to match (timestamptz types, @Index declarations or synchronize: false for the concurrent indexes)",
-        "down() reverses the change (drop FKs and indexes, convert back) and the header explains the rollout order"
+        "down() reverses the change (drop FKs and indexes, convert back) and the header explains the rollout order",
+        "The ACCESS EXCLUSIVE step on session is not held open by the boot transaction: it ships alone with a short lock_timeout (and retry or a clear failure), or runs as its own short transaction; migrationsTransactionMode is not switched globally as a side effect without discussing the trade-off"
       ]
     },
     {
@@ -138,10 +139,12 @@
         "Every stock change is recorded in an append-only movement/ledger table with quantity delta, reason/type (CHECK), actor and order reference, and no updatedAt",
         "Quantities are integers or numeric, never floating point",
         "Tables are tenant-scoped with organizationId and cross-tenant references are prevented (composite FKs or equivalent)",
-        "Products and warehouses referenced by stock or movements cannot be deleted out from under history (NO ACTION/RESTRICT or archiving), not ON DELETE CASCADE on the ledger",
+        "Products and warehouses referenced by stock or movements cannot be deleted out from under history (NO ACTION/RESTRICT or archiving)",
+        "The movement ledger survives a tenant delete and a user delete: no ON DELETE CASCADE from organization into the ledger, and the actor ('who') is kept (no FK, or a label snapshot) rather than SET NULL losing it",
         "An index serves the low-stock list per warehouse (e.g. (organizationId, warehouseId, ...) with a threshold predicate or ordering on available quantity)",
         "Every timestamp is timestamptz, and every foreign key is backed by an index with the FK columns leading",
-        "The movement ledger's growth is addressed (retention or it is explicitly kept forever with an indexing plan for time-ordered reads)"
+        "The movement ledger's growth is addressed (retention or it is explicitly kept forever with an indexing plan for time-ordered reads)",
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo"
       ]
     },
     {
@@ -161,7 +164,9 @@
         "Flags ON DELETE CASCADE from subscription to its invoices (financial records) and changes it to NO ACTION/RESTRICT, or justifies it",
         "Names every constraint and index explicitly",
         "The webhook lookup is served by a unique on the provider id (ideally scoped by provider), and paid/paidAt redundancy is resolved (one source of truth or a consistency CHECK)",
-        "Adds updatedAt where rows change and fixes down() to reverse everything up() does"
+        "Adds updatedAt where rows change and fixes down() to reverse everything up() does",
+        "Invoices sort on the provider's own issue time (issuedAt), not on when the webhook row was inserted, and the provider id is unique per provider",
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo"
       ]
     },
     {
@@ -178,8 +183,9 @@
         "The primary key suits the insert volume (bigint identity, time-ordered UUIDv7 from the app, or an explicit trade-off), not an unexamined random uuid",
         "Deleting a user removes their notifications (CASCADE or purge) and the actor reference does not cascade-delete other users' notifications (SET NULL or no FK)",
         "type is constrained (CHECK or bounded varchar with a TS union) and text columns are bounded where a limit is real",
-        "'Mark all as read' is served by the unread partial index and is described as a bounded/batched update",
-        "Every timestamp is timestamptz and the ORM entity mirrors the migration (checks, partial index predicates, primary key name)"
+        "'Mark all as read' is served by the unread partial index, bounded by a snapshot (createdAt <= request time) and batched",
+        "Every timestamp is timestamptz and the ORM entity mirrors the migration (checks, partial index predicates, primary key name)",
+        "The organization reference does not cascade-delete millions of notifications inside the organization delete (no CASCADE FK, or an explicit batched purge), and the link column rejects open redirects such as //host and /\\host"
       ]
     },
     {
@@ -198,7 +204,9 @@
         "Bookings and rooms are tenant-scoped, and a booking cannot reference a room in another organization",
         "Deleting a room with bookings is decided deliberately (NO ACTION/archiving to keep history, or CASCADE with a reason)",
         "The ORM entity declares what TypeORM cannot express (the exclusion constraint, GiST index) with synchronize: false or equivalent, and the range column type is handled (tstzrange as string or custom transformer)",
-        "Every timestamp is timestamptz, and the migration header explains the design"
+        "Every timestamp is timestamptz, and the migration header explains the design",
+        "Booking length is bounded (CHECK on a maximum duration or on finite endsAt), so an open-ended booking cannot block a room forever",
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), primary keys carry their constraint names, and no relations (@ManyToOne) are declared, matching the repo"
       ]
     }
   ]

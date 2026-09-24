@@ -142,6 +142,15 @@ explains why this is a table of its own). Read one before writing a new one.
   app filters, joins, sorts on or enforces uniqueness over is a column. A
   `jsonb` column that is queried by containment gets a `GIN` index
   (`jsonb_path_ops` when only `@>` is used).
+- Data that arrives from another system (a payment provider, a webhook)
+  carries that system's identity and its own time: `"provider"` plus
+  `"externalId"`, unique together, and the event's own timestamp
+  (`"issuedAt"`, `"occurredAt"`), which is what lists sort on. Webhooks arrive
+  late and out of order, so the time the row was inserted is not the time the
+  thing happened.
+- A range with no upper bound is a bug waiting for an `'infinity'`: bound
+  durations with a `CHECK` (`"endsAt" - "startsAt" <= interval '7 days'`)
+  wherever an open-ended row would block others.
 - Secrets are never stored in the clear: store a SHA-256 hex digest
   (`varchar(64)`) with a unique index, plus a short non-secret display prefix,
   as `api_token` does.
@@ -224,6 +233,11 @@ Design for the table at a hundred times today's size.
   `organization`: every update writes a new row version and, when the column
   is indexed, a new entry in every index on the table. Put it in a narrow side
   table keyed by the parent's id.
+- An update skips index maintenance (a HOT update) only when no changed column
+  appears in any index, including inside a partial index's `WHERE` predicate.
+  A partial index on `"onHand" - "reserved" <= "reorderPoint"` makes every
+  stock update write every index on the row; `fillfactor` does not change
+  that. Weigh such an index against the write rate of the columns it names.
 - An insert-heavy table keyed by random `gen_random_uuid()` scatters inserts
   across the whole primary-key index. For tables that grow by millions of rows,
   prefer `bigint GENERATED ALWAYS AS IDENTITY`, or a time-ordered UUIDv7
@@ -287,6 +301,32 @@ Design for the table at a hundred times today's size.
   - A `SET LOCAL lock_timeout` lasts until the transaction ends, which here is
     the end of every boot migration, not just this one. A migration that sets
     it runs `RESET lock_timeout` as its last statement.
+  - **Changing a hot table that already has millions of rows** (`session`,
+    `user`, `member`, a large tenant table) is an operation, not just a
+    migration. `lock_timeout` bounds the wait for a lock, not how long it is
+    held, and at boot every lock is held until all migrations commit. So:
+    - Long, non-blocking steps (`CREATE INDEX CONCURRENTLY`, `VALIDATE
+      CONSTRAINT`, batched orphan cleanup, backfills) run outside the boot
+      transaction: as a documented one-off command or script run before the
+      deploy, each in its own short transaction with a `lock_timeout` and a
+      retry. The boot migration then only asserts they happened (it fails
+      the deploy with a clear message if the index is missing or invalid, or
+      the constraint is not validated), and builds them itself on small
+      databases (development, CI).
+    - The remaining instant `ACCESS EXCLUSIVE` step (a catalog-only `ALTER`,
+      adding a `NOT VALID` constraint) ships in its own release with a short
+      `lock_timeout`, so nothing else holds the lock open after it.
+    - Do not switch the data sources to `migrationsTransactionMode: 'each'` as
+      a side effect of one change: it makes every migration commit on its own,
+      so a failed boot leaves the schema half-migrated. If the project wants
+      that, it is its own decision and its own PR.
+    - A type change the catalog can do without a rewrite (`timestamp` to
+      `timestamptz` with `SET LOCAL TimeZone = 'UTC'` on Postgres 12+,
+      widening a `varchar`) is still an `ACCESS EXCLUSIVE` lock: follow the
+      point above, check the server version first, and `ANALYZE` the table
+      after.
+    - Delete orphans after the `NOT VALID` constraint exists (it stops new
+      ones), then validate.
 - **The migration is the source of truth**, and the ORM entity mirrors it:
   every column's type, length, nullability and default; every unique
   (`@Unique('UQ_...', [...])`); every `CHECK` (`@Check('CHK_...', ...)`);
@@ -296,6 +336,10 @@ Design for the table at a hundred times today's size.
   relations (`@ManyToOne`), so foreign keys live only in the migration and
   `migration:generate` is not a diff check for them: write migrations by
   hand.
+- "Do it to all of them" operations (mark all as read, archive all, bulk
+  status changes) are bounded: by a snapshot (`"createdAt" <= $requestTime`,
+  so rows arriving mid-request are not swept up) and by batch size, served by
+  an index that matches the filter.
 - A new ORM entity is added to the `entities` list in
   `apps/api/src/config/data-source.ts`.
 

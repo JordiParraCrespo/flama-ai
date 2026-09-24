@@ -21,6 +21,8 @@ the feature needs. Types, naming and the index rules are in
 13. Per-user or per-tenant settings (1:1)
 14. Concurrent edits (optimistic locking)
 15. Counters
+16. Non-overlapping ranges (bookings, schedules)
+17. Stock and balances that must never go negative
 
 ---
 
@@ -293,3 +295,62 @@ that row. Keep the facts (`post_like` rows, unique per user and post) and
 either count them with an index, or maintain the counter asynchronously (a job
 or the outbox). A denormalized counter that is updated in the same
 transaction is acceptable only when writes to that parent are rare.
+
+## 16. Non-overlapping ranges (bookings, schedules)
+
+"Two active bookings of a room may never overlap" is an exclusion
+constraint, not an application check, because two concurrent inserts both
+see the slot as free:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS btree_gist;  -- uuid equality inside a GiST constraint
+...
+"startsAt" TIMESTAMP WITH TIME ZONE NOT NULL,
+"endsAt"   TIMESTAMP WITH TIME ZONE NOT NULL,
+"cancelledAt" TIMESTAMP WITH TIME ZONE,
+CONSTRAINT "CHK_booking_period" CHECK ("endsAt" > "startsAt"),
+CONSTRAINT "CHK_booking_max_duration" CHECK ("endsAt" - "startsAt" <= interval '7 days'),
+CONSTRAINT "EXCL_booking_no_overlap" EXCLUDE USING gist (
+  "roomId" WITH =,
+  tstzrange("startsAt", "endsAt", '[)') WITH &&
+) WHERE ("cancelledAt" IS NULL)
+```
+
+- `'[)'` makes back-to-back bookings legal (10:00-11:00 and 11:00-12:00).
+- The predicate leaves cancelled rows out, so cancelling frees the slot and
+  the row stays for history.
+- The constraint's GiST index also serves "a room's schedule for a day" and
+  "is it free", when the query writes the same range expression and
+  predicate. "My upcoming bookings" needs its own B-tree on
+  `("userId", "endsAt")` (`endsAt`, so a meeting in progress still shows).
+- A violation is SQLSTATE `23P01`; the repository maps it to a 409.
+- The entity declares it with `@Exclusion('EXCL_...', '...')`, or leaves it
+  to the migration and says so.
+- Keep `btree_gist` in `down()`: it is database-wide, and something else may
+  rely on it.
+
+## 17. Stock and balances that must never go negative
+
+```sql
+"onHand"   integer NOT NULL DEFAULT 0,
+"reserved" integer NOT NULL DEFAULT 0,
+CONSTRAINT "CHK_stock_level_no_oversell" CHECK ("reserved" >= 0 AND "onHand" >= "reserved")
+```
+
+- The `CHECK` is the last line of defence; the write path is one guarded
+  statement, never read-then-write:
+  `UPDATE ... SET "reserved" = "reserved" + $q WHERE <key> AND "onHand" - "reserved" >= $q RETURNING ...`.
+  No row back means not enough stock. Concurrent buyers queue on the row lock
+  and each is re-checked against committed values.
+- Multi-line carts lock rows in a fixed order (`warehouseId`, `productId`) so
+  two carts cannot deadlock.
+- Every change writes an append-only ledger row in the same transaction
+  (pattern 6): signed deltas, the resulting levels, a reason with a `CHECK`,
+  the actor (without a foreign key, or with a label snapshot, so "who"
+  survives the user's deletion) and the business reference (order,
+  shipment). The ledger does not cascade from the tenant or the stock row.
+- Links between the ledger's subjects pin everything that must agree: a
+  reservation shipped by a shipment references `(organizationId, shipmentId,
+  warehouseId, orderId)`, so it cannot be shipped by another order's parcel.
+- One very hot row (a flash-sale item) serializes its buyers; the escape is
+  splitting its stock into several bucket rows, not removing the guard.

@@ -67,8 +67,9 @@ For each table decide, using the rule file:
   and soft-deleted rows.
 
 Recurring shapes, including tenant children, join tables, state machines,
-ledgers, audit logs, soft delete, trees, polymorphic links, tags, queues and
-idempotency keys, are in `references/patterns.md`. Read the ones that apply.
+ledgers, audit logs, soft delete, trees, polymorphic links, tags, queues,
+idempotency keys, non-overlapping bookings and stock that must never go
+negative, are in `references/patterns.md`. Read the ones that apply.
 
 Prefer the simplest design that holds. No soft delete without a reason, no
 `jsonb` for data that is queried, no extra table for a 1:1 without a reason
