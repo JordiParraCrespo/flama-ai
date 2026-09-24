@@ -165,7 +165,10 @@ CREATE INDEX "IDX_audit_event_occurred_brin" ON "audit_event" USING BRIN ("occur
 
 - No `updatedAt`, since rows never change. Say "append-only" in the header,
   and consider enforcing it with a trigger that rejects `UPDATE` (the
-  repository must then use `insert()`, not `save()`).
+  repository must then use `insert()`, not `save()`). Make it
+  `FOR EACH ROW`: on a partitioned table only row-level triggers are cloned
+  to the partitions, so a statement-level one is bypassed by an `UPDATE` that
+  names a partition directly.
 - An actor may be a user, a token or the system, so `actorId` is nullable and
   typed by `actorType`. Snapshot the labels a reader needs after the actor or
   target is deleted.
@@ -180,9 +183,14 @@ CREATE INDEX "IDX_audit_event_occurred_brin" ON "audit_event" USING BRIN ("occur
   it. Size it: at a few million rows a year, a plain table with a batched
   delete over the BRIN index is enough, and the header names partitioning as
   the next step. At tens of millions or more, partition by month on
-  `occurredAt` now (the primary key becomes `("id", "occurredAt")`), with a
-  `DEFAULT` partition, a job that creates next months' partitions in UTC, and
-  retention as `DROP` of old partitions.
+  `occurredAt` now (the primary key becomes `("id", "occurredAt")`, and the
+  id comes from a plain sequence: Postgres 16 has no identity columns on
+  partitioned tables), with a `DEFAULT` partition, a job that creates next
+  months' partitions and retention as `DROP` of old partitions. Compute month
+  bounds on `timestamp` values and convert with `AT TIME ZONE 'UTC'`: month
+  arithmetic on `timestamptz` follows the session time zone and leaves gaps.
+  The job that runs these functions is part of the design, not a
+  follow-up: without it, rows pile into the `DEFAULT` partition.
 - Index for the reads (per tenant timeline, per actor, per target) and
   nothing else; this table is written far more than it is read.
 

@@ -92,7 +92,7 @@ export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'void';
 @Check('CHK_invoice_total_non_negative', `"totalAmount" >= 0`)
 @Index('IDX_invoice_org_status_created', ['organizationId', 'status', 'createdAt', 'id'])
 export class InvoiceOrmEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_invoice' })
   id!: string;
 
   @Column({ type: 'uuid' })
@@ -135,6 +135,8 @@ Notes:
 - The ORM model does not declare relations (`@ManyToOne`), like every entity
   here: the aggregate boundary is the module's, and foreign keys live in the
   migration only.
+- The primary key carries its name (`primaryKeyConstraintName`, on
+  `@PrimaryGeneratedColumn` or `@PrimaryColumn`) so it matches `PK_<table>`.
 - Partial indexes carry their predicate
   (`@Index('IDX_x', ['a', 'b'], { where: '"deletedAt" IS NULL' })`);
   expression, GIN, BRIN and mixed-direction indexes are declared with

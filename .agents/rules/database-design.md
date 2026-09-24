@@ -99,7 +99,16 @@ explains why this is a table of its own). Read one before writing a new one.
 - Cross-tenant references are prevented, not just discouraged: when a child and
   its parent both carry `"organizationId"`, reference the parent on
   `("organizationId", "id")` with a matching unique on the parent, so a row can
-  never point into another tenant.
+  never point into another tenant. When every parent reference is composite
+  like this, the table needs no separate foreign key to `organization`: the
+  composite keys already guarantee and cascade it.
+- Adding that unique to a parent that already has rows is a lock on a hot
+  table. `ALTER TABLE ... ADD CONSTRAINT ... UNIQUE` builds the index under an
+  `ACCESS EXCLUSIVE` lock (no reads or writes) until the boot transaction
+  ends. Build it as `CREATE UNIQUE INDEX IF NOT EXISTS` (a `SHARE` lock:
+  reads continue), which a foreign key can reference directly, and say in the
+  header that on a large table it should be built `CONCURRENTLY` by hand
+  first, under the same name.
 
 ## Columns and types
 

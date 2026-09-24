@@ -20,7 +20,7 @@
         "Tables whose rows change have createdAt and updatedAt; constraints and indexes have explicit readable names",
         "The migration has a header comment explaining the design decisions and a down() that reverses up()",
         "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
-        "A rule that must hold across rows (a customer with invoices can't be deleted, payments can't exceed the total, or concurrent payments are guarded by a version column or row lock) is enforced by the database, not only described"
+        "Concurrent partial payments cannot lose an update: a version column (optimistic locking) or a row lock is part of the design (in code or the documented repository contract), and status/timestamp CHECKs are logically correct for every non-draft status"
       ]
     },
     {
@@ -62,7 +62,8 @@
         "The design addresses tenancy on the member table: it carries organizationId or otherwise prevents/justifies members being added across organizations",
         "New tables use snake_case singular names and camelCase quoted column names consistent with the repo",
         "The ORM entities are declared with timestamptz column types and are registered in data-source.ts (or the output says to register them)",
-        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express"
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
+        "Altering Better Auth's member table (if the design adds a unique to it) first checks for existing duplicate rows or documents the failure mode and the lock taken"
       ]
     },
     {
@@ -83,7 +84,8 @@
         "The migration header explains the design decisions and down() reverses up()",
         "The reply's parent foreign key does not silently delete replies: it is ON DELETE NO ACTION/RESTRICT (the database refuses to hard-delete a comment with replies), or CASCADE with a stated reason that the app never hard-deletes a parent that has replies",
         "Comments cannot reference a task, document or parent comment in another organization (composite FKs through organizationId, or an explicit trigger/check)",
-        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express"
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
+        "Adding the (organizationId, id) unique to the existing task and document tables is lock-aware: not an ALTER TABLE ADD CONSTRAINT UNIQUE that builds under ACCESS EXCLUSIVE in the boot transaction without a note, but a CREATE UNIQUE INDEX (buildable CONCURRENTLY beforehand) or an explicit lock-cost call-out"
       ]
     },
     {
