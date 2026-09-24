@@ -1,8 +1,9 @@
 # Templates
 
 A migration and an ORM entity in house style. Replace the names; keep the
-shape. The SQL spells `timestamptz` as `TIMESTAMP WITH TIME ZONE`, which is
-what `migration:generate` would write.
+shape. The SQL spells `timestamptz` as `TIMESTAMP WITH TIME ZONE`, which is how
+TypeORM writes it. The migration is the source of truth and the entity
+mirrors every column, unique, check and index in it.
 
 ## Migration
 
@@ -50,9 +51,10 @@ export class AddInvoices1789000000000 implements MigrationInterface {
           ON DELETE CASCADE ON UPDATE NO ACTION
       )
     `);
-    // Q1: the org's invoices by status, newest first (keyset on createdAt, id).
+    // Q1: the org's invoices by status, newest first (keyset on createdAt, id;
+    // the index is scanned backwards, so no DESC is needed).
     await queryRunner.query(
-      `CREATE INDEX "IDX_invoice_org_status_created" ON "invoice" ("organizationId", "status", "createdAt" DESC, "id" DESC)`,
+      `CREATE INDEX "IDX_invoice_org_status_created" ON "invoice" ("organizationId", "status", "createdAt", "id")`,
     );
   }
 
@@ -86,6 +88,8 @@ export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'void';
 @Entity('invoice')
 @Unique('UQ_invoice_org_number', ['organizationId', 'number'])
 @Check('CHK_invoice_status', `"status" IN ('draft', 'open', 'paid', 'void')`)
+@Check('CHK_invoice_currency', `"currency" ~ '^[A-Z]{3}$'`)
+@Check('CHK_invoice_total_non_negative', `"totalAmount" >= 0`)
 @Index('IDX_invoice_org_status_created', ['organizationId', 'status', 'createdAt', 'id'])
 export class InvoiceOrmEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -128,8 +132,12 @@ Notes:
   can pass 2^53.
 - `date` columns are returned as `'YYYY-MM-DD'` strings; keep them strings
   in the ORM model.
-- The ORM model does not declare relations (`@ManyToOne`) unless a repository
-  needs the join: the aggregate boundary is the module's, and foreign keys
-  live in the migration.
+- The ORM model does not declare relations (`@ManyToOne`), like every entity
+  here: the aggregate boundary is the module's, and foreign keys live in the
+  migration only.
+- Partial indexes carry their predicate
+  (`@Index('IDX_x', ['a', 'b'], { where: '"deletedAt" IS NULL' })`);
+  expression, GIN, BRIN and mixed-direction indexes are declared with
+  `synchronize: false` so TypeORM never tries to rebuild them.
 - Register the entity in `apps/api/src/config/data-source.ts` and in the
   module's `TypeOrmModule.forFeature([...])`.

@@ -43,8 +43,8 @@ CREATE TABLE "project" (
   CONSTRAINT "FK_project_created_by" FOREIGN KEY ("createdById")
     REFERENCES "user"("id") ON DELETE SET NULL
 );
--- The org's project list, newest first (keyset-paginated).
-CREATE INDEX "IDX_project_organization_created" ON "project" ("organizationId", "createdAt" DESC, "id" DESC);
+-- The org's project list, newest first (keyset-paginated; the B-tree is scanned backwards).
+CREATE INDEX "IDX_project_organization_created" ON "project" ("organizationId", "createdAt", "id");
 -- FK index: a user delete sets these to NULL.
 CREATE INDEX "IDX_project_created_by" ON "project" ("createdById");
 ```
@@ -141,31 +141,50 @@ history matters (who moved it, each time), add an append-only
 
 ```sql
 CREATE TABLE "audit_event" (
-  "id"             uuid NOT NULL DEFAULT gen_random_uuid(),
-  "organizationId" uuid NOT NULL,
-  "actorId"        uuid,             -- no FK: the log outlives the user
+  "id"             bigint GENERATED ALWAYS AS IDENTITY,
+  "organizationId" uuid NOT NULL,   -- no FK: see below
+  "actorType"      character varying(16) NOT NULL,  -- 'user' | 'api_token' | 'system'
+  "actorId"        uuid,            -- no FK: the log outlives the user
+  "actorLabel"     character varying(255),  -- snapshot, so the log reads after the user is gone
   "action"         character varying(64) NOT NULL,
   "targetType"     character varying(32) NOT NULL,
-  "targetId"       uuid,             -- polymorphic: no FK
-  "metadata"       jsonb NOT NULL DEFAULT '{}',
+  "targetId"       uuid,            -- polymorphic: no FK
+  "changes"        jsonb NOT NULL DEFAULT '{}',
   "ipAddress"      inet,
   "occurredAt"     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  CONSTRAINT "PK_audit_event" PRIMARY KEY ("id")
+  CONSTRAINT "PK_audit_event" PRIMARY KEY ("id"),
+  CONSTRAINT "CHK_audit_event_actor_type" CHECK ("actorType" IN ('user', 'api_token', 'system')),
+  CONSTRAINT "CHK_audit_event_changes_size" CHECK (pg_column_size("changes") <= 65536)
 );
-CREATE INDEX "IDX_audit_event_org_time" ON "audit_event" ("organizationId", "occurredAt" DESC);
-CREATE INDEX "IDX_audit_event_target" ON "audit_event" ("targetType", "targetId", "occurredAt" DESC);
+CREATE INDEX "IDX_audit_event_org_time" ON "audit_event" ("organizationId", "occurredAt");
+CREATE INDEX "IDX_audit_event_org_actor_time" ON "audit_event" ("organizationId", "actorId", "occurredAt") WHERE "actorId" IS NOT NULL;
+CREATE INDEX "IDX_audit_event_org_target_time" ON "audit_event" ("organizationId", "targetType", "targetId", "occurredAt");
+-- Retention delete scans by time across tenants.
+CREATE INDEX "IDX_audit_event_occurred_brin" ON "audit_event" USING BRIN ("occurredAt");
 ```
 
-- No `updatedAt`, since rows never change. Say "append-only" in the header.
-- The references are deliberately FK-less so history survives deletes. Keep
-  the tenant FK only if the log should vanish with the tenant (usually yes,
-  for GDPR).
-- Unbounded: give a retention period and the job that enforces it, and note
-  it as a candidate for monthly range partitioning on `occurredAt`, which
-  makes retention a `DROP` of old partitions instead of a mass `DELETE`.
-  (A partitioned table's primary key must include `occurredAt`.)
-- Index for the reads (per tenant timeline, per target history) and nothing
-  else; this table is written far more than it is read.
+- No `updatedAt`, since rows never change. Say "append-only" in the header,
+  and consider enforcing it with a trigger that rejects `UPDATE` (the
+  repository must then use `insert()`, not `save()`).
+- An actor may be a user, a token or the system, so `actorId` is nullable and
+  typed by `actorType`. Snapshot the labels a reader needs after the actor or
+  target is deleted.
+- References are FK-less so history survives deletes, including the tenant:
+  a `CASCADE` from `organization` would delete millions of rows inside the
+  organization delete. Tenant erasure is the retention job run for that
+  tenant (batched) or a partition drop.
+- A `bigint` identity key keeps inserts at the right edge of the index; a
+  random UUID key would scatter them. Expose it only inside the org, or add a
+  public uuid if ids leave the API.
+- Unbounded: state the retention period and the scheduled job that enforces
+  it. Size it: at a few million rows a year, a plain table with a batched
+  delete over the BRIN index is enough, and the header names partitioning as
+  the next step. At tens of millions or more, partition by month on
+  `occurredAt` now (the primary key becomes `("id", "occurredAt")`), with a
+  `DEFAULT` partition, a job that creates next months' partitions in UTC, and
+  retention as `DROP` of old partitions.
+- Index for the reads (per tenant timeline, per actor, per target) and
+  nothing else; this table is written far more than it is read.
 
 ## 7. Soft delete
 
@@ -178,10 +197,12 @@ resolve. Then:
 -- uniqueness among live rows only
 CREATE UNIQUE INDEX "UQ_document_org_slug_live" ON "document" ("organizationId", "slug") WHERE "deletedAt" IS NULL;
 -- the hot list only reads live rows
-CREATE INDEX "IDX_document_org_updated_live" ON "document" ("organizationId", "updatedAt" DESC) WHERE "deletedAt" IS NULL;
+CREATE INDEX "IDX_document_org_updated_live" ON "document" ("organizationId", "updatedAt") WHERE "deletedAt" IS NULL;
 ```
 
 Plus a purge: how long soft-deleted rows stay, and what hard-deletes them.
+A soft-deleted row whose content must disappear (a deleted comment's text)
+also clears that content, keeping only what the placeholder needs.
 TypeORM's `@DeleteDateColumn({ type: 'timestamptz' })` makes `find*` skip
 them; raw query builders must add the predicate themselves.
 
@@ -192,10 +213,14 @@ them; raw query builders must add the predicate themselves.
 - Add a **materialized path** (`"path" text` like `/a/b/c/`, indexed with
   `text_pattern_ops`, or `ltree`) when subtree reads are hot, and maintain it
   on move.
-- `CHECK ("parentId" <> "id")`; deeper cycle prevention lives in the
-  application or a trigger.
-- `ON DELETE`: `CASCADE` deletes the subtree; `RESTRICT` forces the app to
-  move or delete children first. Choose by what the product wants.
+- `CHECK ("parentId" <> "id")`; deeper cycle prevention, or a depth limit
+  (one level of replies), lives in a trigger, since a `CHECK` cannot read
+  another row.
+- `ON DELETE`: `CASCADE` deletes the subtree; `NO ACTION` makes the database
+  refuse to delete a node that has children. When the product keeps a node
+  that has children (a deleted comment shown as "deleted" in its thread), use
+  `NO ACTION`: the app turns the node into a placeholder, and a bug that
+  hard-deletes it fails loudly instead of silently deleting the replies.
 
 ## 9. Polymorphic references
 

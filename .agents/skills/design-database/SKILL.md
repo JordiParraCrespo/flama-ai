@@ -81,10 +81,11 @@ Walk the access-pattern table and give each query an index, then remove the
 redundant ones:
 
 - Equality columns first, then the range or sort column; the tenant leads.
-- Keyset-paginated lists end in the ordering column plus `id`.
+- Keyset-paginated lists end in the ordering column plus `id`, ascending;
+  Postgres scans the index backwards for newest-first.
 - A partial index when the query only reads a subset (`WHERE "status" =
   'pending'`, `WHERE "deletedAt" IS NULL`).
-- Every foreign-key column is the leading column of some index.
+- Every foreign key's columns are the leading columns of some index.
 - Drop any index whose columns are a prefix of another's.
 
 Name each index for its columns or its purpose, and in the migration put a
@@ -120,6 +121,12 @@ item by item. Then check it as the person who will run it in production:
 - Can a bug in application code put a row into a state the business says is
   impossible? If a `CHECK`, `UNIQUE` or `FOREIGN KEY` could stop it, add it.
 - Can a row in one tenant reference a row in another?
+- For each rule "X may not be deleted while it has Y": is the foreign key
+  `NO ACTION`, so the database enforces it even if the app forgets?
+- Which locks does the migration take on tables that already have rows, and
+  for how long, given all boot migrations share one transaction?
+- Does every `CHECK`, unique and partial predicate in the SQL appear on the
+  entity?
 
 Fix what this finds before presenting.
 

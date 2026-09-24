@@ -14,11 +14,13 @@
         "Invoice status is constrained with a CHECK (or equivalent) listing draft, open, paid, void",
         "Invoice number is unique per organization (UNIQUE on organizationId + number), not globally",
         "Invoices, lines and payments are not ON DELETE CASCADE from customer: RESTRICT/NO ACTION protects financial records from a customer delete",
-        "Every foreign-key column is covered by an index whose leading column is that FK column (or by the primary key / a unique)",
+        "Every foreign key is backed by an index whose leading columns are exactly the foreign key's columns (all of them for a composite FK), or by the primary key / a unique with that prefix",
         "There is an index leading with organizationId that serves listing open invoices by due date (organizationId, status and dueOn/dueDate, or a partial index on status)",
         "Line items store their own description and unit price (a snapshot), not only a product reference",
         "Tables whose rows change have createdAt and updatedAt; constraints and indexes have explicit readable names",
-        "The migration has a header comment explaining the design decisions and a down() that reverses up()"
+        "The migration has a header comment explaining the design decisions and a down() that reverses up()",
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express",
+        "A rule that must hold across rows (a customer with invoices can't be deleted, payments can't exceed the total, or concurrent payments are guarded by a version column or row lock) is enforced by the database, not only described"
       ]
     },
     {
@@ -32,12 +34,15 @@
         "The time column is timestamptz / TIMESTAMP WITH TIME ZONE",
         "The diff/metadata is stored as jsonb",
         "IP address uses the inet type (or a bounded varchar with a stated reason)",
-        "The actor and target references either have no foreign key with a stated reason (history must survive deletes), or use ON DELETE SET NULL; they are not ON DELETE CASCADE",
+        "The actor and target references have no foreign key with a stated reason (history must survive deletes), or use ON DELETE SET NULL; they are not ON DELETE CASCADE",
         "There is an index leading with organizationId followed by the time column (descending or used for newest-first)",
         "There are indexes serving the filter by actor and the filter by target record, each scoped by organization or time",
-        "The design states a retention period or purge mechanism for the unbounded table",
+        "The design states a concrete retention period AND the mechanism that enforces it (a scheduled job or partition drop), not only a function nobody runs",
         "The design mentions time-based partitioning as the scaling path (or implements it)",
-        "Constraints and indexes have explicit readable names and the migration header explains the design"
+        "Constraints and indexes have explicit readable names and the migration header explains the design",
+        "organizationId is not an ON DELETE CASCADE foreign key that would delete millions of audit rows in the organization-delete transaction (no FK with a reason, or tenant erasure via batched purge / partition drop)",
+        "Actors that are not users (system jobs, API tokens) can be recorded: actorId is nullable or typed by an actorType",
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express"
       ]
     },
     {
@@ -51,12 +56,13 @@
         "The slug is unique per organization (UNIQUE on organizationId + slug), not globally",
         "The member table prevents duplicate membership with a composite primary key or a unique on (projectId, userId)",
         "Member role is constrained with a CHECK (or equivalent) to viewer, editor, admin",
-        "There is an index leading with userId on the member table to serve 'my projects' (the (projectId, userId) key already serves the member list)",
-        "Membership rows cascade when the project or the user is deleted (ON DELETE CASCADE)",
+        "There is an index serving 'my projects': leading with userId, or (organizationId, userId) when the design explicitly scopes 'my projects' to the active organization",
+        "Membership rows are removed when the project is deleted and when the user is deleted or leaves the organization (ON DELETE CASCADE directly, or through a cascading composite FK to member)",
         "Every timestamp column is timestamptz / TIMESTAMP WITH TIME ZONE, with createdAt on both tables and updatedAt on project",
         "The design addresses tenancy on the member table: it carries organizationId or otherwise prevents/justifies members being added across organizations",
         "New tables use snake_case singular names and camelCase quoted column names consistent with the repo",
-        "The ORM entities are declared with timestamptz column types and are registered in data-source.ts (or the output says to register them)"
+        "The ORM entities are declared with timestamptz column types and are registered in data-source.ts (or the output says to register them)",
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express"
       ]
     },
     {
@@ -74,7 +80,10 @@
         "The comment table carries organizationId and the listing index for a target's thread leads with the tenant or the target id",
         "Every foreign-key column is covered by an index",
         "Emoji and body columns have sensible types and bounds (e.g. bounded varchar for emoji, text for body with a non-empty CHECK)",
-        "The migration header explains the design decisions and down() reverses up()"
+        "The migration header explains the design decisions and down() reverses up()",
+        "The reply's parent foreign key does not silently delete replies: it is ON DELETE NO ACTION/RESTRICT (the database refuses to hard-delete a comment with replies), or CASCADE with a stated reason that the app never hard-deletes a parent that has replies",
+        "Comments cannot reference a task, document or parent comment in another organization (composite FKs through organizationId, or an explicit trigger/check)",
+        "The ORM entities mirror the migration: every CHECK, unique and partial-index predicate in the SQL is declared on the entity (or the index is marked synchronize: false), and no index uses DESC that the entity cannot express"
       ]
     },
     {
@@ -89,9 +98,11 @@
         "lastActiveAt is timestamptz / TIMESTAMP WITH TIME ZONE",
         "The timezone column is bounded (varchar with a length) or constrained, not an unlimited varchar with no reasoning",
         "There is an index that serves the 'inactive for 30 days' query (on lastActiveAt, possibly partial)",
-        "The migration considers lock safety on a table with rows (instant ADD COLUMN, index build concurrently or a note about it)",
+        "The migration is lock-safe on the populated user table: no long-running backfill runs in the same transaction as a lock on user (FK creation, ALTER), and any index on a large table is built without blocking writes or called out to be built concurrently",
         "The ORM entity is updated with matching types and nullability",
-        "down() reverses up() and the header explains the design"
+        "down() reverses up() and the header explains the design",
+        "The frequently-updated lastActiveAt does not cause write amplification on the hot user row (side table), or the design explicitly weighs that cost",
+        "The design prevents emailing the same inactive user repeatedly (e.g. a sent-at timestamp cleared on activity), and says what happens to users already inactive at launch"
       ]
     }
   ]
