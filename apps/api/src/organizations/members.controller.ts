@@ -65,12 +65,11 @@ export class MembersController {
   @CheckPolicies({ action: 'read', subject: 'Member' })
   @ApiOperation({ summary: "Get the caller's own membership in an organization" })
   @ApiResponse({ status: 200, type: MemberResponseDto })
-  active(
-    @Req() req: Request,
+  getMembership(
     @Param('orgId', ParseUUIDPipe) orgId: string,
     @CurrentUser('id') userId: string,
   ): Promise<MemberResponseDto> {
-    return this.organizations.getMembership(req.headers, orgId, userId);
+    return this.organizations.getMembership(orgId, userId);
   }
 
   @Get(':orgId/members')

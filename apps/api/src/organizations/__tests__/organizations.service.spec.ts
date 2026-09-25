@@ -18,7 +18,6 @@ vi.mock('../../auth/infrastructure/better-auth.config', () => ({
       removeMember: vi.fn(),
       updateMemberRole: vi.fn(),
       leaveOrganization: vi.fn(),
-      getActiveMember: vi.fn(),
       createTeam: vi.fn(),
       addTeamMember: vi.fn(),
       setActiveTeam: vi.fn(),
@@ -461,25 +460,23 @@ describe('OrganizationsService', () => {
       expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', [], 'org1');
     });
 
-    it("reads the caller's membership in the organization the route names", async () => {
-      api.listMembers.mockResolvedValue({ members: [memberRecord] });
-      const result = await service.getMembership(headers, 'org1', 'u1');
+    it("reads the caller's own membership row in the organization named", async () => {
+      memberRecords.findOne.mockResolvedValue({ ...memberRecord, createdAt: new Date() });
 
+      const result = await service.getMembership('org1', 'u1');
+
+      expect(memberRecords.findOne).toHaveBeenCalledWith({
+        where: { organizationId: 'org1', userId: 'u1' },
+      });
       expect(result).toMatchObject({ id: 'm1', organizationId: 'org1', userId: 'u1' });
-      // The organization comes from the path, never the session's active one.
-      expect(api.listMembers).toHaveBeenCalledWith(
-        expect.objectContaining({
-          query: { organizationId: 'org1', filterField: 'userId', filterValue: 'u1', limit: 1 },
-        }),
-      );
-      expect(api.getActiveMember).not.toHaveBeenCalled();
+      expect(result.user).toMatchObject({ email: 'member@x.com' });
     });
 
-    it('reports a missing membership as ORG_005 rather than returning nothing', async () => {
-      api.listMembers.mockResolvedValue({ members: [] });
+    it('refuses a caller with no membership there as not a member (ORG_003)', async () => {
+      memberRecords.findOne.mockResolvedValue(null);
 
-      await expect(service.getMembership(headers, 'org1', 'u1')).rejects.toMatchObject({
-        code: 'ORG_005',
+      await expect(service.getMembership('org1', 'u1')).rejects.toMatchObject({
+        code: 'ORG_003',
       });
     });
   });

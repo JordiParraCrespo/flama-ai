@@ -2542,7 +2542,7 @@
     },
     "/api/v1/organizations/{orgId}/members/me": {
       "get": {
-        "operationId": "active",
+        "operationId": "getMembership",
         "parameters": [
           {
             "name": "orgId",

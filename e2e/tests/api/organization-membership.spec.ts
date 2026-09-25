@@ -1,17 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, request, test } from '@playwright/test';
+import { API_URL } from '../../playwright.config';
 import { expectProblemDocument, signedUpContext } from '../../support/auth';
 import { createOrganization } from '../../support/web';
 
-/**
- * `GET /v1/organizations/:orgId/members/me` answers for the organization in the
- * path.
- *
- * It used to answer for the session's *active* organization and ignore the
- * path, so a caller in two workspaces got the wrong membership, and a token
- * restricted to one organization could read the caller's membership in
- * another. The OpenAPI document also left `orgId` out, so the generated client
- * could not send it.
- */
 test.describe("the caller's own membership", () => {
   test('is read from the organization in the path, not the active one', async () => {
     const { api, userId } = await signedUpContext('membershipme');
@@ -29,6 +20,29 @@ test.describe("the caller's own membership", () => {
       role: 'owner',
     });
 
+    await api.dispose();
+  });
+
+  test('is answered for a token pinned to no organization', async () => {
+    const { api, userId } = await signedUpContext('membershiptoken');
+    await createOrganization(api, 'First workspace');
+    const second = await createOrganization(api, 'Second workspace');
+
+    const minted = await api.post('/api/v1/tokens', {
+      data: { name: 'membership e2e', scopes: ['members:read'] },
+    });
+    expect(minted.status(), 'minting an unrestricted token should succeed').toBe(201);
+    const { token } = (await minted.json()) as { token: string };
+
+    const bearer = await request.newContext({
+      baseURL: API_URL,
+      extraHTTPHeaders: { Authorization: `Bearer ${token}` },
+    });
+    const response = await bearer.get(`/api/v1/organizations/${second}/members/me`);
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toMatchObject({ organizationId: second, userId });
+
+    await bearer.dispose();
     await api.dispose();
   });
 

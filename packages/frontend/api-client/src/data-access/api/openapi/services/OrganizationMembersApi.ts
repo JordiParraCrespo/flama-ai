@@ -1,7 +1,3 @@
-/* generated using openapi-typescript-codegen -- do not edit */
-/* istanbul ignore file */
-/* tslint:disable */
-/* eslint-disable */
 import type { AddMemberRequest } from '../../../../common/models/AddMemberRequest';
 import type { MemberResponseDto } from '../../../../common/models/MemberResponseDto';
 import type { UpdateMemberRoleRequest } from '../../../../common/models/UpdateMemberRoleRequest';
@@ -15,7 +11,7 @@ export class OrganizationMembersApi {
      * @returns MemberResponseDto
      * @throws ApiError
      */
-    public static active(
+    public static getMembership(
         orgId: string,
     ): CancelablePromise<MemberResponseDto> {
         return __request(OpenAPI, {
