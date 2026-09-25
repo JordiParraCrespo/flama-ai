@@ -1,14 +1,8 @@
 'use client';
 
-import { withCacheOnSuccess } from '@flama/frontend-core/react';
+import { type HookMutationOptions, withCacheOnSuccess } from '@flama/frontend-core/react';
 import type { CreateApiTokenDto } from '@flama/shared';
-import {
-  type UseMutationOptions,
-  type UseQueryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ApiTokenEntity,
   CreatedApiToken,
@@ -72,7 +66,7 @@ export function useCurrentCredential(
 }
 
 export function useCreateApiToken(
-  options?: UseMutationOptions<CreatedApiToken, Error, CreateApiTokenDto>,
+  options?: HookMutationOptions<CreatedApiToken, Error, CreateApiTokenDto>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -85,7 +79,7 @@ export function useCreateApiToken(
   });
 }
 
-export function useRevokeApiToken(options?: UseMutationOptions<void, Error, string>) {
+export function useRevokeApiToken(options?: HookMutationOptions<void, Error, string>) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
 

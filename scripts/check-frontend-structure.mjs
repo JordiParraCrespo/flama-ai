@@ -290,6 +290,60 @@ function checkQueryStaysHome(source, label) {
   }
 }
 
+/**
+ * A prop a component only hands on.
+ *
+ * `CreateTokenCard` took three props from the screen above it and passed all
+ * three to the form below it, reading none: the screen fetched for a card that
+ * did not need the data, so the card could hand it to a form that did. The
+ * component that draws the value should be the one that asks for it, or the
+ * one the value is born in.
+ *
+ * Narrow on purpose. Only `sections/` and `dialogs/` are read: they may fetch,
+ * so for them handing data on is a choice. A `forms/` or `components/` file
+ * must be handed what it draws, and a screen takes the route's params. And
+ * callbacks (`on*`), `children`, `className`, `disabled`, React Hook Form's
+ * `control` and the pending/error pair a form child needs are skipped: passing
+ * those down is how a form stays free of the query port and a leaf subscribes
+ * itself. What is left — data given and given away untouched — is what recurred.
+ */
+const FORWARDABLE = /^(on[A-Z]\w*|children|className|disabled|control|isPending|pending|error|id)$/;
+const FORWARD_CHECKED_KINDS = new Set(['sections', 'dialogs']);
+
+function destructuredProps(source) {
+  const props = [];
+  const pattern = /export function [A-Z]\w*\s*(?:<[^>]*>)?\(\s*{([^}]*)}\s*:/g;
+  let match = pattern.exec(source);
+  while (match !== null) {
+    for (const part of match[1].split(',')) {
+      const name = part
+        .split(/[:=]/)[0]
+        .trim()
+        .replace(/^\.\.\./, '');
+      if (/^[a-z][\w$]*$/.test(name)) props.push(name);
+    }
+    match = pattern.exec(source);
+  }
+  return props;
+}
+
+function checkNoForwardOnlyProps(source, label) {
+  for (const prop of destructuredProps(source)) {
+    if (FORWARDABLE.test(prop)) continue;
+    // A `name:` or `name?:` is a type member or an object key, and `name={`
+    // an attribute of that name: none of them reads the value.
+    const uses = source.match(new RegExp(`\\b${prop}\\b(?!\\s*\\??:|={)`, 'g'))?.length ?? 0;
+    // One use is the destructuring itself; every other one a bare `x={prop}`.
+    const forwards = source.match(new RegExp(`\\b[\\w-]+={\\s*${prop}\\s*}`, 'g'))?.length ?? 0;
+    const shorthand = source.match(new RegExp(`{\\s*\\.\\.\\.${prop}\\s*}`, 'g'))?.length ?? 0;
+    if (uses > 1 && uses - 1 === forwards + shorthand) {
+      fail(
+        `${label}: \`${prop}\` is only handed on, never read here. Let the component that draws it ask for it (a section or dialog may fetch), or drop this layer. See .agents/rules/frontend-architecture.md`,
+      );
+    }
+  }
+}
+
 for (const { app, routes, features, product, allow, kit } of APPS) {
   const appDir = join(root, app);
   if (!existsSync(appDir)) continue;
@@ -329,6 +383,7 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
             const source = readFileSync(file, 'utf8');
             const label = `${app}/${features}/${name}/${kind}/${entry.name}`;
             checkQueryStaysHome(source, label);
+            if (FORWARD_CHECKED_KINDS.has(kind)) checkNoForwardOnlyProps(source, label);
           }
           if (entry.isDirectory() && kind !== '__tests__') {
             fail(
@@ -350,7 +405,11 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
   if (existsSync(routesDir)) {
     for (const file of walk(routesDir)) {
       if (!/\.tsx?$/.test(file) || file.endsWith('.gen.ts')) continue;
-      const lines = readFileSync(file, 'utf8').split('\n').length;
+      const source = readFileSync(file, 'utf8');
+      // A route composes, so a query it subscribes to only to hand to one
+      // screen or section is the same mistake one level up.
+      if (file.endsWith('.tsx')) checkQueryStaysHome(source, relative(root, file));
+      const lines = source.split('\n').length;
       if (lines > ROUTE_LINE_CAP) {
         fail(
           `${relative(root, file)}: ${lines} lines; a route file composes (cap ${ROUTE_LINE_CAP}). Move the body into ${features}/<module>/screens/`,

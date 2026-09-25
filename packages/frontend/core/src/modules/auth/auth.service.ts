@@ -8,7 +8,7 @@ import {
 } from '../analytics/analytics.events';
 import type { AnalyticsService } from '../analytics/analytics.service';
 import type { IStorageService } from '../core/storage.service';
-import type { SocialAuthIntent, SocialProvider } from './auth.client';
+import type { OAuthConsentParams, SocialAuthIntent, SocialProvider } from './auth.client';
 import type { AuthRepository } from './auth.repository';
 import type { AuthStore } from './auth.state';
 
@@ -107,6 +107,11 @@ export class AuthService {
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     return this.authRepository.changePassword(currentPassword, newPassword);
+  }
+
+  /** Resolves with the redirect URI that hands control back to the OAuth client. */
+  respondToConsent(params: OAuthConsentParams): Promise<string> {
+    return this.authRepository.respondToConsent(params);
   }
 
   async logout(): Promise<void> {

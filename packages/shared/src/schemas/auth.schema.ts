@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Auth DTOs. These carry no failure messages on purpose: an explicit message
  * wins over any error map Zod is handed, which would pin every consumer to
  * English. The apps translate from the issue code instead — see
- * `createZodErrorMap` in `@flama/frontend/validation`.
+ * `createZodErrorMap` in `@flama/frontend-core/validation`.
  */
 
 export const loginSchema = z.object({
@@ -29,6 +29,15 @@ export const resetPasswordSchema = z.object({
 });
 
 /**
+ * The reset-password form: the new password twice. Not a request body — the
+ * token comes from the link, not the reader — so it picks the password rule
+ * from the DTO rather than restating it.
+ */
+export const newPasswordSchema = resetPasswordSchema
+  .pick({ password: true })
+  .extend({ confirmPassword: z.string().min(8) });
+
+/**
  * Accepting an invitation: the invitee's address is fixed by the invitation
  * itself, so the form only collects a display name and a password.
  */
@@ -46,5 +55,6 @@ export type LoginDto = z.infer<typeof loginSchema>;
 export type RegisterDto = z.infer<typeof registerSchema>;
 export type ForgotPasswordDto = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
+export type NewPasswordValues = z.infer<typeof newPasswordSchema>;
 export type AcceptInvitationDto = z.infer<typeof acceptInvitationSchema>;
 export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;

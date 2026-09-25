@@ -4,7 +4,9 @@ import type { IAuthClient } from '@flama/frontend-core';
 import { createAuthClient } from 'better-auth/react';
 import * as SecureStore from 'expo-secure-store';
 
-const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
+// Resolved once here and imported by `flama.ts`, so the auth client and the
+// REST client can never default to two different hosts.
+export const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 // Must match the `scheme` in app.config.ts and MOBILE_SCHEME on the API so
 // OAuth and password-reset deep links resolve back into the app.

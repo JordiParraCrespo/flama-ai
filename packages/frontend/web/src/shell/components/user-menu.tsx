@@ -32,8 +32,8 @@ export function UserMenu({ trigger = 'sidebar' }: { trigger?: 'sidebar' | 'avata
   const logout = useLogout({ onSuccess: () => navigate({ to: '/login' }) });
 
   const currentLocale = i18n.resolvedLanguage ?? i18n.language;
-  const name = user ? `${user.firstName} ${user.lastName}` : '';
-  const initials = user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : '';
+  const name = user?.fullName ?? '';
+  const initials = user?.initials ?? '';
 
   return (
     <DropdownMenu>

@@ -1,6 +1,6 @@
-import { useMyPermissions } from '@flama/frontend-core/react';
 import { type AppAbility, defineAbilitiesFromPermissions } from '@flama/shared/permissions';
 import { useMemo } from 'react';
+import { useMyPermissions } from './users.queries';
 
 export interface AbilityState {
   /** The ability, or `undefined` while it is unknown — loading or unavailable. */
@@ -20,6 +20,9 @@ export interface AbilityState {
  * union of roles the server's `PoliciesGuard` checks, so a `can(...)` here
  * agrees with what the API would allow — it lets the UI hide what it would only
  * be refused, rather than showing it and rendering the 403.
+ *
+ * In the kernel rather than a platform kit: nothing here draws, and a mobile
+ * screen that hides what it would be refused needs the same answer.
  *
  * Imported from the `@flama/shared/permissions` subpath, never the package
  * root — the root's CJS build is not tree-shakeable and would drag the whole

@@ -2,7 +2,12 @@
 
 import type { UseMutationOptions } from '@tanstack/react-query';
 
-type HookMutationOptions<TData, TError, TVariables, TOnMutateResult> = Omit<
+/**
+ * What a mutation hook accepts as `options`: everything but `mutationFn`, which
+ * is the hook's own. Typed as plain `UseMutationOptions`, a caller's
+ * `mutationFn` would land in the spread after the hook's and replace it.
+ */
+export type HookMutationOptions<TData, TError, TVariables, TOnMutateResult = unknown> = Omit<
   UseMutationOptions<TData, TError, TVariables, TOnMutateResult>,
   'mutationFn'
 >;

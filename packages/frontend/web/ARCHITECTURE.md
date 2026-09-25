@@ -17,21 +17,22 @@ importing it configures i18next; everything else is pure and may be dropped.
 | --- | --- | --- |
 | `platform` | `LocalStorageService`, `useCopy`, `sanitizeRedirect` — the browser, wrapped | leaf |
 | `theme` | `ThemeProvider`, `useTheme`, `ThemeToggle`, `BrandGlyph` | leaf |
-| `i18n` | the i18next instance and `i18nReady`, `useLocale`, `useApplyUserSettings`, `LanguageSwitcher`, the date and person-name formatters | leaf |
+| `i18n` | the i18next instance and `i18nReady`, `useApplyUserSettings`, `LanguageSwitcher`, the person-name formatters, and — re-exported from `@flama/frontend-core` — `useLocale` and the date formatters. It reads `theme` to apply a saved theme | middle |
 | `analytics` | `createWebAnalyticsClient` (PostHog), `PageViewTracker` | leaf |
 | `forms` | `useZodResolver` | leaf |
 | `table` | `DataTable` (a shell over a header, a body and a footer, so a keystroke in the search field does not re-render the rows), its column/facet/sort types, `useTableQuery`, `useClampedPage`, `useDebouncedCallback`, `paginateRows`, `downloadCsv` | middle |
-| `layout` | `PageHead`, the section primitives (`SectionCard`, `SectionRow`, `FieldRow`, …), `ConfirmDialog` | middle |
+| `layout` | `PageHead`, `SectionNav` (the side nav of a paned page), the section primitives (`SectionCard`, `SectionRow`, `FieldRow`, …), `ConfirmDialog` | middle |
 | `roles` | `RolePill` | middle |
-| `shell` | `AppShell`, `AppSidebar`, `TopBar`, `UserMenu`, `CommandPalette`, `ShellProvider`/`useShell`, `useAbility`, `useAuthorizedNav`, the nav types | top |
-| `auth` | `AuthLayout`, `AuthArtPanel`, `BrandLogo`, the auth primitives, `PasswordInput`, `SocialLoginButtons`, `OAuthCallbackNotice`, `redirectSignedIn` | top |
+| `shell` | `AppShell`, `AppSidebar`, `TopBar`, `UserMenu`, `CommandPalette`, `ShellProvider`/`useShell`, `useAuthorizedNav`, `useLandingRoute`, the nav types, and `useAbility` re-exported from the kernel | top |
+| `auth` | `AuthLayout`, `AuthArtPanel`, `BrandLogo`, the auth primitives, `PasswordInput`, `PasswordChecklist` (subscribes to the password field itself), `SocialLoginButtons`, `OAuthCallbackNotice`, `redirectSignedIn`, `redirectSignedOut` | top |
 
 The lists live in [`.dependency-cruiser.cjs`](.dependency-cruiser.cjs), which
 passes them to `packages/tsconfig/depcruise/frontend-kit.cjs`.
 
 ## The layering, and why
 
-A leaf imports only `@flama/design-system-web` and `@flama/frontend-core`.
+A leaf imports only `@flama/design-system-web` and `@flama/frontend-core` —
+no other concern, not even another leaf.
 A middle concern may import a leaf. A top concern may import anything below.
 Nothing imports upwards.
 
@@ -48,9 +49,9 @@ kit and nothing composes them.
 
 ## Concerns meet at their index
 
-`src/<concern>/index.ts` is the concern's public surface: it names each
-export rather than re-exporting a directory, so what leaves the concern is
-visible in one file. A concern imports another through that file only —
+`src/<concern>/index.ts` is the concern's public surface: it lists each
+file it exposes (by name, or `export *` from that one file — never from a
+directory), so what leaves the concern is visible in one file. A concern imports another through that file only —
 `import { useApplyUserSettings } from '../../i18n'`, never
 `'../../i18n/hooks/use-apply-user-settings'`. `concerns-meet-at-their-index`
 fails on the second form, and an app always imports `@flama/frontend-web`
@@ -122,7 +123,11 @@ under a parent that guards nobody.
 3. Add `export * from './<concern>'` to `src/index.ts`.
 4. Put the concern in `leaves`, `middle` or `top` in
    [`.dependency-cruiser.cjs`](.dependency-cruiser.cjs) — a concern that
-   imports nothing but the design system and the kernel is a leaf.
+   imports nothing but the design system and the kernel is a leaf; one that
+   imports any other concern, even a leaf, is middle.
+   Logic with no browser in it (a formatter, a permission check) is not a
+   concern at all: it goes to `@flama/frontend-core`, and the kit re-exports
+   it if web callers want one import.
 5. If a file runs code when imported, add it to `sideEffects` in
    `package.json`, as `src/i18n/lib/i18n.ts` is.
 6. `pnpm --filter @flama/frontend-web arch lint typecheck test`.
@@ -130,10 +135,12 @@ under a parent that guards nobody.
 ## What `pnpm arch` enforces
 
 - `no-circular` — no import cycles, counting value imports only.
-- `leaves-stay-leaves` — `platform`, `theme`, `i18n`, `analytics`, `forms`
-  never import a middle or top concern.
-- `middle-below-top` — `table`, `layout`, `roles` never import `shell` or
-  `auth`.
+- `leaves-stay-leaves` — `platform`, `theme`, `analytics`, `forms` never
+  import a middle or top concern.
+- `leaves-import-no-leaf` — nor another leaf: a leaf imports only the design
+  system and the kernel.
+- `middle-below-top` — `i18n`, `table`, `layout`, `roles` never import `shell`
+  or `auth`.
 - `concerns-meet-at-their-index` — a concern reaches another only through
   that concern's `index.ts`.
 - `lib-has-no-jsx` — a concern's `lib/` may name React types but not import

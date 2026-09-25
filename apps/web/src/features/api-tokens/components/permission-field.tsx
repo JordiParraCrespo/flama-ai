@@ -1,4 +1,4 @@
-import { Field, FieldError, FieldLabel } from '@flama/design-system-web';
+import { Field, FieldDescription, FieldError, FieldLabel } from '@flama/design-system-web';
 import type { ReactNode } from 'react';
 import { type Control, type FieldPath, type FieldValues, useWatch } from 'react-hook-form';
 import { hasAnyScope, type ScopeSelection } from '@/features/api-tokens/lib/scope-selection';
@@ -47,7 +47,7 @@ export function PermissionField<TFieldValues extends FieldValues>({
     <Field data-invalid={Boolean(shown)}>
       <FieldLabel>{label}</FieldLabel>
       {children}
-      <p className="text-xs text-ink-600">{hint}</p>
+      <FieldDescription>{hint}</FieldDescription>
       <FieldError errors={[shown ? { message: shown } : undefined]} />
     </Field>
   );

@@ -9,10 +9,12 @@ export {
 export { useRegister } from './auth.queries';
 export { useConsumerApp } from './context';
 export {
+  type AcceptInvitationAsNewcomerVariables,
   type InviteMembersVariables,
   organizationsKeys,
   type UpdateOrganizationVariables,
   useAcceptInvitation,
+  useAcceptInvitationAsNewcomer,
   useCancelOrganizationInvitation,
   useCreateOrganization,
   useInviteMembers,

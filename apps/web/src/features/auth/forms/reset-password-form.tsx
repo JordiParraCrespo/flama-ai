@@ -3,27 +3,22 @@ import {
   AuthField,
   AuthFormError,
   authControlClass,
+  PasswordChecklist,
   PasswordInput,
   type PasswordRule,
   useZodResolver,
 } from '@flama/frontend-web';
-import { resetPasswordSchema } from '@flama/shared/schemas/auth';
+import { type NewPasswordValues, newPasswordSchema } from '@flama/shared/schemas/auth';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
-import { PasswordChecklist } from '@/features/auth/components/password-checklist';
 
 /**
- * The token rides in the URL, so only the two password fields are user input.
- * Whether they match is not a schema rule: the live checklist below already
- * reports it and gates the submit button, and a `refine()` would need a
- * message string, which the shared schemas deliberately never carry.
+ * The token rides in the URL, so only the two password fields are user input
+ * (`newPasswordSchema`). Whether they match is not a schema rule: `match` here
+ * has the live checklist report it and gate the submit button, and a
+ * `refine()` would need a message string, which the shared schemas
+ * deliberately never carry.
  */
-const newPasswordSchema = resetPasswordSchema
-  .pick({ password: true })
-  .extend({ confirmPassword: z.string().min(8) });
-
-export type NewPasswordValues = z.infer<typeof newPasswordSchema>;
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number', 'match'];
 

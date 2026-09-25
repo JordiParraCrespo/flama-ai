@@ -1,38 +1,21 @@
 import { Alert, AlertDescription, toast } from '@flama/design-system-web';
-import type { OrganizationEntity } from '@flama/frontend-consumer';
-import { useUpdateOrganization } from '@flama/frontend-consumer/react';
+import { useOrganizations, useUpdateOrganization } from '@flama/frontend-consumer/react';
 import { SectionHead, useErrorMessage } from '@flama/frontend-web';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  OrganizationForm,
-  type OrganizationFormDto,
-} from '@/features/organizations/forms/organization-form';
+import { OrganizationForm } from '@/features/organizations/forms/organization-form';
+import type { OrganizationFormDto } from '@/features/organizations/lib/organization-form';
 
-export function GeneralSettingsSection({
-  organization,
-  loading,
-}: {
-  organization: OrganizationEntity | undefined;
-  loading: boolean;
-}) {
+/** The settings pane that renames the workspace and changes its mark. */
+export function GeneralSettingsSection() {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
+  const organizations = useOrganizations();
+  const organization = organizations.data?.[0];
   const update = useUpdateOrganization();
-  const [saved, setSaved] = useState(false);
 
   const defaults: OrganizationFormDto = {
     name: organization?.name ?? '',
     logo: organization?.logo ?? '',
-  };
-
-  // A success or request failure belongs to the values that produced it. Clear
-  // both as soon as the user edits again so feedback never describes stale
-  // input. Wiring this to user change handlers avoids treating cache-driven
-  // form resets after a successful save as a new edit.
-  const clearFeedback = () => {
-    setSaved(false);
-    update.reset();
   };
 
   const onSubmit = async (values: OrganizationFormDto) => {
@@ -49,7 +32,8 @@ export function GeneralSettingsSection({
       await update.mutateAsync({ id: organization.id, changes });
     }
 
-    setSaved(true);
+    // Success is a toast and only a toast: an inline "saved" beside it said the
+    // same thing twice.
     toast.success(t('settings.general.saveSuccess'));
   };
 
@@ -65,10 +49,12 @@ export function GeneralSettingsSection({
 
       <OrganizationForm
         values={defaults}
-        disabled={loading || !organization}
+        disabled={organizations.isLoading || !organization}
         isPending={update.isPending}
-        saved={saved}
-        onChange={clearFeedback}
+        // A failure belongs to the values that produced it; clear it as soon
+        // as the user edits again. Wired to change handlers, not to the form's
+        // values, so the cache-driven reset after a save is not an edit.
+        onChange={() => update.reset()}
         onSubmit={onSubmit}
       />
     </>

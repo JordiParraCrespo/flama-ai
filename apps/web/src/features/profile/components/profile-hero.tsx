@@ -8,7 +8,7 @@ import {
 } from '@flama/design-system-web';
 import { Camera } from '@flama/design-system-web/icons';
 import type { ProfileEntity } from '@flama/frontend-consumer';
-import { formatMonthYear, RolePill } from '@flama/frontend-web';
+import { formatMonthYear, RolePill, useLocale } from '@flama/frontend-web';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -29,13 +29,14 @@ export function ProfileHero({
   uploadError?: string;
   onPickPhoto: (file: File) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const locale = useLocale();
   const fileInput = useRef<HTMLInputElement>(null);
 
   return (
     <>
       <Card className="gap-0 py-0">
-        <div className="flex items-center gap-[18px] px-[22px] py-5">
+        <div className="flex items-center gap-4.5 px-5.5 py-5">
           <span className="relative flex-none">
             <Avatar size={64}>
               {profile.avatarUrl && <AvatarImage src={profile.avatarUrl} alt="" />}
@@ -47,9 +48,9 @@ export function ProfileHero({
               aria-label={t('profile.changePhoto')}
               disabled={uploading}
               onClick={() => fileInput.current?.click()}
-              className="absolute -right-0.5 -bottom-0.5 flex size-[26px] cursor-pointer items-center justify-center rounded-full border-2 bg-surface-inverse [border-color:var(--chrome-bg)] disabled:opacity-60"
+              className="absolute -right-0.5 -bottom-0.5 flex size-6.5 cursor-pointer items-center justify-center rounded-full border-2 bg-surface-inverse [border-color:var(--chrome-bg)] disabled:opacity-60"
             >
-              <Camera className="size-[13px] text-on-inverse" />
+              <Camera className="size-3.25 text-on-inverse" />
             </button>
             <input
               ref={fileInput}
@@ -69,13 +70,13 @@ export function ProfileHero({
             <h2 className="m-0 text-2xl leading-tight font-medium text-ink-900">
               {profile.fullName}
             </h2>
-            <div className="mt-[5px] flex flex-wrap items-center gap-2.5 text-sm text-ink-600">
+            <div className="mt-1.25 flex flex-wrap items-center gap-2.5 text-sm text-ink-600">
               <RolePill role={profile.role} />
               <span>{profile.email}</span>
               <span aria-hidden="true">·</span>
               <span>
                 {t('profile.joined', {
-                  date: formatMonthYear(profile.createdAt, i18n.language),
+                  date: formatMonthYear(profile.createdAt, locale),
                 })}
               </span>
             </div>

@@ -83,6 +83,7 @@
     "FLAG_004": "No se ha encontrado ese segmento.",
     "FLAG_005": "Ya existe un segmento con esa clave.",
     "FLAG_006": "Ese segmento todavía lo usa un flag. Quítalo primero de sus reglas.",
-    "FLAG_007": "Las condiciones de ese segmento no son válidas."
+    "FLAG_007": "Las condiciones de ese segmento no son válidas.",
+    "OAUTH_CONSENT_NO_REDIRECT": "El servidor no ha indicado a dónde continuar."
   }
 }

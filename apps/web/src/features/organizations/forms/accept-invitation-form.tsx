@@ -3,15 +3,13 @@ import {
   AuthField,
   authControlClass,
   authInputClass,
-  checkPassword,
-  meetsRequirements,
+  PasswordChecklist,
   PasswordInput,
-  PasswordRequirements,
   type PasswordRule,
   useZodResolver,
 } from '@flama/frontend-web';
 import { type AcceptInvitationDto, acceptInvitationSchema } from '@flama/shared/schemas/auth';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number'];
@@ -42,13 +40,6 @@ export function AcceptInvitationForm({
     resolver: useZodResolver(acceptInvitationSchema),
     defaultValues: { fullName: defaultName ?? '', password: '' },
   });
-
-  // TODO(kit): the auth feature's `PasswordChecklist` subscribes at the leaf so
-  // typing does not re-render the form; it cannot be imported across features,
-  // so this form watches the field itself until the checklist moves to the kit.
-  const password = useWatch({ control, name: 'password' });
-  const results = checkPassword(password ?? '');
-  const satisfied = meetsRequirements(results, RULES);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -94,15 +85,22 @@ export function AcceptInvitationForm({
           />
         </AuthField>
 
-        <PasswordRequirements results={results} rules={RULES} className="-mt-1.5 mb-1.5" />
-
-        <Button
-          type="submit"
-          disabled={isPending || !satisfied || !linkIsValid}
-          className={authControlClass}
+        <PasswordChecklist
+          control={control}
+          name="password"
+          rules={RULES}
+          className="-mt-1.5 mb-1.5"
         >
-          {isPending ? t('auth.register.submitting') : t('auth.acceptInvitation.submit')}
-        </Button>
+          {(satisfied) => (
+            <Button
+              type="submit"
+              disabled={isPending || !satisfied || !linkIsValid}
+              className={authControlClass}
+            >
+              {isPending ? t('auth.register.submitting') : t('auth.acceptInvitation.submit')}
+            </Button>
+          )}
+        </PasswordChecklist>
       </FieldGroup>
     </form>
   );

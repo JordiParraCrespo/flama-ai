@@ -85,10 +85,8 @@ test('General renames the workspace, and the sidebar follows', async ({ page }) 
   const nextName = `${ORGANIZATION_NAME} (renamed)`;
   await page.getByLabel('Organisation name').fill(nextName);
   await page.getByRole('button', { name: 'Save changes' }).click();
-  // `exact` matters: the card's inline "Saved" is a substring of the
-  // "Organization settings saved" toast, so a loose match resolves to both and
-  // trips Playwright's strict mode.
-  await expect(page.getByText('Saved', { exact: true })).toBeVisible();
+  // Success is a toast, and only a toast.
+  await expect(page.getByText('Organization settings saved')).toBeVisible();
 
   await reloadFromServer(page);
   await expect(page.getByLabel('Organisation name')).toHaveValue(nextName, { timeout: 20_000 });
@@ -125,39 +123,17 @@ test('Security shows this device among the account’s sessions', async ({ page 
   await api.dispose();
 });
 
-test('API mints a key, shows the secret once, and revokes it', async ({ page }) => {
+test('the API pane sends the reader to the tokens screen', async ({ page }) => {
   const { user, api } = await provisionedUser('settingsapi');
   await signInAs(page, user);
   await openSettings(page);
   await openSection(page, 'API & webhooks');
 
   await expect(page.getByRole('heading', { name: 'API keys', level: 3 })).toBeVisible();
+  await page.getByRole('link', { name: 'Open API tokens' }).click();
 
-  // Unique per run: a revoked key stays on the list, so a fixed name would
-  // match every key an earlier run left behind.
-  const keyName = `e2e key ${Date.now()}`;
-  const rows = page.locator('[data-slot="section-row"]');
-
-  await page.getByRole('button', { name: 'Create key' }).click();
-  await page.getByLabel('Key name').fill(keyName);
-  // The picker grants a level per resource group, so a key is scoped by
-  // choosing one — each group is a ToggleGroup of buttons (No access / Read /
-  // Edit), so grant the first resource Read by clicking its button.
-  await page.getByRole('dialog').getByRole('button', { name: 'Read', exact: true }).first().click();
-  await page.getByRole('button', { name: 'Create key', exact: true }).last().click();
-
-  // The secret exists exactly once, in the reply to the call that minted it.
-  await expect(page.getByRole('heading', { name: 'Copy your new key' })).toBeVisible();
-  await page.getByRole('button', { name: 'Close', exact: true }).last().click();
-  await expect(page.getByText(keyName)).toBeVisible();
-
-  // Reload rather than trust the list the mutation just patched.
-  await reloadFromServer(page);
-  await expect(page.getByText(keyName)).toBeVisible({ timeout: 20_000 });
-
-  const keyRow = rows.filter({ hasText: keyName });
-  await keyRow.getByRole('button', { name: 'Revoke' }).click();
-  await expect(keyRow.getByText('Revoked')).toBeVisible();
+  await expect(page).toHaveURL(/\/settings\/api-tokens/);
+  await expect(page.getByRole('heading', { name: 'API tokens', level: 1 })).toBeVisible();
 
   await api.dispose();
 });

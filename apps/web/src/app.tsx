@@ -1,8 +1,8 @@
-import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@flama/design-system-web';
-import { useAuthState, useSessionRestore } from '@flama/frontend-core/react';
+import { Toaster } from '@flama/design-system-web';
+import { useAuthState } from '@flama/frontend-core/react';
 import { useTheme } from '@flama/frontend-web';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
+import { SessionGate } from '@/features/auth/sections/session-gate';
 import { app } from '@/lib/flama';
 import { routeTree } from './routeTree.gen';
 
@@ -61,75 +61,14 @@ export function App() {
   // run — left to itself it would fall back to `system` and light up against
   // `prefers-color-scheme` while the rest of the product follows the toggle.
   const { theme } = useTheme();
+  const { isAuthenticated } = useAuthState();
 
   return (
     <>
-      <AppRoutes />
+      <SessionGate>
+        <RouterProvider router={router} context={{ auth: { isAuthenticated } }} />
+      </SessionGate>
       <Toaster theme={theme} position="bottom-right" />
     </>
-  );
-}
-
-function AppRoutes() {
-  const { isAuthenticated } = useAuthState();
-  // Rehydrate a persisted session (tokens in localStorage) before the router's
-  // route guards run, so a returning/refreshing authenticated user isn't bounced
-  // to /login. Mirrors the mobile root AuthGate, which gates on the same query.
-  // `isPending`, not `isLoading`: under `PersistQueryClientProvider` a query
-  // sits idle while the persisted cache is restored, and `isLoading` (pending
-  // *and* fetching) is false for that window. Gating on it mounted the router
-  // before the session was known, so every signed-in cold load bounced to
-  // /login and back. `isPending` holds until the answer is in.
-  const { isPending, isError, isFetching, refetch } = useSessionRestore();
-
-  const context = { auth: { isAuthenticated } };
-
-  if (isPending) {
-    return (
-      <div className="flex min-h-svh items-center justify-center bg-background">
-        <div
-          role="status"
-          aria-label="Loading"
-          className="size-8 animate-spin rounded-full border-2 border-border-subtle border-t-surface-inverse"
-        />
-      </div>
-    );
-  }
-
-  // Restoring the session failed (network/server error). Surface it with a retry
-  // instead of rendering the router, which would treat the user as
-  // unauthenticated and bounce them to /login as if they'd been logged out.
-  if (isError) {
-    return <SessionRestoreError onRetry={() => refetch()} isRetrying={isFetching} />;
-  }
-
-  return <RouterProvider router={router} context={context} />;
-}
-
-function SessionRestoreError({
-  onRetry,
-  isRetrying,
-}: {
-  onRetry: () => void;
-  isRetrying: boolean;
-}) {
-  const { t } = useTranslation();
-
-  return (
-    <div className="flex min-h-svh items-center justify-center bg-background p-6">
-      <Alert variant="destructive" className="max-w-sm">
-        <AlertTitle>{t('auth.session.errorTitle')}</AlertTitle>
-        <AlertDescription>{t('auth.session.errorMessage')}</AlertDescription>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onRetry}
-          disabled={isRetrying}
-          className="mt-3.5 w-fit"
-        >
-          {isRetrying ? t('auth.session.retrying') : t('auth.session.retry')}
-        </Button>
-      </Alert>
-    </div>
   );
 }

@@ -48,9 +48,9 @@ loads `@flama/frontend-consumer` and would fail `pnpm arch` for touching
 | --- | --- | --- | --- | --- |
 | `screens/` | the page body a route mounts | yes | yes | `profile/screens/profile.tsx` |
 | `sections/` | a pane, a card group, a table | yes | yes | `api-tokens/sections/token-table.tsx` |
-| `dialogs/` | one dialog per file, owning its mutation | yes | yes | `api-tokens/dialogs/create-api-token.tsx` |
+| `dialogs/` | one dialog per file, owning its mutation | yes | yes | `api-tokens/dialogs/revoke-token.tsx` |
 | `forms/` | React Hook Form over a shared Zod schema; props in, `onSubmit` out | no | no | `auth/forms/login-form.tsx` |
-| `components/` | entity UI: a row, a badge, a hero, a checklist | no | no | `api-tokens/components/api-token-row.tsx` |
+| `components/` | entity UI: a row, a badge, a hero, a preview | no | no | `profile/components/session-row.tsx` |
 | `hooks/` | `use-*.ts` over queries and UI state; the only home of an effect | yes | yes | — none yet in this app |
 | `lib/` | types, mappers, constants; no JSX | no | no | `api-tokens/lib/token-status.ts` |
 | `__tests__/` | Vitest + Testing Library specs | — | — | — |
@@ -119,13 +119,22 @@ fall out of step with its path.
 
 ## Render rules
 
-- **State lives in the lowest component that reads it.** The open settings
-  pane is search state on `/settings`, read by the route that switches panes;
-  the sections below it hold their own.
-- **Subscribe at the leaf.** `src/features/auth/components/password-checklist.tsx`
-  is the reference: it takes `control` and calls `useWatch` itself, so a
-  keystroke re-renders the checklist and the submit button it gates, not the
-  register page around them. A page-level `useWatch` is the thing this replaces.
+- **State lives in the lowest component that reads it.** The open pane is
+  search state on `/settings` and `/profile`, read by the route that switches
+  panes (through the kit's `SectionNav`); the sections below it hold their
+  own. A dialog opened from a row menu is the exception: `token-table.tsx` and
+  `session-list.tsx` keep *which* row is being revoked, because the menu
+  unmounts when it closes, and the dialog owns the mutation.
+- **Fetch in the component that draws the result.** `general-settings.tsx`
+  asks for the organization itself; the settings route reads it again only
+  for the heading it draws. `pnpm check:structure` reports a route, screen or
+  section that subscribes only to hand a result to one child, and a section
+  or dialog that only hands a data prop on.
+- **Subscribe at the leaf.** The kit's `PasswordChecklist` is the reference:
+  it takes `control` and calls `useWatch` itself, so a keystroke re-renders the
+  checklist and the submit button it gates, not the form around them.
+  `organizations/components/logo-preview.tsx` does the same for the logo
+  preview. A form-level `useWatch` or `watch()` is the thing this replaces.
 - **An effect synchronises with something outside React, and says what.** It
   lives in a `hooks/` file with a comment naming the system; Biome forbids
   `useEffect` anywhere else in the app. This app currently has none — the

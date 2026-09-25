@@ -11,5 +11,5 @@
   "invalidTitle": "This link has expired",
   "invalidDescription": "Start the connection again from the application that sent you here.",
   "backToDashboard": "Back to dashboard",
-  "noRedirect": "The server did not say where to send you next."
+  "unknownClient": "An application"
 }

@@ -1,7 +1,6 @@
-import { cn } from '@flama/design-system-web';
 import { Cpu, Settings, ShieldCheck } from '@flama/design-system-web/icons';
 import { useOrganizations } from '@flama/frontend-consumer/react';
-import { PageHead } from '@flama/frontend-web';
+import { PageHead, SectionNav } from '@flama/frontend-web';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { ApiKeysSection } from '@/features/api-tokens/sections/api-keys';
@@ -47,6 +46,8 @@ function SettingsPage() {
   const { t } = useTranslation();
   const { section = 'general' } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
+  // Read here because the heading is drawn here; the General pane asks for the
+  // same list itself, and the two share one cache entry.
   const organizations = useOrganizations();
   const organization = organizations.data?.[0];
 
@@ -68,39 +69,16 @@ function SettingsPage() {
         }
       />
 
-      <div className="grid items-start gap-[22px] min-[940px]:grid-cols-[216px_1fr] min-[940px]:gap-9">
-        <nav aria-label={t('settings.nav.label')} className="sticky top-0 flex flex-col gap-0.5">
-          {SECTIONS.map(({ key, icon: Icon }) => {
-            const active = section === key;
-
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => go(key)}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'flex w-full cursor-pointer items-center gap-2.5 rounded-md border-none px-[11px] py-[9px] text-left font-sans text-base transition-colors',
-                  active
-                    ? 'bg-surface-sunken font-medium text-ink-900'
-                    : 'bg-transparent text-ink-600 hover:bg-surface-hover hover:text-ink-900',
-                )}
-              >
-                <Icon className={cn('size-[15px]', active ? 'text-ink-900' : 'text-ink-400')} />
-                {t(`settings.nav.${key}`)}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="min-w-0">
-          {section === 'general' && (
-            <GeneralSettingsSection organization={organization} loading={organizations.isLoading} />
-          )}
-          {section === 'security' && <SecuritySection />}
-          {section === 'api' && <ApiKeysSection />}
-        </div>
-      </div>
+      <SectionNav
+        label={t('settings.nav.label')}
+        items={SECTIONS.map(({ key, icon }) => ({ key, icon, label: t(`settings.nav.${key}`) }))}
+        active={section}
+        onSelect={go}
+      >
+        {section === 'general' && <GeneralSettingsSection />}
+        {section === 'security' && <SecuritySection />}
+        {section === 'api' && <ApiKeysSection />}
+      </SectionNav>
     </>
   );
 }

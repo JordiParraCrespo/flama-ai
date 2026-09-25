@@ -4,6 +4,7 @@ import {
   Button,
   Checkbox,
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -15,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
   Separator,
+  Skeleton,
 } from '@flama/design-system-web';
 import type { OrganizationEntity } from '@flama/frontend-consumer';
 import type { PermissionGroup, Scope } from '@flama/shared';
@@ -169,7 +171,11 @@ export function CreateTokenForm({
           message={permissionsMessage}
         >
           {loadingCatalog ? (
-            <p className="text-sm text-ink-600">{t('common.loading')}</p>
+            <div className="flex flex-col gap-2" aria-busy="true">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
           ) : (
             <PermissionPicker
               groups={groups}
@@ -214,7 +220,7 @@ export function CreateTokenForm({
             render={({ field }) => (
               <Field>
                 <FieldLabel>{t('apiTokens.organizations')}</FieldLabel>
-                <p className="text-xs text-ink-600">{t('apiTokens.organizationsHint')}</p>
+                <FieldDescription>{t('apiTokens.organizationsHint')}</FieldDescription>
                 <div className="flex flex-col gap-2">
                   {organizations.map((organization) => (
                     <div key={organization.id} className="flex items-center gap-2">

@@ -1,11 +1,15 @@
 'use client';
 
 import type { UpdateOrganizationRequest } from '@flama/api-client';
-import { MEMBER_LISTS_KEY, withCacheOnSuccess } from '@flama/frontend-core/react';
+import {
+  type HookMutationOptions,
+  MEMBER_LISTS_KEY,
+  usersKeys,
+  withCacheOnSuccess,
+} from '@flama/frontend-core/react';
 import type { CreateOrganizationDto, InviteMemberDto, OrganizationRole } from '@flama/shared';
 import {
   skipToken,
-  type UseMutationOptions,
   type UseQueryOptions,
   useMutation,
   useQuery,
@@ -18,6 +22,7 @@ import type {
 } from '../modules/organizations/organization.entity';
 import type { MemberFilters } from '../modules/organizations/organizations.repository';
 import { useConsumerApp } from './context';
+import { profileKeys } from './profile.queries';
 
 /**
  * Query key factory for the `organizations` feature, one function per level.
@@ -149,7 +154,7 @@ export function useMyInvitations(
  * and bouncing them back to the screen they just left.
  */
 export function useAcceptInvitation(
-  options?: UseMutationOptions<OrganizationInvitationEntity, Error, string>,
+  options?: HookMutationOptions<OrganizationInvitationEntity, Error, string>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -162,6 +167,80 @@ export function useAcceptInvitation(
     // cached `[]` was still being refetched bounced the reader straight back.
     ...withCacheOnSuccess(options, async () => {
       await queryClient.invalidateQueries();
+    }),
+  });
+}
+
+export interface AcceptInvitationAsNewcomerVariables {
+  invitationId: string;
+  /** The invited address; the account is created (or signed in) under it. */
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+/** What Better Auth answers a sign-up with when the address already has an account. */
+const EXISTING_ACCOUNT_CODES = new Set([
+  'USER_ALREADY_EXISTS',
+  'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL',
+]);
+
+/** Read off the error's `code`, so this package need not import `@flama/auth`'s error class. */
+function isExistingAccountError(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && EXISTING_ACCOUNT_CODES.has(code);
+}
+
+/**
+ * Accept an invitation from a signed-out reader: create the account, sign in,
+ * and join, in one submission.
+ *
+ * The registration-shaped invitation page is also the entry point for people
+ * who already have an account. If sign-up answers that the address exists, the
+ * password just typed is their login credential: sign in with it and carry on.
+ * A wrong password still fails, and never accepts the invite.
+ *
+ * Better Auth accepts the membership and selects its organization in one
+ * transaction; calling the separately policy-guarded set-active endpoint here
+ * could turn a successful acceptance into a misleading 403.
+ *
+ * The reader arrived signed out, so the cache holds nothing of theirs: what
+ * changed is who they are and which workspaces they are in, and that is all
+ * that is invalidated. Awaited, so the caller's `onSuccess` — which navigates
+ * into the shell — runs once the organizations list has refetched; the shell
+ * redirects a settled empty list to onboarding.
+ */
+export function useAcceptInvitationAsNewcomer(
+  options?: HookMutationOptions<void, Error, AcceptInvitationAsNewcomerVariables>,
+) {
+  const app = useConsumerApp();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      invitationId,
+      email,
+      password,
+      firstName,
+      lastName,
+    }: AcceptInvitationAsNewcomerVariables) => {
+      try {
+        await app.auth.register({ email, password, firstName, lastName });
+      } catch (failure) {
+        if (!isExistingAccountError(failure)) throw failure;
+        await app.auth.login({ email, password });
+      }
+      await app.organizations.acceptInvitation(invitationId);
+    },
+    ...withCacheOnSuccess(options, async () => {
+      await Promise.all([
+        // `me()` is a prefix of the caller's permissions, which the nav reads.
+        queryClient.invalidateQueries({ queryKey: usersKeys.me() }),
+        queryClient.invalidateQueries({ queryKey: profileKeys.me() }),
+        queryClient.invalidateQueries({ queryKey: organizationsKeys.list() }),
+        queryClient.invalidateQueries({ queryKey: organizationsKeys.myInvitations() }),
+      ]);
     }),
   });
 }
@@ -180,7 +259,7 @@ export function useAcceptInvitation(
  * the caller belongs nowhere.
  */
 export function useCreateOrganization(
-  options?: UseMutationOptions<OrganizationEntity, Error, CreateOrganizationDto>,
+  options?: HookMutationOptions<OrganizationEntity, Error, CreateOrganizationDto>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -204,7 +283,7 @@ export interface InviteMembersVariables {
 }
 
 export function useInviteMembers(
-  options?: UseMutationOptions<OrganizationInvitationEntity[], Error, InviteMembersVariables>,
+  options?: HookMutationOptions<OrganizationInvitationEntity[], Error, InviteMembersVariables>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -218,7 +297,7 @@ export function useInviteMembers(
 }
 
 export function useUpdateOrganizationMemberRole(
-  options?: UseMutationOptions<
+  options?: HookMutationOptions<
     OrganizationMemberEntity,
     Error,
     { organizationId: string; memberId: string; role: OrganizationRole }
@@ -236,7 +315,7 @@ export function useUpdateOrganizationMemberRole(
 }
 
 export function useRemoveOrganizationMember(
-  options?: UseMutationOptions<void, Error, { organizationId: string; memberId: string }>,
+  options?: HookMutationOptions<void, Error, { organizationId: string; memberId: string }>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -250,7 +329,7 @@ export function useRemoveOrganizationMember(
 }
 
 export function useCancelOrganizationInvitation(
-  options?: UseMutationOptions<void, Error, { organizationId: string; invitationId: string }>,
+  options?: HookMutationOptions<void, Error, { organizationId: string; invitationId: string }>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();
@@ -276,7 +355,7 @@ export interface UpdateOrganizationVariables {
  * takes.
  */
 export function useUpdateOrganization(
-  options?: UseMutationOptions<OrganizationEntity, Error, UpdateOrganizationVariables>,
+  options?: HookMutationOptions<OrganizationEntity, Error, UpdateOrganizationVariables>,
 ) {
   const app = useConsumerApp();
   const queryClient = useQueryClient();

@@ -109,10 +109,12 @@ row names the endpoint directly. Today both `apps/web` rows are ungated
 (`policies: []`) and `apps/admin-web` sits behind one `canAccessControlPlane`
 gate, so the first gated row is still to be written.
 
-A screen the product picks for the reader (the dashboard `/` redirects to)
-checks its own policies through `useLandingRoute` and answers `null` rather
-than bouncing between errors. An org-less account goes to `/onboarding` from
-the `_authenticated` layout.
+A screen the product picks for the reader, rather than one they chose, is
+resolved through the kit's `useLandingRoute`, which checks the target's own
+policies and answers `null` rather than bouncing between errors. Today `/`
+redirects to `/dashboard`, which every reader may open, so nothing calls it
+yet. An org-less account goes to `/onboarding` from the `_authenticated`
+layout on web and from the `(app)` layout on mobile.
 
 ## One colour vocabulary: the brand primitives
 
@@ -166,17 +168,21 @@ feature per module with kind directories, the platform kit for what both apps
 share, the design system for primitives. This file is about what the markup
 looks like once it is in the right place.
 
-- **Dates.** Format through the kit's `dateFormatter` with the locale from
-  `useLocale()`. Never `toLocaleDateString()` without a locale, never
-  `i18n.language` or a bare `i18n.resolvedLanguage`.
+- **Dates.** Format with the helpers in `@flama/frontend-core/format`
+  (`formatMediumDate`, `formatDateTime`, `formatRelativeTime`, `dateFormatter`;
+  the web kit re-exports them) and the locale from `useLocale()`. Never
+  `toLocaleDateString()` without a locale, never `i18n.language` or a bare
+  `i18n.resolvedLanguage`.
 - **`Intl` formatters** are expensive and pure; `dateFormatter()` caches them.
   Never construct one in render.
 
 ## Never ship a placeholder number
 
-If the real value is not available, render nothing. A component names the
-total it wants and the shell resolves it from a query (`useNavCounts` in
-`app-sidebar.tsx`); an unresolved total is `undefined` and renders no badge.
+If the real value is not available, render nothing: a stat card, a badge or
+a count with no query behind it is a placeholder, however plausible the
+number. An unresolved total is `undefined` and renders no badge. The
+dashboard shipped four such cards (128 users, 99.9% uptime) until they were
+removed.
 
 ## Translate everything the user can read, including downloads
 

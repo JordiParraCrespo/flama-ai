@@ -26,16 +26,10 @@
     "notifications": "Notificaciones",
     "security": "Seguridad"
   },
-  "saved": "Guardado",
   "security": {
     "description": "Todos los dispositivos con sesión iniciada en tu cuenta, y una forma de cerrar cualquiera de ellas.",
     "sessions": "Sesiones activas",
-    "sessionsNote": "Aquí solo aparecen dispositivos. Las claves de API y las apps conectadas se revocan en API y webhooks: cerrar la sesión de un dispositivo no las desactiva.",
-    "signOut": "Cerrar sesión",
-    "signOutOthers": "Cerrar las demás sesiones",
-    "thisDevice": "Este dispositivo",
-    "title": "Seguridad",
-    "unknownDevice": "Dispositivo desconocido"
+    "title": "Seguridad"
   },
   "subtitle": "Configuración de todo el espacio de trabajo de {{organization}}.",
   "subtitleFallback": "Configuración de todo el espacio de trabajo.",

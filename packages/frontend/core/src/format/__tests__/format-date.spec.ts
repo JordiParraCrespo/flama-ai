@@ -8,7 +8,7 @@ import {
   formatMonthYear,
   formatRelativeTime,
   formatShortDate,
-} from './format-date';
+} from '../format-date';
 
 /**
  * Everything here resolves through `Intl`, so these tests deliberately avoid

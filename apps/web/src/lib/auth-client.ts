@@ -1,4 +1,5 @@
 import {
+  AuthRequestError,
   consumeSessionPreload,
   sharedClientPlugins,
   toAuthSession,
@@ -94,6 +95,20 @@ export const webAuthClient: IAuthClient = {
 
   async changePassword(currentPassword, newPassword) {
     unwrap(await authClient.changePassword({ currentPassword, newPassword }));
+  },
+
+  async respondToConsent({ consentCode, accept }) {
+    // Through the Better Auth client rather than a bare `fetch`, so the call
+    // goes to the same `baseURL` (and `VITE_API_URL`) as every sign-in does.
+    const result = await authClient.$fetch<{ redirectURI?: string }>('/oauth2/consent', {
+      method: 'POST',
+      body: { accept, consent_code: consentCode },
+    });
+    unwrap(result);
+    if (!result.data?.redirectURI) {
+      throw new AuthRequestError({ code: 'OAUTH_CONSENT_NO_REDIRECT' });
+    }
+    return result.data.redirectURI;
   },
 
   async getSession() {

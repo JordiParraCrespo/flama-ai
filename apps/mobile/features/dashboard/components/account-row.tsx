@@ -1,13 +1,22 @@
 import { Text } from '@flama/design-system-mobile/text';
+import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
-export function AccountRow({ label, value }: { label: string; value: string }) {
+/**
+ * A label on the left, its value on the right. A string value is set as text;
+ * anything else (a badge) is placed as given, so every row shares one layout.
+ */
+export function AccountRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <View className="flex-row items-center justify-between gap-4">
-      <Text className="text-sm text-muted-foreground">{label}</Text>
-      <Text className="flex-1 text-right text-sm font-medium text-foreground" numberOfLines={1}>
-        {value}
-      </Text>
+      <Text className="text-sm text-ink-600">{label}</Text>
+      {typeof children === 'string' ? (
+        <Text className="flex-1 text-right text-sm font-medium text-ink-900" numberOfLines={1}>
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
     </View>
   );
 }
