@@ -10,14 +10,20 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class OrganizationMembersApi {
     /**
-     * Get the caller's membership in the active organization
+     * Get the caller's own membership in an organization
+     * @param orgId
      * @returns MemberResponseDto
      * @throws ApiError
      */
-    public static active(): CancelablePromise<MemberResponseDto> {
+    public static active(
+        orgId: string,
+    ): CancelablePromise<MemberResponseDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/organizations/{orgId}/members/me',
+            path: {
+                'orgId': orgId,
+            },
             errors: {
                 401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
                 403: `ORG_003 / ORG_004 — The caller is not a member, or their org role does not allow managing members

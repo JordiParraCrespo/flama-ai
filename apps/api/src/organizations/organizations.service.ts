@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { IncomingHttpHeaders } from 'node:http';
+import { AppError } from '@flama/backend-core';
 import type {
   AddMemberDto,
   CreateOrganizationDto,
@@ -21,6 +22,7 @@ import type { UserRoleRepositoryPort } from '../roles/database/user-role.reposit
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from '../roles/roles.di-tokens';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
 import { MemberOrmEntity } from './database/member.orm-entity';
+import { OrganizationErrors } from './domain/organization.errors';
 import type {
   FullOrganizationResponseDto,
   MemberResponseDto,
@@ -446,11 +448,32 @@ export class OrganizationsService {
     return (await this.enrichMembers([member]))[0];
   }
 
-  async getActiveMember(headers: IncomingHttpHeaders): Promise<MemberResponseDto> {
+  /**
+   * The caller's own membership in `organizationId`, the organization the
+   * route names.
+   *
+   * Not Better Auth's `getActiveMember`, which answers for the session's
+   * *active* organization instead: a cookie session may have another one
+   * selected, and a token's delegated session has one only when the token is
+   * pinned to a single organization. Through it this route answered for the
+   * wrong organization or not at all, and a token restricted to one
+   * organization could read the caller's membership in another.
+   * `listMembers` refuses a caller who is not a member (`ORG_003`).
+   */
+  async getMembership(
+    headers: IncomingHttpHeaders,
+    organizationId: string,
+    userId: string,
+  ): Promise<MemberResponseDto> {
     const result = await invokeOrganizationApi(() =>
-      auth.api.getActiveMember({ headers: this.headers(headers) }),
+      auth.api.listMembers({
+        query: { organizationId, filterField: 'userId', filterValue: userId, limit: 1 },
+        headers: this.headers(headers),
+      }),
     );
-    return (await this.enrichMembers([mapMember(result)]))[0];
+    const [member] = mapMembers(unwrapArray(result, 'members'));
+    if (!member) throw new AppError(OrganizationErrors.MEMBER_NOT_FOUND);
+    return (await this.enrichMembers([member]))[0];
   }
 
   private async enrichMembers(members: MemberResponseDto[]): Promise<MemberResponseDto[]> {

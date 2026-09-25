@@ -2186,7 +2186,9 @@ export type SetActiveResponse = SetActiveResponses[keyof SetActiveResponses];
 
 export type ActiveData = {
     body?: never;
-    path?: never;
+    path: {
+        orgId: string;
+    };
     query?: never;
     url: '/api/v1/organizations/{orgId}/members/me';
 };

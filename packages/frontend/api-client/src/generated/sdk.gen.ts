@@ -464,9 +464,9 @@ export const setActive = <ThrowOnError extends boolean = false>(options: Options
 });
 
 /**
- * Get the caller's membership in the active organization
+ * Get the caller's own membership in an organization
  */
-export const active = <ThrowOnError extends boolean = false>(options?: Options<ActiveData, ThrowOnError>): RequestResult<ActiveResponses, ActiveErrors, ThrowOnError> => (options?.client ?? client).get<ActiveResponses, ActiveErrors, ThrowOnError>({
+export const active = <ThrowOnError extends boolean = false>(options: Options<ActiveData, ThrowOnError>): RequestResult<ActiveResponses, ActiveErrors, ThrowOnError> => (options.client ?? client).get<ActiveResponses, ActiveErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/organizations/{orgId}/members/me',
     ...options

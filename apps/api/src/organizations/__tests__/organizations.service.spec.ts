@@ -461,10 +461,26 @@ describe('OrganizationsService', () => {
       expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', [], 'org1');
     });
 
-    it('gets the active member', async () => {
-      api.getActiveMember.mockResolvedValue(memberRecord);
-      const result = await service.getActiveMember(headers);
-      expect(result.userId).toBe('u1');
+    it("reads the caller's membership in the organization the route names", async () => {
+      api.listMembers.mockResolvedValue({ members: [memberRecord] });
+      const result = await service.getMembership(headers, 'org1', 'u1');
+
+      expect(result).toMatchObject({ id: 'm1', organizationId: 'org1', userId: 'u1' });
+      // The organization comes from the path, never the session's active one.
+      expect(api.listMembers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query: { organizationId: 'org1', filterField: 'userId', filterValue: 'u1', limit: 1 },
+        }),
+      );
+      expect(api.getActiveMember).not.toHaveBeenCalled();
+    });
+
+    it('reports a missing membership as ORG_005 rather than returning nothing', async () => {
+      api.listMembers.mockResolvedValue({ members: [] });
+
+      await expect(service.getMembership(headers, 'org1', 'u1')).rejects.toMatchObject({
+        code: 'ORG_005',
+      });
     });
   });
 });

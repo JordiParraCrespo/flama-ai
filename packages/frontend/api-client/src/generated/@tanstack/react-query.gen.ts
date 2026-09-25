@@ -853,12 +853,12 @@ export const setActiveMutation = (options?: Partial<Options<SetActiveData>>): Us
     return mutationOptions;
 };
 
-export const activeQueryKey = (options?: Options<ActiveData>) => createQueryKey('active', options);
+export const activeQueryKey = (options: Options<ActiveData>) => createQueryKey('active', options);
 
 /**
- * Get the caller's membership in the active organization
+ * Get the caller's own membership in an organization
  */
-export const activeOptions = (options?: Options<ActiveData>) => queryOptions<ActiveResponse, ActiveError, ActiveResponse, ReturnType<typeof activeQueryKey>>({
+export const activeOptions = (options: Options<ActiveData>) => queryOptions<ActiveResponse, ActiveError, ActiveResponse, ReturnType<typeof activeQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await active({
             ...options,
