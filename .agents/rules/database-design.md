@@ -360,11 +360,6 @@ Design for the table at a hundred times today's size.
       `pg` and is unaffected.
     - Delete orphans after the `NOT VALID` constraint exists (it stops new
       ones), then validate.
-    - `down()` follows the same discipline as `up()`: on a hot table it sets
-      a `lock_timeout`, and the slow reversals (dropping an index that was
-      built `CONCURRENTLY`) are in the same pre-deploy script, as
-      `DROP INDEX CONCURRENTLY`. A rollback is often run under pressure; it
-      should not be the thing that takes the site down.
 - **The migration is the source of truth**, and the ORM entity mirrors it:
   every column's type, length, nullability and default; every unique
   (`@Unique('UQ_...', [...])`); every `CHECK` (`@Check('CHK_...', ...)`);
