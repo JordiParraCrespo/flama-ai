@@ -542,3 +542,102 @@ test("a file another feature owns lands only beside its owner, and goes back to 
   assert.equal(existsSync(join(pruned, 'epsilon', 'alpha-tool.txt')), false);
   assert.equal(existsSync(join(pruned, 'epsilon', 'index.txt')), true);
 });
+
+test("a replayed block and another feature's block at the same spot both stay", () => {
+  const project = fixture();
+  // What the project holds: the starter, plus a block another plugin put
+  // exactly where the starter's copy has this feature's.
+  const before = ['top', '# flama:begin alpha', 'alpha-line', '# flama:end alpha', 'bottom', ''];
+  writeFileSync(join(project, 'app.txt'), before.join('\n'));
+  execFileSync('git', ['-C', project, 'add', '-A']);
+  execFileSync('git', [
+    '-C',
+    project,
+    '-c',
+    'user.name=t',
+    '-c',
+    'user.email=t@t',
+    'commit',
+    '-qm',
+    'y',
+  ]);
+
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, {
+    id: 'delta',
+    feature: { title: 'Delta', summary: 'delta', identifiers: ['delta-app'], paths: [] },
+    files: {},
+    snapshots: [{ file: 'app.txt', source: 'snapshots/app.txt' }],
+  });
+  mkdirSync(join(from, 'plugins', 'delta', 'snapshots'), { recursive: true });
+  const starter = ['top', '# flama:begin delta', 'delta-line', '# flama:end delta', 'bottom', ''];
+  writeFileSync(join(from, 'plugins', 'delta', 'snapshots', 'app.txt'), starter.join('\n'));
+
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  execFileSync('node', [script, 'add', 'delta', '--from', from], { env: FIXTURE_ENV });
+  assert.equal(
+    readFileSync(join(project, 'app.txt'), 'utf8'),
+    [
+      'top',
+      '# flama:begin delta',
+      'delta-line',
+      '# flama:end delta',
+      '# flama:begin alpha',
+      'alpha-line',
+      '# flama:end alpha',
+      'bottom',
+      '',
+    ].join('\n'),
+  );
+
+  execFileSync('node', [script, 'remove', 'delta'], { env: FIXTURE_ENV });
+  assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), before.join('\n'));
+});
+
+test('a replay still refuses when the project changed a line the blocks sit between', () => {
+  const project = fixture();
+  writeFileSync(join(project, 'app.txt'), ['top', 'changed', 'bottom', ''].join('\n'));
+  execFileSync('git', ['-C', project, 'add', '-A']);
+  execFileSync('git', [
+    '-C',
+    project,
+    '-c',
+    'user.name=t',
+    '-c',
+    'user.email=t@t',
+    'commit',
+    '-qm',
+    'y',
+  ]);
+
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, {
+    id: 'delta',
+    feature: { title: 'Delta', summary: 'delta', identifiers: ['delta-app'], paths: [] },
+    files: {},
+    snapshots: [{ file: 'app.txt', source: 'snapshots/app.txt' }],
+  });
+  mkdirSync(join(from, 'plugins', 'delta', 'snapshots'), { recursive: true });
+  const starter = [
+    'top',
+    'middle',
+    '# flama:begin delta',
+    'delta-line',
+    '# flama:end delta',
+    'bottom',
+    '',
+  ];
+  writeFileSync(join(from, 'plugins', 'delta', 'snapshots', 'app.txt'), starter.join('\n'));
+
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  let out = '';
+  try {
+    execFileSync('node', [script, 'add', 'delta', '--from', from], {
+      env: FIXTURE_ENV,
+      stdio: 'pipe',
+    });
+  } catch (error) {
+    out = `${error.stdout ?? ''}${error.stderr ?? ''}`;
+  }
+  assert.match(out, /changed the lines the plugin's blocks go between/);
+});
