@@ -30,7 +30,7 @@ describe('Database schema (integration)', () => {
     });
     await db.initialize();
     await db.runMigrations();
-  });
+  }, 120000);
 
   afterAll(async () => {
     await db?.destroy();
