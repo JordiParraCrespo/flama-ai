@@ -1,172 +1,185 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Gives Better Auth's `session` and `account` tables the foreign keys and
- * indexes they were created without, and the first migration's constraints
- * readable names.
+ * Gives Better Auth's `session`, `account` and `verification` tables the
+ * foreign keys, unique key and indexes they were created without, and the
+ * first migration's constraints readable names.
  *
  * `session."userId"` and `account."userId"` had neither a foreign key nor an
- * index. Every "this user's sessions / accounts" read (the profile's active
- * sessions, revoking sessions, the delegated-session remint, password and
- * social sign-in, account linking) scanned the whole table. And
- * `DeleteUserCommandHandler` deletes the `user` row directly, so a deleted
- * user's sessions and login credentials (password hash, OAuth tokens) stayed
- * behind. Both foreign keys are `ON DELETE CASCADE`: a session or a login
- * means nothing without its user, which is also Better Auth's own schema.
+ * index, and `DeleteUserCommandHandler` deletes the `user` row directly, so a
+ * deleted user's sessions and credentials (password hash, OAuth tokens)
+ * stayed behind. The other ids on `session` were as bare:
  *
- * Also indexed, because Better Auth looks rows up by them on every sign-in:
- * `verification."identifier"` (email verification, password reset, magic
- * links) and `account ("providerId", "accountId")` (social sign-in). The
- * account one is not unique: an existing database may hold duplicates, and
- * Better Auth does not rely on uniqueness there.
+ *   userId               → user          CASCADE   a session means nothing without its user
+ *   impersonatedBy       → user          CASCADE   an impersonation ends with the admin doing it
+ *   activeOrganizationId → organization  SET NULL  the session outlives the workspace it had open
+ *   activeTeamId         → team          SET NULL  same; a team is deleted with its organization
+ *   account.userId       → user          CASCADE   a login means nothing without its user
  *
- * Access patterns and the index serving each:
- *   Q1 session by token (every request)         → UQ_session_token
- *   Q2 a user's sessions; cascade on user delete → IDX_session_userId
- *   Q3 a user's accounts; cascade on user delete → IDX_account_userId
- *   Q4 account by provider + provider's id        → IDX_account_providerId_accountId
- *   Q5 verification rows by identifier            → IDX_verification_identifier
- * A user's sessions are few, so ordering them (newest first) sorts a handful
- * of rows; `"updatedAt"` stays out of the index because Better Auth rewrites it
- * on every session refresh, and indexing it would cost every refresh a write
- * to that index.
+ * `delegatedCredentialId` stays without a key: it names either an `api_token`
+ * row or an OAuth grant's digest prefix, so it has no single table to point at,
+ * and the delegated session it marks already cascades with its user.
  *
- * Renames: the constraints `InitAuthSchema` left with TypeORM's hashed names
- * become `PK_user`, `UQ_user_email`, `PK_session`, `UQ_session_token`,
- * `PK_account`, `PK_verification`. A rename changes only the catalog.
+ * `account ("providerId", "accountId")` becomes unique: Better Auth resolves
+ * every social sign-in by that pair, and two rows for one provider account
+ * would sign in whichever it read first. Existing duplicates are deleted,
+ * keeping the most recently updated row (the one holding current tokens).
+ *
+ * Access patterns and what serves each:
+ *   Q1 session by token (every request)             → UQ_session_token
+ *   Q2 a user's sessions; cascade on user delete     → IDX_session_userId
+ *   Q3 cascades from user / organization / team      → IDX_session_impersonatedBy,
+ *                                                      IDX_session_activeOrganizationId,
+ *                                                      IDX_session_activeTeamId (partial: mostly null)
+ *   Q4 a user's accounts; cascade on user delete     → IDX_account_userId
+ *   Q5 account by provider + provider's id           → UQ_account_providerId_accountId
+ *   Q6 newest verification for an identifier         → IDX_verification_identifier_createdAt
+ *   Q7 expired verifications                         → IDX_verification_expiresAt
+ *
+ * Retention: `verification` rows are deleted by Better Auth itself. Every
+ * verification lookup first deletes the rows whose `expiresAt` has passed
+ * (unless `verification.disableCleanup` is set, which this app does not), and
+ * Q7 is what keeps that delete from scanning the table. Sessions expire the
+ * same way on read; `session.expiresAt` needs no index for it.
+ *
+ * Renames: whatever primary key and `email` / `token` unique constraints the
+ * tables have are found by type and renamed `PK_user`, `UQ_user_email`,
+ * `PK_session`, `UQ_session_token`, `PK_account`, `PK_verification`.
+ * `down()` gives them back TypeORM's default names. Catalog-only.
  *
  * ---------------------------------------------------------------------------
- * Large databases (a table over 100k rows or 128 MB): run this first.
+ * Large databases (a table over 100k rows or 128 MB): run the ops script.
  *
- * Boot migrations share one transaction, and every lock is held until it
- * commits. Building an index or validating a foreign key on a busy 20M-row
- * `session` inside it would block sign-ins for the whole deploy. So on a large
- * table this migration only checks that the slow work is done, and fails the
- * deploy with a pointer here if it is not. Run, with psql in autocommit mode,
- * `apps/api/db/ops/1788900000000-harden-auth-tables.sql` (every step can be
- * re-run). It builds the indexes `CONCURRENTLY`, adds the foreign keys
- * `NOT VALID`, deletes orphaned rows in batches and validates the keys, none
- * of which blocks reads or writes for more than a moment. On small databases
- * (development, CI, fresh installs) the migration does all of it itself.
+ * Boot migrations share one transaction and hold every lock until it commits.
+ * Building an index or validating a foreign key on a busy `session` inside it
+ * would block sign-ins for the whole deploy. So on a large table this migration
+ * only checks that the slow work is done, and fails with a pointer here if it is
+ * not. Before deploying, run with psql in autocommit mode
+ * `apps/api/db/ops/1788900000000-harden-auth-tables.sql`; before reverting,
+ * `apps/api/db/ops/1788900000000-harden-auth-tables.rollback.sql`. Both can be
+ * re-run. On small databases (development, CI, fresh installs) the migration
+ * does all of it itself.
  * ---------------------------------------------------------------------------
  */
+
+const OPS = 'apps/api/db/ops/1788900000000-harden-auth-tables.sql';
+const ROLLBACK = 'apps/api/db/ops/1788900000000-harden-auth-tables.rollback.sql';
+
+/** [table, readable name, TypeORM's default name, unique column (none for the primary key)] */
+const RENAMES: [string, string, string, string?][] = [
+  ['user', 'PK_user', 'PK_cace4a159ff9f2512dd42373760'],
+  ['user', 'UQ_user_email', 'UQ_e12875dfb3b1d92d7d7c5377e22', 'email'],
+  ['session', 'PK_session', 'PK_f55da76ac1c3ac420f444d2ff11'],
+  ['session', 'UQ_session_token', 'UQ_232f8e85d7633bd6ddfad421696', 'token'],
+  ['account', 'PK_account', 'PK_54115ee388cdb6d86bb4bf5b2ea'],
+  ['verification', 'PK_verification', 'PK_f7e3a90ca384e71d6e2e93bb340'],
+];
+
+/** [table, name, definition] */
+const INDEXES: [string, string, string][] = [
+  ['session', 'IDX_session_userId', `("userId")`],
+  [
+    'session',
+    'IDX_session_impersonatedBy',
+    `("impersonatedBy") WHERE "impersonatedBy" IS NOT NULL`,
+  ],
+  [
+    'session',
+    'IDX_session_activeOrganizationId',
+    `("activeOrganizationId") WHERE "activeOrganizationId" IS NOT NULL`,
+  ],
+  ['session', 'IDX_session_activeTeamId', `("activeTeamId") WHERE "activeTeamId" IS NOT NULL`],
+  ['account', 'IDX_account_userId', `("userId")`],
+  ['verification', 'IDX_verification_identifier_createdAt', `("identifier", "createdAt")`],
+  ['verification', 'IDX_verification_expiresAt', `("expiresAt")`],
+];
+
+/** [table, name, column, referenced table, ON DELETE] */
+const FOREIGN_KEYS: [string, string, string, string, 'CASCADE' | 'SET NULL'][] = [
+  ['session', 'FK_session_user', 'userId', 'user', 'CASCADE'],
+  ['session', 'FK_session_impersonatedBy', 'impersonatedBy', 'user', 'CASCADE'],
+  ['session', 'FK_session_activeOrganization', 'activeOrganizationId', 'organization', 'SET NULL'],
+  ['session', 'FK_session_activeTeam', 'activeTeamId', 'team', 'SET NULL'],
+  ['account', 'FK_account_user', 'userId', 'user', 'CASCADE'],
+];
+
 export class HardenAuthTables1788900000000 implements MigrationInterface {
   name = 'HardenAuthTables1788900000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
-
-    await this.renameConstraint(queryRunner, 'user', 'PK_cace4a159ff9f2512dd42373760', 'PK_user');
-    await this.renameConstraint(
-      queryRunner,
-      'user',
-      'UQ_e12875dfb3b1d92d7d7c5377e22',
-      'UQ_user_email',
-    );
-    await this.renameConstraint(
-      queryRunner,
-      'session',
-      'PK_f55da76ac1c3ac420f444d2ff11',
-      'PK_session',
-    );
-    await this.renameConstraint(
-      queryRunner,
-      'session',
-      'UQ_232f8e85d7633bd6ddfad421696',
-      'UQ_session_token',
-    );
-    await this.renameConstraint(
-      queryRunner,
-      'account',
-      'PK_54115ee388cdb6d86bb4bf5b2ea',
-      'PK_account',
-    );
-    await this.renameConstraint(
-      queryRunner,
-      'verification',
-      'PK_f7e3a90ca384e71d6e2e93bb340',
-      'PK_verification',
-    );
-
-    // Q2, Q3, Q4, Q5.
-    await this.ensureIndex(queryRunner, 'session', 'IDX_session_userId', `("userId")`);
-    await this.ensureIndex(queryRunner, 'account', 'IDX_account_userId', `("userId")`);
-    await this.ensureIndex(
-      queryRunner,
-      'account',
-      'IDX_account_providerId_accountId',
-      `("providerId", "accountId")`,
-    );
-    await this.ensureIndex(
-      queryRunner,
-      'verification',
-      'IDX_verification_identifier',
-      `("identifier")`,
-    );
-
-    await this.ensureUserForeignKey(queryRunner, 'session', 'FK_session_user');
-    await this.ensureUserForeignKey(queryRunner, 'account', 'FK_account_user');
-
+    for (const [table, readable, , column] of RENAMES) {
+      await this.renameConstraint(queryRunner, table, column, readable);
+    }
+    for (const [table, name, definition] of INDEXES) {
+      await this.ensureIndex(queryRunner, table, name, definition);
+    }
+    await this.ensureProviderAccountUnique(queryRunner);
+    for (const foreignKey of FOREIGN_KEYS) {
+      await this.ensureForeignKey(queryRunner, ...foreignKey);
+    }
     await queryRunner.query(`RESET lock_timeout`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
-    await queryRunner.query(`ALTER TABLE "account" DROP CONSTRAINT IF EXISTS "FK_account_user"`);
-    await queryRunner.query(`ALTER TABLE "session" DROP CONSTRAINT IF EXISTS "FK_session_user"`);
-    // On a large database, drop these first with DROP INDEX CONCURRENTLY
-    // (the ops script's rollback section); IF EXISTS then skips them.
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_verification_identifier"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_account_providerId_accountId"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_account_userId"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_session_userId"`);
-    await this.renameConstraint(
-      queryRunner,
-      'verification',
-      'PK_verification',
-      'PK_f7e3a90ca384e71d6e2e93bb340',
+    // Dropping an index takes an ACCESS EXCLUSIVE lock, held here until the
+    // boot transaction commits. On a large table that is the rollback script's job.
+    for (const table of ['session', 'account', 'verification']) {
+      const [{ count }] = await queryRunner.query(
+        `SELECT count(*)::int AS count FROM pg_class c
+          WHERE c.relnamespace = 'public'::regnamespace AND c.relname = ANY($1)
+            AND EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid = c.oid AND i.indrelid = $2::regclass)`,
+        [[...INDEXES.map(([, name]) => name), 'UQ_account_providerId_accountId'], `"${table}"`],
+      );
+      if (count > 0 && (await this.isLarge(queryRunner, table))) {
+        throw new Error(
+          `"${table}" is too large to drop its indexes at boot. Run ${ROLLBACK} first, then revert again.`,
+        );
+      }
+    }
+    for (const [table, name] of [...FOREIGN_KEYS].reverse()) {
+      await queryRunner.query(`ALTER TABLE "${table}" DROP CONSTRAINT IF EXISTS "${name}"`);
+    }
+    await queryRunner.query(
+      `ALTER TABLE "account" DROP CONSTRAINT IF EXISTS "UQ_account_providerId_accountId"`,
     );
-    await this.renameConstraint(
-      queryRunner,
-      'account',
-      'PK_account',
-      'PK_54115ee388cdb6d86bb4bf5b2ea',
-    );
-    await this.renameConstraint(
-      queryRunner,
-      'session',
-      'UQ_session_token',
-      'UQ_232f8e85d7633bd6ddfad421696',
-    );
-    await this.renameConstraint(
-      queryRunner,
-      'session',
-      'PK_session',
-      'PK_f55da76ac1c3ac420f444d2ff11',
-    );
-    await this.renameConstraint(
-      queryRunner,
-      'user',
-      'UQ_user_email',
-      'UQ_e12875dfb3b1d92d7d7c5377e22',
-    );
-    await this.renameConstraint(queryRunner, 'user', 'PK_user', 'PK_cace4a159ff9f2512dd42373760');
+    for (const [, name] of [...INDEXES].reverse()) {
+      await queryRunner.query(`DROP INDEX IF EXISTS "${name}"`);
+    }
+    for (const [table, , original, column] of [...RENAMES].reverse()) {
+      await this.renameConstraint(queryRunner, table, column, original);
+    }
     await queryRunner.query(`RESET lock_timeout`);
   }
 
-  /** Renames a constraint if it still has its old name (safe to re-run). */
+  /**
+   * Renames the table's primary key (no column given) or its single-column
+   * unique constraint on `column`, whatever it is called now.
+   */
   private async renameConstraint(
     queryRunner: QueryRunner,
     table: string,
-    from: string,
+    column: string | undefined,
     to: string,
   ) {
     const [row] = await queryRunner.query(
-      `SELECT 1 FROM pg_constraint WHERE conrelid = $1::regclass AND conname = $2`,
-      [`"${table}"`, from],
+      `SELECT c.conname AS name FROM pg_constraint c
+        WHERE c.conrelid = $1::regclass
+          AND c.contype = $2
+          AND ($3::text IS NULL OR c.conkey = ARRAY[(
+                SELECT a.attnum FROM pg_attribute a
+                 WHERE a.attrelid = c.conrelid AND a.attname = $3)])`,
+      [`"${table}"`, column ? 'u' : 'p', column ?? null],
     );
-    if (row)
-      await queryRunner.query(`ALTER TABLE "${table}" RENAME CONSTRAINT "${from}" TO "${to}"`);
+    if (!row) {
+      throw new Error(
+        `"${table}" has no ${column ? `unique constraint on "${column}"` : 'primary key'} to rename to ${to}.`,
+      );
+    }
+    if (row.name !== to) {
+      await queryRunner.query(`ALTER TABLE "${table}" RENAME CONSTRAINT "${row.name}" TO "${to}"`);
+    }
   }
 
   /** True when a table is too big to build an index or scan it inside the boot transaction. */
@@ -179,51 +192,95 @@ export class HardenAuthTables1788900000000 implements MigrationInterface {
     return row.large === true;
   }
 
-  private async ensureIndex(
-    queryRunner: QueryRunner,
-    table: string,
-    name: string,
-    columns: string,
-  ) {
-    const [existing] = await queryRunner.query(
+  /** Valid, invalid (an interrupted concurrent build) or missing. */
+  private async indexState(queryRunner: QueryRunner, name: string) {
+    const [row] = await queryRunner.query(
       `SELECT i.indisvalid AS valid
          FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid
         WHERE c.relname = $1 AND c.relnamespace = 'public'::regnamespace`,
       [name],
     );
-    if (existing?.valid) return;
-    if (await this.isLarge(queryRunner, table)) {
-      throw new Error(
-        `${name} is ${existing ? 'invalid (an interrupted concurrent build)' : 'missing'} and "${table}" is too large to index at boot. ` +
-          'Run apps/api/db/ops/1788900000000-harden-auth-tables.sql first (see this migration header).',
-      );
-    }
-    if (existing) await queryRunner.query(`DROP INDEX "${name}"`);
-    await queryRunner.query(`CREATE INDEX "${name}" ON "${table}" ${columns}`);
+    return row ? (row.valid ? 'valid' : 'invalid') : 'missing';
   }
 
-  private async ensureUserForeignKey(queryRunner: QueryRunner, table: string, name: string) {
+  private async refuseIfLarge(queryRunner: QueryRunner, table: string, what: string) {
+    if (await this.isLarge(queryRunner, table)) {
+      throw new Error(
+        `${what} and "${table}" is too large to do it at boot. Run ${OPS} first (see this migration's header).`,
+      );
+    }
+  }
+
+  private async ensureIndex(
+    queryRunner: QueryRunner,
+    table: string,
+    name: string,
+    definition: string,
+  ) {
+    const state = await this.indexState(queryRunner, name);
+    if (state === 'valid') return;
+    await this.refuseIfLarge(queryRunner, table, `${name} is ${state}`);
+    if (state === 'invalid') await queryRunner.query(`DROP INDEX "${name}"`);
+    await queryRunner.query(`CREATE INDEX "${name}" ON "${table}" ${definition}`);
+  }
+
+  private async ensureProviderAccountUnique(queryRunner: QueryRunner) {
+    const name = 'UQ_account_providerId_accountId';
+    const [constraint] = await queryRunner.query(
+      `SELECT 1 FROM pg_constraint WHERE conrelid = '"account"'::regclass AND conname = $1`,
+      [name],
+    );
+    if (constraint) return;
+    await this.refuseIfLarge(queryRunner, 'account', `${name} is missing`);
+    // TypeORM returns [rows, affected] for a DELETE.
+    const [, deleted] = await queryRunner.query(
+      `DELETE FROM "account" a
+        USING "account" newer
+        WHERE newer."providerId" = a."providerId" AND newer."accountId" = a."accountId"
+          AND (newer."updatedAt", newer."id") > (a."updatedAt", a."id")`,
+    );
+    if (deleted > 0) console.log(`HardenAuthTables: deleted ${deleted} duplicate account rows`);
+    if ((await this.indexState(queryRunner, name)) !== 'missing') {
+      await queryRunner.query(`DROP INDEX "${name}"`);
+    }
+    await queryRunner.query(
+      `ALTER TABLE "account" ADD CONSTRAINT "${name}" UNIQUE ("providerId", "accountId")`,
+    );
+  }
+
+  private async ensureForeignKey(
+    queryRunner: QueryRunner,
+    table: string,
+    name: string,
+    column: string,
+    references: string,
+    onDelete: 'CASCADE' | 'SET NULL',
+  ) {
     const [existing] = await queryRunner.query(
       `SELECT convalidated FROM pg_constraint WHERE conrelid = $1::regclass AND conname = $2`,
       [`"${table}"`, name],
     );
     if (existing?.convalidated) return;
-    if (await this.isLarge(queryRunner, table)) {
-      throw new Error(
-        `${name} is ${existing ? 'not validated' : 'missing'} and "${table}" is too large to check at boot. ` +
-          'Run apps/api/db/ops/1788900000000-harden-auth-tables.sql first (see this migration header).',
-      );
-    }
+    await this.refuseIfLarge(
+      queryRunner,
+      table,
+      `${name} is ${existing ? 'not validated' : 'missing'}`,
+    );
     if (!existing) {
       // NOT VALID first: from here on no new orphan can be written.
       await queryRunner.query(
         `ALTER TABLE "${table}" ADD CONSTRAINT "${name}"
-           FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE NOT VALID`,
+           FOREIGN KEY ("${column}") REFERENCES "${references}"("id") ON DELETE ${onDelete} NOT VALID`,
       );
     }
-    // Rows whose user was deleted directly can never be used again.
+    // Rows pointing at a row that was deleted directly get what ON DELETE
+    // would have done to them.
+    const orphaned = `t."${column}" IS NOT NULL
+      AND NOT EXISTS (SELECT 1 FROM "${references}" r WHERE r."id" = t."${column}")`;
     await queryRunner.query(
-      `DELETE FROM "${table}" t WHERE NOT EXISTS (SELECT 1 FROM "user" u WHERE u."id" = t."userId")`,
+      onDelete === 'CASCADE'
+        ? `DELETE FROM "${table}" t WHERE ${orphaned}`
+        : `UPDATE "${table}" t SET "${column}" = NULL WHERE ${orphaned}`,
     );
     await queryRunner.query(`ALTER TABLE "${table}" VALIDATE CONSTRAINT "${name}"`);
   }

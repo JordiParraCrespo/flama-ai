@@ -3,10 +3,12 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryColumn, UpdateDateColum
 /**
  * Maps the Better Auth `verification` table (email verification + password
  * reset tokens). Owned by Better Auth; declared here so TypeORM creates the
- * table.
+ * table. Better Auth deletes expired rows itself on every lookup, which
+ * `IDX_verification_expiresAt` serves.
  */
 @Entity('verification')
-@Index('IDX_verification_identifier', ['identifier'])
+@Index('IDX_verification_identifier_createdAt', ['identifier', 'createdAt'])
+@Index('IDX_verification_expiresAt', ['expiresAt'])
 export class Verification {
   @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'PK_verification' })
   id!: string;

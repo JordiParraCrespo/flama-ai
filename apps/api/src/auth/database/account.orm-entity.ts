@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
 /**
  * Maps the Better Auth `account` table (credential + OAuth provider links).
@@ -8,7 +16,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryColumn, UpdateDateColum
  */
 @Entity('account')
 @Index('IDX_account_userId', ['userId'])
-@Index('IDX_account_providerId_accountId', ['providerId', 'accountId'])
+@Unique('UQ_account_providerId_accountId', ['providerId', 'accountId'])
 export class Account {
   @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'PK_account' })
   id!: string;

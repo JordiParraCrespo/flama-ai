@@ -1,38 +1,26 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Every remaining `timestamp` (without time zone) column becomes `timestamptz`.
+ * Every `timestamp` (without time zone) column left in `public` becomes
+ * `timestamptz`, the type `database-design.md` requires. `up()` asks the
+ * catalog what is left; `down()` converts back the columns listed below, which
+ * is what the migrations before this one created.
  *
- * A `timestamp` column stores a wall-clock reading with no zone: the same row
- * means a different instant to a reader in another time zone, and comparing
- * it with `now()` (a `timestamptz`) converts through the session's zone
- * silently. Every table created since `AddAccessGrants` uses `timestamptz`;
- * this brings the 48 older columns in line (the list is `COLUMNS` below).
+ * Which zone the stored values are in: the API wrote them through `pg`, which
+ * sends a `Date` as the process's local wall time, and `now()` defaults (the
+ * migrations' seed rows among them) wrote them in the database's `TimeZone`.
+ * When the two zones agree, that is the zone. When they differ, a database
+ * with no users holds only seed rows and is read in the database's zone; one
+ * with users holds a mix no single reading gets right, so the migration stops
+ * unless `TIMESTAMP_SOURCE_TIME_ZONE` names the zone to read them in (see
+ * `.env.example`).
  *
- * How the existing values are read: `now()` defaults wrote them in the
- * database's `TimeZone`, and the API (through `pg`) in its process zone.
- * Docker Postgres and Node containers both default to UTC, and local
- * development usually runs both in the machine's zone, so the stored values
- * are read in the database's `TimeZone`. The migration logs which zone that
- * is.
- *
- * Locking: changing a column's type takes an ACCESS EXCLUSIVE lock, held
- * until the boot transaction commits. On Postgres 12+ with the session zone
- * set to UTC, `timestamp` → `timestamptz` is a catalog change: no table
- * rewrite, no index rebuild, milliseconds per table. With any other zone it
- * rewrites every table under that lock. So:
- *   - on a large database (any of these tables over 100k rows or 128 MB) the
- *     migration refuses to run unless the server is 12+ and the database's
- *     zone is UTC, and says why;
- *   - it waits at most 5 seconds for each lock, so a long transaction on a
- *     hot table fails the deploy instead of queueing requests behind it;
- *   - it runs after every other pending migration (the newest timestamp), so
- *     nothing slow keeps its locks open. On a large database, deploy it on
- *     its own.
- *
- * Better Auth reads and writes these columns as JS `Date`s through `pg`, which
- * handles both types the same way; nothing in its configuration changes.
- * `down()` converts back, reading the instants in the same zone.
+ * Locking: each conversion takes an ACCESS EXCLUSIVE lock, held until the boot
+ * transaction commits. Read in UTC on Postgres 12+ it is a catalog change;
+ * in any other zone it rewrites the table. On a large database (a table over
+ * 100k rows or 128 MB) the migration refuses the rewrite, waits at most 5
+ * seconds for each lock, and leaves the `ANALYZE` the conversion calls for to
+ * the operator (it logs the statement) rather than run it under those locks.
  */
 const COLUMNS: Record<string, string[]> = {
   user: ['banExpires', 'createdAt', 'updatedAt'],
@@ -58,45 +46,108 @@ const COLUMNS: Record<string, string[]> = {
   feature_flag_change: ['createdAt'],
 };
 
+const UTC = ['UTC', 'Etc/UTC', 'Etc/UCT', 'UCT', 'Zulu', 'Etc/Zulu', 'GMT', 'Etc/GMT'];
+const sameZone = (a: string, b: string) => a === b || (UTC.includes(a) && UTC.includes(b));
+
 export class TimestampsWithTimeZone1789000000000 implements MigrationInterface {
   name = 'TimestampsWithTimeZone1789000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await this.convert(queryRunner, 'timestamptz');
+    const rows: { table: string; column: string }[] = await queryRunner.query(
+      `SELECT table_name AS "table", column_name AS "column"
+         FROM information_schema.columns
+        WHERE table_schema = 'public' AND data_type = 'timestamp without time zone'
+        ORDER BY table_name, ordinal_position`,
+    );
+    const unlisted = rows.filter(({ table, column }) => !COLUMNS[table]?.includes(column));
+    if (unlisted.length > 0) {
+      throw new Error(
+        `TimestampsWithTimeZone: ${unlisted.map(({ table, column }) => `"${table}"."${column}"`).join(', ')} ` +
+          'would be converted but not restored by down(); add them to COLUMNS.',
+      );
+    }
+    const columns: Record<string, string[]> = {};
+    for (const { table, column } of rows) {
+      columns[table] = [...(columns[table] ?? []), column];
+    }
+    await this.convert(queryRunner, columns, 'timestamptz');
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await this.convert(queryRunner, 'timestamp');
+    await this.convert(queryRunner, COLUMNS, 'timestamp');
   }
 
-  private async convert(queryRunner: QueryRunner, to: 'timestamptz' | 'timestamp') {
-    const [{ zone, version }] = await queryRunner.query(
-      `SELECT current_setting('TimeZone') AS zone,
+  private async convert(
+    queryRunner: QueryRunner,
+    columns: Record<string, string[]>,
+    to: 'timestamptz' | 'timestamp',
+  ) {
+    const present: { table: string }[] = await queryRunner.query(
+      `SELECT relname AS "table" FROM pg_class
+        WHERE relnamespace = 'public'::regnamespace AND relkind = 'r' AND relname = ANY($1)`,
+      [Object.keys(columns)],
+    );
+    const tables = present.map(({ table }) => table);
+    if (tables.length === 0) return;
+    const [{ database, version }] = await queryRunner.query(
+      `SELECT current_setting('TimeZone') AS database,
               current_setting('server_version_num')::int AS version`,
     );
     const [{ large }] = await queryRunner.query(
       `SELECT coalesce(bool_or(c.reltuples > 100000 OR pg_total_relation_size(c.oid) > 128 * 1024 * 1024), false) AS large
          FROM pg_class c
         WHERE c.relnamespace = 'public'::regnamespace AND c.relname = ANY($1)`,
-      [Object.keys(COLUMNS)],
+      [tables],
     );
-    const utc = ['UTC', 'Etc/UTC', 'Etc/UCT', 'UCT', 'Zulu', 'Etc/Zulu', 'GMT', 'Etc/GMT'].includes(
-      zone,
-    );
-    if (large && (version < 120000 || !utc)) {
+    const zone = await this.sourceZone(queryRunner, database, to);
+
+    if (large && (version < 120000 || !UTC.includes(zone))) {
       throw new Error(
-        `Converting timestamps on this database would rewrite large tables under an exclusive lock ` +
-          `(Postgres ${version}, TimeZone ${zone}). It is a catalog-only change on Postgres 12+ ` +
-          `with the database's TimeZone set to UTC; see this migration's header.`,
+        `TimestampsWithTimeZone: reading the timestamps in ${zone} on Postgres ${version} would rewrite ` +
+          'large tables under an exclusive lock. It is a catalog-only change on Postgres 12+ in UTC.',
       );
     }
-    console.log(`TimestampsWithTimeZone: reading stored timestamps in ${zone}`);
+    console.log(`TimestampsWithTimeZone: stored timestamps are read in ${zone}`);
 
     await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
-    for (const [table, columns] of Object.entries(COLUMNS)) {
-      const alters = columns.map((column) => `ALTER COLUMN "${column}" TYPE ${to}`).join(', ');
+    if (!sameZone(zone, database)) {
+      await queryRunner.query(`SELECT set_config('TimeZone', $1, true)`, [zone]);
+    }
+    for (const table of tables) {
+      const alters = columns[table]
+        .map((column) => `ALTER COLUMN "${column}" TYPE ${to}`)
+        .join(', ');
       await queryRunner.query(`ALTER TABLE "${table}" ${alters}`);
     }
+    await queryRunner.query(`RESET TimeZone`);
     await queryRunner.query(`RESET lock_timeout`);
+
+    // Changing a column's type discards its planner statistics.
+    const analyze = `ANALYZE ${tables.map((table) => `"${table}"`).join(', ')}`;
+    if (large) console.warn(`TimestampsWithTimeZone: run after this deploy: ${analyze};`);
+    else await queryRunner.query(analyze);
+  }
+
+  /**
+   * The zone the stored wall-clock values were written in (see the header).
+   * Going back, the values are written in the API's zone, which is how `pg`
+   * will read them.
+   */
+  private async sourceZone(
+    queryRunner: QueryRunner,
+    database: string,
+    to: 'timestamptz' | 'timestamp',
+  ): Promise<string> {
+    const explicit = process.env.TIMESTAMP_SOURCE_TIME_ZONE?.trim();
+    if (explicit) return explicit;
+    const api = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (to === 'timestamp' || sameZone(api, database)) return api;
+    const [{ users }] = await queryRunner.query(`SELECT EXISTS (SELECT 1 FROM "user") AS users`);
+    if (!users) return database;
+    throw new Error(
+      `TimestampsWithTimeZone: the API runs in ${api} and the database in ${database}, so the stored ` +
+        'timestamps were written in both zones. Set TIMESTAMP_SOURCE_TIME_ZONE to the zone to read them in ' +
+        '(see .env.example), or run the API in the database zone for this deploy.',
+    );
   }
 }

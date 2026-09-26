@@ -3,7 +3,6 @@ paths:
   - "apps/api/src/migrations/**/*"
   - "apps/api/src/**/database/**/*"
   - "apps/api/src/config/data-source.ts"
-  - "packages/backend/**/*"
 ---
 
 # Database Design Rules

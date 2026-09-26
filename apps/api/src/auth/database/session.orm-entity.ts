@@ -11,12 +11,19 @@ import {
 /**
  * Maps the Better Auth `session` table. Owned by Better Auth; declared here so
  * TypeORM creates/migrates the table alongside the rest of the schema.
- * `userId` references `user` (`FK_session_user`, ON DELETE CASCADE); the
- * foreign key lives in the migration, as for every entity here.
+ * Foreign keys live in the migration (`HardenAuthTables`), as for every entity
+ * here: `userId` and `impersonatedBy` reference `user` (ON DELETE CASCADE),
+ * `activeOrganizationId` and `activeTeamId` reference `organization` and
+ * `team` (ON DELETE SET NULL).
  */
 @Entity('session')
 @Unique('UQ_session_token', ['token'])
 @Index('IDX_session_userId', ['userId'])
+@Index('IDX_session_impersonatedBy', ['impersonatedBy'], { where: '"impersonatedBy" IS NOT NULL' })
+@Index('IDX_session_activeOrganizationId', ['activeOrganizationId'], {
+  where: '"activeOrganizationId" IS NOT NULL',
+})
+@Index('IDX_session_activeTeamId', ['activeTeamId'], { where: '"activeTeamId" IS NOT NULL' })
 export class Session {
   @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'PK_session' })
   id!: string;
