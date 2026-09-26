@@ -457,26 +457,21 @@ for (const { app, routes, features, product, allow, kit } of APPS) {
 }
 
 // docs: every workspace package documented, frontend surfaces with an ARCHITECTURE.md
+// Every directory under apps/ and packages/ with a package.json, down to the
+// depth pnpm-workspace.yaml globs reach, read off the tree.
 const workspacePackages = [];
-const PACKAGE_ROOTS = [
-  'apps',
-  'packages',
-  'packages/backend',
-  'packages/frontend/design-system',
-  'packages/frontend',
-  // flama:begin runner
-  'packages/go',
-  // flama:end runner
-];
-for (const base of PACKAGE_ROOTS) {
+const collectPackages = (base, depth) => {
   const dir = join(root, base);
-  if (!existsSync(dir)) continue;
+  if (!existsSync(dir)) return;
   for (const name of readdirSync(dir)) {
     const pkgDir = join(dir, name);
-    if (statSync(pkgDir).isDirectory() && existsSync(join(pkgDir, 'package.json')))
-      workspacePackages.push(relative(root, pkgDir));
+    if (!statSync(pkgDir).isDirectory() || name === 'node_modules') continue;
+    if (existsSync(join(pkgDir, 'package.json'))) workspacePackages.push(relative(root, pkgDir));
+    else if (depth > 0) collectPackages(relative(root, pkgDir), depth - 1);
   }
-}
+};
+collectPackages('apps', 0);
+collectPackages('packages', 2);
 for (const pkg of workspacePackages) {
   for (const doc of ['README.md', 'AGENTS.md']) {
     if (!existsSync(join(root, pkg, doc)))

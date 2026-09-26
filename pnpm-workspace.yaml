@@ -9,9 +9,7 @@ packages:
   # flama:plugins qa
   - "apps/*"
   - "packages/*"
-  # flama:begin runner
   - "packages/go/*"
-  # flama:end runner
   - "packages/backend/*"
   - "packages/frontend/*"
   - "packages/frontend/design-system/*"

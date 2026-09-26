@@ -2,9 +2,9 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It
-ships 6 apps and 15 shared packages; six more apps and Stripe billing are
-available as plugins.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. The
+tree below is what it ships; more apps and Stripe billing are available as
+plugins (see [Plugins](#plugins)).
 
 ## Monorepo structure
 
@@ -14,7 +14,6 @@ flama/
 │   ├── api/              # NestJS REST API
 │   ├── mobile/           # Consumer Expo app
 │   ├── mobile-showcase/  # Expo app showcasing the mobile design system
-│   ├── runner/           # Go service template (REST + WS, API keys) the API delegates to
 │   ├── web/              # Consumer Vite + TanStack Router SPA
 │   └── web-showcase/     # Next.js app showcasing the web design system
 ├── packages/
@@ -39,7 +38,6 @@ flama/
 │   │   └── design-system/
 │   │       ├── web/      # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
 │   │       └── mobile/   # NativeWind + rn-primitives (@flama/design-system-mobile)
-│   ├── go/               # Shared Go modules (@flama/go-*): core, config, httpx, auth, health, ws
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files
 ├── docker/               # Docker Compose (dev + prod)
@@ -87,7 +85,7 @@ by those fences.
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
-it back. Eight today: `cli`, `mcp`, `docs`, `admin-web`, `admin-mobile`, `qa`,
+it back: `cli`, `mcp`, `runner`, `docs`, `admin-web`, `admin-mobile`, `qa`,
 `billing`, a module of the API rather than an app, and `organizations`, which
 the starter also ships: the plugin is how a project that pruned it gets it
 back, and the plugins repo fails when it stops reproducing the starter's copy.
@@ -138,7 +136,7 @@ with before it touches anything.
 - Run **`pnpm ci:local`** before pushing: it is pull request CI's Check job,
   run here over what the branch affects, and the `pre-push` git hook refuses
   a commit it has not passed. Require the `CI` check. How CI decides what runs,
-  and where a new image or root-level file is declared, is
+  how an image is picked up and where a root-level file is declared, is
   `scripts/ci/README.md`
 
 ### Backend (`apps/api` + `packages/backend/*`)
@@ -183,8 +181,6 @@ installed it also needs a row in `apps/docs/docs/errors.md`. See
 
 - `feature-flags.md` — the flag catalog, kinds and safe defaults,
   `useFeatureFlag` / `@RequireFlag`, what is not a flag
-- `go.md` — the Go service template (`apps/runner`): layout, ports, errors,
-  auth, what to reach for instead of a framework
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens
 
@@ -214,23 +210,6 @@ what a person may do; scopes say what an API token may do on their behalf, and
 effective access is the intersection — see
 `.agents/rules/scopes-and-credentials.md`, and the permission catalog in
 `packages/shared/src/scopes/README.md`.
-
-### Go services (`apps/runner` + `packages/go/*`)
-
-The product backend is NestJS. Go is for the one-off service that needs a
-static binary, long-lived connections or process orchestration (runners, VMs,
-containers) — `apps/runner` is the template, and the API talks to it with an
-API key. The cross-cutting toolkit is `packages/go/*`, the Go counterpart of
-`packages/backend/*`: one Go module each (`core`, `config`, `httpx`, `auth`,
-`health`, `ws`, `postgres`), tied together by the root `go.work`, each also published to
-Turborepo as `@flama/go-<name>` so the task graph and `--affected` see them.
-The app is the same hexagon as `apps/api` in idiomatic Go: standard
-`net/http` routing, `slog`, interfaces as ports, constructor injection, one
-composition root (`internal/server`). Errors are the same RFC 7807 documents
-with their own catalog (`RUNNER_*`, `APIKEY_*`, `JOB_*`). Boundaries are
-enforced by `internal/arch/arch_test.go`. Rules in `.agents/rules/go.md`;
-layer model in `apps/runner/ARCHITECTURE.md`; module list and "add a
-module" steps in `packages/go/README.md`.
 
 ### Shared (packages/shared)
 
@@ -337,8 +316,6 @@ packages/frontend/core        → used by every frontend package and app
 packages/frontend/consumer    → used by web, mobile
 packages/frontend/web         → used by web
 packages/frontend/mobile      → used by mobile
-packages/go/core              → used by every other packages/go module and runner
-packages/go/{config,httpx,auth,health,ws,postgres} → used by runner (auth ← ws, httpx ← health, auth)
 ```
 
 ## Commands

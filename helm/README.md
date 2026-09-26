@@ -18,14 +18,13 @@ Use Hetzner Cloud Console or `hcloud` CLI to create a cluster.
 # Add the Flama Helm chart
 helm install flama ./helm/flama \
   --set api.image=ghcr.io/your-org/flama-api:latest \
-  --set web.image=ghcr.io/your-org/flama-web:latest \
-  --set runner.image=ghcr.io/your-org/flama-runner:latest
+  --set web.image=ghcr.io/your-org/flama-web:latest
 ```
 
-The chart ships what the starter ships: the API, the consumer web app, the
-runner, Postgres and Redis. `pnpm plugin:add admin-web` and
-`pnpm plugin:add docs` add their deployments, values and ingress rules back,
-and then `adminWeb.image` and `docs.image` are settable too.
+The chart ships what the starter ships: the API, the consumer web app,
+Postgres and Redis. `pnpm plugin:add admin-web`, `pnpm plugin:add docs` and
+`pnpm plugin:add runner` add their deployments, values and ingress rules back,
+and then `adminWeb.image`, `docs.image` and `runner.image` are settable too.
 
 ### 3. Configure Ingress
 

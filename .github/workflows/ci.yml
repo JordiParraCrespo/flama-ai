@@ -41,16 +41,6 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      # flama:begin runner
-      # Turborepo builds, tests and checks the Go modules through their
-      # package.json scripts, so the toolchain has to be present.
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
-        with:
-          go-version-file: go.work
-          cache-dependency-path: |
-            apps/runner/go.sum
-            packages/go/*/go.sum
-      # flama:end runner
       - run: pnpm install --frozen-lockfile
       # Which packages this run touches and which images it builds. A push to
       # main, or a change to a file no package owns (this workflow, the
@@ -116,29 +106,6 @@ jobs:
       - name: Unit tests
         run: |
           [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run test $AFFECTED_FILTERS
-      # flama:begin runner
-      # `go test` and `go build` ran above as the modules' Turborepo tasks;
-      # the linters are the part with no package script. The gha-vm runners
-      # ship no C compiler, and -race needs cgo; run the race detector locally
-      # (make test-race).
-      - name: Go vet and lint
-        run: |
-          [[ "$AFFECTED_PACKAGES" == *'"@flama/go-'* || "$AFFECTED_PACKAGES" == *'"@flama/runner"'* ]] || exit 0
-          # The workspace root is not a module, so `./...` does not resolve
-          # there; the module-path pattern spans every module in go.work.
-          go vet github.com/jordiparracrespo/flama-ai/...
-          # A runner installs the pinned linter; a workstation is asked to.
-          if ! command -v golangci-lint > /dev/null; then
-            if [[ -z "${GITHUB_ACTIONS:-}" ]]; then
-              echo "golangci-lint is not installed: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.5.0"
-              exit 1
-            fi
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.5.0
-          fi
-          # golangci-lint needs directory patterns, one per module; `go list -m`
-          # in workspace mode lists exactly the modules go.work declares.
-          golangci-lint run $(go list -m -f '{{.Dir}}/...')
-      # flama:end runner
       # flama:begin web
       # What a first-time visitor downloads before anything renders, against a
       # committed budget. Vite's own chunk warning prints and passes.
@@ -175,14 +142,6 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      # flama:begin runner
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
-        with:
-          go-version-file: go.work
-          cache-dependency-path: |
-            apps/runner/go.sum
-            packages/go/*/go.sum
-      # flama:end runner
       - run: pnpm install --frozen-lockfile
       # Only the API and what it imports; the full build spent most of its
       # two minutes on apps this job never runs.
@@ -247,8 +206,7 @@ jobs:
       # the API, so both necessarily agree on the database.
       - run: cp .env.example .env
       # Only what the API needs: the `api` project drives HTTP, so there is no
-      # browser and no web build in this job — and therefore no Go toolchain
-      # either, since nothing here reaches apps/runner.
+      # browser and no web build in this job.
       - run: pnpm turbo run build --filter=@flama/api...
       - run: pnpm --filter @flama/api migration:run
       - name: Start the API
@@ -309,8 +267,8 @@ jobs:
       contents: read
       packages: write
     strategy:
-      # The apps whose package (or a dependency of it) changed, from the
-      # mapping in scripts/ci/affected.mjs, as selectImages narrows them.
+      # The apps with a Dockerfile whose package (or a dependency of it)
+      # changed, as scripts/ci/affected.mjs selects them.
       matrix:
         app: ${{ fromJSON(needs.check.outputs.images) }}
     steps:
@@ -329,8 +287,8 @@ jobs:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          # Consumed by the Go runner image (embedded as the reported
-          # version); the Node images ignore it.
+          # For an image that embeds the version it reports; the others
+          # ignore it.
           build-args: |
             VERSION=${{ github.sha }}
           tags: |

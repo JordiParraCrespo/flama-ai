@@ -180,8 +180,8 @@ export function widenMarker(line, id, at) {
  * This is the one edit a prune makes to a file that stays, and it lives here
  * because two callers make it: the pruner over the repo, and the installer
  * over what it copies in. A plugin's files were extracted from a starter that
- * still had every feature, so a docs page can carry a `runner` block into a
- * project that pruned `runner` long ago — and it should arrive the way the
+ * still had every feature, so a docs page can carry a `mobile` block into a
+ * project that pruned `mobile` long ago — and it should arrive the way the
  * prune would have left it.
  *
  * Markers survive. `plugin:remove` is the pruner, and it finds a plugin's
