@@ -4,8 +4,7 @@ React Native component library for Flama — shadcn-style components built on
 [NativeWind](https://www.nativewind.dev/) and
 [`@rn-primitives`](https://rnprimitives.com/) (React Native Reusables). The
 component API mirrors `@flama/design-system-web` so the two platforms stay
-consistent. Consumed by `apps/mobile` (and `apps/admin-mobile`, a plugin) and
-`packages/frontend/mobile`, previewed in `apps/mobile-showcase`.
+consistent. Consumed by `apps/mobile` and `packages/frontend/mobile`.
 
 ## Usage
 
@@ -81,4 +80,4 @@ and the findings it inherited are in `.agents/rules/frontend-ui.md`.
 
 ## Consumed by
 
-`apps/mobile` (and `apps/admin-mobile`, a plugin), `apps/mobile-showcase`, `packages/frontend/mobile`.
+`apps/mobile`, `packages/frontend/mobile`.

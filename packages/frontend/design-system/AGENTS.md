@@ -3,8 +3,8 @@
 Shared design system. This directory is a **container of two publishable
 packages** plus shared tokens:
 
-- [`web/`](./web) → `@flama/design-system-web` — shadcn + Tailwind (used by `apps/web`, `apps/admin-web`, `apps/web-showcase`, `packages/frontend/web`)
-- [`mobile/`](./mobile) → `@flama/design-system-mobile` — React Native + NativeWind (used by `apps/mobile` (and `apps/admin-mobile`, a plugin), `apps/mobile-showcase`, `packages/frontend/mobile`)
+- [`web/`](./web) → `@flama/design-system-web` — shadcn + Tailwind (used by `apps/web` and `packages/frontend/web`)
+- [`mobile/`](./mobile) → `@flama/design-system-mobile` — React Native + NativeWind (used by `apps/mobile` and `packages/frontend/mobile`)
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) first. There is no package.json
 > at this level — work inside `web/` or `mobile/`.
@@ -41,17 +41,17 @@ decide most design questions here:
   `--status-*`, `--data-*`) first, then the shadcn semantic names aliased onto
   them, then the Tailwind mapping in `@theme inline`. Change the brand there;
   components should inherit it without edits.
-- `apps/mobile/global.css` and `apps/mobile-showcase/global.css` mirror those
+- `apps/mobile/global.css` mirrors those
   tokens in the bare-HSL form NativeWind needs. They differ on purpose in two
   ways: hairlines are flattened to solid values (React Native cannot composite
   an rgba border), and every token is a literal triple rather than a `var()`
-  alias (NativeWind resolves these at build time). **Keep all three in sync.**
+  alias (NativeWind resolves these at build time). **Keep the two in sync.**
 - Prefer a **token** over a hardcoded value, and a **brand primitive**
   (`text-ink-400`, `bg-surface-sunken`) over a raw hex.
 - The **shadcn component API is mirrored in the mobile package** — a component's
   props/variants should match across web and mobile so consumers get a
   consistent API on both platforms.
-- Preview components in the matching showcase app (`apps/web-showcase` /
-  `apps/mobile-showcase`) when adding or changing them. The web showcase's
-  **Foundations** page (`/foundations`) is the reference surface; check changes
-  in **both** light and dark — the sidebar carries the theme switch.
+- Check a component or token change on the screens that use it: `apps/web`
+  for this package's web half, `apps/mobile` for the mobile half, in **both**
+  light and dark. A token change starts in `web/src/styles/globals.css` and
+  lands in `apps/mobile/global.css` in the same change.

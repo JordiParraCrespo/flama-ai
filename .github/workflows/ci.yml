@@ -54,7 +54,7 @@ jobs:
         run: pnpm exec biome ci .
       # The repo's own GritQL lint plugins, over their fixtures.
       - run: pnpm check:biome-plugins
-      # flama:begin web|web-showcase|mobile|mobile-showcase
+      # flama:begin web|mobile
       # The design-system linter (`@shadcn/lint` through oxlint, scoped to its
       # own rules — Biome keeps correctness) over every web and mobile app that
       # has a `lint:design` script. Every rule is at `warn` while the findings
@@ -63,7 +63,7 @@ jobs:
       # once it is clean.
       - name: Design-system lint
         run: pnpm lint:design
-      # flama:end web|web-showcase|mobile|mobile-showcase
+      # flama:end web|mobile
       # flama:plugins design-lint
       # The API module contract: the closed set of layer directories, the file
       # names each admits, use-case slice completeness and the line caps.

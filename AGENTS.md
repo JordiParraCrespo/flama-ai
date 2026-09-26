@@ -13,9 +13,7 @@ flama/
 ├── apps/
 │   ├── api/              # NestJS REST API
 │   ├── mobile/           # Consumer Expo app
-│   ├── mobile-showcase/  # Expo app showcasing the mobile design system
-│   ├── web/              # Consumer Vite + TanStack Router SPA
-│   └── web-showcase/     # Next.js app showcasing the web design system
+│   └── web/              # Consumer Vite + TanStack Router SPA
 ├── packages/
 │   ├── auth/             # Shared Better Auth config + client helpers (@flama/auth)
 │   ├── backend/
@@ -85,10 +83,10 @@ by those fences.
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
-it back: `cli`, `mcp`, `runner`, `docs`, `admin-web`, `admin-mobile`, `qa`,
-`billing`, a module of the API rather than an app, and `organizations`, which
-the starter also ships: the plugin is how a project that pruned it gets it
-back, and the plugins repo fails when it stops reproducing the starter's copy.
+it back; `pnpm plugin:list` names what a plugins repo offers. Most are apps, some
+are a module of the API, and one, `organizations`, the starter also ships: the
+plugin is how a project that pruned it gets it back, and the plugins repo fails
+when it stops reproducing the starter's copy.
 
 ```bash
 pnpm plugin:list                  # what is on offer, and what is installed
@@ -290,9 +288,9 @@ the app's `useZodResolver`. The convention is `.agents/rules/forms.md`.
 
 Two independently versioned packages with a mirrored component API:
 `@flama/design-system-web` (Base UI + Tailwind v4, tokens in
-`src/styles/globals.css`) for `apps/web` and `apps/web-showcase`, and
-`@flama/design-system-mobile` (NativeWind + `@rn-primitives`) for `apps/mobile`
-and `apps/mobile-showcase`. Usage rules are `.agents/rules/frontend-ui.md`.
+`src/styles/globals.css`) for `apps/web`, and `@flama/design-system-mobile`
+(NativeWind + `@rn-primitives`) for `apps/mobile`. Usage rules are
+`.agents/rules/frontend-ui.md`.
 
 ## Dependency flow
 
@@ -309,8 +307,8 @@ packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
 packages/translations        → used by web, mobile, api (email copy via backend/i18n)
-packages/frontend/design-system/web    → used by web, web-showcase, frontend/web
-packages/frontend/design-system/mobile → used by mobile, mobile-showcase, frontend/mobile
+packages/frontend/design-system/web    → used by web, frontend/web
+packages/frontend/design-system/mobile → used by mobile, frontend/mobile
 packages/frontend/api-client  → used by frontend/core, frontend/consumer
 packages/frontend/core        → used by every frontend package and app
 packages/frontend/consumer    → used by web, mobile
@@ -357,7 +355,7 @@ pnpm changeset          # Create a changeset for versioning
 - Where frontend code goes — kernel, product package, platform kit, or a
   feature's kind directory — is `.agents/rules/frontend-architecture.md`;
   `/scaffold-feature` builds the shape and `pnpm check:structure` checks it
-- UI in the web apps, `apps/web-showcase` and the web design system:
+- UI in the web apps and the web design system:
   `.agents/rules/frontend-ui.md`
 - Porting a design export onto the design system is the
   `/design-export-port` skill (`.agents/skills/design-export-port/`): the

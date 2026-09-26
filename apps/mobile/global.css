@@ -13,7 +13,7 @@
      · every token is a literal triple rather than a `var()` alias, because
        NativeWind resolves these at build time and nested vars do not survive.
 
-   Keep in sync with `apps/mobile-showcase/global.css` and the source of truth,
+   Keep in sync with the source of truth,
    `packages/frontend/design-system/web/src/styles/globals.css`.
    ========================================================================== */
 

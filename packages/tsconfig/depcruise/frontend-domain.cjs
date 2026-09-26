@@ -47,9 +47,9 @@ module.exports = function frontendDomain({ role }) {
           path: [
             'packages/frontend/(web|mobile)/',
             'node_modules/(react-dom|@tanstack/react-router)/',
-            // flama:begin mobile|mobile-showcase
+            // flama:begin mobile
             'node_modules/(react-native|expo-[a-z-]+)/',
-            // flama:end mobile|mobile-showcase
+            // flama:end mobile
             // flama:plugins native-modules
           ],
         },

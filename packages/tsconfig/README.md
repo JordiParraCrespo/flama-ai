@@ -10,8 +10,7 @@ across the monorepo.
 | ----------------------- | ---------------------------------------------------------------- |
 | `tsconfig.library.json` | Buildable TS packages (`packages/*`)                             |
 | `tsconfig.nestjs.json`  | The NestJS API (`apps/api`, backend packages)                    |
-| `tsconfig.nextjs.json`  | Next.js apps (`apps/web-showcase`)                               |
-| `tsconfig.expo.json`    | Expo / React Native apps (`apps/mobile`, `apps/mobile-showcase`) |
+| `tsconfig.expo.json`    | Expo / React Native apps (`apps/mobile`)                         |
 
 Two build-time helpers ride along, for the same reason the tsconfigs do — one
 copy, extended rather than pasted: `vite-chunks.mjs` (the Rollup

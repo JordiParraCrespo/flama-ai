@@ -9,8 +9,7 @@ Shared TypeScript configuration presets extended by every app and package.
 ```
 tsconfig.library.json   # base for shared library packages
 tsconfig.nestjs.json    # backend (apps/api, backend/*)
-tsconfig.nextjs.json    # Next.js apps (showcases)
-tsconfig.expo.json      # Expo apps (mobile, admin-mobile)
+tsconfig.expo.json      # Expo apps
 vite-chunks.mjs         # Rollup manualChunks shared by the Vite SPAs
 ```
 

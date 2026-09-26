@@ -16,10 +16,10 @@
  *   ...lines that exist only because of the mobile app...
  *   # flama:end mobile
  *
- * A marker can name several features — `flama:begin mobile|mobile-showcase` —
+ * A marker can name several features — `flama:begin web|mobile` —
  * and its block goes only when all of them go.
  *
- *   node scripts/starter/prune.mjs --without mobile,web-showcase
+ *   node scripts/starter/prune.mjs --without mobile,e2e
  *   node scripts/starter/prune.mjs --keep web,e2e
  *   node scripts/starter/prune.mjs --check        # CI: manifest still honest?
  *   node scripts/starter/prune.mjs --list

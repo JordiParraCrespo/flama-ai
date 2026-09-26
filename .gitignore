@@ -10,9 +10,9 @@ build/
 apps/*/ios/
 apps/*/android/
 .expo/
-# flama:begin mobile|mobile-showcase
+# flama:begin mobile
 packages/frontend/design-system/mobile/assets/icons/nanoicons/
-# flama:end mobile|mobile-showcase
+# flama:end mobile
 # flama:plugins docs
 *.tsbuildinfo
 node-compile-cache/
