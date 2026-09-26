@@ -12,9 +12,6 @@ import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
-// flama:begin mcp
-import { mcpPlugin } from './mcp-plugin.config';
-// flama:end mcp
 
 // flama:begin organizations
 import { organizationPlugin, withActiveOrganization } from './organization-plugin.config';
@@ -343,9 +340,6 @@ export const auth = betterAuth({
     // credential so the organization/admin façades — which resolve the caller
     // through Better Auth — keep working for API tokens and OAuth clients.
     bearer(),
-    // flama:begin mcp
-    mcpPlugin(frontendUrl),
-    // flama:end mcp
   ],
 });
 

@@ -784,9 +784,10 @@ The registry lives in the API process. Two consumers cannot see it, and
 pretending otherwise would ship resources that are invisible to exactly the
 credentials meant to reach them:
 
-- **`apps/mcp` is a separately deployed server** with a static `ToolDefinition`
-  registry whose `requiredScopes` are hand-written, filtering its tool list
-  against them. It never talks to the API's boot registry.
+- **The MCP server (`apps/mcp`, the `mcp` plugin) is deployed separately**,
+  with a static `ToolDefinition` registry whose `requiredScopes` are
+  hand-written, filtering its tool list against them. It never talks to the
+  API's boot registry.
 - **`Scope` in `@flama/shared` is a compile-time union** (`SCOPE_RESOURCES` ×
   access level) that the CLI, the web picker and the MCP tools type-check
   against. A runtime-only registry cannot produce a compile-time type.
@@ -798,7 +799,7 @@ defineResource(...)  ──build step──▶  packages/shared/src/scopes/catal
                                       (SCOPE_RESOURCES, PERMISSION_GROUPS, Scope)
                                               │
                         ┌─────────────────────┼─────────────────────┐
-                     apps/api              apps/mcp              apps/web
+                     apps/api             mcp plugin             apps/web
                 @RequireScopes(...)   requiredScopes: [...]    permission picker
                    (explicit)            (explicit)              (derived)
 ```
@@ -932,29 +933,6 @@ builder is an admin surface and stays web-only.
 
 ---
 
-<!-- flama:begin mcp -->
-## Part 12 — CLI and MCP
-
-**CLI (`apps/cli`).** New `flama roles` command group: `list`, `show`, `create`,
-`edit-permissions`, `assign`. New `flama grants` group: `list`, `create`,
-`revoke`. Exit codes are a public contract (`apps/cli/src/lib/errors.ts`) —
-reuse them, do not invent: 4 for forbidden, 5 for not found. Commands resolve
-the profile through `contextFor()`; never read config or env directly.
-
-**MCP (`apps/mcp`).** New tools in `src/tools/authz.tools.ts` mirroring the
-read-only surface: `list_roles`, `get_role`, `list_grants`. Each declares
-`requiredScopes` matching its endpoint's `@RequireScopes`. Annotate honestly —
-`readOnlyHint` only when every scope is `:read`. Remember `apps/mcp` is on Zod 4
-with `inputSchema` as a `z.object({...})`, and must not import Zod schemas from
-`@flama/shared`.
-
-Write tools for roles and grants are deliberately **out of scope** for the first
-pass: an MCP client editing permissions is a large blast radius for a small
-convenience. Reads first; revisit with the audit log in place.
-
----
-
-<!-- flama:end mcp -->
 <!-- flama:plugins agent-docs -->
 ## Part 13 — Testing
 

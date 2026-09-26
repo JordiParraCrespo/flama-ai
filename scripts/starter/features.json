@@ -50,26 +50,6 @@
       "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
       "paths": ["apps/mobile-showcase"]
     },
-    "mcp": {
-      "title": "MCP server",
-      "summary": "apps/mcp — Model Context Protocol server (stdio + Streamable HTTP) over the API, and the API's OAuth provider for MCP clients with its consent screen",
-      "identifiers": ["apps/mcp", "@flama/mcp", "flama-mcp"],
-      "paths": [
-        "apps/mcp",
-        "apps/api/src/auth/infrastructure/mcp-plugin.config.ts",
-        "apps/api/src/auth/infrastructure/mcp-oauth-grant-verifier.adapter.ts",
-        "apps/api/src/auth/database/oauth-access-token.orm-entity.ts",
-        "apps/api/src/auth/database/oauth-application.orm-entity.ts",
-        "apps/api/src/auth/database/oauth-consent.orm-entity.ts",
-        "apps/web/src/routes/oauth",
-        "apps/web/src/features/auth/screens/oauth-consent.tsx",
-        "apps/web/src/features/auth/lib/consent.ts",
-        "e2e/tests/web/oauth-consent.spec.ts"
-      ],
-      "keeps": {
-        "apps/api/src/migrations": "the OAuth tables arrive in the same migration as the API tokens, which stay, so a project without the MCP server keeps them, empty"
-      }
-    },
     "runner": {
       "title": "Go runner service",
       "summary": "apps/runner + packages/go/* — Go service template (REST + WS, API keys) the API delegates long-lived work to",
@@ -131,8 +111,6 @@
         "apps/api/src/authz/authz.di-tokens.ts",
         "apps/api/src/authz/access-grant.mapper.ts",
         "apps/api/src/database/seed-organization.ts",
-        "apps/mcp/src/tools/organizations.tools.ts",
-        "apps/mcp/src/tools/workspaces.tools.ts",
         "apps/mobile/app/onboarding.tsx",
         "apps/mobile/features/organizations",
         "apps/web/src/features/organizations",

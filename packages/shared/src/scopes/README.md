@@ -102,11 +102,12 @@ Present one as `Authorization: Bearer flama_pat_…` or in `x-api-key`.
 
 ### OAuth 2.1 (for MCP clients)
 
-Better Auth's MCP plugin turns the API into an OAuth provider: discovery
-metadata, dynamic client registration, authorization and token endpoints. A
-client that hits the remote MCP server without a token gets a `401` carrying
-`WWW-Authenticate: Bearer resource_metadata=…`, follows it, registers itself,
-and sends the user to the consent screen at `/oauth/consent`.
+With the `mcp` plugin installed, Better Auth's MCP plugin turns the API into
+an OAuth provider: discovery metadata, dynamic client registration,
+authorization and token endpoints. A client that hits the remote MCP server
+without a token gets a `401` carrying `WWW-Authenticate: Bearer
+resource_metadata=…`, follows it, registers itself, and sends the user to the
+consent screen at `/oauth/consent`.
 
 The consent screen lists the requested permissions with the catalog's own
 descriptions. Better Auth grants or refuses the request as a whole; someone who

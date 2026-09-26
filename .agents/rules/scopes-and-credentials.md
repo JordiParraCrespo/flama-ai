@@ -1,7 +1,6 @@
 ---
 paths:
   - "apps/api/**/*"
-  - "apps/mcp/**/*"
   - "packages/shared/**/*"
 ---
 
@@ -100,31 +99,14 @@ plugin). It is cached per credential for ten minutes.
 If you add a façade that calls `auth.api.*` with the incoming headers, this
 already works. If you bypass the guard, it will not.
 
-## Adding an MCP tool
+## The MCP server and the CLI
 
-Tools live in `apps/mcp/src/tools/` and declare `requiredScopes` matching the
-endpoint's `@RequireScopes`. Mismatched scopes mean a tool that is offered but
-then refused — the one failure mode the design exists to prevent.
-
-`inputSchema` is a Zod **object schema** (`z.object({ … })`), not a raw shape,
-and `apps/mcp` is on Zod 4 while the rest of the repo is on Zod 3 — the MCP SDK
-v2 requires it. Do not import Zod schemas from `@flama/shared` here; that is
-what keeps the two versions from meeting.
-
-The server is built **per request** from the calling credential, because
-protocol revision `2026-07-28` removed sessions: there is nowhere to cache the
-decision, and nowhere it could go stale. `tools/list` is sorted by name (the
-spec asks for a deterministic order) and returned with `cacheScope: 'private'`,
-since the list is derived from one credential's permissions.
-
-Annotate honestly: `readOnlyHint` only for tools whose scopes are all `:read`,
-`destructiveHint` for anything that deletes or is irreversible. Tests in
-`apps/mcp/src/__tests__/server.spec.ts` enforce both.
-
-## Changing the CLI
-
-The CLI is not in this repo — it is the `cli` plugin (`pnpm plugin:add cli`),
-and its rules travel with it in `apps/cli/AGENTS.md`. What stays true here is
-the contract it consumes: the scope catalog above is what a credential is
+Neither is in this repo: they are the `mcp` and `cli` plugins
+(`pnpm plugin:add mcp`, `pnpm plugin:add cli`), and their rules travel with
+them in `apps/mcp/AGENTS.md` and `apps/cli/AGENTS.md`. The `mcp` plugin also
+makes the API an OAuth provider — Better Auth's MCP plugin, bound behind
+`OAUTH_GRANT_VERIFIER` — and adds the consent screen. What stays true here is
+the contract they consume: the scope catalog above is what a credential is
 scoped against, so a scope removed from `packages/shared/src/scopes/` breaks
-installed CLIs as surely as it breaks `apps/mcp`.
+installed MCP clients and CLIs alike, and an MCP tool declares the same scope
+its endpoint's `@RequireScopes` does.

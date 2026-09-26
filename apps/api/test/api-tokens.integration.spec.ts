@@ -694,34 +694,4 @@ describe('API tokens & scopes (integration)', () => {
       expect(response.body?.code).toBe('TOKEN_008');
     });
   });
-  // flama:begin mcp
-
-  // --- OAuth discovery -----------------------------------------------------
-
-  describe('OAuth provider for MCP clients', () => {
-    it('publishes authorization-server metadata', async () => {
-      const response = await fetch(`${baseUrl}/api/auth/.well-known/oauth-authorization-server`);
-      expect(response.status).toBe(200);
-
-      const metadata = (await response.json()) as {
-        authorization_endpoint?: string;
-        token_endpoint?: string;
-        registration_endpoint?: string;
-        scopes_supported?: string[];
-        code_challenge_methods_supported?: string[];
-      };
-
-      expect(metadata.authorization_endpoint).toBeTruthy();
-      expect(metadata.token_endpoint).toBeTruthy();
-      // Dynamic client registration is what lets an MCP client connect without
-      // being pre-provisioned.
-      expect(metadata.registration_endpoint).toBeTruthy();
-      expect(metadata.code_challenge_methods_supported).toContain('S256');
-      // The deployment's own catalog, not just the OIDC standard scopes.
-      expect(metadata.scopes_supported).toEqual(
-        expect.arrayContaining(['openid', 'users:read', 'roles:write']),
-      );
-    });
-  });
-  // flama:end mcp
 });

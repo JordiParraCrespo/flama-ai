@@ -5,7 +5,6 @@
 "@flama/frontend-core": minor
 "@flama/api-client": minor
 "@flama/api": minor
-"@flama/mcp": minor
 ---
 
 Serve every API error as an RFC 7807 problem document.

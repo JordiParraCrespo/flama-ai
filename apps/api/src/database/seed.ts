@@ -4,11 +4,6 @@ import type { Role } from '@flama/shared';
 import { DataSource, IsNull } from 'typeorm';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
 import { Account } from '../auth/database/account.orm-entity';
-// flama:begin mcp
-import { OAuthAccessTokenOrmEntity } from '../auth/database/oauth-access-token.orm-entity';
-import { OAuthApplicationOrmEntity } from '../auth/database/oauth-application.orm-entity';
-import { OAuthConsentOrmEntity } from '../auth/database/oauth-consent.orm-entity';
-// flama:end mcp
 import { Session } from '../auth/database/session.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
 import { auth, closeAuthConnections } from '../auth/infrastructure/better-auth.config';
@@ -49,11 +44,6 @@ const dataSource = new DataSource({
     Account,
     Verification,
     ApiTokenOrmEntity,
-    // flama:begin mcp
-    OAuthApplicationOrmEntity,
-    OAuthAccessTokenOrmEntity,
-    OAuthConsentOrmEntity,
-    // flama:end mcp
     RoleOrmEntity,
     // flama:begin organizations
     AccessGrantOrmEntity,

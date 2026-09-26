@@ -3,7 +3,7 @@
 ## Project overview
 
 Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It
-ships 7 apps and 15 shared packages; five more apps and Stripe billing are
+ships 6 apps and 15 shared packages; six more apps and Stripe billing are
 available as plugins.
 
 ## Monorepo structure
@@ -12,7 +12,6 @@ available as plugins.
 flama/
 ├── apps/
 │   ├── api/              # NestJS REST API
-│   ├── mcp/              # MCP server (stdio + Streamable HTTP)
 │   ├── mobile/           # Consumer Expo app
 │   ├── mobile-showcase/  # Expo app showcasing the mobile design system
 │   ├── runner/           # Go service template (REST + WS, API keys) the API delegates to
@@ -88,7 +87,7 @@ by those fences.
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
-it back. Seven today: `cli`, `docs`, `admin-web`, `admin-mobile`, `qa`,
+it back. Eight today: `cli`, `mcp`, `docs`, `admin-web`, `admin-mobile`, `qa`,
 `billing`, a module of the API rather than an app, and `organizations`, which
 the starter also ships: the plugin is how a project that pruned it gets it
 back, and the plugins repo fails when it stops reproducing the starter's copy.
@@ -208,17 +207,17 @@ the same capability with `@RequireFlag('key')`. Temporary flags carry an
 expiry that `pnpm check:flags` enforces in CI. The guide is
 `.agents/rules/feature-flags.md`.
 
-### MCP server (`apps/mcp`)
+### Scoped credentials
 
 Governed by the **scope catalog** in `packages/shared/src/scopes/`. Roles say
-what a person may do; scopes say what a credential may do on their behalf, and
-effective access is the intersection — see
-`.agents/rules/scopes-and-credentials.md`, and the permission catalog in
-`packages/shared/src/scopes/README.md`.
+what a person may do; scopes say what a credential — an API token, or an MCP
+client's OAuth grant — may do on their behalf, and effective access is the
+intersection — see `.agents/rules/scopes-and-credentials.md`, and the
+permission catalog in `packages/shared/src/scopes/README.md`.
 
-- `apps/mcp` — one tool registry in `src/tools/`, two entrypoints in `src/bin/`.
-  Every tool declares `requiredScopes`; the tool list is filtered by the
-  credential's effective scopes.
+The MCP server is the `mcp` plugin (`pnpm plugin:add mcp`): one tool registry,
+two entrypoints, every tool declaring `requiredScopes`, and with it the API's
+OAuth provider for MCP clients and the web consent screen.
 
 ### Go services (`apps/runner` + `packages/go/*`)
 
@@ -324,7 +323,7 @@ and `apps/mobile-showcase`. Usage rules are `.agents/rules/frontend-ui.md`.
 
 ```
 packages/tsconfig         → used by all apps and packages (tsconfig extends)
-packages/env              → used by api, mcp, mobile (root .env loader)
+packages/env              → used by api, mobile (root .env loader)
 packages/shared           → used by api, frontend, api-client, backend/core (wire types)
 packages/auth             → used by api, web, mobile (shared Better Auth config)
 packages/backend/core     → used by api, other backend packages
@@ -378,7 +377,7 @@ pnpm changeset          # Create a changeset for versioning
 - New API endpoints need Swagger decorators and `@RequireScopes`; without the
   scope they are unreachable by API tokens and MCP clients. Afterwards run
   `pnpm generate:api-client`
-- New MCP tools go in `apps/mcp/src/tools/`, declaring the same scope the endpoint requires
+- With the `mcp` plugin, a new MCP tool declares the same scope its endpoint requires
 - Keep the pluggable service pattern: abstract class → concrete implementations → factory in module
 - New translations go in `packages/translations/{locale}/{area}.json`, then
   run `pnpm --filter @flama/translations assemble` so `{locale}/index.json`

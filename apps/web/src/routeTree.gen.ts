@@ -20,7 +20,6 @@ import { Route as AuthAcceptInvitationRouteImport } from './routes/_auth/accept-
 import { Route as AuthOnboardingRouteImport } from './routes/_auth/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as OauthConsentRouteImport } from './routes/oauth/consent'
 import { Route as AuthPublicForgotPasswordRouteImport } from './routes/_auth/_public/forgot-password'
 import { Route as AuthPublicLoginRouteImport } from './routes/_auth/_public/login'
 import { Route as AuthPublicRegisterRouteImport } from './routes/_auth/_public/register'
@@ -80,11 +79,6 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const OauthConsentRoute = OauthConsentRouteImport.update({
-  id: '/oauth/consent',
-  path: '/oauth/consent',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthPublicForgotPasswordRoute =
   AuthPublicForgotPasswordRouteImport.update({
     id: '/forgot-password',
@@ -128,7 +122,6 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthOnboardingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/oauth/consent': typeof OauthConsentRoute
   '/forgot-password': typeof AuthPublicForgotPasswordRoute
   '/login': typeof AuthPublicLoginRoute
   '/register': typeof AuthPublicRegisterRoute
@@ -145,7 +138,6 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthOnboardingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/oauth/consent': typeof OauthConsentRoute
   '/forgot-password': typeof AuthPublicForgotPasswordRoute
   '/login': typeof AuthPublicLoginRoute
   '/register': typeof AuthPublicRegisterRoute
@@ -166,7 +158,6 @@ export interface FileRoutesById {
   '/_auth/onboarding': typeof AuthOnboardingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/oauth/consent': typeof OauthConsentRoute
   '/_auth/_public/forgot-password': typeof AuthPublicForgotPasswordRoute
   '/_auth/_public/login': typeof AuthPublicLoginRoute
   '/_auth/_public/register': typeof AuthPublicRegisterRoute
@@ -185,7 +176,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/dashboard'
     | '/profile'
-    | '/oauth/consent'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -202,7 +192,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/dashboard'
     | '/profile'
-    | '/oauth/consent'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -222,7 +211,6 @@ export interface FileRouteTypes {
     | '/_auth/onboarding'
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
-    | '/oauth/consent'
     | '/_auth/_public/forgot-password'
     | '/_auth/_public/login'
     | '/_auth/_public/register'
@@ -238,7 +226,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
-  OauthConsentRoute: typeof OauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -319,13 +306,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/oauth/consent': {
-      id: '/oauth/consent'
-      path: '/oauth/consent'
-      fullPath: '/oauth/consent'
-      preLoaderRoute: typeof OauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_auth/_public/forgot-password': {
       id: '/_auth/_public/forgot-password'
@@ -429,7 +409,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
-  OauthConsentRoute: OauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

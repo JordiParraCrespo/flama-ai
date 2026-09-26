@@ -1,7 +1,6 @@
 ---
 "@flama/env": minor
 "@flama/api": minor
-"@flama/mcp": minor
 "@flama/web": patch
 "@flama/mobile": patch
 ---
@@ -23,9 +22,6 @@ the same loader is correct in CI and in production containers.
 - `apps/mobile` loads the root file in `app.config.ts` before Metro bundles,
   and its deep-link `scheme` now reads `MOBILE_SCHEME` — the same variable the
   API uses for its trusted origin — instead of a hardcoded copy.
-- `apps/mcp` entry points load the root file too (a no-op outside a
-  workspace), and the HTTP port now prefers `MCP_PORT` over `PORT` so a shared
-  root `.env` can't make it collide with the API.
 - Stale variables removed: the `JWT_SECRET` fallback for `BETTER_AUTH_SECRET`
   and `JWT_REFRESH_SECRET` / `NEXT_PUBLIC_API_URL` in
   `docker/docker-compose.prod.yml` (which now passes `BETTER_AUTH_SECRET` /
