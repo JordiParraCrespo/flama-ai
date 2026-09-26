@@ -55,8 +55,8 @@ export interface ResourceDefinition {
   keys: ResourceKeys;
   scopes: readonly ScopeDimension[];
   /**
-   * The credential-scope group this resource belongs to, so API tokens and MCP
-   * clients can reach it. Resources without one are unreachable by scoped
+   * The credential-scope group this resource belongs to, so scoped credentials
+   * can reach it. Resources without one are unreachable by scoped
    * credentials — which is the correct default for internal subjects.
    */
   credentialScope?: string;

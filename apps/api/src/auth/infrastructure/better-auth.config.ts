@@ -5,14 +5,14 @@ import { expo } from '@better-auth/expo';
 // flama:end mobile
 // flama:plugins auth-imports
 import { userAdditionalFields } from '@flama/auth';
-import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
 import { Logger } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
-import { admin, bearer, mcp } from 'better-auth/plugins';
+import { admin, bearer } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
+// flama:plugins auth-plugin-imports
 
 // flama:begin organizations
 import { organizationPlugin, withActiveOrganization } from './organization-plugin.config';
@@ -40,9 +40,6 @@ const superadminAc = defaultAc.newRole({
   ],
   session: ['list', 'revoke', 'delete'],
 });
-
-/** OIDC's standard scopes plus this deployment's own permission catalog. */
-const OAUTH_SCOPES_SUPPORTED = ['openid', 'profile', 'email', 'offline_access', ...SCOPES];
 
 const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 // flama:begin mobile
@@ -148,9 +145,8 @@ export const auth = betterAuth({
      * Two columns on Better Auth's `session` table that say a row is not a
      * device.
      *
-     * `DelegatedSessionAdapter` mints internal sessions so an API token or an
-     * OAuth client can reach the façades that resolve their caller through
-     * Better Auth. Those rows are bridges, not sign-ins, and the profile and
+     * `DelegatedSessionAdapter` mints internal sessions so a scoped credential
+     * can reach the façades that resolve their caller through Better Auth. Those rows are bridges, not sign-ins, and the profile and
      * security "Active sessions" lists read `delegated` to leave them out. It
      * is a persisted fact rather than the `userAgent` prefix they also carry:
      * a user agent is a label a client chooses, and a browser that sent
@@ -342,35 +338,8 @@ export const auth = betterAuth({
     // Accepts `Authorization: Bearer <session token>`. Used by the API's own
     // auth guard, which mints a short-lived delegated session for a scoped
     // credential so the organization/admin façades — which resolve the caller
-    // through Better Auth — keep working for API tokens and MCP clients.
+    // through Better Auth — keep working for API tokens.
     bearer(),
-    // Turns the app into an OAuth 2.1 provider for MCP clients: discovery
-    // metadata, dynamic client registration, authorization and token endpoints.
-    // Clients ask for scopes from the shared catalog and the user approves (or
-    // narrows) them on the consent screen.
-    mcp({
-      loginPage: `${frontendUrl}/login`,
-      // The plugin hands *these* options — not `oidcConfig` — to the discovery
-      // metadata builder, which otherwise advertises only the OIDC standard
-      // scopes. Publishing the catalog here is what lets an MCP client see
-      // which permissions this deployment actually offers.
-      ...({ metadata: { scopes_supported: OAUTH_SCOPES_SUPPORTED } } as object),
-      oidcConfig: {
-        loginPage: `${frontendUrl}/login`,
-        scopes: [...SCOPES],
-        defaultScope: DEFAULT_OAUTH_SCOPES.join(' '),
-        consentPage: `${frontendUrl}/oauth/consent`,
-        // MCP clients are public clients that register themselves on first use.
-        allowDynamicClientRegistration: true,
-        requirePKCE: true,
-        storeClientSecret: 'hashed',
-        accessTokenExpiresIn: 60 * 60,
-        refreshTokenExpiresIn: 60 * 60 * 24 * 30,
-        // Mirrored here for the OIDC discovery document, which is built from
-        // `oidcConfig` rather than the plugin options above.
-        metadata: { scopes_supported: OAUTH_SCOPES_SUPPORTED },
-      },
-    }),
   ],
 });
 

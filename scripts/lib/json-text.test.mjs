@@ -258,3 +258,22 @@ test('a member is counted at the object, not inside its values', () => {
   assert.deepEqual(Object.keys(JSON.parse(last).tasks), ['build', 'test', 'lint']);
   assert.equal(deleteJsonEntry(last, ['tasks'], 'lint'), text);
 });
+
+test('renderJsonEntry breaks an array whose line, key and comma included, would not fit', () => {
+  const paths = [
+    'apps/mcp/src/tools/organizations.tools.ts',
+    'apps/mcp/src/tools/workspaces.tools.ts',
+  ];
+  // On its own the array is under the width; after `"remove": ` five levels in
+  // and the comma that follows it, the line is not.
+  assert.equal(
+    renderJsonEntry('remove', paths, 5),
+    [
+      '          "remove": [',
+      '            "apps/mcp/src/tools/organizations.tools.ts",',
+      '            "apps/mcp/src/tools/workspaces.tools.ts"',
+      '          ]',
+    ].join('\n'),
+  );
+  assert.equal(renderJsonEntry('at', [16, 17], 5), '          "at": [16, 17]');
+});

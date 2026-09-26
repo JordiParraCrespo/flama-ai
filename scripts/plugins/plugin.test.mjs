@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -501,4 +501,60 @@ test('a shipped feature replays its blocks onto a file the project has changed s
 
   execFileSync('node', [script, 'remove', 'delta'], { env: FIXTURE_ENV });
   assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), before);
+});
+
+test("a file of another feature's inside the plugin's tree lands only beside that feature", () => {
+  // The MCP server's organization tools: they live in the server's tree but
+  // belong to organizations, so they are their own `files` entry with their
+  // own `filesNeed`, and a `json` edit puts them back on that entry.
+  const manifest = {
+    id: 'epsilon',
+    feature: {
+      title: 'Epsilon',
+      summary: 'epsilon',
+      identifiers: ['epsilon-app'],
+      paths: ['epsilon'],
+      json: [
+        {
+          file: 'scripts/starter/features.json',
+          path: ['features', 'alpha', 'paths'],
+          remove: ['epsilon/alpha-tool.txt'],
+          at: [1],
+          needs: 'alpha',
+        },
+      ],
+    },
+    files: {
+      epsilon: 'files/epsilon',
+      'epsilon/alpha-tool.txt': 'files/epsilon/alpha-tool.txt',
+    },
+    filesNeed: { 'epsilon/alpha-tool.txt': 'alpha' },
+  };
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, manifest);
+  const tree = join(from, 'plugins', 'epsilon', 'files', 'epsilon');
+  mkdirSync(tree, { recursive: true });
+  writeFileSync(join(tree, 'index.txt'), 'epsilon\n');
+  writeFileSync(join(tree, 'alpha-tool.txt'), 'alpha\n');
+  const features = (project) =>
+    JSON.parse(readFileSync(join(project, 'scripts', 'starter', 'features.json'), 'utf8')).features;
+
+  const project = fixture();
+  const before = readFileSync(join(project, 'scripts', 'starter', 'features.json'), 'utf8');
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  execFileSync('node', [script, 'add', 'epsilon', '--from', from], { env: FIXTURE_ENV });
+  assert.equal(readFileSync(join(project, 'epsilon', 'alpha-tool.txt'), 'utf8'), 'alpha\n');
+  assert.deepEqual(features(project).alpha.paths, ['alpha', 'epsilon/alpha-tool.txt']);
+
+  execFileSync('node', [script, 'remove', 'epsilon'], { env: FIXTURE_ENV });
+  assert.equal(readFileSync(join(project, 'scripts', 'starter', 'features.json'), 'utf8'), before);
+  assert.equal(existsSync(join(project, 'epsilon')), false);
+
+  // Without its owner the file would be a fragment of a feature the project
+  // pruned, which no check would notice.
+  const pruned = fixture({ pruned: true });
+  const prunedScript = join(pruned, 'scripts', 'plugins', 'plugin.mjs');
+  execFileSync('node', [prunedScript, 'add', 'epsilon', '--from', from], { env: FIXTURE_ENV });
+  assert.equal(existsSync(join(pruned, 'epsilon', 'alpha-tool.txt')), false);
+  assert.equal(existsSync(join(pruned, 'epsilon', 'index.txt')), true);
 });

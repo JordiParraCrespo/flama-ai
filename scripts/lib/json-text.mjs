@@ -376,15 +376,19 @@ const WIDTH = 100;
  * plugin looking like a foreign body.
  */
 export function renderJsonEntry(key, value, depth = 1) {
-  return `${'  '.repeat(depth)}${render(key)}: ${renderValue(value, depth)}`;
+  const prefix = `${'  '.repeat(depth)}${render(key)}: `;
+  // The value starts after the key, and a comma may follow it: both count
+  // against the line width, as they do for the formatter.
+  return `${prefix}${renderValue(value, depth, prefix.length + 1)}`;
 }
 
-function renderValue(value, depth) {
+/** `around` is how much of the value's line is not the value itself. */
+function renderValue(value, depth, around = '  '.repeat(depth).length) {
   const pad = '  '.repeat(depth);
   if (Array.isArray(value)) {
     if (!value.length) return '[]';
     const inline = `[${value.map((item) => renderValue(item, depth + 1)).join(', ')}]`;
-    if (!inline.includes('\n') && pad.length + inline.length <= WIDTH) return inline;
+    if (!inline.includes('\n') && around + inline.length <= WIDTH) return inline;
     const members = value.map((item) => `${pad}  ${renderValue(item, depth + 1)}`);
     return `[\n${members.join(',\n')}\n${pad}]`;
   }

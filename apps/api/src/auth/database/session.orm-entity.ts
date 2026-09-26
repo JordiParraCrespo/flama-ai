@@ -44,8 +44,8 @@ export class Session {
   userAgent!: string | null;
 
   /**
-   * True for the internal sessions `DelegatedSessionAdapter` mints so an API
-   * token or OAuth client can reach the Better Auth façades. They are bridges,
+   * True for the internal sessions `DelegatedSessionAdapter` mints so a scoped
+   * credential can reach the Better Auth façades. They are bridges,
    * not devices, so the profile session list leaves them out.
    *
    * Declared to Better Auth as a session `additionalField` in `auth.ts` — it

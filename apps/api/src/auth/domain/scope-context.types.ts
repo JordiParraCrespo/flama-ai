@@ -13,7 +13,7 @@ export interface CredentialOwner {
 }
 
 /**
- * What a scoped credential (an API token or an OAuth access token) authorizes.
+ * What a scoped credential authorizes.
  *
  * Its presence on a request is what makes that request *narrowed*: a browser
  * session carries no scope context and is governed by the user's roles alone,
@@ -22,7 +22,7 @@ export interface CredentialOwner {
  */
 export interface ScopeContext {
   kind: 'api-token' | 'oauth';
-  /** Id of the token record (API token id, or a digest of the OAuth token). */
+  /** Id of the credential record: an API token's id. */
   credentialId: string;
   /** The user the credential acts on behalf of. */
   userId: string;

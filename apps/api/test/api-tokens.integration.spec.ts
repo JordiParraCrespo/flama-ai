@@ -232,18 +232,6 @@ describe('API tokens & scopes (integration)', () => {
       expect(constraints.every((constraint) => constraint.delete_rule === 'CASCADE')).toBe(true);
     });
 
-    it('creates the Better Auth OAuth tables the MCP plugin needs', async () => {
-      const tables: { table_name: string }[] = await dataSource.query(
-        `SELECT table_name FROM information_schema.tables
-          WHERE table_name IN ('oauthApplication', 'oauthAccessToken', 'oauthConsent')`,
-      );
-      expect(tables.map((table) => table.table_name).sort()).toEqual([
-        'oauthAccessToken',
-        'oauthApplication',
-        'oauthConsent',
-      ]);
-    });
-
     it('grants the seeded user role permission over its own tokens', async () => {
       const [role]: { permissions: { action: string; subject: string }[] }[] =
         await dataSource.query(`SELECT permissions FROM "role" WHERE name = 'user'`);
@@ -692,34 +680,6 @@ describe('API tokens & scopes (integration)', () => {
 
       expect(response.status).toBe(403);
       expect(response.body?.code).toBe('TOKEN_008');
-    });
-  });
-
-  // --- OAuth discovery -----------------------------------------------------
-
-  describe('OAuth provider for MCP clients', () => {
-    it('publishes authorization-server metadata', async () => {
-      const response = await fetch(`${baseUrl}/api/auth/.well-known/oauth-authorization-server`);
-      expect(response.status).toBe(200);
-
-      const metadata = (await response.json()) as {
-        authorization_endpoint?: string;
-        token_endpoint?: string;
-        registration_endpoint?: string;
-        scopes_supported?: string[];
-        code_challenge_methods_supported?: string[];
-      };
-
-      expect(metadata.authorization_endpoint).toBeTruthy();
-      expect(metadata.token_endpoint).toBeTruthy();
-      // Dynamic client registration is what lets an MCP client connect without
-      // being pre-provisioned.
-      expect(metadata.registration_endpoint).toBeTruthy();
-      expect(metadata.code_challenge_methods_supported).toContain('S256');
-      // The deployment's own catalog, not just the OIDC standard scopes.
-      expect(metadata.scopes_supported).toEqual(
-        expect.arrayContaining(['openid', 'users:read', 'roles:write']),
-      );
     });
   });
 });

@@ -40,7 +40,7 @@ about its resource and gets, without writing authorization code —
 - team scoping (a team sees only its own rows),
 - row-level SQL filtering that cannot be forgotten,
 - an entry in the role-builder UI,
-- an API-token / MCP scope,
+- an API-token scope,
 - and a policy test harness.
 
 ### The motivating scenario
@@ -59,7 +59,7 @@ requirements, in increasing difficulty:
    the UI. _(dynamic RBAC)_
 
 Every one of these must hold on **every** access path: REST, the generated API
-client, an API token, an MCP tool, and the CLI. "The list endpoint filters
+client, and an API token. "The list endpoint filters
 correctly but the detail endpoint doesn't" is the failure mode this design
 exists to make structurally impossible.
 
@@ -260,7 +260,7 @@ export const LeadResource = defineResource({
   /** Which scope dimensions are meaningful for this resource. */
   scopes: ["organization", "team", "own", "grant"],
 
-  /** The credential-scope group, so API tokens and MCP can reach it. */
+  /** The credential-scope group, so API tokens can reach it. */
   credentialScope: "leads",
 });
 ```
@@ -643,7 +643,7 @@ user or tenant it describes. Same reasoning as the outbox's `aggregateId`.
 End to end, in order, with the responsible component:
 
 ```
-1. ApiAuthGuard          authenticates (session, API token, or OAuth grant)
+1. ApiAuthGuard          authenticates (session or API token)
                          → request.user, request.session, request.credentialScopes
 
 2. PlatformAdminGuard    Q0: if the route is @PlatformAdmin and user.role is a
@@ -780,16 +780,12 @@ someone rather than look like a permissions problem.
 
 ## Part 9 — `@flama/shared` and the generated catalog
 
-The registry lives in the API process. Two consumers cannot see it, and
-pretending otherwise would ship resources that are invisible to exactly the
-credentials meant to reach them:
-
-- **`apps/mcp` is a separately deployed server** with a static `ToolDefinition`
-  registry whose `requiredScopes` are hand-written, filtering its tool list
-  against them. It never talks to the API's boot registry.
-- **`Scope` in `@flama/shared` is a compile-time union** (`SCOPE_RESOURCES` ×
-  access level) that the CLI, the web picker and the MCP tools type-check
-  against. A runtime-only registry cannot produce a compile-time type.
+The registry lives in the API process, and `Scope` in `@flama/shared` is a
+**compile-time union** (`SCOPE_RESOURCES` × access level) that the web picker —
+and any client built against the package — type-checks against. A
+runtime-only registry cannot produce a compile-time type, and pretending
+otherwise would ship resources that are invisible to exactly the credentials
+meant to reach them.
 
 So the mechanism is **codegen, one direction, checked in**:
 
@@ -797,24 +793,22 @@ So the mechanism is **codegen, one direction, checked in**:
 defineResource(...)  ──build step──▶  packages/shared/src/scopes/catalog.generated.ts
                                       (SCOPE_RESOURCES, PERMISSION_GROUPS, Scope)
                                               │
-                        ┌─────────────────────┼─────────────────────┐
-                     apps/api              apps/mcp              apps/web
-                @RequireScopes(...)   requiredScopes: [...]    permission picker
-                   (explicit)            (explicit)              (derived)
+                              ┌───────────────┴───────────────┐
+                           apps/api                        apps/web
+                      @RequireScopes(...)             permission picker
+                          (explicit)                      (derived)
 ```
 
 - A `pnpm generate:scope-catalog` script boots the Nest app in a no-listen mode,
   reads the registry, and emits the file. Same shape of contract as
   `pnpm generate:api-client`; CI regenerates and fails on drift.
-- `@RequireScopes` on routes and `requiredScopes` on MCP tools stay **explicit,
-  hand-written declarations** — validated against the generated catalog, never
-  inferred from it. That preserves `ScopesGuard`'s fail-closed property (a route
-  with no decorator stays unreachable by scoped credentials, which is the safe
-  failure) and turns the endpoint/tool scope mismatch that
-  `scopes-and-credentials.md` warns about into a build failure.
+- `@RequireScopes` on routes stays an **explicit, hand-written declaration** —
+  validated against the generated catalog, never inferred from it. That
+  preserves `ScopesGuard`'s fail-closed property (a route with no decorator
+  stays unreachable by scoped credentials, which is the safe failure) and turns
+  a route naming a scope the catalog lacks into a build failure.
 - A test asserts: every registry resource with a `credentialScope` has a
-  matching group; every route's `@RequireScopes` names a real scope; every MCP
-  tool's `requiredScopes` matches the `@RequireScopes` of the endpoint it calls.
+  matching group, and every route's `@RequireScopes` names a real scope.
 
 What the registry buys is that the **source** of the catalog moves from a
 hand-maintained literal in `@flama/shared` to the module that owns the resource.
@@ -932,29 +926,6 @@ builder is an admin surface and stays web-only.
 
 ---
 
-<!-- flama:begin mcp -->
-## Part 12 — CLI and MCP
-
-**CLI (`apps/cli`).** New `flama roles` command group: `list`, `show`, `create`,
-`edit-permissions`, `assign`. New `flama grants` group: `list`, `create`,
-`revoke`. Exit codes are a public contract (`apps/cli/src/lib/errors.ts`) —
-reuse them, do not invent: 4 for forbidden, 5 for not found. Commands resolve
-the profile through `contextFor()`; never read config or env directly.
-
-**MCP (`apps/mcp`).** New tools in `src/tools/authz.tools.ts` mirroring the
-read-only surface: `list_roles`, `get_role`, `list_grants`. Each declares
-`requiredScopes` matching its endpoint's `@RequireScopes`. Annotate honestly —
-`readOnlyHint` only when every scope is `:read`. Remember `apps/mcp` is on Zod 4
-with `inputSchema` as a `z.object({...})`, and must not import Zod schemas from
-`@flama/shared`.
-
-Write tools for roles and grants are deliberately **out of scope** for the first
-pass: an MCP client editing permissions is a large blast radius for a small
-convenience. Reads first; revisit with the audit log in place.
-
----
-
-<!-- flama:end mcp -->
 <!-- flama:plugins agent-docs -->
 ## Part 13 — Testing
 
@@ -988,7 +959,7 @@ route declares `@CheckPolicies` or `@NoPolicy`; every route declares
 **5. Integration (needs Docker).** The `leads` module end to end:
 
 - a member of team A cannot read team B's leads through the list endpoint,
-  the detail endpoint, the export endpoint, an API token, or an MCP tool —
+  the detail endpoint, the export endpoint, or an API token —
   **each path asserted separately**, because "the list filters but the detail
   doesn't" is the exact bug class this design targets;
 - an expired grant stops working without any cleanup job running;
@@ -1080,7 +1051,7 @@ a row.
 | #   | Task                                                                                                                                                    |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.1 | `pnpm generate:scope-catalog` + `catalog.generated.ts` + CI drift check                                                                                 |
-| 4.2 | Consistency test: registry ↔ `@RequireScopes` ↔ MCP `requiredScopes`                                                                                    |
+| 4.2 | Consistency test: registry ↔ `@RequireScopes`                                                                                                           |
 | 4.3 | Role builder UI + `packages/frontend/admin/src/modules/authz`                                                                                                 |
 | 4.4 | Grants management UI                                                                                                                                    |
 | 4.5 | CLI `roles` + `grants` command groups                                                                                                                   |
@@ -1147,5 +1118,5 @@ flip (0.11) — and by then the route list is provably complete.
 - [ ] Removing someone from a team revokes their access on the next request.
 - [ ] Every cross-tenant access leaves an audit row.
 - [ ] All six requirements from §1 hold for `leads`, asserted on every access
-      path — REST, generated client, API token, MCP tool, CLI.
+      path — REST, generated client, API token.
 - [ ] `.agents/rules/rbac-roles.md` describes the built system, not this plan.

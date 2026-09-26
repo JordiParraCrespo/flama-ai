@@ -14,8 +14,8 @@ import type { ScopeContext, ScopedRequest } from '../domain/scope-context.types'
  * applies to every route whether or not the route remembered to ask for it.
  *
  * Requests authenticated by a browser session pass straight through — they are
- * governed by the user's roles via `PoliciesGuard`. Requests carrying an API
- * token or OAuth access token must satisfy three things:
+ * governed by the user's roles via `PoliciesGuard`. Requests carrying a scoped
+ * credential must satisfy three things:
  *
  * 1. the route declares `@RequireScopes` (a route that declares nothing is
  *    closed to tokens — new endpoints are not silently reachable);

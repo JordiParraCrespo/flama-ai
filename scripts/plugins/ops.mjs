@@ -413,15 +413,21 @@ export function trimCopied(manifest, paths, known, dryRun) {
 export function applyJsonEdits(manifest, dryRun) {
   for (const edit of manifest.feature.json ?? []) {
     const target = join(ROOT, edit.file);
-    if (!existsSync(target)) {
-      // The file lives in a tree this project pruned — the consumer package,
-      // gone with the last app that needed it — so the edit has nothing to say.
-      if (edit.needs) {
-        console.log(`  skip   ${edit.file} (no ${edit.needs} in this project)`);
-        continue;
-      }
-      fail(`${edit.file} does not exist; cannot apply a JSON edit`);
+    // What the edit lands in went with something this project pruned — the
+    // file, in a tree gone with the last app that needed it (the consumer
+    // package), or the value, in the entry of a feature it does not have (the
+    // organizations paths the MCP server's tools join) — so the edit has
+    // nothing to say. `needs` is what says it may.
+    const landing =
+      existsSync(target) &&
+      edit.path
+        .slice(0, -1)
+        .reduce((node, key) => node?.[key], JSON.parse(readFileSync(target, 'utf8'))) !== undefined;
+    if (!landing && edit.needs) {
+      console.log(`  skip   ${edit.file} (no ${edit.needs} in this project)`);
+      continue;
     }
+    if (!existsSync(target)) fail(`${edit.file} does not exist; cannot apply a JSON edit`);
     const original = readFileSync(target, 'utf8');
     let text = original;
     // Without a position a value is appended, which is always valid JSON.

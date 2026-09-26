@@ -49,5 +49,5 @@ pnpm lint    # biome check src/
 
 ## Consumed by
 
-`apps/api`, `apps/cli`, `apps/mcp`, `packages/auth`, `packages/backend/authz`,
-`packages/backend/core`, `packages/frontend/*`, `packages/frontend/api-client`.
+`apps/api`, `packages/auth`, `packages/backend/authz`, `packages/backend/core`,
+`packages/frontend/*`, `packages/frontend/api-client`.

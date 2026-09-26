@@ -1,7 +1,6 @@
 ---
 paths:
   - "apps/api/**/*"
-  - "apps/mcp/**/*"
   - "packages/shared/**/*"
 ---
 
@@ -19,7 +18,7 @@ effective permissions = credential scopes ∩ owner's live CASL ability
 ```
 
 A browser session carries no scopes and is governed by roles alone. An API
-token or OAuth grant is additionally narrowed. Two properties fall out of this
+token is additionally narrowed. Two properties fall out of this
 and must not be broken:
 
 - a token can never be minted with more reach than its creator has
@@ -31,8 +30,8 @@ and must not be broken:
 
 `packages/shared/src/scopes/catalog.ts` defines the permission groups, each
 with a Read and an Edit level. **Add a resource there and nowhere else** — the
-API guard, the MCP tool registry, the CLI and the web permission picker all
-read from it.
+API guard and the web permission picker both read from it, and so does every
+client a token is handed to: a scope removed from it breaks them all.
 
 - `write` implies `read` on the same resource (`expandScopes`). Never grant both
   explicitly; grant `write`.
@@ -75,9 +74,8 @@ identity or data already served to anonymous callers (currently
 ## Credential handling
 
 - Token secrets are **only** ever stored as a SHA-256 digest. Never log a
-  secret, never put one in a cache key (`credentialId` for OAuth is a digest
-  prefix for exactly this reason), never add an endpoint that returns one after
-  creation.
+  secret, never put one in a cache key, never add an endpoint that returns one
+  after creation.
 - Authentication failures share one opaque error (`TOKEN_003`) whether the
   token is unknown, revoked or expired — distinguishing them hands out a
   probing oracle. Authorization failures are specific, because the caller
@@ -99,32 +97,3 @@ plugin). It is cached per credential for ten minutes.
 
 If you add a façade that calls `auth.api.*` with the incoming headers, this
 already works. If you bypass the guard, it will not.
-
-## Adding an MCP tool
-
-Tools live in `apps/mcp/src/tools/` and declare `requiredScopes` matching the
-endpoint's `@RequireScopes`. Mismatched scopes mean a tool that is offered but
-then refused — the one failure mode the design exists to prevent.
-
-`inputSchema` is a Zod **object schema** (`z.object({ … })`), not a raw shape,
-and `apps/mcp` is on Zod 4 while the rest of the repo is on Zod 3 — the MCP SDK
-v2 requires it. Do not import Zod schemas from `@flama/shared` here; that is
-what keeps the two versions from meeting.
-
-The server is built **per request** from the calling credential, because
-protocol revision `2026-07-28` removed sessions: there is nowhere to cache the
-decision, and nowhere it could go stale. `tools/list` is sorted by name (the
-spec asks for a deterministic order) and returned with `cacheScope: 'private'`,
-since the list is derived from one credential's permissions.
-
-Annotate honestly: `readOnlyHint` only for tools whose scopes are all `:read`,
-`destructiveHint` for anything that deletes or is irreversible. Tests in
-`apps/mcp/src/__tests__/server.spec.ts` enforce both.
-
-## Changing the CLI
-
-The CLI is not in this repo — it is the `cli` plugin (`pnpm plugin:add cli`),
-and its rules travel with it in `apps/cli/AGENTS.md`. What stays true here is
-the contract it consumes: the scope catalog above is what a credential is
-scoped against, so a scope removed from `packages/shared/src/scopes/` breaks
-installed CLIs as surely as it breaks `apps/mcp`.

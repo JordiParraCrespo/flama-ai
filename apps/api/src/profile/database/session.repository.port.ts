@@ -18,8 +18,8 @@ export interface OwnedSession extends SessionRecord {
 export interface SessionReaderPort {
   /**
    * A user's live **device** sessions, newest last-seen first. Expired rows are
-   * excluded, and so are the delegated ones an API token or OAuth client is
-   * bridged through — those are not devices anybody signed in on.
+   * excluded, and so are the delegated ones a scoped credential is bridged
+   * through — those are not devices anybody signed in on.
    */
   findActiveByUserId(userId: string): Promise<OwnedSession[]>;
   /** One device session by id. A delegated row reads as absent, as above. */

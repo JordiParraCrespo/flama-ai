@@ -50,12 +50,6 @@
       "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
       "paths": ["apps/mobile-showcase"]
     },
-    "mcp": {
-      "title": "MCP server",
-      "summary": "apps/mcp — Model Context Protocol server (stdio + Streamable HTTP) over the API",
-      "identifiers": ["apps/mcp", "@flama/mcp", "flama-mcp"],
-      "paths": ["apps/mcp"]
-    },
     "runner": {
       "title": "Go runner service",
       "summary": "apps/runner + packages/go/* — Go service template (REST + WS, API keys) the API delegates long-lived work to",
@@ -117,8 +111,6 @@
         "apps/api/src/authz/authz.di-tokens.ts",
         "apps/api/src/authz/access-grant.mapper.ts",
         "apps/api/src/database/seed-organization.ts",
-        "apps/mcp/src/tools/organizations.tools.ts",
-        "apps/mcp/src/tools/workspaces.tools.ts",
         "apps/mobile/app/onboarding.tsx",
         "apps/mobile/features/organizations",
         "apps/web/src/features/organizations",

@@ -13,7 +13,6 @@ below is optional except the API — keep what you're building, prune the rest
 | `apps/api`              | NestJS REST API — Domain-Driven Hexagon architecture, DB-backed RBAC, queues, caching, storage, email |
 | `apps/web`               | Consumer Vite + TanStack Router SPA                                       |
 | `apps/mobile`            | Consumer Expo app — NativeWind, i18next, SecureStore                     |
-| `apps/mcp`               | MCP server — stdio + Streamable HTTP, scope-filtered tools                |
 | `apps/runner`            | Go service template (REST + WS, API keys) the API delegates long-lived work to |
 | `apps/web-showcase`      | Next.js showcase for the web design system                                |
 | `apps/mobile-showcase`   | Expo showcase for the mobile design system                                |
@@ -27,6 +26,7 @@ added when a project wants them, with `pnpm plugin:add <id>`:
 | Plugin          | What it adds                                                          |
 | --------------- | --------------------------------------------------------------------- |
 | `cli`           | `apps/cli` — the `flama` command line, driven by scoped API tokens     |
+| `mcp`           | `apps/mcp` — MCP server over the API, and the OAuth provider its clients sign in through |
 | `docs`          | `apps/docs` — the Docusaurus site                                     |
 | `admin-web`     | `apps/admin-web` — control plane for users, roles and permissions     |
 | `admin-mobile`  | `apps/admin-mobile` — the Expo control plane                          |
@@ -111,9 +111,9 @@ pnpm starter:init --keep web,e2e,organizations --yes
 The same two directions stay available afterwards, one feature at a time:
 
 ```bash
-pnpm starter:prune --without mcp   # take out something the starter shipped
-pnpm plugin:list                   # what is on offer, and what you already have
-pnpm plugin:add admin-web          # the control plane, back in your project
+pnpm starter:prune --without web-showcase   # take out something the starter shipped
+pnpm plugin:list                            # what is on offer, and what you already have
+pnpm plugin:add admin-web                   # the control plane, back in your project
 pnpm plugin:remove admin-web
 ```
 
@@ -131,7 +131,6 @@ second implementation of it.
 | Web                | http://localhost:3000          |
 | API                | http://localhost:3001          |
 | API Docs (Swagger) | http://localhost:3001/api/docs |
-| MCP (HTTP)         | http://localhost:3005/mcp      |
 | Runner             | http://localhost:3006          |
 
 `pnpm plugin:add admin-web` serves the control plane on `:3003`, and
@@ -146,7 +145,7 @@ second implementation of it.
 - **Mobile**: Expo, NativeWind + rn-primitives
 - **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
 - **Authorization**: Database-backed RBAC — roles and permissions managed through the API, enforced with CASL
-- **CLI & MCP access**: shared scope catalog — a credential's effective access is the intersection of its scopes and the user's roles
+- **API tokens**: scoped by one shared catalog — a token's effective access is the intersection of its scopes and the user's roles
 - **Validation**: Zod
 - **State**: Zustand + TanStack Query
 - **DI**: InversifyJS (frontend), NestJS (backend)

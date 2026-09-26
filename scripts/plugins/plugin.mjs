@@ -55,7 +55,9 @@
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
  *     // another optional feature's tree, `filesNeedPath` one inside a shared
- *     // path, and each is skipped without it.
+ *     // path, and each is skipped without it. An entry inside another entry's
+ *     // directory is copied on its own terms, not with the directory: the
+ *     // MCP server's organization tools need `organizations`, the server not.
  *     "files":         { "<destination>": "<path inside the plugin>" },
  *     "filesNeed":     { "<destination>": "<feature id>" },
  *     "filesNeedPath": { "<destination>": "<shared path>" },
@@ -191,7 +193,16 @@ function add(manifest, options) {
     console.log(`  copy   ${destination}${note}`);
     if (dryRun) return;
     mkdirSync(dirname(join(ROOT, destination)), { recursive: true });
-    cpSync(source, join(ROOT, destination), { recursive: true, verbatimSymlinks: true });
+    // An entry inside this one's directory is copied on its own terms, with
+    // its own `filesNeed`, not swept in with the directory around it.
+    const inner = Object.entries(manifest.files)
+      .filter(([other]) => other.startsWith(`${destination}/`))
+      .map(([, path]) => join(manifest.dir, path));
+    cpSync(source, join(ROOT, destination), {
+      recursive: true,
+      verbatimSymlinks: true,
+      filter: (path) => !inner.includes(path),
+    });
   };
   const sharedLanded = [];
   for (const [destination, from] of Object.entries(manifest.sharedFiles ?? {})) {

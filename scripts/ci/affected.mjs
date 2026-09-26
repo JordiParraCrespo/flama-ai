@@ -45,12 +45,10 @@ export const IMAGES = {
   // flama:end web
   // flama:plugins admin-web
   // flama:plugins docs
-  // flama:begin mcp
-  mcp: '@flama/mcp',
-  // flama:end mcp
   // flama:begin runner
   runner: '@flama/runner',
   // flama:end runner
+  // flama:plugins images
 };
 
 /**
