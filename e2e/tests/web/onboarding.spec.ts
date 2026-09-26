@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { newUser } from '../../support/auth';
 import { findOrganizationsForUser, findUserByEmail } from '../../support/db';
+import { createOrganization } from '../../support/organizations';
 import { registerThroughUi } from '../../support/web';
 
 /**
@@ -68,4 +69,16 @@ test('onboarding is not a trap: the newcomer can sign out', async ({ page }) => 
 
   await page.getByRole('button', { name: /sign out/i }).click();
   await expect(page).toHaveURL(/\/login/, { timeout: 30_000 });
+});
+
+test('a signed-in account with a workspace is bounced off onboarding', async ({ page }) => {
+  const user = newUser('uionb');
+  await registerThroughUi(page, user);
+  await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
+
+  // The browser's own cookie jar, so the workspace belongs to this session.
+  await createOrganization(page.request);
+
+  await page.goto('/onboarding');
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
 });

@@ -4,16 +4,21 @@ import { randomUUID } from 'node:crypto';
 import { expo } from '@better-auth/expo';
 // flama:end mobile
 // flama:plugins auth-imports
-import { organizationSharedOptions, userAdditionalFields } from '@flama/auth';
+import { userAdditionalFields } from '@flama/auth';
 import { DEFAULT_OAUTH_SCOPES, SCOPES } from '@flama/shared';
 import { Logger } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
-import { admin, bearer, mcp, organization } from 'better-auth/plugins';
+import { admin, bearer, mcp } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
-import { buildInvitationUrl } from './invitation-url.util';
+
+// flama:begin organizations
+import { organizationPlugin, withActiveOrganization } from './organization-plugin.config';
+
+// flama:end organizations
+// flama:plugins tenancy-imports
 
 /**
  * Access-control roles for the admin plugin. Every name listed in `adminRoles`
@@ -301,6 +306,7 @@ export const auth = betterAuth({
         },
       },
     },
+    // flama:begin organizations
     session: {
       create: {
         // Set the user's active organization (and its default workspace) on the
@@ -308,83 +314,11 @@ export const auth = betterAuth({
         // an explicit `setActive` round-trip. An account that belongs to no
         // organization yet leaves both null, and the web app sends it to
         // onboarding rather than to a dashboard it cannot read.
-        before: async (session) => {
-          try {
-            const { rows } = await pool.query<{
-              organizationId: string;
-              teamId: string | null;
-            }>(
-              // Which organization a returning user lands in.
-              //
-              // Ordered by "the one they last had open", then by the most
-              // recently joined. It used to be the *oldest* membership, which
-              // was whichever workspace they happened to reach first — for an
-              // invitee that was the personal organization sign-up provisioned
-              // a second or two before the invitation was accepted, so they
-              // signed back in to an empty workspace of their own instead of
-              // the one that invited them, without the org-scoped role the
-              // invitation granted, and the dashboard answered 403.
-              //
-              // The session row is the memory, and an explicit sign-out
-              // deletes it; that is why the fallback is most-recently-joined
-              // rather than oldest. Someone invited to a second workspace does
-              // land there on their next sign-in, which is the same answer the
-              // acceptance itself gave them and the one they can change with
-              // the organization switcher.
-              //
-              // The workspace is chosen the same way: one the user actually
-              // belongs to, falling back to the organization's own default, so
-              // the session never points at a team they are not in.
-              `SELECT m."organizationId",
-                      COALESCE(mine."id", fallback."id") AS "teamId"
-                 FROM "member" m
-                 LEFT JOIN LATERAL (
-                   SELECT t."id"
-                     FROM "team" t
-                     JOIN "teamMember" tm ON tm."teamId" = t."id" AND tm."userId" = $1
-                    WHERE t."organizationId" = m."organizationId"
-                    ORDER BY t."createdAt" ASC
-                    LIMIT 1
-                 ) mine ON true
-                 LEFT JOIN LATERAL (
-                   SELECT t."id"
-                     FROM "team" t
-                    WHERE t."organizationId" = m."organizationId"
-                    ORDER BY t."createdAt" ASC
-                    LIMIT 1
-                 ) fallback ON true
-                WHERE m."userId" = $1
-                ORDER BY COALESCE(
-                           m."organizationId" = (
-                             SELECT s."activeOrganizationId"
-                               FROM "session" s
-                              WHERE s."userId" = $1
-                                AND s."activeOrganizationId" IS NOT NULL
-                              ORDER BY s."updatedAt" DESC
-                              LIMIT 1
-                           ),
-                           false
-                         ) DESC,
-                         m."createdAt" DESC
-                LIMIT 1`,
-              [session.userId],
-            );
-            const active = rows[0];
-            if (!active) return;
-            return {
-              data: {
-                ...session,
-                activeOrganizationId: active.organizationId,
-                activeTeamId: active.teamId ?? undefined,
-              },
-            };
-          } catch {
-            // Organization tables not migrated yet — leave the session as-is.
-            return;
-          }
-        },
+        before: (session) => withActiveOrganization(pool, session),
       },
     },
+    // flama:end organizations
+    // flama:plugins session-hooks
   },
   plugins: [
     // flama:begin mobile
@@ -404,42 +338,10 @@ export const auth = betterAuth({
       // Impersonation sessions last 1 hour by default; make it explicit.
       impersonationSessionDuration: 60 * 60,
     }),
-    organization({
-      allowUserToCreateOrganization: true,
-      creatorRole: 'owner',
-      membershipLimit: 100,
-      invitationExpiresIn: 60 * 60 * 48,
-      // Invitation ids use random UUIDs through advanced.database.generateId.
-      // Better Auth cannot infer that a custom generator is opaque, so its
-      // default would require a freshly registered invitee to verify their
-      // email before accepting the very link that proves they received it.
-      requireEmailVerificationOnInvitation: false,
-      // "Workspaces" are modelled on Better Auth teams. The `enabled` flag is
-      // shared with the clients via @flama/auth so both sides must agree.
-      teams: {
-        ...organizationSharedOptions.teams,
-        // The default workspace is created by `OrganizationsService.create`,
-        // alongside the role that opens the organization, so organizations can
-        // be created here without forcing a default team.
-        allowRemovingAllTeams: false,
-      },
-      sendInvitationEmail: async (data) => {
-        const acceptUrl = buildInvitationUrl(frontendUrl, {
-          id: data.id,
-          email: data.email,
-          role: data.role,
-          inviterName: data.inviter.user.name,
-        });
-        await emailQueue.add('invitation', {
-          to: data.email,
-          organizationName: data.organization.name,
-          inviterName: data.inviter.user.name,
-          role: data.role,
-          organizationId: data.organization.id,
-          url: acceptUrl,
-        });
-      },
-    }),
+    // flama:begin organizations
+    organizationPlugin(frontendUrl),
+    // flama:end organizations
+    // flama:plugins tenancy-plugin
     // Accepts `Authorization: Bearer <session token>`. Used by the API's own
     // auth guard, which mints a short-lived delegated session for a scoped
     // credential so the organization/admin façades — which resolve the caller

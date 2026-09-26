@@ -1,7 +1,6 @@
 import { Global, Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { API_TOKEN_REPOSITORY, ORGANIZATION_MEMBERSHIP_READER } from './api-tokens.di-tokens';
 import { ApiTokenMapper } from './api-tokens.mapper';
 import { CreateApiTokenCommandHandler } from './commands/create-api-token/create-api-token.command-handler';
@@ -54,7 +53,7 @@ const repositories: Provider[] = [
  */
 @Global()
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([ApiTokenOrmEntity, MemberOrmEntity])],
+  imports: [CqrsModule, TypeOrmModule.forFeature([ApiTokenOrmEntity])],
   controllers: [...httpControllers],
   providers: [...commandHandlers, ...queryHandlers, ...repositories, ApiTokenMapper],
   exports: [API_TOKEN_REPOSITORY, ApiTokenMapper, TypeOrmModule],

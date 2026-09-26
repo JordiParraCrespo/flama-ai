@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
 import type { Repository } from 'typeorm';
-import { AccessGrantMapper } from '../authz.mapper';
+import { AccessGrantMapper } from '../access-grant.mapper';
 import type { AccessGrantEntity } from '../domain/access-grant.entity';
 import { AccessGrantOrmEntity } from './access-grant.orm-entity';
 import type { AccessGrantRepositoryPort } from './access-grant.repository.port';

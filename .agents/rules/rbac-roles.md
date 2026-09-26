@@ -181,6 +181,12 @@ from the legacy `user.role` column.
 
 ## Organizations, workspaces & super-admin (Better Auth plugins)
 
+> Organizations are the `organizations` feature: in the starter by default,
+> removed with `pnpm starter:prune --without organizations` and brought back
+> with `pnpm plugin:add organizations`. Without it the `organization` plugin
+> is not configured, no session has an active organization, and every role
+> assignment is global — the super-admin half below still applies.
+
 Multi-tenancy and super-admin are provided by Better Auth's **`admin`** and
 **`organization`** plugins, configured in `apps/api/src/auth/infrastructure/better-auth.config.ts`. Their
 endpoints live under `/api/auth/*` (not NestJS controllers), so the frontend

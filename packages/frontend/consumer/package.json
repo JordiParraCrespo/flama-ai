@@ -12,6 +12,10 @@
     "./react": {
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"
+    },
+    "./organizations": {
+      "types": "./dist/react/organizations.queries.d.ts",
+      "import": "./dist/react/organizations.queries.js"
     }
   },
   "peerDependencies": {

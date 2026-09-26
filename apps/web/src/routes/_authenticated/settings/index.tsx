@@ -1,20 +1,35 @@
-import { Cpu, Settings, ShieldCheck } from '@flama/design-system-web/icons';
-import { useOrganizations } from '@flama/frontend-consumer/react';
+import { Cpu, ShieldCheck } from '@flama/design-system-web/icons';
 import { PageHead, SectionNav } from '@flama/frontend-web';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiKeysSection } from '@/features/api-tokens/sections/api-keys';
-import { GeneralSettingsSection } from '@/features/organizations/sections/general-settings';
+// flama:begin organizations
+import { generalSettingsPane } from '@/features/organizations/sections/general-settings';
+import { WorkspaceSettingsSubtitle } from '@/features/organizations/sections/settings-subtitle';
+// flama:end organizations
+// flama:plugins settings-imports
 import { SecuritySection } from '@/features/profile/sections/security';
 
 /** The sub-nav's sections, in the design's order. */
 const SECTIONS = [
-  { key: 'general', icon: Settings },
-  { key: 'security', icon: ShieldCheck },
-  { key: 'api', icon: Cpu },
+  // flama:begin organizations
+  generalSettingsPane,
+  // flama:end organizations
+  // flama:plugins settings-panes
+  { key: 'security', icon: ShieldCheck, Pane: SecuritySection },
+  { key: 'api', icon: Cpu, Pane: ApiKeysSection },
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]['key'];
+
+/** What the heading says under the title; with organizations, the workspace. */
+const SUBTITLES: ComponentType[] = [
+  // flama:begin organizations
+  WorkspaceSettingsSubtitle,
+  // flama:end organizations
+  // flama:plugins settings-subtitles
+];
 
 const PANES: readonly SectionKey[] = SECTIONS.map((section) => section.key);
 
@@ -44,12 +59,10 @@ export const Route = createFileRoute('/_authenticated/settings/')({
 
 function SettingsPage() {
   const { t } = useTranslation();
-  const { section = 'general' } = Route.useSearch();
+  const { section = SECTIONS[0].key } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  // Read here because the heading is drawn here; the General pane asks for the
-  // same list itself, and the two share one cache entry.
-  const organizations = useOrganizations();
-  const organization = organizations.data?.[0];
+  const Pane = SECTIONS.find((candidate) => candidate.key === section)?.Pane;
+  const [Subtitle] = SUBTITLES;
 
   // Replaces the search rather than merging into it, so a table's own state
   // does not follow the reader into a pane that has no table.
@@ -59,14 +72,7 @@ function SettingsPage() {
     <>
       <PageHead
         title={t('settings.title')}
-        // The organization's name is only known once the list resolves, and a
-        // reader gets a heading either way — naming the workspace is not worth
-        // a dangling "for ." while the lookup is in flight.
-        sub={
-          organization
-            ? t('settings.subtitle', { organization: organization.name })
-            : t('settings.subtitleFallback')
-        }
+        sub={Subtitle ? <Subtitle /> : t('settings.subtitleFallback')}
       />
 
       <SectionNav
@@ -75,9 +81,7 @@ function SettingsPage() {
         active={section}
         onSelect={go}
       >
-        {section === 'general' && <GeneralSettingsSection />}
-        {section === 'security' && <SecuritySection />}
-        {section === 'api' && <ApiKeysSection />}
+        {Pane && <Pane />}
       </SectionNav>
     </>
   );

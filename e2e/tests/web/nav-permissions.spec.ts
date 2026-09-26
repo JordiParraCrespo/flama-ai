@@ -1,6 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { signedUpContext } from '../../support/auth';
-import { inviteByApi, provisionedUser, signInAs } from '../../support/web';
+import { provisionedUser, signInAs } from '../../support/web';
 
 /**
  * The sidebar shows only the routes the signed-in user's permissions can reach,
@@ -28,23 +27,6 @@ test('an owner sees every route', async ({ page }) => {
   for (const label of ['Dashboard', 'Settings']) {
     await expect(nav.getByRole('link', { name: label, exact: true })).toBeVisible();
   }
-
-  await owner.api.dispose();
-});
-
-test('a plain member sees only the routes they can reach', async ({ page }) => {
-  const owner = await provisionedUser('navowner2');
-  const { api: memberApi, user: member } = await signedUpContext('navmember');
-  const invitationId = await inviteByApi(owner.api, owner.organizationId, member.email);
-  const accepted = await memberApi.post(`/api/v1/invitations/${invitationId}/accept`);
-  expect(accepted.ok()).toBe(true);
-  await memberApi.dispose();
-
-  await signInAs(page, member);
-
-  const nav = primaryNav(page);
-  await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
 
   await owner.api.dispose();
 });

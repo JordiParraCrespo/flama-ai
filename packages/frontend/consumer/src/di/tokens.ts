@@ -9,8 +9,11 @@ export const TOKENS = {
   ...KERNEL_TOKENS,
   ApiTokensRepository: Symbol.for('ApiTokensRepository'),
   ApiTokensService: Symbol.for('ApiTokensService'),
+  // flama:begin organizations
   OrganizationsRepository: Symbol.for('OrganizationsRepository'),
   OrganizationsService: Symbol.for('OrganizationsService'),
+  // flama:end organizations
+  // flama:plugins tenancy-tokens
   ProfileRepository: Symbol.for('ProfileRepository'),
   ProfileService: Symbol.for('ProfileService'),
 } as const;

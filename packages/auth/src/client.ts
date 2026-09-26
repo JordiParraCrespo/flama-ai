@@ -1,5 +1,8 @@
-import { adminClient, inferAdditionalFields, organizationClient } from 'better-auth/client/plugins';
-import { organizationSharedOptions } from './organization-options';
+import { adminClient, inferAdditionalFields } from 'better-auth/client/plugins';
+// flama:begin organizations
+import { organizationClientPlugin } from './organization-client';
+// flama:end organizations
+// flama:plugins client-plugin-imports
 import { userAdditionalFields } from './user-fields';
 
 /**
@@ -17,14 +20,21 @@ export function sharedClientPlugins() {
     // Mirror the server's `user.additionalFields` so session/user types match.
     inferAdditionalFields({ user: userAdditionalFields }),
     // Super-admin operations (list/ban/impersonate/set-role) under
-    // `authClient.admin.*`, and organizations/members/invitations/workspaces
-    // (teams) under `authClient.organization.*`.
+    // `authClient.admin.*`.
     adminClient(),
-    organizationClient(organizationSharedOptions),
+    // flama:begin organizations
+    // Organizations, members, invitations and workspaces (teams) under
+    // `authClient.organization.*`.
+    organizationClientPlugin(),
+    // flama:end organizations
+    // flama:plugins client-plugins
   ] as const;
 }
 
+// flama:begin organizations
 export { organizationSharedOptions } from './organization-options';
+// flama:end organizations
+// flama:plugins tenancy-exports
 export type {
   AuthSession,
   AuthSessionUser,

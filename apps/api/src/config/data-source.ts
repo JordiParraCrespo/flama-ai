@@ -8,15 +8,21 @@ import { OAuthApplicationOrmEntity } from '../auth/database/oauth-application.or
 import { OAuthConsentOrmEntity } from '../auth/database/oauth-consent.orm-entity';
 import { Session } from '../auth/database/session.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
+// flama:begin organizations
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
+// flama:end organizations
+// flama:plugins grant-entity-import
 import { FeatureFlagOrmEntity } from '../feature-flags/database/feature-flag.orm-entity';
 import { FlagChangeOrmEntity } from '../feature-flags/database/flag-change.orm-entity';
 import { FlagSegmentOrmEntity } from '../feature-flags/database/flag-segment.orm-entity';
+// flama:begin organizations
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
+// flama:end organizations
+// flama:plugins tenancy-entity-imports
 import { UserSettingsOrmEntity } from '../profile/database/user-settings.orm-entity';
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
@@ -47,13 +53,19 @@ export default new DataSource({
     OAuthAccessTokenOrmEntity,
     OAuthConsentOrmEntity,
     RoleOrmEntity,
+    // flama:begin organizations
     AccessGrantOrmEntity,
+    // flama:end organizations
+    // flama:plugins grant-entity
     UserRoleOrmEntity,
+    // flama:begin organizations
     OrganizationOrmEntity,
     MemberOrmEntity,
     InvitationOrmEntity,
     TeamOrmEntity,
     TeamMemberOrmEntity,
+    // flama:end organizations
+    // flama:plugins tenancy-entities
     FeatureFlagOrmEntity,
     FlagSegmentOrmEntity,
     FlagChangeOrmEntity,

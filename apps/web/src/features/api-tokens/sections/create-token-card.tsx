@@ -5,11 +5,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@flama/design-system-web';
-import {
-  useCreateApiToken,
-  useOrganizations,
-  usePermissionCatalog,
-} from '@flama/frontend-consumer/react';
+// flama:begin organizations
+import { useOrganizations } from '@flama/frontend-consumer/organizations';
+// flama:end organizations
+// flama:plugins tenancy-imports
+import { useCreateApiToken, usePermissionCatalog } from '@flama/frontend-consumer/react';
 import { useFeatureFlag } from '@flama/frontend-core/react';
 import { useErrorMessage } from '@flama/frontend-web';
 import { useState } from 'react';
@@ -39,7 +39,14 @@ export function CreateTokenCard() {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const catalog = usePermissionCatalog();
-  const organizations = useOrganizations();
+  // A token can be restricted to organizations the creator belongs to; a
+  // project without organizations offers no restriction.
+  const organizations: { id: string; name: string }[] = [
+    // flama:begin organizations
+    ...(useOrganizations().data ?? []),
+    // flama:end organizations
+    // flama:plugins token-organizations
+  ];
   const create = useCreateApiToken();
   const [secret, setSecret] = useState<string | null>(null);
   const creationEnabled = useFeatureFlag('api_token_creation');
@@ -61,7 +68,7 @@ export function CreateTokenCard() {
               groups={catalog.data?.groups ?? []}
               grantable={catalog.data?.grantable ?? []}
               loadingCatalog={catalog.isLoading}
-              organizations={organizations.data ?? []}
+              organizations={organizations}
               isPending={create.isPending}
               error={create.error ? resolveError(create.error).message : undefined}
               onSubmit={async ({ name, scopes, expiresInDays, organizationIds }) => {

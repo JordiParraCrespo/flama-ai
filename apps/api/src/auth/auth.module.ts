@@ -1,10 +1,13 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+// flama:begin organizations
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
+// flama:end organizations
+// flama:plugins tenancy-entity-imports
 import { UsersModule } from '../users/user.module';
 import { CredentialScopeResolver } from './application/credential-scope.resolver';
 import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
@@ -53,11 +56,14 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
       Session,
       Account,
       Verification,
+      // flama:begin organizations
       OrganizationOrmEntity,
       MemberOrmEntity,
       InvitationOrmEntity,
       TeamOrmEntity,
       TeamMemberOrmEntity,
+      // flama:end organizations
+      // flama:plugins tenancy-entities
       OAuthApplicationOrmEntity,
       OAuthAccessTokenOrmEntity,
       OAuthConsentOrmEntity,

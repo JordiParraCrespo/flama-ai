@@ -26,7 +26,7 @@ same-origin; set `VITE_API_URL` only when the API is on another origin.
 pnpm docker:dev                     # Postgres + Redis
 pnpm --filter @flama/api dev        # the API this app talks to
 pnpm --filter @flama/web dev        # http://localhost:3000
-pnpm --filter @flama/web build      # tsc -b && vite build
+pnpm --filter @flama/web build      # vite build (writes the route tree), then tsc -b
 pnpm --filter @flama/web preview
 pnpm --filter @flama/web test       # Vitest
 pnpm --filter @flama/web lint

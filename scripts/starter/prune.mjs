@@ -245,8 +245,11 @@ function check(manifest) {
       neededBy: entry.neededBy,
     })),
   ];
-  const ownerOf = (file) =>
-    owners.find((owner) =>
+  // A path can sit inside another feature's (the organizations screens in
+  // `apps/web`): the file goes with either, so it belongs to both, and may
+  // mention what any of them may.
+  const ownersOf = (file) =>
+    owners.filter((owner) =>
       owner.paths.some((path) => file === path || file.startsWith(`${path}/`)),
     );
 
@@ -342,22 +345,17 @@ function check(manifest) {
       }
     });
 
-    const fileOwner = ownerOf(file);
+    const fileOwners = ownersOf(file);
     for (const owner of owners) {
-      if (fileOwner && fileOwner.id === owner.id) continue;
       // A dependant may mention what it requires; a feature may mention the
       // shared packages it needs; a shared package may mention another shared
       // package that outlives it (its `neededBy` is a superset).
-      if (fileOwner?.requires.includes(owner.id)) continue;
-      if (
-        owner.neededBy &&
-        fileOwner &&
-        !fileOwner.neededBy &&
-        owner.neededBy.includes(fileOwner.id)
-      )
-        continue;
-      if (owner.neededBy && fileOwner?.neededBy?.every((id) => owner.neededBy.includes(id)))
-        continue;
+      const mayMention = (fileOwner) =>
+        fileOwner.id === owner.id ||
+        fileOwner.requires.includes(owner.id) ||
+        (owner.neededBy && !fileOwner.neededBy && owner.neededBy.includes(fileOwner.id)) ||
+        (owner.neededBy && fileOwner.neededBy?.every((id) => owner.neededBy.includes(id)));
+      if (fileOwners.some(mayMention)) continue;
       const regexes = owner.identifiers.map(identifierRegex);
       if (!regexes.length) continue;
       let inBlockComment = false;

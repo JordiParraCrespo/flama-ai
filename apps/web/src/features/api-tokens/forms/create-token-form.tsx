@@ -18,7 +18,6 @@ import {
   Separator,
   Skeleton,
 } from '@flama/design-system-web';
-import type { OrganizationEntity } from '@flama/frontend-consumer';
 import type { PermissionGroup, Scope } from '@flama/shared';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -79,7 +78,7 @@ export function CreateTokenForm({
   groups: readonly PermissionGroup[];
   grantable: Scope[];
   loadingCatalog: boolean;
-  organizations: OrganizationEntity[];
+  organizations: { id: string; name: string }[];
   isPending: boolean;
   /** The resolved failure message, if the last attempt failed. */
   error?: string;

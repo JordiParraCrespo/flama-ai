@@ -41,7 +41,10 @@ import {
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { HealthModule } from './health/health.module';
+// flama:begin organizations
 import { OrganizationsModule } from './organizations/organizations.module';
+// flama:end organizations
+// flama:plugins tenancy-module-import
 import { OutboxModule } from './outbox/outbox.module';
 import { ProfileModule } from './profile/profile.module';
 import { QueueModule } from './queue/queue.module';
@@ -174,11 +177,14 @@ import { UsersModule } from './users/user.module';
     UsersModule,
     ProfileModule,
     RolesModule,
-    OrganizationsModule,
     AdminModule,
     FeatureFlagsModule,
     HealthModule,
     QueueModule,
+    // flama:begin organizations
+    OrganizationsModule,
+    // flama:end organizations
+    // flama:plugins tenancy-module
     // flama:plugins api-modules
   ],
   providers: [

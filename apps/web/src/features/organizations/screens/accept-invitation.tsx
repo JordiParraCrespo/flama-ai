@@ -1,5 +1,8 @@
 import { Button } from '@flama/design-system-web';
-import { useAcceptInvitation, useAcceptInvitationAsNewcomer } from '@flama/frontend-consumer/react';
+import {
+  useAcceptInvitation,
+  useAcceptInvitationAsNewcomer,
+} from '@flama/frontend-consumer/organizations';
 import { useAuthState } from '@flama/frontend-core/react';
 import {
   AuthEyebrow,

@@ -1,6 +1,7 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { newUser, signedUpContext } from '../../support/auth';
-import { inviteByApi, provisionedUser, signInAs } from '../../support/web';
+import { inviteByApi } from '../../support/organizations';
+import { provisionedUser, signInAs } from '../../support/web';
 
 /**
  * Invitation links are `/accept-invitation?id&email&role&inviter`. A person
@@ -97,6 +98,30 @@ test('an owner who opens their own workspace invitation link is not bounced away
   await page.goto(invitationLink('00000000-0000-0000-0000-000000000000', owner.user.email, 'X'));
   await expect(page).toHaveURL(/\/accept-invitation/);
   await expect(page.getByRole('button', { name: 'Join workspace' })).toBeVisible();
+
+  await owner.api.dispose();
+});
+
+/** The primary nav landmark, addressed by its accessible name. */
+function primaryNav(page: Page) {
+  return page.getByRole('navigation', { name: 'Main navigation' });
+}
+
+// The sidebar decides each row from the member's own permissions, and a plain
+// member is offered the same rows as the owner: see `nav-permissions.spec.ts`.
+test('a plain member sees only the routes they can reach', async ({ page }) => {
+  const owner = await provisionedUser('navowner2');
+  const { api: memberApi, user: member } = await signedUpContext('navmember');
+  const invitationId = await inviteByApi(owner.api, owner.organizationId, member.email);
+  const accepted = await memberApi.post(`/api/v1/invitations/${invitationId}/accept`);
+  expect(accepted.ok()).toBe(true);
+  await memberApi.dispose();
+
+  await signInAs(page, member);
+
+  const nav = primaryNav(page);
+  await expect(nav.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Settings', exact: true })).toBeVisible();
 
   await owner.api.dispose();
 });

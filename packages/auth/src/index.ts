@@ -1,4 +1,7 @@
+// flama:begin organizations
 export { organizationSharedOptions } from './organization-options';
+// flama:end organizations
+// flama:plugins tenancy-exports
 export type {
   AuthSession,
   AuthSessionUser,

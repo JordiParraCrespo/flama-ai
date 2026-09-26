@@ -51,7 +51,7 @@ const ROOT = resolve(HERE, '..', '..');
  * end-to-end suite, and the docs site. Most projects start here; the rest — a
  * phone app, the control plane, a Go service — is a question each.
  */
-export const DEFAULT_KEEP = ['web', 'e2e'];
+export const DEFAULT_KEEP = ['web', 'e2e', 'organizations'];
 export const DEFAULT_ADD = ['docs'];
 
 function fail(message) {

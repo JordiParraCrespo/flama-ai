@@ -1,5 +1,10 @@
-import type { AccessScope, ResolveScopeInput, ScopeResolverPort } from '@flama/backend-authz';
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  type AccessScope,
+  type ResolveScopeInput,
+  SCOPE_RESOLVER,
+  type ScopeResolverPort,
+} from '@flama/backend-authz';
+import { Inject, Injectable, type Provider } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, type Repository } from 'typeorm';
 import { TeamOrmEntity } from '../../organizations/database/team.orm-entity';
@@ -127,3 +132,13 @@ export class ScopeResolver implements ScopeResolverPort {
     return grants;
   }
 }
+
+/**
+ * Bound behind the kernel's port, so an application needing hierarchical scope
+ * resolution (a manager seeing their reports' rows, a region → territory tree)
+ * substitutes its own implementation without touching a call site.
+ */
+export const SCOPE_RESOLVER_PROVIDER: Provider = {
+  provide: SCOPE_RESOLVER,
+  useClass: ScopeResolver,
+};

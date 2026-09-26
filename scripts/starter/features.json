@@ -90,6 +90,76 @@
       "summary": "helm/ — chart for the Tier 2 (Kubernetes) deployment",
       "identifiers": ["helm/"],
       "paths": ["helm"]
+    },
+    "organizations": {
+      "title": "Organizations (teams)",
+      "summary": "Multi-tenancy: organizations, members, invitations, workspaces and access grants, and the onboarding that creates the first organization",
+      "identifiers": [
+        "apps/api/src/organizations",
+        "OrganizationsModule",
+        "organizationPlugin",
+        "withActiveOrganization",
+        "ORGANIZATION_RESOURCES",
+        "AccessGrantOrmEntity",
+        "SCOPE_RESOLVER_PROVIDER",
+        "useOrganizations",
+        "WorkspaceGate",
+        "organizationClientPlugin",
+        "features/organizations",
+        "@flama/frontend-consumer/organizations",
+        "seedOrganization",
+        "AccessGrantMapper"
+      ],
+      "paths": [
+        "apps/api/src/organizations",
+        "apps/api/src/auth/infrastructure/organization-plugin.config.ts",
+        "apps/api/src/auth/infrastructure/invitation-url.util.ts",
+        "apps/api/src/auth/__tests__/invitation-url.util.spec.ts",
+        "apps/api/src/authz/application",
+        "apps/api/src/authz/commands",
+        "apps/api/src/authz/database",
+        "apps/api/src/authz/decorators",
+        "apps/api/src/authz/interceptors",
+        "apps/api/src/authz/queries/find-access-grants",
+        "apps/api/src/authz/domain/access-grant.entity.ts",
+        "apps/api/src/authz/domain/access-grant.errors.ts",
+        "apps/api/src/authz/dtos/access-grant.response.dto.ts",
+        "apps/api/src/authz/authz.di-tokens.ts",
+        "apps/api/src/authz/access-grant.mapper.ts",
+        "apps/api/src/database/seed-organization.ts",
+        "apps/mcp/src/tools/organizations.tools.ts",
+        "apps/mcp/src/tools/workspaces.tools.ts",
+        "apps/mobile/app/onboarding.tsx",
+        "apps/mobile/features/organizations",
+        "apps/web/src/features/organizations",
+        "apps/web/src/routes/_auth/accept-invitation.tsx",
+        "apps/web/src/routes/_auth/onboarding.tsx",
+        "e2e/support/organizations.ts",
+        "e2e/tests/api/organization-membership.spec.ts",
+        "e2e/tests/web/invitation-acceptance.spec.ts",
+        "e2e/tests/web/onboarding.spec.ts",
+        "e2e/tests/web/organization-settings.spec.ts",
+        "packages/auth/src/organization-client.ts",
+        "packages/auth/src/organization-options.ts",
+        "packages/frontend/consumer/src/modules/organizations",
+        "packages/frontend/consumer/src/react/organizations.queries.ts",
+        "packages/frontend/consumer/src/react/__tests__/organizations.create.spec.tsx",
+        "packages/frontend/consumer/src/react/__tests__/organizations.invitations.spec.tsx",
+        "packages/frontend/consumer/src/react/__tests__/organizations.queries.spec.ts",
+        "packages/frontend/consumer/src/react/__tests__/query-keys.spec.ts"
+      ],
+      "json": [
+        {
+          "file": "packages/frontend/consumer/package.json",
+          "path": ["exports"],
+          "set": {
+            "./organizations": {
+              "types": "./dist/react/organizations.queries.d.ts",
+              "import": "./dist/react/organizations.queries.js"
+            }
+          }
+        }
+      ]
     }
   },
   "shared": {

@@ -1,8 +1,7 @@
 import '@flama/env/load';
-import { randomUUID } from 'node:crypto';
 import { OutboxMessageSchema } from '@flama/backend-ddd';
 import type { Role } from '@flama/shared';
-import { DataSource, IsNull, type Repository } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
 import { Account } from '../auth/database/account.orm-entity';
 import { OAuthAccessTokenOrmEntity } from '../auth/database/oauth-access-token.orm-entity';
@@ -11,19 +10,31 @@ import { OAuthConsentOrmEntity } from '../auth/database/oauth-consent.orm-entity
 import { Session } from '../auth/database/session.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
 import { auth, closeAuthConnections } from '../auth/infrastructure/better-auth.config';
+// flama:begin organizations
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
+// flama:end organizations
+// flama:plugins grant-entity-import
 import { FeatureFlagOrmEntity } from '../feature-flags/database/feature-flag.orm-entity';
 import { FlagChangeOrmEntity } from '../feature-flags/database/flag-change.orm-entity';
 import { FlagSegmentOrmEntity } from '../feature-flags/database/flag-segment.orm-entity';
+// flama:begin organizations
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
 import { OrganizationOrmEntity } from '../organizations/database/organization.orm-entity';
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
+// flama:end organizations
+// flama:plugins tenancy-entity-imports
 import { UserSettingsOrmEntity } from '../profile/database/user-settings.orm-entity';
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
+
+// flama:begin organizations
+import { seedOrganization } from './seed-organization';
+
+// flama:end organizations
+// flama:plugins seed-tenancy-imports
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -43,13 +54,19 @@ const dataSource = new DataSource({
     OAuthAccessTokenOrmEntity,
     OAuthConsentOrmEntity,
     RoleOrmEntity,
+    // flama:begin organizations
     AccessGrantOrmEntity,
+    // flama:end organizations
+    // flama:plugins grant-entity
     UserRoleOrmEntity,
+    // flama:begin organizations
     OrganizationOrmEntity,
     MemberOrmEntity,
     InvitationOrmEntity,
     TeamOrmEntity,
     TeamMemberOrmEntity,
+    // flama:end organizations
+    // flama:plugins tenancy-entities
     FeatureFlagOrmEntity,
     FlagSegmentOrmEntity,
     FlagChangeOrmEntity,
@@ -72,25 +89,6 @@ interface SeedUser {
  */
 const seedPassword = (envVar: string, fallback: string): string =>
   process.env[envVar]?.trim() || fallback;
-
-/** The one organization the development database is built around. */
-const SEED_ORGANIZATION = {
-  name: 'Flama',
-  slug: 'flama',
-  workspace: 'General',
-} as const;
-
-/**
- * Who is in {@link SEED_ORGANIZATION}, and as what. `organizationRole` is
- * Better Auth's roster role; `applicationRole` is the CASL role scoped to the
- * organization, mapped the same way `applicationRoleFor` maps it everywhere
- * else (`owner`/`admin` → the tenant `owner` role, anything else → `user`).
- */
-const SEED_MEMBERSHIPS: Record<string, { organizationRole: string; applicationRole: Role }> = {
-  'superadmin@flama.dev': { organizationRole: 'owner', applicationRole: 'owner' },
-  'admin@flama.dev': { organizationRole: 'owner', applicationRole: 'owner' },
-  'user@flama.dev': { organizationRole: 'member', applicationRole: 'user' },
-};
 
 const seedUsers: SeedUser[] = [
   {
@@ -200,116 +198,16 @@ async function seed() {
     console.log(`Created ${seedUser.role} user: ${seedUser.email}`);
   }
 
-  await seedOrganization(userRepo, roleRepo, userRoleRepo);
+  // flama:begin organizations
+  await seedOrganization(dataSource, userRepo, roleRepo, userRoleRepo);
+  // flama:end organizations
+  // flama:plugins seed-tenancy
 
   console.log('Seeding complete.');
   await dataSource.destroy();
   // Close what importing `auth` opened, or this script hangs here with its work
   // already done.
   await closeAuthConnections();
-}
-
-/**
- * The workspace the seeded accounts share, and the memberships that open it.
- *
- * Sign-up used to provision a personal organization for every account, so the
- * seed got its tenant as a side effect of creating users. It no longer does —
- * an account holds nothing until it creates a workspace or an invitation puts
- * it in one — so the seed says out loud what it wants: one organization, with
- * the three accounts in the roles that make the development database
- * interesting.
- *
- * - `admin` and `superadmin` join as `owner`, and hold the org-scoped `owner`
- *   application role — the same one `OrganizationsService.create` writes for
- *   whoever creates an organization, and the invitation path writes for an
- *   invited owner.
- * - `user` joins as a plain `member`, which keeps a *restricted but signed-in*
- *   account in the seed.
- */
-async function seedOrganization(
-  userRepo: Repository<UserOrmEntity>,
-  roleRepo: Repository<RoleOrmEntity>,
-  userRoleRepo: Repository<UserRoleOrmEntity>,
-): Promise<void> {
-  const organizationRepo = dataSource.getRepository(OrganizationOrmEntity);
-  const memberRepo = dataSource.getRepository(MemberOrmEntity);
-  const teamRepo = dataSource.getRepository(TeamOrmEntity);
-  const teamMemberRepo = dataSource.getRepository(TeamMemberOrmEntity);
-
-  let organization = await organizationRepo.findOneBy({ slug: SEED_ORGANIZATION.slug });
-  if (!organization) {
-    organization = await organizationRepo.save(
-      organizationRepo.create({
-        id: randomUUID(),
-        name: SEED_ORGANIZATION.name,
-        slug: SEED_ORGANIZATION.slug,
-        createdAt: new Date(),
-      }),
-    );
-    console.log(`Created organization: ${SEED_ORGANIZATION.name}`);
-  }
-
-  let team = await teamRepo.findOneBy({
-    organizationId: organization.id,
-    name: SEED_ORGANIZATION.workspace,
-  });
-  if (!team) {
-    team = await teamRepo.save(
-      teamRepo.create({
-        id: randomUUID(),
-        name: SEED_ORGANIZATION.workspace,
-        organizationId: organization.id,
-        createdAt: new Date(),
-      }),
-    );
-  }
-
-  for (const [email, membership] of Object.entries(SEED_MEMBERSHIPS)) {
-    const user = await userRepo.findOneBy({ email });
-    if (!user) continue;
-
-    const existing = await memberRepo.findOneBy({
-      organizationId: organization.id,
-      userId: user.id,
-    });
-    if (!existing) {
-      await memberRepo.insert({
-        id: randomUUID(),
-        organizationId: organization.id,
-        userId: user.id,
-        role: membership.organizationRole,
-        createdAt: new Date(),
-      });
-    }
-
-    const inTeam = await teamMemberRepo.findOneBy({ teamId: team.id, userId: user.id });
-    if (!inTeam) {
-      await teamMemberRepo.insert({
-        id: randomUUID(),
-        teamId: team.id,
-        userId: user.id,
-        createdAt: new Date(),
-      });
-    }
-
-    // The org-scoped application role. Better Auth's membership role says what
-    // the caller is on the roster; this is what the app's routes actually
-    // check, and the two are only ever written together.
-    const role = await roleRepo.findOneBy({ name: membership.applicationRole });
-    if (!role) continue;
-    const assigned = await userRoleRepo.findOneBy({
-      userId: user.id,
-      roleId: role.id,
-      organizationId: organization.id,
-    });
-    if (!assigned) {
-      await userRoleRepo.insert({
-        userId: user.id,
-        roleId: role.id,
-        organizationId: organization.id,
-      });
-    }
-  }
 }
 
 seed().catch((err) => {
