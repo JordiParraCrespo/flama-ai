@@ -5,7 +5,7 @@ import {
   useCreateOrganization,
   useMyInvitations,
   useOrganizations,
-} from '@flama/frontend-consumer/react';
+} from '@flama/frontend-consumer/organizations';
 import { useLogout } from '@flama/frontend-core/react';
 import {
   AuthDivider,

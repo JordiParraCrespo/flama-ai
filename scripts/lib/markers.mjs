@@ -3,7 +3,7 @@
  *
  * A marker wraps the lines that exist only because of some optional piece:
  *
- *   # flama:begin widget        (any comment syntax: #, //, <!-- -->)
+ *   # flama:begin widget        (any comment syntax: #, //, <!-- -->, JSX braces)
  *   ...lines that exist only because of the widget...
  *   # flama:end widget
  *
@@ -23,7 +23,8 @@
  * `|`. No filesystem, no git, no process exit: those are the callers'.
  */
 
-export const MARKER_RE = /^\s*(?:#|\/\/|<!--|\{\{-?\s*\/\*|\/\*)\s*flama:(begin|end)\s+([\w|-]+)/;
+export const MARKER_RE =
+  /^\s*(?:#|\/\/|<!--|\{\{-?\s*\/\*|\{\s*\/\*|\/\*)\s*flama:(begin|end)\s+([\w|-]+)/;
 
 /** A malformed marker. Callers decide whether that is a warning or an exit. */
 export class MarkerError extends Error {
@@ -75,7 +76,8 @@ export function annotate(file, content) {
  * it survives into a pruned project where the installer still has to work.
  * The installer inserts immediately above it, at its indentation.
  */
-export const ANCHOR_RE = /^(\s*)(?:#|\/\/|<!--|\{\{-?\s*\/\*|\/\*)\s*flama:plugins\s+([\w-]+)\b/;
+export const ANCHOR_RE =
+  /^(\s*)(?:#|\/\/|<!--|\{\{-?\s*\/\*|\{\s*\/\*|\/\*)\s*flama:plugins\s+([\w-]+)\b/;
 
 /**
  * Where a slot's anchor sits, or null. Returns the line index and the

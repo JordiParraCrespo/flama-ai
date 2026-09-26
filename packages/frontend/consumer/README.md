@@ -33,12 +33,6 @@ An app becomes the consumer product by loading `consumerModules` into
 `@flama/frontend-consumer/react` (`src/react/index.ts`):
 
 - `useConsumerApp` — the product's services off the kernel container.
-- Organizations: `useOrganizations`, `useCreateOrganization`,
-  `useUpdateOrganization`, `useOrganizationMembers`,
-  `useRemoveOrganizationMember`, `useUpdateOrganizationMemberRole`,
-  `useInviteMembers`, `useOrganizationInvitations`,
-  `useCancelOrganizationInvitation`, `useMyInvitations`,
-  `useAcceptInvitation`, `organizationsKeys`.
 - Profile: `useMyProfile`, `useUpdateMyProfile`, `useChangeOwnPassword`,
   `useUploadAvatar`, `useDeleteAvatar`, `useProfileSessions`,
   `useRevokeProfileSession`, `useRevokeOtherProfileSessions`, `profileKeys`.
@@ -48,13 +42,21 @@ An app becomes the consumer product by loading `consumerModules` into
 - `CONSUMER_NON_PERSISTED_FEATURES` — the feature prefixes an app keeps out
   of the persisted query cache.
 
+`@flama/frontend-consumer/organizations` (`src/organizations/`) holds the
+organization hooks: `useOrganizations`, `useCreateOrganization`,
+`useUpdateOrganization`, `useOrganizationMembers`,
+`useRemoveOrganizationMember`, `useUpdateOrganizationMemberRole`,
+`useInviteMembers`, `useOrganizationInvitations`,
+`useCancelOrganizationInvitation`, `useMyInvitations`,
+`useAcceptInvitation` and `organizationsKeys`.
+
 ## How to use it
 
-`apps/web/src/routes/_authenticated.tsx` reads the workspace list the shell
-names:
+`apps/web/src/features/organizations/sections/workspace-gate.tsx` reads the
+workspace list the shell names:
 
 ```tsx
-import { useOrganizations } from '@flama/frontend-consumer/react';
+import { useOrganizations } from '@flama/frontend-consumer/organizations';
 
 const organizations = useOrganizations();
 const organization = organizations.data?.[0];

@@ -5,14 +5,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@flama/design-system-web';
-import {
-  useCreateApiToken,
-  useOrganizations,
-  usePermissionCatalog,
-} from '@flama/frontend-consumer/react';
+import { useCreateApiToken, usePermissionCatalog } from '@flama/frontend-consumer/react';
 import { useFeatureFlag } from '@flama/frontend-core/react';
 import { useErrorMessage } from '@flama/frontend-web';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SecretPanel } from '@/features/api-tokens/components/secret-panel';
 import { CreateTokenForm } from '@/features/api-tokens/forms/create-token-form';
@@ -31,15 +27,18 @@ import { CreateTokenForm } from '@/features/api-tokens/forms/create-token-form';
  * that shows it. It sat on the screen once, where dismissing it re-rendered the
  * token table underneath, which has nothing to do with it.
  *
+ * `children` are fields another feature adds to the form (organizations adds
+ * the workspaces a token is restricted to); they reach it through the form's
+ * context.
+ *
  * `api_token_creation` is the kill switch the API enforces on the same
  * endpoint (`@RequireFlag`). Reading it here only spares the reader a form
  * that could only be refused; the tokens they already have keep working.
  */
-export function CreateTokenCard() {
+export function CreateTokenCard({ children }: { children?: ReactNode }) {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const catalog = usePermissionCatalog();
-  const organizations = useOrganizations();
   const create = useCreateApiToken();
   const [secret, setSecret] = useState<string | null>(null);
   const creationEnabled = useFeatureFlag('api_token_creation');
@@ -61,7 +60,6 @@ export function CreateTokenCard() {
               groups={catalog.data?.groups ?? []}
               grantable={catalog.data?.grantable ?? []}
               loadingCatalog={catalog.isLoading}
-              organizations={organizations.data ?? []}
               isPending={create.isPending}
               error={create.error ? resolveError(create.error).message : undefined}
               onSubmit={async ({ name, scopes, expiresInDays, organizationIds }) => {
@@ -73,7 +71,9 @@ export function CreateTokenCard() {
                 });
                 setSecret(secret);
               }}
-            />
+            >
+              {children}
+            </CreateTokenForm>
           </CardContent>
         )}
       </Card>

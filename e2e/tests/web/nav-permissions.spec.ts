@@ -1,6 +1,9 @@
 import { expect, type Page, test } from '@playwright/test';
+// flama:begin organizations
 import { signedUpContext } from '../../support/auth';
-import { inviteByApi, provisionedUser, signInAs } from '../../support/web';
+import { inviteByApi, provisionedOwner } from '../../support/organizations';
+// flama:end organizations
+import { provisionedUser, signInAs } from '../../support/web';
 
 /**
  * The sidebar shows only the routes the signed-in user's permissions can reach,
@@ -32,8 +35,9 @@ test('an owner sees every route', async ({ page }) => {
   await owner.api.dispose();
 });
 
+// flama:begin organizations
 test('a plain member sees only the routes they can reach', async ({ page }) => {
-  const owner = await provisionedUser('navowner2');
+  const owner = await provisionedOwner('navowner2');
   const { api: memberApi, user: member } = await signedUpContext('navmember');
   const invitationId = await inviteByApi(owner.api, owner.organizationId, member.email);
   const accepted = await memberApi.post(`/api/v1/invitations/${invitationId}/accept`);
@@ -48,6 +52,7 @@ test('a plain member sees only the routes they can reach', async ({ page }) => {
 
   await owner.api.dispose();
 });
+// flama:end organizations
 
 test('the command palette offers the same destinations as the sidebar', async ({ page }) => {
   const owner = await provisionedUser('navpalette');

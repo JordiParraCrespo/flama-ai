@@ -1,8 +1,7 @@
 import { Global, Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
-import { API_TOKEN_REPOSITORY, ORGANIZATION_MEMBERSHIP_READER } from './api-tokens.di-tokens';
+import { API_TOKEN_REPOSITORY } from './api-tokens.di-tokens';
 import { ApiTokenMapper } from './api-tokens.mapper';
 import { CreateApiTokenCommandHandler } from './commands/create-api-token/create-api-token.command-handler';
 import { CreateApiTokenHttpController } from './commands/create-api-token/create-api-token.http.controller';
@@ -10,7 +9,6 @@ import { RevokeApiTokenCommandHandler } from './commands/revoke-api-token/revoke
 import { RevokeApiTokenHttpController } from './commands/revoke-api-token/revoke-api-token.http.controller';
 import { ApiTokenOrmEntity } from './database/api-token.orm-entity';
 import { ApiTokenRepository } from './database/api-token.repository';
-import { OrganizationMembershipRepository } from './database/organization-membership.repository';
 import { FindApiTokenByIdQueryHandler } from './queries/find-api-token-by-id/find-api-token-by-id.query-handler';
 import { FindApiTokensHttpController } from './queries/find-api-tokens/find-api-tokens.http.controller';
 import { FindApiTokensQueryHandler } from './queries/find-api-tokens/find-api-tokens.query-handler';
@@ -37,13 +35,7 @@ const queryHandlers: Provider[] = [
   FindCurrentCredentialQueryHandler,
 ];
 
-const repositories: Provider[] = [
-  { provide: API_TOKEN_REPOSITORY, useClass: ApiTokenRepository },
-  {
-    provide: ORGANIZATION_MEMBERSHIP_READER,
-    useClass: OrganizationMembershipRepository,
-  },
-];
+const repositories: Provider[] = [{ provide: API_TOKEN_REPOSITORY, useClass: ApiTokenRepository }];
 
 /**
  * API tokens module.
@@ -54,7 +46,7 @@ const repositories: Provider[] = [
  */
 @Global()
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([ApiTokenOrmEntity, MemberOrmEntity])],
+  imports: [CqrsModule, TypeOrmModule.forFeature([ApiTokenOrmEntity])],
   controllers: [...httpControllers],
   providers: [...commandHandlers, ...queryHandlers, ...repositories, ApiTokenMapper],
   exports: [API_TOKEN_REPOSITORY, ApiTokenMapper, TypeOrmModule],

@@ -2,24 +2,20 @@ import { expect, test } from '@playwright/test';
 import { newUser, VALID_PASSWORD } from '../../support/auth';
 import { findResetToken, findUserByEmail } from '../../support/db';
 import { waitForEmailUrl } from '../../support/mail';
-import {
-  createOrganization,
-  loginThroughUi,
-  provisionedUser,
-  registerThroughUi,
-} from '../../support/web';
+import { loginThroughUi, provisionedUser, registerThroughUi } from '../../support/web';
 
 const NEW_PASSWORD = 'Rotated!Password9';
 
 test.describe('web auth UI', () => {
-  test('a visitor can register and is sent to onboarding, not to a refusal', async ({ page }) => {
+  test('a visitor can register and lands on the dashboard', async ({ page }) => {
+    // flama:begin organizations
+    test.skip(true, 'with organizations a new account starts at onboarding: onboarding.spec.ts');
+    // flama:end organizations
     const user = newUser('uireg');
 
     await registerThroughUi(page, user);
 
-    // Registering creates an account, not a workspace: the only honest next
-    // screen is the one that makes a workspace.
-    await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
     expect(await findUserByEmail(user.email), 'the account really exists').toBeTruthy();
   });
 
@@ -197,25 +193,13 @@ test.describe('web auth UI', () => {
   test('registering with an email already taken shows an error', async ({ page }) => {
     const user = newUser('uidupe');
     await registerThroughUi(page, user);
-    await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
+    await expect(page).not.toHaveURL(/\/register/, { timeout: 20_000 });
     await page.context().clearCookies();
 
     await registerThroughUi(page, user);
 
-    await expect(page).not.toHaveURL(/\/onboarding/);
+    await expect(page).toHaveURL(/\/register/);
     await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
-  });
-
-  test('a signed-in account with a workspace is bounced off onboarding', async ({ page }) => {
-    const user = newUser('uionb');
-    await registerThroughUi(page, user);
-    await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
-
-    // The browser's own cookie jar, so the workspace belongs to this session.
-    await createOrganization(page.request);
-
-    await page.goto('/onboarding');
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
   });
 
   test('social sign-in is absent or explained when no provider is configured', async ({ page }) => {

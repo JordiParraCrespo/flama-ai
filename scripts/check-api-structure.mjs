@@ -186,6 +186,7 @@ const LEDGER = [
   { path: 'apps/api/src/admin/admin.service.ts', kind: 'service-at-module-root' },
   { path: 'apps/api/src/admin/admin.mappers.ts', kind: 'plural-mappers-file' },
   { path: 'apps/api/src/admin/dtos/admin.request.dto.ts', kind: 'file-name-not-admitted' },
+  // flama:begin organizations
   {
     path: 'apps/api/src/organizations/organizations.controller.ts',
     kind: 'controller-at-module-root',
@@ -211,6 +212,7 @@ const LEDGER = [
     path: 'apps/api/src/organizations/dtos/organization.request.dto.ts',
     kind: 'file-name-not-admitted',
   },
+  // flama:end organizations
 ];
 const tsFiles = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile());
 const subDirs = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());
@@ -545,6 +547,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   }
   console.log(
     `API structure: ${modules.length} modules conform` +
-      (ledgered ? `, with ${ledgered} ledgered violations in admin/ and organizations/.` : '.'),
+      (ledgered
+        ? `, with ${ledgered} ledgered violations in ${[
+            ...new Set(LEDGER.map(({ path }) => `${path.split('/')[3]}/`)),
+          ].join(' and ')}.`
+        : '.'),
   );
 }

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
-    "build": "tsc -b && vite build",
+    "build": "pnpm run routes && tsc -b && vite build",
+    "routes": "node scripts/generate-routes.mjs",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@flama/tsconfig": "workspace:^",
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/router-generator": "^1.167.36",
     "@tanstack/router-plugin": "^1.168.38",
     "@testing-library/react": "^16.3.3",
     "@types/react": "19.2.14",

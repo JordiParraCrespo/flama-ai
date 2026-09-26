@@ -21,8 +21,8 @@ import type {
   OrganizationMemberEntity,
 } from '../modules/organizations/organization.entity';
 import type { MemberFilters } from '../modules/organizations/organizations.repository';
-import { useConsumerApp } from './context';
-import { profileKeys } from './profile.queries';
+import { useConsumerApp } from '../react/context';
+import { profileKeys } from '../react/profile.queries';
 
 /**
  * Query key factory for the `organizations` feature, one function per level.

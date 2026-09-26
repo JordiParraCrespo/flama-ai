@@ -22,7 +22,9 @@ export function AuthGate() {
         </Stack.Protected>
         <Stack.Protected guard={isAuthenticated}>
           <Stack.Screen name="(app)" />
+          {/* flama:begin organizations */}
           <Stack.Screen name="onboarding" />
+          {/* flama:end organizations */}
         </Stack.Protected>
       </Stack>
       <SessionRestoreOverlay />

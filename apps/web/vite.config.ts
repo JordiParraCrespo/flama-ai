@@ -16,11 +16,8 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [
-    TanStackRouterVite({
-      routesDirectory: './src/routes',
-      generatedRouteTree: './src/routeTree.gen.ts',
-      autoCodeSplitting: true,
-    }),
+    // Options in `tsr.config.json`, which `pnpm routes` reads as well.
+    TanStackRouterVite(),
     react({
       // The React Compiler memoises components and hooks at build time, so
       // nothing here needs `useMemo`, `useCallback` or `memo` by hand. React 19

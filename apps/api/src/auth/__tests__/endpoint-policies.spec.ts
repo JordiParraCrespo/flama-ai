@@ -6,7 +6,9 @@ import { AdminController } from '../../admin/admin.controller';
 import { FindApiTokensHttpController } from '../../api-tokens/queries/find-api-tokens/find-api-tokens.http.controller';
 import { FindFeatureFlagsHttpController } from '../../feature-flags/queries/find-feature-flags/find-feature-flags.http.controller';
 // flama:plugins handler-imports
+// flama:begin organizations
 import { MembersController } from '../../organizations/members.controller';
+// flama:end organizations
 import { FindRolesHttpController } from '../../roles/queries/find-roles/find-roles.http.controller';
 
 /**
@@ -28,7 +30,9 @@ import { FindRolesHttpController } from '../../roles/queries/find-roles/find-rol
 
 /** The handler each guarded endpoint's data actually comes from. */
 const HANDLERS: Record<GuardedEndpoint, { controller: object; handler: string }> = {
+  // flama:begin organizations
   '/organizations/:orgId/members': { controller: MembersController, handler: 'list' },
+  // flama:end organizations
   '/roles': { controller: FindRolesHttpController, handler: 'findAll' },
   '/tokens': { controller: FindApiTokensHttpController, handler: 'findAll' },
   '/admin/users': { controller: AdminController, handler: 'listUsers' },

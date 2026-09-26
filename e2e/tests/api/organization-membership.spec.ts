@@ -1,7 +1,7 @@
 import { expect, request, test } from '@playwright/test';
 import { API_URL } from '../../playwright.config';
 import { expectProblemDocument, signedUpContext } from '../../support/auth';
-import { createOrganization } from '../../support/web';
+import { createOrganization } from '../../support/organizations';
 
 test.describe("the caller's own membership", () => {
   test('is read from the organization in the path, not the active one', async () => {

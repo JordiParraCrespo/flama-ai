@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { newUser, signedUpContext } from '../../support/auth';
-import { inviteByApi, provisionedUser, signInAs } from '../../support/web';
+import { inviteByApi, provisionedOwner } from '../../support/organizations';
+import { signInAs } from '../../support/web';
 
 /**
  * Invitation links are `/accept-invitation?id&email&role&inviter`. A person
@@ -17,7 +18,7 @@ function invitationLink(id: string, email: string, inviter: string, role = 'memb
 test.setTimeout(90_000);
 
 test('a newcomer registers from the link and joins in one step', async ({ page }) => {
-  const owner = await provisionedUser('inviter');
+  const owner = await provisionedOwner('inviter');
   const invitee = newUser('invitee');
   const invitationId = await inviteByApi(owner.api, owner.organizationId, invitee.email);
 
@@ -52,7 +53,7 @@ test('a newcomer registers from the link and joins in one step', async ({ page }
 test('an existing account signs in and is returned to the same link to accept', async ({
   page,
 }) => {
-  const owner = await provisionedUser('inviter2');
+  const owner = await provisionedOwner('inviter2');
   const { api: inviteeApi, user: invitee } = await signedUpContext('existing');
   await inviteeApi.dispose();
   const invitationId = await inviteByApi(owner.api, owner.organizationId, invitee.email, 'admin');
@@ -91,7 +92,7 @@ test('an owner who opens their own workspace invitation link is not bounced away
 }) => {
   // A signed-in reader on `/accept-invitation` stays there: it is the one
   // auth-layout route an authenticated session may open.
-  const owner = await provisionedUser('inviter3');
+  const owner = await provisionedOwner('inviter3');
   await signInAs(page, owner.user);
 
   await page.goto(invitationLink('00000000-0000-0000-0000-000000000000', owner.user.email, 'X'));

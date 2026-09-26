@@ -1,15 +1,19 @@
-import { Cpu, Settings, ShieldCheck } from '@flama/design-system-web/icons';
-import { useOrganizations } from '@flama/frontend-consumer/react';
+import { Cpu, ShieldCheck } from '@flama/design-system-web/icons';
 import { PageHead, SectionNav } from '@flama/frontend-web';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { ApiKeysSection } from '@/features/api-tokens/sections/api-keys';
+// flama:begin organizations
+import { GENERAL_SETTINGS_SECTION } from '@/features/organizations/lib/settings-section';
 import { GeneralSettingsSection } from '@/features/organizations/sections/general-settings';
+// flama:end organizations
 import { SecuritySection } from '@/features/profile/sections/security';
 
 /** The sub-nav's sections, in the design's order. */
 const SECTIONS = [
-  { key: 'general', icon: Settings },
+  // flama:begin organizations
+  GENERAL_SETTINGS_SECTION,
+  // flama:end organizations
   { key: 'security', icon: ShieldCheck },
   { key: 'api', icon: Cpu },
 ] as const;
@@ -44,12 +48,8 @@ export const Route = createFileRoute('/_authenticated/settings/')({
 
 function SettingsPage() {
   const { t } = useTranslation();
-  const { section = 'general' } = Route.useSearch();
+  const { section = SECTIONS[0].key } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  // Read here because the heading is drawn here; the General pane asks for the
-  // same list itself, and the two share one cache entry.
-  const organizations = useOrganizations();
-  const organization = organizations.data?.[0];
 
   // Replaces the search rather than merging into it, so a table's own state
   // does not follow the reader into a pane that has no table.
@@ -57,17 +57,7 @@ function SettingsPage() {
 
   return (
     <>
-      <PageHead
-        title={t('settings.title')}
-        // The organization's name is only known once the list resolves, and a
-        // reader gets a heading either way — naming the workspace is not worth
-        // a dangling "for ." while the lookup is in flight.
-        sub={
-          organization
-            ? t('settings.subtitle', { organization: organization.name })
-            : t('settings.subtitleFallback')
-        }
-      />
+      <PageHead title={t('settings.title')} sub={t('settings.subtitle')} />
 
       <SectionNav
         label={t('settings.nav.label')}
@@ -75,7 +65,9 @@ function SettingsPage() {
         active={section}
         onSelect={go}
       >
+        {/* flama:begin organizations */}
         {section === 'general' && <GeneralSettingsSection />}
+        {/* flama:end organizations */}
         {section === 'security' && <SecuritySection />}
         {section === 'api' && <ApiKeysSection />}
       </SectionNav>

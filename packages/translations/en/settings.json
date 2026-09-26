@@ -31,7 +31,6 @@
     "sessions": "Active sessions",
     "title": "Security"
   },
-  "subtitle": "Workspace-wide configuration for {{organization}}.",
-  "subtitleFallback": "Workspace-wide configuration.",
+  "subtitle": "Your account, its security and its API access.",
   "title": "Settings"
 }

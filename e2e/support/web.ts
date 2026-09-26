@@ -1,18 +1,15 @@
-import { type APIRequestContext, expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { signedUpContext, type TestUser } from './auth';
+
+// flama:begin organizations
+import { createOrganization } from './organizations';
+// flama:end organizations
 
 /**
  * Helpers for the `web` project: the journeys every browser spec starts from.
- *
- * Registering creates an account and nothing else — an account belongs to no
- * workspace until it creates one from `/onboarding` or an invitation puts it in
- * one — so most specs want a user who already has somewhere to work. That is
- * {@link provisionedUser}: sign-up and workspace creation through the API, so
- * the spec spends its time on the screen it is about rather than on the two
- * screens before it.
+ * {@link provisionedUser} signs up through the API, so a spec spends its time
+ * on the screen it is about rather than on the ones before it.
  */
-
-export const ORGANIZATION_NAME = 'E2E Workspace';
 
 export async function registerThroughUi(page: Page, user: TestUser): Promise<void> {
   await page.goto('/register');
@@ -39,36 +36,13 @@ export async function signInAs(
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 30_000 });
 }
 
-/** `POST /v1/organizations` as the context's user; returns the new id. */
-export async function createOrganization(
-  api: APIRequestContext,
-  name = ORGANIZATION_NAME,
-): Promise<string> {
-  const response = await api.post('/api/v1/organizations', { data: { name } });
-  expect(response.status(), `creating the workspace "${name}" should succeed`).toBe(201);
-  const body = (await response.json()) as { id: string };
-  return body.id;
-}
-
-/** A fresh account that already owns a workspace, with a session cookie to match. */
+/** A fresh account the shell opens for, with a session cookie to match. */
 export async function provisionedUser(prefix = 'user') {
   const { api, user, userId } = await signedUpContext(prefix);
-  const organizationId = await createOrganization(api);
-  return { api, user, userId, organizationId };
-}
-
-/** Invites `email` into the organization and returns the invitation id. */
-export async function inviteByApi(
-  api: APIRequestContext,
-  organizationId: string,
-  email: string,
-  role: 'owner' | 'admin' | 'member' = 'member',
-): Promise<string> {
-  const response = await api.post(`/api/v1/organizations/${organizationId}/invitations`, {
-    data: { email, role },
-  });
-  expect(response.status(), `inviting ${email} should succeed`).toBe(201);
-  return ((await response.json()) as { id: string }).id;
+  // flama:begin organizations
+  await createOrganization(api);
+  // flama:end organizations
+  return { api, user, userId };
 }
 
 /**

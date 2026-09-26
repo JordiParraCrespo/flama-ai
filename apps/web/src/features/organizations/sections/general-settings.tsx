@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, toast } from '@flama/design-system-web';
-import { useOrganizations, useUpdateOrganization } from '@flama/frontend-consumer/react';
+import { useOrganizations, useUpdateOrganization } from '@flama/frontend-consumer/organizations';
 import { SectionHead, useErrorMessage } from '@flama/frontend-web';
 import { useTranslation } from 'react-i18next';
 import { OrganizationForm } from '@/features/organizations/forms/organization-form';

@@ -54,6 +54,7 @@ test('annotate accepts every comment syntax', () => {
     ['// flama:begin widget', '// flama:end widget'],
     ['<!-- flama:begin widget -->', '<!-- flama:end widget -->'],
     ['{{- /* flama:begin widget */}}', '{{- /* flama:end widget */}}'],
+    ['{/* flama:begin widget */}', '{/* flama:end widget */}'],
   ]) {
     const lines = annotate('f', [open, 'x', close].join('\n'));
     assert.deepEqual(lines[1].stack.at(-1).ids, ['widget']);

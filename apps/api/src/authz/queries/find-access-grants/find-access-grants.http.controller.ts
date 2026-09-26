@@ -7,7 +7,7 @@ import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
-import { AccessGrantMapper } from '../../authz.mapper';
+import { AccessGrantMapper } from '../../access-grant.mapper';
 import { CurrentAccessScope } from '../../decorators/current-access-scope.decorator';
 import type { AccessGrantEntity } from '../../domain/access-grant.entity';
 import { AccessGrantResponseDto } from '../../dtos/access-grant.response.dto';

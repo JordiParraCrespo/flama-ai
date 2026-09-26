@@ -77,7 +77,7 @@ test('plan refuses a plugin that builds on a shared package the prune takes', ()
 test('plan names unknown apps and plugins instead of guessing', () => {
   const result = plan(manifest, plugins, ['delta'], ['nope']);
   assert.deepEqual(result.problems, [
-    '"delta" is not an app this starter ships',
+    '"delta" is not a feature this starter ships',
     'there is no plugin "nope"',
   ]);
 });

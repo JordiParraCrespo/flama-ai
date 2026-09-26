@@ -1,8 +1,8 @@
 import { expect, type Page, test } from '@playwright/test';
-import { ORGANIZATION_NAME, provisionedUser, reloadFromServer, signInAs } from '../../support/web';
+import { provisionedUser, signInAs } from '../../support/web';
 
 /**
- * The workspace settings screen, end to end.
+ * The settings screen, end to end.
  *
  * Every assertion goes through the real API: a save is followed by a reload, so
  * a test only passes if the value came back from the server rather than from
@@ -24,20 +24,18 @@ async function openSettings(page: Page) {
   await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
 }
 
-test('opens on General and lists every section', async ({ page }) => {
+test('lists every section', async ({ page }) => {
   const { user, api } = await provisionedUser('settings');
   await signInAs(page, user);
   await openSettings(page);
 
   const nav = sectionNav(page);
-  for (const label of ['General', 'Security', 'API & webhooks']) {
+  // flama:begin organizations
+  await expect(nav.getByRole('button', { name: 'General', exact: true })).toBeVisible();
+  // flama:end organizations
+  for (const label of ['Security', 'API & webhooks']) {
     await expect(nav.getByRole('button', { name: label, exact: true })).toBeVisible();
   }
-
-  await expect(page.getByRole('heading', { name: 'General', level: 2 })).toBeVisible();
-  await expect(page.getByLabel('Organisation name')).toHaveValue(ORGANIZATION_NAME, {
-    timeout: 20_000,
-  });
 
   await api.dispose();
 });
@@ -70,43 +68,6 @@ test('survives a warm start with a persisted query cache', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Security', level: 2 })).toBeVisible();
   await expect(page.getByText('This device')).toBeVisible();
   await expect(page.getByText('Something went wrong!')).toBeHidden();
-
-  await api.dispose();
-});
-
-test('General renames the workspace, and the sidebar follows', async ({ page }) => {
-  const { user, api } = await provisionedUser('settingsname');
-  await signInAs(page, user);
-  await openSettings(page);
-
-  await expect(page.getByLabel('Organisation name')).toHaveValue(ORGANIZATION_NAME, {
-    timeout: 20_000,
-  });
-  const nextName = `${ORGANIZATION_NAME} (renamed)`;
-  await page.getByLabel('Organisation name').fill(nextName);
-  await page.getByRole('button', { name: 'Save changes' }).click();
-  // Success is a toast, and only a toast.
-  await expect(page.getByText('Organization settings saved')).toBeVisible();
-
-  await reloadFromServer(page);
-  await expect(page.getByLabel('Organisation name')).toHaveValue(nextName, { timeout: 20_000 });
-  await expect(page.locator('[data-sidebar=header]').getByText(nextName)).toBeVisible();
-
-  await api.dispose();
-});
-
-test('General refuses an empty name before asking the server', async ({ page }) => {
-  const { user, api } = await provisionedUser('settingsempty');
-  await signInAs(page, user);
-  await openSettings(page);
-
-  await expect(page.getByLabel('Organisation name')).toHaveValue(ORGANIZATION_NAME, {
-    timeout: 20_000,
-  });
-  await page.getByLabel('Organisation name').fill('');
-  await page.getByRole('button', { name: 'Save changes' }).click();
-
-  await expect(page.getByText('This field is required')).toBeVisible();
 
   await api.dispose();
 });

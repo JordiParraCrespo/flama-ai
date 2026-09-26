@@ -53,10 +53,11 @@ usage, and an `AGENTS.md` with the rules an agent needs there. Every `CLAUDE.md`
 in the repo is a symlink to the `AGENTS.md` beside it: edit the `AGENTS.md`,
 never the link.
 
-Every app above except `api` is optional. `scripts/starter/features.json`
-lists them with the paths and marked config blocks that go with each one, and
-**`pnpm starter:init`** turns the starter into a project: it asks which apps to
-keep and which plugins to add (or takes `--keep`/`--add`/`--yes` from an agent),
+Every app above except `api` is optional, and so is multi-tenancy (the
+`organizations` feature). `scripts/starter/features.json` lists them with the
+paths and marked config blocks that go with each one, and
+**`pnpm starter:init`** turns the starter into a project: it asks which features
+to keep and which plugins to add (or takes `--keep`/`--add`/`--yes` from an agent),
 then prunes, installs, refreshes the lockfile and checks the result. Asked to
 start or trim a project, run it; there is no dialog to hold beyond those two
 questions. It ends by listing the prose lines that still name what went —
@@ -87,8 +88,10 @@ by those fences.
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
-it back. Six today: `cli`, `docs`, `admin-web`, `admin-mobile`, `qa` and
-`billing`, the one that is a module of the API rather than an app.
+it back. Seven today: `cli`, `docs`, `admin-web`, `admin-mobile`, `qa`,
+`billing`, a module of the API rather than an app, and `organizations`, which
+the starter also ships: the plugin is how a project that pruned it gets it
+back, and the plugins repo fails when it stops reproducing the starter's copy.
 
 ```bash
 pnpm plugin:list                  # what is on offer, and what is installed
@@ -392,9 +395,10 @@ pnpm changeset          # Create a changeset for versioning
   `.agents/rules/frontend-ui.md`; it does not replace them. Fonts are system
   stacks
 - Forms and Zod schemas: `.agents/rules/forms.md`
-- Sign-up creates an account, not a workspace: an org-less account is sent to
-  `/onboarding`, which creates the first organization or accepts a pending
-  invitation. Only `/register` passes the social `sign-up` intent
+- Sign-up creates an account, not a workspace: with organizations, an
+  org-less account is sent to `/onboarding`, which creates the first
+  organization or accepts a pending invitation. Only `/register` passes the
+  social `sign-up` intent
 - `apps/web` must not import runtime values from the `@flama/shared` **root**:
   its CJS build is not tree-shakeable, so the whole graph lands in the bundle.
   Import a narrow subpath (`@flama/shared/schemas/auth`) or fetch from the API.

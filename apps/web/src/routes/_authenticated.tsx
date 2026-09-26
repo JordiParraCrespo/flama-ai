@@ -1,6 +1,9 @@
-import { useOrganizations } from '@flama/frontend-consumer/react';
-import { AppShell, redirectSignedOut } from '@flama/frontend-web';
-import { createFileRoute, Navigate, Outlet } from '@tanstack/react-router';
+import { AppShell, redirectSignedOut, type ShellWorkspace } from '@flama/frontend-web';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
+import type { ComponentType, ReactNode } from 'react';
+// flama:begin organizations
+import { WorkspaceGate } from '@/features/organizations/sections/workspace-gate';
+// flama:end organizations
 import { NAV, USER_MENU_LINKS } from '@/lib/nav';
 
 export const Route = createFileRoute('/_authenticated')({
@@ -8,44 +11,31 @@ export const Route = createFileRoute('/_authenticated')({
   component: AuthenticatedShell,
 });
 
+/** Stands between a signed-in reader and the shell, and names its workspace. */
+type ShellGate = ComponentType<{
+  children: (workspace: ShellWorkspace | undefined) => ReactNode;
+}>;
+
 /**
- * The product shell is for people who have somewhere to work.
- *
- * Registering no longer provisions a workspace, so a signed-in account can
- * legitimately belong to none — and the screens in here are scoped to an
- * organization, which for that account is a refusal. Send them to onboarding,
- * where they create their first workspace or accept the invitation that is
- * waiting for them, instead of letting the app tell them on their first screen
- * that they do not have permission to look at it.
- *
- * The redirect waits for a *settled, successful, empty* list. While the query
- * is in flight — including the background refetch that follows creating a
- * workspace or accepting an invitation, when the cache still holds the `[]`
- * that sent them to onboarding — or if it failed, the shell renders as it
- * always did: guessing "nowhere to work" from an unanswered question would
- * bounce every reader out of the app on a network blip, or straight back to
- * the onboarding screen they just left.
+ * The gates the shell opens through, outermost first. Each may hold the shell
+ * back (with organizations, until the caller has somewhere to work) and may
+ * name the workspace it shows; with none, the shell opens straight away.
  */
+const GATES: ShellGate[] = [
+  // flama:begin organizations
+  WorkspaceGate,
+  // flama:end organizations
+];
+
 function AuthenticatedShell() {
-  const organizations = useOrganizations();
-
-  const settledEmpty =
-    organizations.isSuccess && !organizations.isFetching && organizations.data.length === 0;
-
-  if (settledEmpty) return <Navigate to="/onboarding" replace />;
-
-  // The shell names the first organization the caller belongs to. Keeping it
-  // on the same list query as General Settings means a saved name or logo is
-  // reflected here immediately from the query cache.
-  const organization = organizations.data?.[0];
-
-  return (
-    <AppShell
-      nav={NAV}
-      userMenuLinks={USER_MENU_LINKS}
-      workspace={organization ? { name: organization.name, logo: organization.logo } : undefined}
-    >
+  const shell = (workspace?: ShellWorkspace) => (
+    <AppShell nav={NAV} userMenuLinks={USER_MENU_LINKS} workspace={workspace}>
       <Outlet />
     </AppShell>
   );
+  const open = GATES.reduceRight<(workspace?: ShellWorkspace) => ReactNode>(
+    (inner, Gate) => (outer) => <Gate>{(named) => inner(named ?? outer)}</Gate>,
+    shell,
+  );
+  return open();
 }

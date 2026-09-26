@@ -9,13 +9,28 @@
  *      block went with them, op 1 with the body the plugin carries for that;
  *   3. the entry's own `json` edits, run backwards (`applyJsonEdits`).
  *
+ * A feature the starter still ships has no anchors of its own: its fences are
+ * the only mark it leaves, and they are what comes back. The plugin carries
+ * the starter's copy of each file it has a block in, and `replaySnapshots`
+ * merges the blocks onto the project's copy — op 1 without the slot.
+ *
  * Plus the prune's own edit over what it copies (`trimCopied`), because a
  * plugin's files come from a starter that had every feature. Every read of a
  * marker goes through `scripts/lib/markers.mjs` and every JSON edit through
  * `scripts/lib/json-text.mjs`, whose deletes and inserts come in pairs, so a
  * removal — which is the pruner — is an install backwards.
  */
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { insertJsonEntry, insertJsonValue, renderJsonEntry } from '../lib/json-text.mjs';
@@ -77,7 +92,7 @@ export function projectFeatures() {
  * produces the same file a hand-written entry would.
  */
 export function featureEntry(manifest, landed) {
-  const { title, summary, identifiers, paths, requires, scripts, json, regenerate } =
+  const { title, summary, identifiers, paths, keeps, requires, scripts, json, regenerate } =
     manifest.feature;
   return {
     title,
@@ -90,6 +105,7 @@ export function featureEntry(manifest, landed) {
     // The paths that actually landed, which is all of them unless a file was
     // skipped for want of the feature whose tree it lives in.
     paths: landed ?? paths,
+    ...(keeps ? { keeps } : {}),
     ...(requires?.length ? { requires } : {}),
     ...(scripts?.length ? { scripts } : {}),
     ...(json?.length ? { json } : {}),
@@ -309,6 +325,57 @@ export function insertBlocks(manifest, alreadyTouched, known, dryRun) {
 }
 
 /**
+ * Op 1 for a feature the starter ships: its blocks, replayed from the starter.
+ *
+ * `snapshot` is the file as the starter has it. Trimmed to this project's
+ * features it is what the file should become (`ours`); without this plugin's
+ * blocks as well it is what the prune left (`base`). A three-way merge puts
+ * the difference onto the project's copy, so a file the project has changed
+ * since still takes the blocks, and one changed in the same place stops the
+ * install rather than guessing.
+ */
+export function replaySnapshots(manifest, known, dryRun) {
+  for (const snapshot of manifest.snapshots ?? []) {
+    if (skipMissing(snapshot, 'blocks')) continue;
+    const source = join(manifest.dir, snapshot.source);
+    if (!existsSync(source)) fail(`${manifest.id}: snapshot "${snapshot.source}" is missing`);
+    const content = readText(snapshot.file);
+    if (grammar(() => markerIds(snapshot.file, content)).has(manifest.id)) {
+      fail(`${snapshot.file} already carries a "${manifest.id}" block`);
+    }
+    const ours = trimText(manifest, snapshot.file, readFileSync(source, 'utf8'), known, false);
+    const base = grammar(() => dropBlocks(snapshot.file, ours, new Set([manifest.id]))) ?? ours;
+    const merged = mergeThreeWay(snapshot.file, content, base, ours);
+    console.log(`  blocks ${snapshot.file} (from the starter's copy)`);
+    writeText(snapshot.file, merged, dryRun);
+  }
+}
+
+/** `git merge-file`: `base → ours` applied to `current`, or a refusal. */
+function mergeThreeWay(file, current, base, ours) {
+  const dir = mkdtempSync(join(tmpdir(), 'flama-merge-'));
+  try {
+    const paths = ['current', 'base', 'ours'].map((name) => join(dir, name));
+    for (const [index, text] of [current, base, ours].entries()) {
+      writeFileSync(paths[index], text);
+    }
+    try {
+      return execFileSync('git', ['merge-file', '-p', ...paths], { encoding: 'utf8' });
+    } catch (error) {
+      if (typeof error.status === 'number' && error.status > 0) {
+        fail(
+          `${file}: the project changed the lines the plugin's blocks go between; ` +
+            'merge by hand from the starter, or remove the conflicting edit first',
+        );
+      }
+      throw error;
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/**
  * Every text file under the copied `paths` that carries a block for a feature
  * this project does not have, left as the prune would have left it.
  */
@@ -347,6 +414,8 @@ export function applyJsonEdits(manifest, dryRun) {
   for (const edit of manifest.feature.json ?? []) {
     const target = join(ROOT, edit.file);
     if (!existsSync(target)) {
+      // The file lives in a tree this project pruned — the consumer package,
+      // gone with the last app that needed it — so the edit has nothing to say.
       if (edit.needs) {
         console.log(`  skip   ${edit.file} (no ${edit.needs} in this project)`);
         continue;
