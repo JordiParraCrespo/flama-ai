@@ -19,8 +19,8 @@
  * A marker can name several features — `flama:begin mobile|mobile-showcase` —
  * and its block goes only when all of them go.
  *
- *   node scripts/starter/prune.mjs --without mobile,runner,mcp
- *   node scripts/starter/prune.mjs --keep web,mcp,e2e
+ *   node scripts/starter/prune.mjs --without mobile,runner,web-showcase
+ *   node scripts/starter/prune.mjs --keep web,e2e
  *   node scripts/starter/prune.mjs --check        # CI: manifest still honest?
  *   node scripts/starter/prune.mjs --list
  *
