@@ -28,7 +28,6 @@ module file. [`ARCHITECTURE.md`](./ARCHITECTURE.md) is the layer model and the
 ## Depends on / used by
 
 Depends on `@flama/shared`, `@flama/auth`, `@flama/backend-*` and
-`@flama/backend-i18n` (with `@flama/translations`). Used by every app and
-by `apps/runner`, which it delegates long-lived work to.
+`@flama/backend-i18n` (with `@flama/translations`). Used by every app.
 
 See [`AGENTS.md`](./AGENTS.md) for the conventions.

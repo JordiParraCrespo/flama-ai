@@ -50,27 +50,6 @@
       "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
       "paths": ["apps/mobile-showcase"]
     },
-    "runner": {
-      "title": "Go runner service",
-      "summary": "apps/runner + packages/go/* — Go service template (REST + WS, API keys) the API delegates long-lived work to",
-      "identifiers": [
-        "apps/runner",
-        "@flama/runner",
-        "@flama/go-",
-        "go.work",
-        "flama-runner",
-        "RUNNER_"
-      ],
-      "paths": [
-        "apps/runner",
-        "packages/go",
-        "go.work",
-        ".golangci.yml",
-        ".github/workflows/runner.yml",
-        ".agents/rules/go.md",
-        "helm/flama/templates/runner-deployment.yaml"
-      ]
-    },
     "e2e": {
       "title": "End-to-end tests",
       "summary": "e2e/ — Playwright suites against the running API and web app",

@@ -979,30 +979,6 @@ importers:
         specifier: ~6.0.3
         version: 6.0.3
 
-  apps/runner:
-    devDependencies:
-      '@flama/go-auth':
-        specifier: workspace:*
-        version: link:../../packages/go/auth
-      '@flama/go-config':
-        specifier: workspace:*
-        version: link:../../packages/go/config
-      '@flama/go-core':
-        specifier: workspace:*
-        version: link:../../packages/go/core
-      '@flama/go-health':
-        specifier: workspace:*
-        version: link:../../packages/go/health
-      '@flama/go-httpx':
-        specifier: workspace:*
-        version: link:../../packages/go/httpx
-      '@flama/go-postgres':
-        specifier: workspace:*
-        version: link:../../packages/go/postgres
-      '@flama/go-ws':
-        specifier: workspace:*
-        version: link:../../packages/go/ws
-
   apps/web:
     dependencies:
       '@flama/api-client':
@@ -2115,48 +2091,6 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
-
-  packages/go/auth:
-    devDependencies:
-      '@flama/go-core':
-        specifier: workspace:*
-        version: link:../core
-      '@flama/go-httpx':
-        specifier: workspace:*
-        version: link:../httpx
-
-  packages/go/config: {}
-
-  packages/go/core: {}
-
-  packages/go/health:
-    devDependencies:
-      '@flama/go-core':
-        specifier: workspace:*
-        version: link:../core
-      '@flama/go-httpx':
-        specifier: workspace:*
-        version: link:../httpx
-
-  packages/go/httpx:
-    devDependencies:
-      '@flama/go-core':
-        specifier: workspace:*
-        version: link:../core
-
-  packages/go/postgres: {}
-
-  packages/go/ws:
-    devDependencies:
-      '@flama/go-auth':
-        specifier: workspace:*
-        version: link:../auth
-      '@flama/go-core':
-        specifier: workspace:*
-        version: link:../core
-      '@flama/go-httpx':
-        specifier: workspace:*
-        version: link:../httpx
 
   packages/shared:
     dependencies:

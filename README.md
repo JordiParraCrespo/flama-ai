@@ -13,7 +13,6 @@ below is optional except the API — keep what you're building, prune the rest
 | `apps/api`              | NestJS REST API — Domain-Driven Hexagon architecture, DB-backed RBAC, queues, caching, storage, email |
 | `apps/web`               | Consumer Vite + TanStack Router SPA                                       |
 | `apps/mobile`            | Consumer Expo app — NativeWind, i18next, SecureStore                     |
-| `apps/runner`            | Go service template (REST + WS, API keys) the API delegates long-lived work to |
 | `apps/web-showcase`      | Next.js showcase for the web design system                                |
 | `apps/mobile-showcase`   | Expo showcase for the mobile design system                                |
 
@@ -27,6 +26,7 @@ added when a project wants them, with `pnpm plugin:add <id>`:
 | --------------- | --------------------------------------------------------------------- |
 | `cli`           | `apps/cli` — the `flama` command line, driven by scoped API tokens     |
 | `mcp`           | `apps/mcp` — MCP server over the API, and the OAuth provider its clients sign in through |
+| `runner`        | `apps/runner` + `packages/go/*` — Go service template (REST + WS, API keys) the API delegates long-lived work to |
 | `docs`          | `apps/docs` — the Docusaurus site                                     |
 | `admin-web`     | `apps/admin-web` — control plane for users, roles and permissions     |
 | `admin-mobile`  | `apps/admin-mobile` — the Expo control plane                          |
@@ -49,7 +49,6 @@ added when a project wants them, with `pnpm plugin:add <id>`:
 | `packages/frontend/web`           | What both Vite apps share below their routes, by concern           |
 | `packages/frontend/mobile`        | What both Expo apps share below their routes                       |
 | `packages/backend/*`              | Cross-cutting NestJS toolkit: errors/filters (`core`), DDD building blocks (`ddd`), authorization kernel (`authz`), Redis cache (`cache`), queues (`queue`), file storage (`storage`), email (`email`), i18n (`i18n`) |
-| `packages/go/*`                   | Cross-cutting Go toolkit for `apps/runner`: `core`, `config`, `httpx`, `auth`, `health`, `ws`, `postgres` |
 | `packages/frontend/design-system/web`      | shadcn/ui + Base UI + Tailwind v4 components                       |
 | `packages/frontend/design-system/mobile`   | NativeWind + rn-primitives React Native components                 |
 | `packages/frontend/api-client`    | Auto-generated typed client from Swagger                           |
@@ -131,7 +130,6 @@ second implementation of it.
 | Web                | http://localhost:3000          |
 | API                | http://localhost:3001          |
 | API Docs (Swagger) | http://localhost:3001/api/docs |
-| Runner             | http://localhost:3006          |
 
 `pnpm plugin:add admin-web` serves the control plane on `:3003`, and
 `pnpm plugin:add docs` the Docusaurus site on `:3002`.
@@ -140,7 +138,6 @@ second implementation of it.
 
 - **Monorepo**: Turborepo + pnpm
 - **Backend**: NestJS (Domain-Driven Hexagon architecture), TypeORM, PostgreSQL, Redis, BullMQ
-- **Go service template**: `apps/runner` — `net/http`, API keys, the same hexagon layering as the API
 - **Web**: Vite + TanStack Router, Tailwind v4, shadcn/ui
 - **Mobile**: Expo, NativeWind + rn-primitives
 - **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
