@@ -105,7 +105,7 @@ Unattended, or from an agent — no `--add` means the same default the questions
 offer (`docs`), and `--add ''` means none:
 
 ```bash
-pnpm starter:init --keep web,e2e --yes
+pnpm starter:init --keep web,e2e,organizations --yes
 ```
 
 The same two directions stay available afterwards, one feature at a time:

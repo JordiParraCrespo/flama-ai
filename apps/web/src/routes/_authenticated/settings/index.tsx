@@ -23,7 +23,7 @@ const SECTIONS = [
 
 type SectionKey = (typeof SECTIONS)[number]['key'];
 
-/** What the heading says under the title; with organizations, the workspace. */
+/** What the heading says under the title: the workspace with organizations, else the account. */
 const SUBTITLES: ComponentType[] = [
   // flama:begin organizations
   WorkspaceSettingsSubtitle,
@@ -72,7 +72,7 @@ function SettingsPage() {
     <>
       <PageHead
         title={t('settings.title')}
-        sub={Subtitle ? <Subtitle /> : t('settings.subtitleFallback')}
+        sub={Subtitle ? <Subtitle /> : t('settings.subtitleAccount')}
       />
 
       <SectionNav

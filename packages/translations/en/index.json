@@ -1020,6 +1020,7 @@
     },
     "subtitle": "Workspace-wide configuration for {{organization}}.",
     "subtitleFallback": "Workspace-wide configuration.",
+    "subtitleAccount": "Your account, its security and its API access.",
     "title": "Settings"
   },
   "table": {

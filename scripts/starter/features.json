@@ -159,7 +159,8 @@
             }
           }
         }
-      ]
+      ],
+      "regenerate": ["generate:api-client", "generate:openapi"]
     }
   },
   "shared": {

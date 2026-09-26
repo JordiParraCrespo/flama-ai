@@ -2,9 +2,9 @@
 /**
  * Turn the starter into your project, in one command.
  *
- *   pnpm starter:init                             # asks, then shows the plan
- *   pnpm starter:init --keep web,e2e --yes        # the same defaults, unattended
- *   pnpm starter:init --keep web --add '' --yes   # nothing added
+ *   pnpm starter:init                                      # asks, then shows the plan
+ *   pnpm starter:init --keep web,e2e,organizations --yes   # the same defaults, unattended
+ *   pnpm starter:init --keep web --add '' --yes            # nothing added
  *
  * Two questions decide a project: which of the apps the starter ships to
  * keep, and which plugins to add. This asks both (or reads `--keep` and
