@@ -133,15 +133,11 @@ with before it touches anything.
   already covers — see `.agents/rules/frontend-ui.md`
 - Conventional commits enforced via commitlint
 - Independent versioning per package via Changesets
-- No git hooks — CI enforces quality
-- CI runs what a pull request touches, not the whole pipeline:
-  `scripts/ci/affected.mjs` asks Turborepo which packages the diff affects
-  (a change in `packages/shared` reaches every app that imports it), and the
-  jobs build, test and package only those. A push to `main`, or a change to a
-  file no package owns (the workflow, the lockfile, `docker/`, `scripts/`),
-  runs everything. A new Docker image is a row in that script's `IMAGES`; a
-  new root-level file every package relies on is a pattern in its
-  `GLOBAL_PATHS`
+- Run **`pnpm ci:local`** before pushing: it is pull request CI's Check job,
+  run here over what the branch affects, and the `pre-push` git hook refuses
+  a commit it has not passed. Require the `CI` check. How CI decides what runs,
+  and where a new image or root-level file is declared, is
+  `scripts/ci/README.md`
 
 ### Backend (`apps/api` + `packages/backend/*`)
 
@@ -355,6 +351,7 @@ pnpm build              # Build everything
 pnpm test               # Unit tests
 pnpm test:integration   # Integration tests (needs Docker)
 pnpm check              # Biome lint + format
+pnpm ci:local           # The CI suite, locally, over what this branch affects — run before pushing
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
 pnpm check:flags        # Feature flags: none past expiry, none declared but unread

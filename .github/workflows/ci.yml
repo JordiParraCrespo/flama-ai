@@ -1,24 +1,35 @@
 name: CI
 
+# What runs is decided by scripts/ci/affected.mjs; scripts/ci/README.md is
+# the whole picture. The steps of the Check job after `scope` are also what
+# `pnpm ci:local` runs, read from this file, so each one is a plain `run:`
+# over $AFFECTED_PACKAGES / $AFFECTED_FILTERS — no `if:`, no expressions.
+# The `CI` job at the end is the one check to require.
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+    # `ready_for_review` because a draft skips CI: its author iterates locally.
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  changes:
-    name: What changed
+  check:
+    name: Check
     runs-on: gha-vm
+    if: github.event.pull_request.draft != true
     outputs:
       scope: ${{ steps.scope.outputs.scope }}
       packages: ${{ steps.scope.outputs.packages }}
-      filters: ${{ steps.scope.outputs.filters }}
       images: ${{ steps.scope.outputs.images }}
+    # One job rather than one per concern: every job pays a checkout, a
+    # toolchain and an install before it does anything, which on a pull request
+    # cost more than the checks themselves.
     steps:
       # The whole history, so Turborepo can diff a pull request against its
       # base branch. The repository is small enough for this to cost seconds.
@@ -30,27 +41,9 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      # Which packages a pull request touches, and therefore which tests and
-      # images it needs. A push to main, or a change to a file no package owns
-      # (this workflow, the lockfile, docker/), runs everything; see the script.
-      - id: scope
-        run: node scripts/ci/affected.mjs
-
-  lint:
-    name: Lint
-    runs-on: gha-vm
-    needs: changes
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          cache: pnpm
       # flama:begin runner
-      # `pnpm arch` runs through Turborepo, whose ^build edge now reaches
-      # the Go packages, so the toolchain has to be present here as well.
+      # Turborepo builds, tests and checks the Go modules through their
+      # package.json scripts, so the toolchain has to be present.
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.work
@@ -59,7 +52,17 @@ jobs:
             packages/go/*/go.sum
       # flama:end runner
       - run: pnpm install --frozen-lockfile
-      - run: pnpm check
+      # Which packages this run touches and which images it builds. A push to
+      # main, or a change to a file no package owns (this workflow, the
+      # lockfile, docker/), runs everything; see the script. Every step below
+      # is `pnpm ci:local`'s too.
+      - id: scope
+        run: node scripts/ci/affected.mjs
+      # `biome ci` fails on anything unformatted or unfixed; `pnpm check`
+      # writes the fixes instead, which is what a contributor runs.
+      - name: Biome
+        run: pnpm exec biome ci .
+      # The repo's own GritQL lint plugins, over their fixtures.
       - run: pnpm check:biome-plugins
       # flama:begin web|web-showcase|mobile|mobile-showcase
       # The design-system linter (`@shadcn/lint` through oxlint, scoped to its
@@ -72,20 +75,15 @@ jobs:
         run: pnpm lint:design
       # flama:end web|web-showcase|mobile|mobile-showcase
       # flama:plugins design-lint
-      # Empty filters mean "every package" to Turborepo, so an empty affected
-      # list has to skip the step rather than pass nothing.
-      - name: Architecture boundaries
-        if: needs.changes.outputs.packages != '[]'
-        run: pnpm turbo run arch ${{ needs.changes.outputs.filters }}
       # The API module contract: the closed set of layer directories, the file
       # names each admits, use-case slice completeness and the line caps.
-      # Import rules are dependency-cruiser's, above.
+      # Import rules are dependency-cruiser's, below.
       - name: API structure
         run: pnpm check:api-structure
       # flama:begin web|mobile
       # The frontend layout contract: feature names, kind directories, the
       # route line cap, no copies of what a kit ships, and the docs every
-      # package carries. Import rules are dependency-cruiser's, above.
+      # package carries. Import rules are dependency-cruiser's, below.
       - name: Frontend structure
         run: pnpm check:structure
       # flama:end web|mobile
@@ -103,66 +101,44 @@ jobs:
       # initialisation, because removing a plugin is a prune.
       - name: Starter manifest
         run: pnpm starter:check
-
-  # flama:begin runner
-  go:
-    name: Go (go.work)
-    runs-on: gha-vm
-    needs: changes
-    # Every Go module is a workspace package, so Turborepo's affected list
-    # names them; nothing here can change without one of them changing.
-    if: contains(needs.changes.outputs.packages, '"@flama/go-') || contains(needs.changes.outputs.packages, '"@flama/runner"')
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
-        with:
-          go-version-file: go.work
-          cache-dependency-path: |
-            apps/runner/go.sum
-            packages/go/*/go.sum
-      # The workspace root is not a module, so `./...` does not resolve
-      # there; the module-path pattern spans every module in go.work.
-      - run: go vet github.com/jordiparracrespo/flama-ai/...
-      # golangci-lint needs directory patterns, one per module; `go list -m`
-      # in workspace mode lists exactly the modules go.work declares.
-      - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.5.0
-      - run: golangci-lint run $(go list -m -f '{{.Dir}}/...')
-      # The gha-vm runners ship no C compiler, and -race needs cgo; run the
-      # race detector locally (make test-race) and plain tests here.
-      - run: go test -count=1 github.com/jordiparracrespo/flama-ai/...
-      - run: go build -trimpath ./cmd/server
-        working-directory: apps/runner
-  # flama:end runner
-
-  test:
-    name: Test
-    runs-on: gha-vm
-    needs: changes
-    # Runs beside Lint rather than behind it: nothing here depends on Biome
-    # passing, and the gate cost every run two and a half serial minutes.
-    if: needs.changes.outputs.packages != '[]'
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          cache: pnpm
-      # flama:begin runner
-      # Turborepo builds and tests apps/runner through its package.json
-      # scripts, so the Go toolchain has to be present here too.
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
-        with:
-          go-version-file: go.work
-          cache-dependency-path: |
-            apps/runner/go.sum
-            packages/go/*/go.sum
-      # flama:end runner
-      - run: pnpm install --frozen-lockfile
       # The filters name the affected packages; `dependsOn: ["^build"]` still
-      # builds what they import. Empty on main, where everything runs.
-      - run: pnpm turbo run build ${{ needs.changes.outputs.filters }}
-      - run: pnpm turbo run test ${{ needs.changes.outputs.filters }}
+      # builds what they import. Empty on main, where everything runs — and
+      # empty filters mean "every package" to Turborepo, so an empty affected
+      # list has to skip the step rather than pass nothing.
+      - name: Build
+        run: |
+          [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run build $AFFECTED_FILTERS
+      # After the build, whose outputs dependency-cruiser resolves the
+      # @flama/* imports through.
+      - name: Architecture boundaries
+        run: |
+          [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run arch $AFFECTED_FILTERS
+      - name: Unit tests
+        run: |
+          [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run test $AFFECTED_FILTERS
+      # flama:begin runner
+      # `go test` and `go build` ran above as the modules' Turborepo tasks;
+      # the linters are the part with no package script. The gha-vm runners
+      # ship no C compiler, and -race needs cgo; run the race detector locally
+      # (make test-race).
+      - name: Go vet and lint
+        run: |
+          [[ "$AFFECTED_PACKAGES" == *'"@flama/go-'* || "$AFFECTED_PACKAGES" == *'"@flama/runner"'* ]] || exit 0
+          # The workspace root is not a module, so `./...` does not resolve
+          # there; the module-path pattern spans every module in go.work.
+          go vet github.com/jordiparracrespo/flama-ai/...
+          # A runner installs the pinned linter; a workstation is asked to.
+          if ! command -v golangci-lint > /dev/null; then
+            if [[ -z "${GITHUB_ACTIONS:-}" ]]; then
+              echo "golangci-lint is not installed: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.5.0"
+              exit 1
+            fi
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.5.0
+          fi
+          # golangci-lint needs directory patterns, one per module; `go list -m`
+          # in workspace mode lists exactly the modules go.work declares.
+          golangci-lint run $(go list -m -f '{{.Dir}}/...')
+      # flama:end runner
       # flama:begin web
       # What a first-time visitor downloads before anything renders, against a
       # committed budget. Vite's own chunk warning prints and passes.
@@ -172,10 +148,8 @@ jobs:
       # Which SPAs those are is decided inside the block, next to the filter
       # that builds them, so a plugin that adds an SPA adds both in one place.
       - name: First-load budgets
-        env:
-          PACKAGES: ${{ needs.changes.outputs.packages }}
         run: |
-          changed() { [[ "$PACKAGES" == *"\"$1\""* ]]; }
+          changed() { [[ "$AFFECTED_PACKAGES" == *"\"$1\""* ]]; }
           filters=()
           # flama:begin web
           if changed @flama/web; then filters+=(--filter=@flama/web); fi
@@ -190,10 +164,10 @@ jobs:
   test-integration:
     name: Integration Tests
     runs-on: gha-vm
-    needs: changes
+    needs: check
     # apps/api is the only package with an integration suite, and Turborepo's
     # affected list already includes it whenever one of its dependencies moved.
-    if: contains(needs.changes.outputs.packages, '"@flama/api"')
+    if: contains(needs.check.outputs.packages, '"@flama/api"')
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -219,11 +193,11 @@ jobs:
   test-e2e:
     name: End-to-End Tests (API)
     runs-on: gha-vm
-    needs: changes
+    needs: check
     # The suite drives the API over HTTP and depends on nothing else in the
     # workspace, so it runs when the API (or one of its dependencies, which
     # the affected list folds into it) or the suite itself changed.
-    if: contains(needs.changes.outputs.packages, '"@flama/api"') || contains(needs.changes.outputs.packages, '"@flama/e2e"')
+    if: contains(needs.check.outputs.packages, '"@flama/api"') || contains(needs.check.outputs.packages, '"@flama/e2e"')
     # The same Postgres and Redis `pnpm docker:up` starts locally, as service
     # containers: this runner has the Docker daemon but not the `docker
     # compose` plugin, and the ports and credentials below are the ones
@@ -315,35 +289,30 @@ jobs:
     name: Build Docker Images
     runs-on: gha-vm
     needs:
-      - changes
-      # Lint no longer gates the test jobs, so it is listed here on its own:
-      # an image still waits for Biome, the architecture rules and the
-      # starter manifest to pass.
-      - lint
-      - test
+      - check
       - test-integration
       # flama:begin e2e
       - test-e2e
       # flama:end e2e
-      # flama:begin runner
-      - go
-      # flama:end runner
     # `needs` alone would skip this job whenever one of the test jobs was
     # skipped for having nothing to do; wait for them all, then require that
-    # none failed and that some image is affected at all.
+    # none failed and that some image is selected at all. `check` has to have
+    # succeeded outright: skipped (a draft), its outputs are empty, not `[]`.
+    # The selection is event-gated; see selectImages in the script.
     if: |
       !cancelled()
+      && needs.check.result == 'success'
       && !contains(needs.*.result, 'failure')
       && !contains(needs.*.result, 'cancelled')
-      && needs.changes.outputs.images != '[]'
+      && needs.check.outputs.images != '[]'
     permissions:
       contents: read
       packages: write
     strategy:
       # The apps whose package (or a dependency of it) changed, from the
-      # mapping in scripts/ci/affected.mjs; every app on main.
+      # mapping in scripts/ci/affected.mjs, as selectImages narrows them.
       matrix:
-        app: ${{ fromJSON(needs.changes.outputs.images) }}
+        app: ${{ fromJSON(needs.check.outputs.images) }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Lowercase repository name
@@ -369,3 +338,30 @@ jobs:
             ghcr.io/${{ env.REPO_LC }}/flama-${{ matrix.app }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # The one check branch protection needs to require. It fails closed: Check
+  # must have succeeded, and every other job succeeded or had nothing to do
+  # (skipped). A draft skips this job too, so it never reports green for a
+  # run that did nothing.
+  ci:
+    name: CI
+    runs-on: gha-vm
+    if: always() && github.event.pull_request.draft != true
+    needs:
+      - check
+      - test-integration
+      # flama:begin e2e
+      - test-e2e
+      # flama:end e2e
+      - build-images
+    steps:
+      - name: Check passed, every other job passed or had nothing to do
+        env:
+          CHECK: ${{ needs.check.result }}
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "check: $CHECK; all: $RESULTS"
+          [[ "$CHECK" == success ]] || exit 1
+          for result in $RESULTS; do
+            [[ "$result" == success || "$result" == skipped ]] || exit 1
+          done

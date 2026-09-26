@@ -6,6 +6,7 @@
     "node": ">=22.22.2"
   },
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
@@ -17,8 +18,9 @@
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:api-structure": "node scripts/check-api-structure.mjs && node --test scripts/check-api-structure.test.mjs",
     "check:structure": "node scripts/check-frontend-structure.mjs && node --test scripts/check-frontend-structure.test.mjs",
+    "ci:local": "node scripts/ci/local.mjs",
     "check:flags": "node --no-warnings scripts/check-feature-flags.mjs && node --no-warnings --test scripts/check-feature-flags.test.mjs",
-    "test:scripts": "node --test scripts/lib/*.test.mjs scripts/plugins/*.test.mjs",
+    "test:scripts": "node --test scripts/lib/*.test.mjs scripts/plugins/*.test.mjs scripts/ci/*.test.mjs",
     "plugin:add": "node scripts/plugins/plugin.mjs add",
     "plugin:remove": "node scripts/plugins/plugin.mjs remove",
     "plugin:list": "node scripts/plugins/plugin.mjs list",
@@ -48,7 +50,8 @@
     "@shadcn/lint": "0.1.0",
     "oxlint": "1.83.0",
     "turbo": "^2.10.7",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "yaml": "2.9.1"
   },
   "pnpm": {
     "overrides": {

@@ -152,7 +152,7 @@ second implementation of it.
 - **DI**: InversifyJS (frontend), NestJS (backend)
 - **Testing**: Vitest, Testcontainers, Playwright (`e2e`; the `qa` pack is a plugin)
 - **Linting/formatting**: Biome, plus a design-system usage linter (oxlint) for `apps/web` and `apps/mobile`
-- **CI/CD**: GitHub Actions — a pull request runs only the packages its diff affects, with a full run on `main`
+- **CI/CD**: GitHub Actions (`.github/workflows/ci.yml`) over the packages a change affects; `pnpm ci:local` runs the same checks before a push
 - **Deployment**: Docker, Helm (K8s)
 
 ## Scripts
@@ -166,6 +166,7 @@ pnpm test:e2e             # Run the Playwright e2e suite
 pnpm lint                 # Lint all code
 pnpm arch                 # Check architecture boundaries (apps/api and the frontend, via dependency-cruiser)
 pnpm check                # Biome check + fix
+pnpm ci:local             # Pull request CI's checks, locally, over what this branch affects
 pnpm docker:dev           # Start dev infrastructure
 pnpm docker:dev:down      # Stop dev infrastructure
 pnpm docker:prod          # Start production stack
