@@ -36,8 +36,8 @@ imports `pgx` directly.
 ## How to run it
 
 ```bash
-pnpm --filter @flama/go-postgres test
-pnpm --filter @flama/go-postgres lint
+go test -count=1 ./...
+golangci-lint run ./...
 ```
 
 ## Depends on / used by

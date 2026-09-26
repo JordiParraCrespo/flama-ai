@@ -9,7 +9,7 @@ before the push, and CI confirms it.
 
 | Job | Runs when |
 |---|---|
-| **Check**: Biome, the contracts, build, arch, unit tests, Go lint, bundle budgets | Every run, over the affected packages. A draft pull request skips CI until it is marked ready. |
+| **Check**: Biome, the contracts, build, arch, unit tests, bundle budgets | Every run, over the affected packages. A draft pull request skips CI until it is marked ready. |
 | **Integration Tests** | `@flama/api` is affected. |
 | **End-to-End Tests (API)** | `@flama/api` or `@flama/e2e` is affected. |
 | **Build Docker Images** | On a push to `main`, in a merge queue, or with the `ci:full` label: every affected image. On any other pull request: only an image whose own `Dockerfile` changed, or all of them if `.dockerignore` changed. |
@@ -21,8 +21,16 @@ workflow, the lockfile, `docker/`, `scripts/`, the patterns in
 `GLOBAL_PATHS`) widens the run to every package. A push to `main` always
 runs every package.
 
-A new Docker image is a row in `IMAGES`. A new root-level file every package
-relies on is a pattern in `GLOBAL_PATHS`.
+The images are read off the tree: `IMAGES` is every `apps/<app>/Dockerfile`,
+keyed to that app's package, so an app brings its image by having a
+Dockerfile and takes it along when it is removed. A new root-level file
+every package relies on is a pattern in `GLOBAL_PATHS`; a pattern that
+matches nothing in this repo costs nothing.
+
+Check is Node's: one toolchain, one install. Work that needs another
+toolchain is a workflow file of its own beside `ci.yml`, which arrives and
+leaves with the code it checks; it is not part of `pnpm ci:local`, and to
+block a merge it is required alongside `CI`.
 
 ## Running it locally
 

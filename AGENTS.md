@@ -2,9 +2,9 @@
 
 ## Project overview
 
-Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. It
-ships 6 apps and 15 shared packages; six more apps and Stripe billing are
-available as plugins.
+Flama is a full-stack monorepo boilerplate built with Turborepo + pnpm. The
+tree below is what it ships; more apps and Stripe billing are available as
+plugins (see [Plugins](#plugins)).
 
 ## Monorepo structure
 
@@ -87,7 +87,7 @@ by those fences.
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
-it back. Eight today: `cli`, `mcp`, `docs`, `admin-web`, `admin-mobile`, `qa`,
+it back: `cli`, `mcp`, `docs`, `admin-web`, `admin-mobile`, `qa`,
 `billing`, a module of the API rather than an app, and `organizations`, which
 the starter also ships: the plugin is how a project that pruned it gets it
 back, and the plugins repo fails when it stops reproducing the starter's copy.
@@ -138,7 +138,7 @@ with before it touches anything.
 - Run **`pnpm ci:local`** before pushing: it is pull request CI's Check job,
   run here over what the branch affects, and the `pre-push` git hook refuses
   a commit it has not passed. Require the `CI` check. How CI decides what runs,
-  and where a new image or root-level file is declared, is
+  how an image is picked up and where a root-level file is declared, is
   `scripts/ci/README.md`
 
 ### Backend (`apps/api` + `packages/backend/*`)

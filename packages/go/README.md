@@ -21,23 +21,21 @@ Dependency flow: `core` ← `httpx` ← `health`, `auth` ← `ws`; `config` and
 
 ## How Turborepo sees them
 
-Every module has a `package.json` naming it `@flama/go-<module>` with
-`build`, `lint` and `test` scripts that call `go` directly, and declares the
-modules it imports as `workspace:*` devDependencies. That declaration is
-what gives Turborepo the graph: `apps/runner` lists all seven, so
-`turbo run build --filter=@flama/runner` builds them first, `--affected`
-re-runs dependents when a module changes, and a change in `core`
-invalidates the cache of everything above it while `config` stays cached.
-The per-package `turbo.json` adds `go.work` (and `.golangci.yml` for lint)
-to the hashed inputs, since adding a module changes what `./...` resolves
-to. Library builds produce no files; only the runner's `dist/**` is cached.
+Every module has a `package.json` naming it `@flama/go-<module>` and
+declaring the modules it imports as `workspace:*` devDependencies. That
+declaration is what gives Turborepo the graph: `apps/runner` lists all
+seven, so `--affected` counts the runner as changed when a module it
+imports changes, which is what rebuilds its image. The only scripts are
+`clean` and the runner's `dev`: no `build`, `lint` or `test`, so the Node pipeline (`pnpm build`,
+`pnpm test`, the Check job) never needs a Go toolchain. Go is built, vetted,
+linted and tested by `go` itself, through the Makefile below locally and
+`.github/workflows/runner.yml` in CI.
 
 ## Commands
 
 ```bash
-pnpm turbo run build test --filter='./packages/go/*'   # through Turborepo
-make -C packages/go test                               # whole workspace, from go.work
-make -C packages/go tidy                               # go mod tidy for every module
+make -C packages/go build vet lint test   # whole workspace, from go.work
+make -C packages/go tidy                  # go mod tidy for every module
 ```
 
 The repo root is not a module, so `./...` does not resolve there. Use the
@@ -50,9 +48,8 @@ the Makefile, which derives directory patterns from `go list -m`.
    `github.com/jordiparracrespo/flama-ai/packages/go/<name>`, plus a
    `require` and a relative `replace` for every sibling it imports, transitively.
 2. Add it to `use (...)` in the root `go.work`.
-3. `package.json` named `@flama/go-<name>` with the three scripts and the
-   sibling modules as `workspace:*` devDependencies; copy a sibling's
-   `turbo.json`.
+3. `package.json` named `@flama/go-<name>` with the sibling modules as
+   `workspace:*` devDependencies; copy a sibling's.
 4. `pnpm install` to refresh the lockfile.
 5. Consumers add the module to their `go.mod` (require + replace) and to
    their `package.json` devDependencies. `apps/runner/internal/arch` decides
@@ -102,12 +99,12 @@ concern, tied together by a `go.work` at the repo root:
 | `ws`     | `@flama/go-ws`     | WebSocket hub with backpressure and keepalive              |
 | `postgres` | `@flama/go-postgres` | Pooled pgx connection, advisory-locked SQL migrator, readiness checker |
 
-Each module has a `package.json` whose scripts call `go` directly and which
-declares the sibling modules it imports as workspace dependencies. That is
-what lets Turborepo order builds, run `--affected` and invalidate caches
-correctly: a change in `core` re-runs everything above it while `config`
-stays cached. Every module also carries relative `replace` directives so it
-builds and tidies on its own, which is what the Docker build relies on.
+Each module has a `package.json` that declares the sibling modules it
+imports as workspace dependencies. That is what lets Turborepo's
+`--affected` see the edges: a change in `core` marks everything above it,
+the runner's image included. Every module also carries relative `replace`
+directives so it builds and tidies on its own, which is what the Docker
+build relies on.
 
 ### What the template ships
 
@@ -143,13 +140,12 @@ in-memory repositories give way to Postgres.
 
 ```bash
 pnpm --filter @flama/runner dev                 # reads the root .env
-pnpm turbo run test --filter='./packages/go/*'  # the shared modules
 make -C packages/go test                        # every Go module in go.work
 docker build -f apps/runner/Dockerfile .        # distroless, non-root, ~10 MB
 ```
 
-CI runs `go vet`, `golangci-lint` and the tests across the whole workspace
-in a dedicated job (the race detector needs a C compiler the runners lack,
-so `make test-race` is a local step), builds the Go packages through
-Turborepo like the Node ones, and publishes the image alongside them. See
+CI builds, vets, lints and tests the whole workspace in its own workflow,
+`.github/workflows/runner.yml` (the race detector needs a C compiler the
+runners lack, so `make test-race` is a local step); the image is built with
+the others, because `apps/runner` has a Dockerfile. See
 `apps/runner/ARCHITECTURE.md` for the "add a bounded context" cookbook.

@@ -1,8 +1,29 @@
 import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
-import { FULL_LABEL, globalChanges, selectImages } from './affected.mjs';
+import { FULL_LABEL, globalChanges, imagesIn, selectImages } from './affected.mjs';
 
 const packages = ['@flama/api', '@flama/shared'];
+
+test('the images are the apps with a Dockerfile, keyed to their package', () => {
+  const root = mkdtempSync(join(tmpdir(), 'images-'));
+  try {
+    for (const [app, dockerfile] of [
+      ['api', true],
+      ['mobile', false],
+      ['worker', true],
+    ]) {
+      mkdirSync(join(root, 'apps', app), { recursive: true });
+      writeFileSync(join(root, 'apps', app, 'package.json'), JSON.stringify({ name: `@x/${app}` }));
+      if (dockerfile) writeFileSync(join(root, 'apps', app, 'Dockerfile'), 'FROM scratch\n');
+    }
+    assert.deepEqual(imagesIn(root), { api: '@x/api', worker: '@x/worker' });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test('a pull request builds no image when no Dockerfile changed', () => {
   const changed = ['apps/api/src/main.ts'];

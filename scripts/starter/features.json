@@ -56,10 +56,8 @@
       "identifiers": [
         "apps/runner",
         "@flama/runner",
-        "packages/go",
         "@flama/go-",
         "go.work",
-        "golangci",
         "flama-runner",
         "RUNNER_"
       ],
@@ -68,6 +66,7 @@
         "packages/go",
         "go.work",
         ".golangci.yml",
+        ".github/workflows/runner.yml",
         ".agents/rules/go.md",
         "helm/flama/templates/runner-deployment.yaml"
       ]

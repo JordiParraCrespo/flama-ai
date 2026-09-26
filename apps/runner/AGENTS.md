@@ -14,7 +14,7 @@ Go service template. Read the root [`CLAUDE.md`](../../CLAUDE.md) first, then
 - `log/slog` for logging, `coder/websocket` for the socket, `golang-jwt/v5`
   for service tokens. Add a dependency only when the standard library cannot
   do the job
-- `golangci-lint` (config in the root `.golangci.yml`); `pnpm test` runs the suite
+- `golangci-lint` (config in the root `.golangci.yml`); `make test` runs the suite
   and the import-boundary test in `internal/arch`. `make test-race` runs it
   under the race detector, which CI cannot (no C compiler on the runners),
   so run it locally before pushing concurrent code

@@ -4,9 +4,6 @@
   "private": true,
   "description": "Pooled Postgres connection, forward-only SQL migrator and readiness checker for Go services",
   "scripts": {
-    "build": "go build ./...",
-    "lint": "golangci-lint run ./...",
-    "test": "go test -count=1 ./...",
     "clean": "go clean ./..."
   }
 }

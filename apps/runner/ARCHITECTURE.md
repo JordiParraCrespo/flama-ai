@@ -47,7 +47,7 @@ internal/
 
 `internal/arch/arch_test.go` enforces the table. It walks every non-test file,
 parses imports only, and fails with the offending file and rule. It is the
-Go equivalent of `apps/api/.dependency-cruiser.cjs` and runs under `pnpm test`.
+Go equivalent of `apps/api/.dependency-cruiser.cjs` and runs under `go test`.
 
 ## Conventions that replace NestJS machinery
 

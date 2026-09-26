@@ -44,8 +44,8 @@ its use cases call `hub.Publish` when a job changes.
 ## How to run it
 
 ```bash
-pnpm --filter @flama/go-ws test
-pnpm --filter @flama/go-ws lint
+go test -count=1 ./...
+golangci-lint run ./...
 ```
 
 ## Depends on / used by

@@ -2,8 +2,8 @@
 /**
  * Trim the starter down to the apps you are actually going to build.
  *
- * Flama ships eight optional features. A real project wants three of them, and
- * deleting the rest by hand leaves dead references in CI, compose, Helm and
+ * The optional features are the entries of `features.json` (`--list` prints
+ * them). Deleting one by hand leaves dead references in CI, compose, Helm and
  * `.env.example` — the mess this script exists to prevent. What the starter
  * does not ship is a plugin: `pnpm plugin:add <id>` installs one, and removing
  * it comes back here.
@@ -12,14 +12,14 @@
  * lists the paths that go with it, and every other file that mentions it wraps
  * the lines in markers:
  *
- *   # flama:begin runner        (any comment syntax: #, //, <!-- -->)
- *   ...lines that exist only because of the runner...
- *   # flama:end runner
+ *   # flama:begin mobile        (any comment syntax: #, //, <!-- -->)
+ *   ...lines that exist only because of the mobile app...
+ *   # flama:end mobile
  *
  * A marker can name several features — `flama:begin mobile|mobile-showcase` —
  * and its block goes only when all of them go.
  *
- *   node scripts/starter/prune.mjs --without mobile,runner,web-showcase
+ *   node scripts/starter/prune.mjs --without mobile,web-showcase
  *   node scripts/starter/prune.mjs --keep web,e2e
  *   node scripts/starter/prune.mjs --check        # CI: manifest still honest?
  *   node scripts/starter/prune.mjs --list
@@ -456,7 +456,7 @@ function dropFromManifest(features, shared, deleted, dryRun) {
     text = next;
   }
   // A kept feature can own a path inside a departing one's tree — `web` has a
-  // slice of `e2e/`, `runner` a template under `helm/`. Those files are gone
+  // slice of `e2e/`. Those files are gone
   // now, so the entries that claim them have to let go. The install side
   // already works this way: a plugin records the paths that actually landed,
   // not the ones it hoped to.

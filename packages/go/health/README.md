@@ -31,8 +31,8 @@ ask the service what it can do before asking it to do it.
 ## How to run it
 
 ```bash
-pnpm --filter @flama/go-health test
-pnpm --filter @flama/go-health lint
+go test -count=1 ./...
+golangci-lint run ./...
 ```
 
 ## Depends on / used by

@@ -4,9 +4,6 @@
   "private": true,
   "description": "Root .env loader and typed, error-collecting env accessors for Go services",
   "scripts": {
-    "build": "go build ./...",
-    "lint": "golangci-lint run ./...",
-    "test": "go test -count=1 ./...",
     "clean": "go clean ./..."
   }
 }

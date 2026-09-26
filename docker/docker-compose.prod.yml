@@ -78,8 +78,6 @@ services:
       - "3000:3000"
   # flama:end web
 
-  # flama:plugins services
-
   # flama:begin runner
   runner:
     image: ${RUNNER_IMAGE:-ghcr.io/your-org/flama-runner:latest}
@@ -104,6 +102,7 @@ services:
     expose:
       - "3006"
   # flama:end runner
+  # flama:plugins services
 
 volumes:
   postgres_data:

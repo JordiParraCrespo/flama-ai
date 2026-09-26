@@ -23,11 +23,13 @@ idioms.
 - A shared module never imports an app. Anything a second service could use
   goes to `packages/go`; anything that names jobs, keys or this service's
   scopes stays in the app.
-- Each module has a `package.json` (`@flama/go-<name>`) whose scripts call
-  `go` directly (the CI runners have no `make`), and declares the sibling
-  modules it imports as `workspace:*` devDependencies. That declaration is
-  the Turborepo graph: without it `--affected` and `^build` do not see the
-  edge. New module ⇒ `go.work`, `package.json`, `pnpm install`.
+- Each module has a `package.json` (`@flama/go-<name>`) that declares the
+  sibling modules it imports as `workspace:*` devDependencies. That
+  declaration is the Turborepo graph: without it `--affected` does not see
+  the edge, and the runner's image is not rebuilt when a module it imports
+  changes. It carries no `build`, `lint` or `test` script — the Node
+  pipeline never needs Go; `go` and the Makefiles do that work. New module
+  ⇒ `go.work`, `package.json`, `pnpm install`.
 - The repo root is not a module: use
   `go test github.com/jordiparracrespo/flama-ai/...` or
   `make -C packages/go <target>`, never `./...` from the root.
@@ -106,11 +108,11 @@ idioms.
 
 ## Tooling
 
-- `make -C packages/go lint` (golangci-lint, config in the root
-  `.golangci.yml`) and `make -C packages/go test` are what CI runs across
+- `make -C packages/go build vet lint test` (golangci-lint, config in the
+  root `.golangci.yml`) is what `.github/workflows/runner.yml` runs across
   the workspace; `make test-race` is local only (the runners have no C
   compiler). All three must be clean before a push that touches goroutines.
 - Add a dependency only when the standard library cannot do the job, and pin
   it in `go.mod` with `go mod tidy`.
 - Tests use `httptest` end to end (`internal/server/server_test.go`) and the
-  in-memory adapters; nothing in `pnpm test` needs Docker.
+  in-memory adapters; nothing in `go test` needs Docker.

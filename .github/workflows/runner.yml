@@ -1,0 +1,68 @@
+name: Runner
+
+# The Go service and the modules it is built from (apps/runner,
+# packages/go/*): build, vet, lint and test, with the Go toolchain the Node
+# jobs in ci.yml do not carry. This workflow arrives with the runner and
+# leaves with it. It is not path-filtered, so it always reports and can be
+# required; a pull request that touches no Go passes after the diff.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go:
+    name: Go
+    runs-on: gha-vm
+    if: github.event.pull_request.draft != true
+    env:
+      # The repo root is not a module, so `./...` does not resolve there; the
+      # module path spans every module go.work declares.
+      PKGS: github.com/jordiparracrespo/flama-ai/...
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      # A push to main always checks; a pull request or merge group only when
+      # its diff reaches a Go module, go.work, the linter config or this file.
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+        run: |
+          if [[ -z "$BASE" ]] || git diff --name-only "$BASE" HEAD \
+            | grep -qE '^(apps/runner/|packages/go/|go\.work|\.golangci\.yml$|\.github/workflows/runner\.yml$)'; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.diff.outputs.go == 'true'
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.work
+          cache-dependency-path: |
+            apps/runner/go.sum
+            packages/go/*/go.sum
+      - name: Build
+        if: steps.diff.outputs.go == 'true'
+        run: go build "$PKGS"
+      - name: Vet
+        if: steps.diff.outputs.go == 'true'
+        run: go vet "$PKGS"
+      # Includes apps/runner/internal/arch, the layer boundaries. The gha-vm
+      # runners ship no C compiler, and -race needs cgo; run the race detector
+      # locally (make test-race).
+      - name: Test
+        if: steps.diff.outputs.go == 'true'
+        run: go test -count=1 "$PKGS"
+      - name: Lint
+        if: steps.diff.outputs.go == 'true'
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.5.0
+          # golangci-lint needs directory patterns, one per module; `go list -m`
+          # in workspace mode lists exactly the modules go.work declares.
+          golangci-lint run $(go list -m -f '{{.Dir}}/...')

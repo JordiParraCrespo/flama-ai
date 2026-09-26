@@ -15,9 +15,9 @@
 ## Before pushing
 
 ```bash
-pnpm --filter @flama/go-auth lint    # golangci-lint run ./...
-pnpm --filter @flama/go-auth test    # go test -count=1 ./...
-pnpm --filter @flama/runner test   # the runner's boundary test still passes
+golangci-lint run ./...   # this module
+go test -count=1 ./...    # this module
+make -C .. test           # every module in go.work, the runner's boundary test included
 ```
 
 ## Patterns agents get wrong

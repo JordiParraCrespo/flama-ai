@@ -28,7 +28,8 @@
  *   node scripts/ci/affected.mjs --base origin/main   # locally
  */
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** The label that asks a pull request for every affected image. */
@@ -37,19 +38,23 @@ export const FULL_LABEL = 'ci:full';
 /** The events that build every affected image: main, and a merge queue. */
 export const IMAGE_EVENTS = ['push', 'merge_group'];
 
-/** App directory under apps/ → the workspace package the image is built from. */
-export const IMAGES = {
-  api: '@flama/api',
-  // flama:begin web
-  web: '@flama/web',
-  // flama:end web
-  // flama:plugins admin-web
-  // flama:plugins docs
-  // flama:begin runner
-  runner: '@flama/runner',
-  // flama:end runner
-  // flama:plugins images
-};
+/**
+ * App directory under apps/ → the workspace package its image is built from:
+ * every app with a Dockerfile, read off the tree. An app that arrives with a
+ * Dockerfile brings its image, and one that is removed takes it along.
+ */
+export function imagesIn(root) {
+  const apps = join(root, 'apps');
+  if (!existsSync(apps)) return {};
+  return Object.fromEntries(
+    readdirSync(apps)
+      .filter((app) => existsSync(join(apps, app, 'Dockerfile')))
+      .sort()
+      .map((app) => [app, JSON.parse(readFileSync(join(apps, app, 'package.json'), 'utf8')).name]),
+  );
+}
+
+export const IMAGES = imagesIn(fileURLToPath(new URL('../..', import.meta.url)));
 
 /**
  * Paths outside every package that can still break any of them. Turbo does
@@ -69,10 +74,9 @@ export const GLOBAL_PATHS = [
   /^biome-plugins\//,
   /^tsconfig\.base\.json$/,
   /^scripts\//,
-  // flama:begin runner
+  // The Go workspace and its linter config, when the repo has them.
   /^go\.work/,
   /^\.golangci\.yml$/,
-  // flama:end runner
 ];
 
 function git(...args) {
@@ -123,10 +127,10 @@ export function globalChanges(changed) {
  * label: every affected image. Otherwise only an image whose own build input
  * changed — its Dockerfile, or `.dockerignore`, which every image reads.
  */
-export function selectImages({ packages, changed, event = null, labels = [] }) {
+export function selectImages({ packages, changed, event = null, labels = [], images = IMAGES }) {
   const every = IMAGE_EVENTS.includes(event) || labels.includes(FULL_LABEL);
   const context = changed.includes('.dockerignore');
-  return Object.entries(IMAGES)
+  return Object.entries(images)
     .filter(([, pkg]) => packages.includes(pkg))
     .filter(([app]) => every || context || changed.includes(`apps/${app}/Dockerfile`))
     .map(([app]) => app);

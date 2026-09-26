@@ -4,9 +4,6 @@
   "private": true,
   "description": "WebSocket hub with topic subscriptions, backpressure and keepalive",
   "scripts": {
-    "build": "go build ./...",
-    "lint": "golangci-lint run ./...",
-    "test": "go test -count=1 ./...",
     "clean": "go clean ./..."
   },
   "devDependencies": {
