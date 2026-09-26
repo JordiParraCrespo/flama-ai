@@ -151,11 +151,7 @@ the plan of each query in `--explain` with sequential scans switched off.
 - Write `queries.sql` straight from the access-pattern table, one query per
   row, headed by a `-- Q1 ...` comment, with the exact predicates the code will
   use. The plan must name the index you assigned. A `Sort` above it means the
-  index does not give that order; fix the index, not the table. Sorting a
-  page of rows by a column of a joined table is expected and fine.
-- Give the fixture more matching rows than the query's `LIMIT` (a few hundred
-  is enough). With fewer, the planner reads every match and sorts it, and the
-  plan tells you nothing about the index.
+  index does not give that order; fix the index, not the table.
 - Put a few `INSERT`s that must fail in the fixture file only when you want to
   prove them; otherwise probe the one or two rules that matter most by hand
   with `--keep` and `psql`.
