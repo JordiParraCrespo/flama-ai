@@ -60,6 +60,7 @@ test.describe('optional auth providers', () => {
     expect((await me.json()).email).toBe(user.email);
   });
 });
+// flama:begin mcp
 
 test.describe('OAuth provider metadata for MCP clients', () => {
   test('discovery advertises the endpoints and this deployment’s scopes', async () => {
@@ -99,3 +100,4 @@ test.describe('OAuth provider metadata for MCP clients', () => {
     expect(response.status()).toBeLessThan(500);
   });
 });
+// flama:end mcp

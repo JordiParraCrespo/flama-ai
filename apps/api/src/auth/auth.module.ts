@@ -12,9 +12,11 @@ import { CredentialScopeResolver } from './application/credential-scope.resolver
 import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
 import { CREDENTIAL_SCOPE, CREDENTIAL_VERIFIER, DELEGATED_SESSION } from './auth.di-tokens';
 import { Account } from './database/account.orm-entity';
+// flama:begin mcp
 import { OAuthAccessTokenOrmEntity } from './database/oauth-access-token.orm-entity';
 import { OAuthApplicationOrmEntity } from './database/oauth-application.orm-entity';
 import { OAuthConsentOrmEntity } from './database/oauth-consent.orm-entity';
+// flama:end mcp
 import { Session } from './database/session.orm-entity';
 import { Verification } from './database/verification.orm-entity';
 import { ApiAuthGuard } from './guards/api-auth.guard';
@@ -23,6 +25,9 @@ import { PoliciesGuard } from './guards/policies.guard';
 import { ScopesGuard } from './guards/scopes.guard';
 import { BetterAuthCredentialVerifierAdapter } from './infrastructure/better-auth-credential-verifier.adapter';
 import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adapter';
+// flama:begin mcp
+import { OAUTH_GRANT_VERIFIER_PROVIDER } from './infrastructure/mcp-oauth-grant-verifier.adapter';
+// flama:end mcp
 
 /**
  * Registers the Better Auth tables with TypeORM (so the schema is created /
@@ -38,8 +43,8 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
  * The Better Auth HTTP handler itself is wired up via
  * `AuthModule.forRoot({ auth })` from `@thallesp/nestjs-better-auth` in
  * the root `AppModule`. The organization/team tables are Better-Auth-owned too
- * (organization plugin), as are the OAuth tables (MCP plugin); all are grouped
- * here alongside session/account.
+ * (organization plugin), as are the OAuth tables (MCP plugin, with the MCP
+ * server); all are grouped here alongside session/account.
  */
 /**
  * Marked `@Global` for the same reason as `RolesModule`: the guards below are
@@ -62,9 +67,11 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
       TeamOrmEntity,
       TeamMemberOrmEntity,
       // flama:end organizations
+      // flama:begin mcp
       OAuthApplicationOrmEntity,
       OAuthAccessTokenOrmEntity,
       OAuthConsentOrmEntity,
+      // flama:end mcp
     ]),
   ],
   providers: [
@@ -78,6 +85,9 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
     { provide: CREDENTIAL_VERIFIER, useClass: BetterAuthCredentialVerifierAdapter },
     { provide: CREDENTIAL_SCOPE, useClass: CredentialScopeResolver },
     { provide: DELEGATED_SESSION, useClass: DelegatedSessionAdapter },
+    // flama:begin mcp
+    OAUTH_GRANT_VERIFIER_PROVIDER,
+    // flama:end mcp
   ],
   // Guards are inbound adapters other modules apply with `@UseGuards`; the rest
   // is published as tokens, so nothing downstream names a concrete class.

@@ -1,5 +1,7 @@
 import {
+  // flama:begin mcp
   AuthRequestError,
+  // flama:end mcp
   consumeSessionPreload,
   sharedClientPlugins,
   toAuthSession,
@@ -97,6 +99,7 @@ export const webAuthClient: IAuthClient = {
     unwrap(await authClient.changePassword({ currentPassword, newPassword }));
   },
 
+  // flama:begin mcp
   async respondToConsent({ consentCode, accept }) {
     // Through the Better Auth client rather than a bare `fetch`, so the call
     // goes to the same `baseURL` (and `VITE_API_URL`) as every sign-in does.
@@ -110,6 +113,7 @@ export const webAuthClient: IAuthClient = {
     }
     return result.data.redirectURI;
   },
+  // flama:end mcp
 
   async getSession() {
     // `public/session-preload.js` starts this request from <head>, so on app

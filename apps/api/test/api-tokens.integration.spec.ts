@@ -694,6 +694,7 @@ describe('API tokens & scopes (integration)', () => {
       expect(response.body?.code).toBe('TOKEN_008');
     });
   });
+  // flama:begin mcp
 
   // --- OAuth discovery -----------------------------------------------------
 
@@ -722,4 +723,5 @@ describe('API tokens & scopes (integration)', () => {
       );
     });
   });
+  // flama:end mcp
 });

@@ -43,8 +43,22 @@ src/
   by the credential's effective scopes, so a tool without scopes is either
   invisible or over-exposed. Declare the _same_ scope the underlying endpoint
   requires via `@RequireScopes`.
+  Mismatched scopes mean a tool that is offered but then refused — the one
+  failure mode the design exists to prevent.
 - New tools go in the matching `src/tools/*.tools.ts` and are added to the
   registry in `src/tools/index.ts`.
+- `inputSchema` is a Zod **object schema** (`z.object({ … })`), not a raw
+  shape. Do not import Zod schemas from `@flama/shared`: that is what keeps
+  this package's Zod 4 from meeting the rest of the repo's Zod 3.
+- The server is built **per request** from the calling credential, because
+  protocol revision `2026-07-28` removed sessions: there is nowhere to cache
+  the decision, and nowhere it could go stale. `tools/list` is sorted by name
+  (the spec asks for a deterministic order) and returned with
+  `cacheScope: 'private'`, since the list is derived from one credential's
+  permissions.
+- Annotate honestly: `readOnlyHint` only for tools whose scopes are all
+  `:read`, `destructiveHint` for anything that deletes or is irreversible.
+  `src/__tests__/server.spec.ts` enforces both.
 - Adding an API endpoint you want reachable here means declaring its scope on
   the controller first — see `.agents/rules/scopes-and-credentials.md`.
 

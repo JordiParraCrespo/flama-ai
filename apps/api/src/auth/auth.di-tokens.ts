@@ -14,3 +14,9 @@ export const CREDENTIAL_SCOPE = Symbol('CREDENTIAL_SCOPE');
 
 /** Verifies a presented credential against the identity provider. */
 export const CREDENTIAL_VERIFIER = Symbol('CREDENTIAL_VERIFIER');
+
+/**
+ * Verifies an OAuth access token. Bound only where the API is an OAuth
+ * provider (the MCP server's); optional everywhere it is injected.
+ */
+export const OAUTH_GRANT_VERIFIER = Symbol('OAUTH_GRANT_VERIFIER');
