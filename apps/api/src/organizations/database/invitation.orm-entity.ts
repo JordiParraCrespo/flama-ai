@@ -30,9 +30,9 @@ export class InvitationOrmEntity {
   @Column({ type: 'uuid' })
   inviterId!: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz' })
   expiresAt!: Date;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

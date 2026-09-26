@@ -28,6 +28,6 @@ export class UserRoleOrmEntity {
   @Column({ type: 'uuid', nullable: true })
   organizationId!: string | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

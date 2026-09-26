@@ -46,6 +46,6 @@ export class AccessGrantOrmEntity {
   @Column({ type: 'timestamptz', nullable: true })
   expiresAt!: Date | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

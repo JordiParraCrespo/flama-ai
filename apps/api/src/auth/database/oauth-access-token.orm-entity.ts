@@ -17,10 +17,10 @@ export class OAuthAccessTokenOrmEntity {
   @Column({ type: 'varchar', nullable: true })
   refreshToken!: string | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   accessTokenExpiresAt!: Date | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   refreshTokenExpiresAt!: Date | null;
 
   @Index()
@@ -34,9 +34,9 @@ export class OAuthAccessTokenOrmEntity {
   @Column({ type: 'text' })
   scopes!: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }

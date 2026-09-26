@@ -24,9 +24,9 @@ export class OAuthConsentOrmEntity {
   @Column({ type: 'boolean', default: false })
   consentGiven!: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }

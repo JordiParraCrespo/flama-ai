@@ -17,6 +17,6 @@ export class TeamMemberOrmEntity {
   @Column({ type: 'uuid' })
   userId!: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

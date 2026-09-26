@@ -1,5 +1,5 @@
 import type { Role } from '@flama/shared';
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 /**
  * Persistence model for the Better Auth `user` table. This is infrastructure —
@@ -11,14 +11,15 @@ import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } fro
  * `isActive` are Better Auth "additional fields" declared in `auth.ts`.
  */
 @Entity('user')
+@Unique('UQ_user_email', ['email'])
 export class UserOrmEntity {
-  @PrimaryColumn({ type: 'uuid' })
+  @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'PK_user' })
   id!: string;
 
   @Column({ type: 'varchar' })
   name!: string;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ type: 'varchar' })
   email!: string;
 
   @Column({ type: 'boolean', default: false })
@@ -53,12 +54,12 @@ export class UserOrmEntity {
   @Column({ type: 'varchar', nullable: true })
   banReason!: string | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   banExpires!: Date | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }

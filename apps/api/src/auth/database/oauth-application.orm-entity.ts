@@ -38,9 +38,9 @@ export class OAuthApplicationOrmEntity {
   @Column({ type: 'varchar', nullable: true })
   userId!: string | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }
