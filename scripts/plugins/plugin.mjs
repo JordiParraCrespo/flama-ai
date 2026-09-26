@@ -59,6 +59,10 @@
  *     "files":         { "<destination>": "<path inside the plugin>" },
  *     "filesNeed":     { "<destination>": "<feature id>" },
  *     "filesNeedPath": { "<destination>": "<shared path>" },
+ *     // And the other way round: a path inside this plugin's tree that
+ *     // another feature owns, copied only where that owner is and handed
+ *     // back to its entry — the MCP server's organization tools.
+ *     "nested":        { "<path>": "<feature id>" },
  *
  *     // OP 1 — a block of text at an anchor. Inserted immediately above the
  *     // `flama:plugins <anchor>` comment, fenced with this plugin's id.
@@ -99,10 +103,12 @@ import { fileURLToPath } from 'node:url';
 import { regenerateSteps } from '../starter/prune.mjs';
 import {
   applyJsonEdits,
+  claimNested,
   insertBlocks,
   joinShared,
   projectFeatures,
   replaySnapshots,
+  skipNested,
   trimCopied,
   writeFeature,
 } from './ops.mjs';
@@ -210,6 +216,7 @@ function add(manifest, options) {
     }
     copy(destination, from);
   }
+  skipNested(manifest, features, dryRun);
   trimCopied(manifest, [...sharedLanded, ...destinations], features, dryRun);
 
   // Shared blocks first: putting one back can bring back the anchor an owned
@@ -219,6 +226,7 @@ function add(manifest, options) {
   replaySnapshots(manifest, features, dryRun);
   applyJsonEdits(manifest, dryRun);
   writeFeature(manifest, paths, dryRun);
+  claimNested(manifest, features, dryRun);
 
   if (dryRun) {
     console.log('\nDry run: nothing was changed.');

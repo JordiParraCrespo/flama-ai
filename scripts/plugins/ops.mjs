@@ -167,6 +167,45 @@ export function writeFeature(manifest, landed, dryRun) {
   if (!dryRun) writeFileSync(FEATURES_PATH, text);
 }
 
+/**
+ * Hand back the paths inside this plugin's tree that another feature owns.
+ *
+ * The MCP server's organization tools live in `apps/mcp` but belong to
+ * `organizations`: pruning organizations takes them, whether or not the
+ * server stays. The prune that removed the server dropped them from that
+ * entry, and this puts them back where the owner is here — in sorted place,
+ * as the entry lists its paths. Where it is not, the install left them out
+ * (`skipNested`), and there is nothing to claim.
+ */
+export function claimNested(manifest, known, dryRun) {
+  let text = readFileSync(FEATURES_PATH, 'utf8');
+  for (const [path, owner] of Object.entries(manifest.nested ?? {})) {
+    if (!known[owner]) continue;
+    const paths = JSON.parse(text).features[owner].paths;
+    if (paths.includes(path)) continue;
+    const at = paths.findIndex((other) => other > path);
+    const next = insertJsonValue(
+      text,
+      ['features', owner, 'paths'],
+      path,
+      at === -1 ? paths.length : at,
+    );
+    if (next === null) fail(`features.json: cannot give "${path}" back to "${owner}"`);
+    console.log(`  edit   ${relative(ROOT, FEATURES_PATH)} (${owner} owns ${path} again)`);
+    text = next;
+  }
+  if (!dryRun) writeFileSync(FEATURES_PATH, text);
+}
+
+/** Take out what was just copied for an owner this project does not have. */
+export function skipNested(manifest, known, dryRun) {
+  for (const [path, owner] of Object.entries(manifest.nested ?? {})) {
+    if (known[owner]) continue;
+    console.log(`  skip   ${path} (no ${owner} in this project)`);
+    if (!dryRun) rmSync(join(ROOT, path), { recursive: true, force: true });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Text: blocks at anchors
 // ---------------------------------------------------------------------------
