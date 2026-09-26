@@ -503,7 +503,10 @@ test('a shipped feature replays its blocks onto a file the project has changed s
   assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), before);
 });
 
-test("a file another feature owns lands only beside its owner, and goes back to that owner's entry", () => {
+test("a file of another feature's inside the plugin's tree lands only beside that feature", () => {
+  // The MCP server's organization tools: they live in the server's tree but
+  // belong to organizations, so they are their own `files` entry with their
+  // own `filesNeed`, and a `json` edit puts them back on that entry.
   const manifest = {
     id: 'epsilon',
     feature: {
@@ -511,15 +514,28 @@ test("a file another feature owns lands only beside its owner, and goes back to 
       summary: 'epsilon',
       identifiers: ['epsilon-app'],
       paths: ['epsilon'],
+      json: [
+        {
+          file: 'scripts/starter/features.json',
+          path: ['features', 'alpha', 'paths'],
+          remove: ['epsilon/alpha-tool.txt'],
+          at: [1],
+          needs: 'alpha',
+        },
+      ],
     },
-    files: { epsilon: 'files/epsilon' },
-    nested: { 'epsilon/alpha-tool.txt': 'alpha' },
+    files: {
+      epsilon: 'files/epsilon',
+      'epsilon/alpha-tool.txt': 'files/epsilon/alpha-tool.txt',
+    },
+    filesNeed: { 'epsilon/alpha-tool.txt': 'alpha' },
   };
   const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
   source(from, manifest);
-  mkdirSync(join(from, 'plugins', 'epsilon', 'files', 'epsilon'), { recursive: true });
-  writeFileSync(join(from, 'plugins', 'epsilon', 'files', 'epsilon', 'index.txt'), 'epsilon\n');
-  writeFileSync(join(from, 'plugins', 'epsilon', 'files', 'epsilon', 'alpha-tool.txt'), 'alpha\n');
+  const tree = join(from, 'plugins', 'epsilon', 'files', 'epsilon');
+  mkdirSync(tree, { recursive: true });
+  writeFileSync(join(tree, 'index.txt'), 'epsilon\n');
+  writeFileSync(join(tree, 'alpha-tool.txt'), 'alpha\n');
   const features = (project) =>
     JSON.parse(readFileSync(join(project, 'scripts', 'starter', 'features.json'), 'utf8')).features;
 
@@ -529,10 +545,10 @@ test("a file another feature owns lands only beside its owner, and goes back to 
   execFileSync('node', [script, 'add', 'epsilon', '--from', from], { env: FIXTURE_ENV });
   assert.equal(readFileSync(join(project, 'epsilon', 'alpha-tool.txt'), 'utf8'), 'alpha\n');
   assert.deepEqual(features(project).alpha.paths, ['alpha', 'epsilon/alpha-tool.txt']);
-  assert.deepEqual(features(project).epsilon.paths, ['epsilon']);
 
   execFileSync('node', [script, 'remove', 'epsilon'], { env: FIXTURE_ENV });
   assert.equal(readFileSync(join(project, 'scripts', 'starter', 'features.json'), 'utf8'), before);
+  assert.equal(existsSync(join(project, 'epsilon')), false);
 
   // Without its owner the file would be a fragment of a feature the project
   // pruned, which no check would notice.
@@ -541,103 +557,4 @@ test("a file another feature owns lands only beside its owner, and goes back to 
   execFileSync('node', [prunedScript, 'add', 'epsilon', '--from', from], { env: FIXTURE_ENV });
   assert.equal(existsSync(join(pruned, 'epsilon', 'alpha-tool.txt')), false);
   assert.equal(existsSync(join(pruned, 'epsilon', 'index.txt')), true);
-});
-
-test("a replayed block and another feature's block at the same spot both stay", () => {
-  const project = fixture();
-  // What the project holds: the starter, plus a block another plugin put
-  // exactly where the starter's copy has this feature's.
-  const before = ['top', '# flama:begin alpha', 'alpha-line', '# flama:end alpha', 'bottom', ''];
-  writeFileSync(join(project, 'app.txt'), before.join('\n'));
-  execFileSync('git', ['-C', project, 'add', '-A']);
-  execFileSync('git', [
-    '-C',
-    project,
-    '-c',
-    'user.name=t',
-    '-c',
-    'user.email=t@t',
-    'commit',
-    '-qm',
-    'y',
-  ]);
-
-  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
-  source(from, {
-    id: 'delta',
-    feature: { title: 'Delta', summary: 'delta', identifiers: ['delta-app'], paths: [] },
-    files: {},
-    snapshots: [{ file: 'app.txt', source: 'snapshots/app.txt' }],
-  });
-  mkdirSync(join(from, 'plugins', 'delta', 'snapshots'), { recursive: true });
-  const starter = ['top', '# flama:begin delta', 'delta-line', '# flama:end delta', 'bottom', ''];
-  writeFileSync(join(from, 'plugins', 'delta', 'snapshots', 'app.txt'), starter.join('\n'));
-
-  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  execFileSync('node', [script, 'add', 'delta', '--from', from], { env: FIXTURE_ENV });
-  assert.equal(
-    readFileSync(join(project, 'app.txt'), 'utf8'),
-    [
-      'top',
-      '# flama:begin delta',
-      'delta-line',
-      '# flama:end delta',
-      '# flama:begin alpha',
-      'alpha-line',
-      '# flama:end alpha',
-      'bottom',
-      '',
-    ].join('\n'),
-  );
-
-  execFileSync('node', [script, 'remove', 'delta'], { env: FIXTURE_ENV });
-  assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), before.join('\n'));
-});
-
-test('a replay still refuses when the project changed a line the blocks sit between', () => {
-  const project = fixture();
-  writeFileSync(join(project, 'app.txt'), ['top', 'changed', 'bottom', ''].join('\n'));
-  execFileSync('git', ['-C', project, 'add', '-A']);
-  execFileSync('git', [
-    '-C',
-    project,
-    '-c',
-    'user.name=t',
-    '-c',
-    'user.email=t@t',
-    'commit',
-    '-qm',
-    'y',
-  ]);
-
-  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
-  source(from, {
-    id: 'delta',
-    feature: { title: 'Delta', summary: 'delta', identifiers: ['delta-app'], paths: [] },
-    files: {},
-    snapshots: [{ file: 'app.txt', source: 'snapshots/app.txt' }],
-  });
-  mkdirSync(join(from, 'plugins', 'delta', 'snapshots'), { recursive: true });
-  const starter = [
-    'top',
-    'middle',
-    '# flama:begin delta',
-    'delta-line',
-    '# flama:end delta',
-    'bottom',
-    '',
-  ];
-  writeFileSync(join(from, 'plugins', 'delta', 'snapshots', 'app.txt'), starter.join('\n'));
-
-  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  let out = '';
-  try {
-    execFileSync('node', [script, 'add', 'delta', '--from', from], {
-      env: FIXTURE_ENV,
-      stdio: 'pipe',
-    });
-  } catch (error) {
-    out = `${error.stdout ?? ''}${error.stderr ?? ''}`;
-  }
-  assert.match(out, /changed the lines the plugin's blocks go between/);
 });

@@ -286,10 +286,12 @@ function check(manifest) {
       continue;
     }
     if (!existsSync(join(ROOT, edit.file))) continue;
-    const target = edit.path.reduce(
-      (node, key) => node?.[key],
-      JSON.parse(readFileSync(join(ROOT, edit.file), 'utf8')),
-    );
+    const json = JSON.parse(readFileSync(join(ROOT, edit.file), 'utf8'));
+    // Nor for one whose `needs` says it may land in what a pruned feature
+    // owned — the organizations paths the MCP server's tools join.
+    if (edit.needs && edit.path.slice(0, -1).reduce((node, key) => node?.[key], json) === undefined)
+      continue;
+    const target = edit.path.reduce((node, key) => node?.[key], json);
     const where = `${edit.file} → ${edit.path.join(' → ')}`;
     for (const value of edit.remove ?? []) {
       if (!Array.isArray(target) || !target.includes(value))

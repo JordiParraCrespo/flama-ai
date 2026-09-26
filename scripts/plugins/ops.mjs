@@ -167,45 +167,6 @@ export function writeFeature(manifest, landed, dryRun) {
   if (!dryRun) writeFileSync(FEATURES_PATH, text);
 }
 
-/**
- * Hand back the paths inside this plugin's tree that another feature owns.
- *
- * The MCP server's organization tools live in `apps/mcp` but belong to
- * `organizations`: pruning organizations takes them, whether or not the
- * server stays. The prune that removed the server dropped them from that
- * entry, and this puts them back where the owner is here — in sorted place,
- * as the entry lists its paths. Where it is not, the install left them out
- * (`skipNested`), and there is nothing to claim.
- */
-export function claimNested(manifest, known, dryRun) {
-  let text = readFileSync(FEATURES_PATH, 'utf8');
-  for (const [path, owner] of Object.entries(manifest.nested ?? {})) {
-    if (!known[owner]) continue;
-    const paths = JSON.parse(text).features[owner].paths;
-    if (paths.includes(path)) continue;
-    const at = paths.findIndex((other) => other > path);
-    const next = insertJsonValue(
-      text,
-      ['features', owner, 'paths'],
-      path,
-      at === -1 ? paths.length : at,
-    );
-    if (next === null) fail(`features.json: cannot give "${path}" back to "${owner}"`);
-    console.log(`  edit   ${relative(ROOT, FEATURES_PATH)} (${owner} owns ${path} again)`);
-    text = next;
-  }
-  if (!dryRun) writeFileSync(FEATURES_PATH, text);
-}
-
-/** Take out what was just copied for an owner this project does not have. */
-export function skipNested(manifest, known, dryRun) {
-  for (const [path, owner] of Object.entries(manifest.nested ?? {})) {
-    if (known[owner]) continue;
-    console.log(`  skip   ${path} (no ${owner} in this project)`);
-    if (!dryRun) rmSync(join(ROOT, path), { recursive: true, force: true });
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Text: blocks at anchors
 // ---------------------------------------------------------------------------
@@ -384,14 +345,14 @@ export function replaySnapshots(manifest, known, dryRun) {
     }
     const ours = trimText(manifest, snapshot.file, readFileSync(source, 'utf8'), known, false);
     const base = grammar(() => dropBlocks(snapshot.file, ours, new Set([manifest.id]))) ?? ours;
-    const merged = mergeThreeWay(snapshot.file, content, base, ours, manifest.id);
+    const merged = mergeThreeWay(snapshot.file, content, base, ours);
     console.log(`  blocks ${snapshot.file} (from the starter's copy)`);
     writeText(snapshot.file, merged, dryRun);
   }
 }
 
 /** `git merge-file`: `base → ours` applied to `current`, or a refusal. */
-function mergeThreeWay(file, current, base, ours, id) {
+function mergeThreeWay(file, current, base, ours) {
   const dir = mkdtempSync(join(tmpdir(), 'flama-merge-'));
   try {
     const paths = ['current', 'base', 'ours'].map((name) => join(dir, name));
@@ -399,51 +360,19 @@ function mergeThreeWay(file, current, base, ours, id) {
       writeFileSync(paths[index], text);
     }
     try {
-      return execFileSync('git', ['merge-file', '-p', '--diff3', ...paths], { encoding: 'utf8' });
+      return execFileSync('git', ['merge-file', '-p', ...paths], { encoding: 'utf8' });
     } catch (error) {
-      if (!(typeof error.status === 'number' && error.status > 0)) throw error;
-      const settled = keepBothInsertions(file, error.stdout, id);
-      if (settled !== null) return settled;
-      fail(
-        `${file}: the project changed the lines the plugin's blocks go between; ` +
-          'merge by hand from the starter, or remove the conflicting edit first',
-      );
+      if (typeof error.status === 'number' && error.status > 0) {
+        fail(
+          `${file}: the project changed the lines the plugin's blocks go between; ` +
+            'merge by hand from the starter, or remove the conflicting edit first',
+        );
+      }
+      throw error;
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
-}
-
-/**
- * Settle the one conflict a replay meets without guessing: the project added
- * lines exactly where the starter's copy puts this feature's blocks — most
- * often another installed feature's block, which that copy never had.
- * Nothing is replaced on either side, so both stay: the starter's block
- * first, since what the project added came after the starter was cut.
- * Anything else — a base line either side changed, or a side that is more
- * than this feature's blocks — is `null`, and the install refuses.
- */
-function keepBothInsertions(file, text, id) {
-  const lines = text.split('\n');
-  const out = [];
-  for (let i = 0; i < lines.length; i += 1) {
-    if (!lines[i].startsWith('<<<<<<< ')) {
-      out.push(lines[i]);
-      continue;
-    }
-    const sides = { current: [], base: [], ours: [] };
-    let side = sides.current;
-    for (i += 1; i < lines.length && !lines[i].startsWith('>>>>>>> '); i += 1) {
-      if (lines[i].startsWith('||||||| ')) side = sides.base;
-      else if (lines[i] === '=======') side = sides.ours;
-      else side.push(lines[i]);
-    }
-    if (sides.base.length) return null;
-    const rest = grammar(() => dropBlocks(file, sides.ours.join('\n'), new Set([id])));
-    if (rest === null || rest.trim()) return null;
-    out.push(...sides.ours, ...sides.current);
-  }
-  return out.join('\n');
 }
 
 /**
@@ -484,15 +413,21 @@ export function trimCopied(manifest, paths, known, dryRun) {
 export function applyJsonEdits(manifest, dryRun) {
   for (const edit of manifest.feature.json ?? []) {
     const target = join(ROOT, edit.file);
-    if (!existsSync(target)) {
-      // The file lives in a tree this project pruned — the consumer package,
-      // gone with the last app that needed it — so the edit has nothing to say.
-      if (edit.needs) {
-        console.log(`  skip   ${edit.file} (no ${edit.needs} in this project)`);
-        continue;
-      }
-      fail(`${edit.file} does not exist; cannot apply a JSON edit`);
+    // What the edit lands in went with something this project pruned — the
+    // file, in a tree gone with the last app that needed it (the consumer
+    // package), or the value, in the entry of a feature it does not have (the
+    // organizations paths the MCP server's tools join) — so the edit has
+    // nothing to say. `needs` is what says it may.
+    const landing =
+      existsSync(target) &&
+      edit.path
+        .slice(0, -1)
+        .reduce((node, key) => node?.[key], JSON.parse(readFileSync(target, 'utf8'))) !== undefined;
+    if (!landing && edit.needs) {
+      console.log(`  skip   ${edit.file} (no ${edit.needs} in this project)`);
+      continue;
     }
+    if (!existsSync(target)) fail(`${edit.file} does not exist; cannot apply a JSON edit`);
     const original = readFileSync(target, 'utf8');
     let text = original;
     // Without a position a value is appended, which is always valid JSON.
