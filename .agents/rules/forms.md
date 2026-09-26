@@ -14,7 +14,8 @@ a **Zod schema from `@flama/shared`**. Do not hand-roll form state: no
 a submit handler, and no relying on the browser's native `required` /
 `type="email"` for validation.
 
-The resolver always comes from the app's `useZodResolver` hook, never from
+The resolver always comes from the platform kit's `useZodResolver` hook
+(`@flama/frontend-web` or `@flama/frontend-mobile`), never from
 `zodResolver` directly — that hook is what keeps failure messages translated.
 
 ## Web (`apps/web`)
@@ -32,7 +33,7 @@ import {
 } from "@flama/design-system-web";
 import { type LoginDto, loginSchema } from "@flama/shared/schemas/auth";
 import { useForm } from "react-hook-form";
-import { useZodResolver } from "@/lib/use-zod-resolver";
+import { useZodResolver } from "@flama/frontend-web";
 
 const {
   register,
@@ -70,7 +71,7 @@ const {
 ## Mobile (`apps/mobile`)
 
 React Native has no DOM refs, so `register()` does not work. Every field goes
-through `Controller`, wired to the app-local `FormField` (label + control +
+through `Controller`, wired to the mobile kit's `FormField` (label + control +
 error, mirroring the web `Field`).
 
 ```tsx
@@ -120,12 +121,14 @@ untranslated by design.
 
 ## Adding a message
 
-`createZodErrorMap` (in `@flama/frontend/validation`) maps a Zod issue code onto
+`createZodErrorMap` (in `@flama/frontend-core/validation`) maps a Zod issue code onto
 a `validation.*` translation key. To cover a new issue code:
 
 1. Add the case to `createZodErrorMap`.
 2. Add the key to `ValidationMessageKey` in the same file.
-3. Add the message to **every** locale in `packages/translations/*/index.json`.
+3. Add the message to **every** locale in `packages/translations/*/validation.json`,
+   then run `pnpm --filter @flama/translations assemble` (the `index.json`
+   beside it is generated).
 
 `TranslateFn` is narrow on purpose — each app hands it a `t` typed over the
 whole catalog, so a key you forget to add is a compile error rather than a raw

@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, Card, cn, Skeleton } from '@flama/design-system-web';
+import { Alert, AlertDescription, Card, Skeleton } from '@flama/design-system-web';
 import {
   Lock,
   type LucideIcon,
@@ -7,10 +7,10 @@ import {
   UserRound,
 } from '@flama/design-system-web/icons';
 import { useMyProfile, useUploadAvatar } from '@flama/frontend-consumer/react';
-import { PageHead, useErrorMessage } from '@flama/frontend-web';
-import { useState } from 'react';
+import { PageHead, SectionNav, useErrorMessage } from '@flama/frontend-web';
 import { useTranslation } from 'react-i18next';
 import { ProfileHero } from '@/features/profile/components/profile-hero';
+import type { ProfilePane } from '@/features/profile/lib/panes';
 import { DetailsSection } from '@/features/profile/sections/details';
 import { PasswordSection } from '@/features/profile/sections/password';
 import { PreferencesSection } from '@/features/profile/sections/preferences';
@@ -21,23 +21,26 @@ const SECTIONS = [
   { key: 'password', icon: Lock },
   { key: 'sessions', icon: Monitor },
   { key: 'preferences', icon: SlidersHorizontal },
-] as const satisfies readonly { key: string; icon: LucideIcon }[];
-
-type SectionKey = (typeof SECTIONS)[number]['key'];
+] as const satisfies readonly { key: ProfilePane; icon: LucideIcon }[];
 
 /**
  * The signed-in user's own account: one hero card, then a sub-navigation into
- * four panes.
+ * four panes. The open pane is the route's, kept in the URL.
  *
  * The hero and the details pane both need the profile, so it is fetched once
  * here and handed down — the panes below it own their own data (sessions,
  * preferences), which is what lets a slow session list keep the rest of the
  * page interactive.
  */
-export function ProfileScreen() {
+export function ProfileScreen({
+  section,
+  onSectionChange,
+}: {
+  section: ProfilePane;
+  onSectionChange: (next: ProfilePane) => void;
+}) {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
-  const [section, setSection] = useState<SectionKey>('details');
   const profile = useMyProfile();
   const upload = useUploadAvatar();
 
@@ -47,7 +50,7 @@ export function ProfileScreen() {
 
       {profile.isPending && (
         <Card className="gap-0 py-0">
-          <div className="flex items-center gap-[18px] px-[22px] py-5">
+          <div className="flex items-center gap-4.5 px-5.5 py-5">
             <Skeleton className="size-16 flex-none rounded-full" />
             <div className="flex flex-1 flex-col gap-2">
               <Skeleton className="h-6 w-48" />
@@ -72,37 +75,22 @@ export function ProfileScreen() {
             onPickPhoto={(file) => upload.mutate(file)}
           />
 
-          <div className="mt-6 grid items-start gap-9 [grid-template-columns:216px_1fr] max-[940px]:grid-cols-1 max-[940px]:gap-[22px]">
-            <nav
-              aria-label={t('pages.profile.title')}
-              className="sticky top-0 flex flex-col gap-0.5"
-            >
-              {SECTIONS.map(({ key, icon: Icon }) => (
-                <button
-                  key={key}
-                  type="button"
-                  aria-current={section === key ? 'page' : undefined}
-                  onClick={() => setSection(key)}
-                  className={cn(
-                    'flex w-full cursor-pointer items-center gap-2.5 rounded-md px-[11px] py-[9px] text-left text-base text-ink-600 transition-colors hover:bg-surface-hover hover:text-ink-900',
-                    section === key && 'bg-surface-sunken font-medium text-ink-900',
-                  )}
-                >
-                  <Icon
-                    className={cn('size-[15px]', section === key ? 'text-ink-900' : 'text-ink-400')}
-                  />
-                  {t(`profile.sections.${key}`)}
-                </button>
-              ))}
-            </nav>
-
-            <div className="min-w-0">
-              {section === 'details' && <DetailsSection profile={profile.data} />}
-              {section === 'password' && <PasswordSection profile={profile.data} />}
-              {section === 'sessions' && <SessionsSection />}
-              {section === 'preferences' && <PreferencesSection />}
-            </div>
-          </div>
+          <SectionNav
+            className="mt-6"
+            label={t('pages.profile.title')}
+            items={SECTIONS.map(({ key, icon }) => ({
+              key,
+              icon,
+              label: t(`profile.sections.${key}`),
+            }))}
+            active={section}
+            onSelect={onSectionChange}
+          >
+            {section === 'details' && <DetailsSection profile={profile.data} />}
+            {section === 'password' && <PasswordSection profile={profile.data} />}
+            {section === 'sessions' && <SessionsSection />}
+            {section === 'preferences' && <PreferencesSection />}
+          </SectionNav>
         </>
       )}
     </>

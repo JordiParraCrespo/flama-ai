@@ -34,6 +34,6 @@ export class FlagChangeOrmEntity {
   @Column({ type: 'jsonb', nullable: true })
   after!: Record<string, unknown> | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

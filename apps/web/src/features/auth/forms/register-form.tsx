@@ -4,6 +4,7 @@ import {
   AuthFormError,
   authControlClass,
   authInputClass,
+  PasswordChecklist,
   PasswordInput,
   type PasswordRule,
   useZodResolver,
@@ -11,7 +12,6 @@ import {
 import { type RegisterDto, registerSchema } from '@flama/shared/schemas/auth';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { PasswordChecklist } from '@/features/auth/components/password-checklist';
 
 const RULES: readonly PasswordRule[] = ['length', 'case', 'number'];
 

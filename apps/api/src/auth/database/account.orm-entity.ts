@@ -1,12 +1,24 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
 /**
  * Maps the Better Auth `account` table (credential + OAuth provider links).
  * Owned by Better Auth; declared here so TypeORM creates/migrates the table.
+ * `userId` references `user` (`FK_account_user`, ON DELETE CASCADE); the
+ * foreign key lives in the migration, as for every entity here.
  */
 @Entity('account')
+@Index('IDX_account_userId', ['userId'])
+@Unique('UQ_account_providerId_accountId', ['providerId', 'accountId'])
 export class Account {
-  @PrimaryColumn({ type: 'uuid' })
+  @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'PK_account' })
   id!: string;
 
   @Column({ type: 'uuid' })
@@ -27,10 +39,10 @@ export class Account {
   @Column({ type: 'varchar', nullable: true })
   idToken!: string | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   accessTokenExpiresAt!: Date | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   refreshTokenExpiresAt!: Date | null;
 
   @Column({ type: 'varchar', nullable: true })
@@ -39,9 +51,9 @@ export class Account {
   @Column({ type: 'varchar', nullable: true })
   password!: string | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 }

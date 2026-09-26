@@ -1,3 +1,4 @@
+export { type AbilityState, useAbility, useAbilityState } from './ability';
 export {
   analyticsKeys,
   type CaptureEventVariables,
@@ -16,6 +17,7 @@ export {
   useLogin,
   useLogout,
   useResetPassword,
+  useRespondToConsent,
   useSessionRestore,
   useSocialLogin,
 } from './auth.queries';
@@ -34,7 +36,8 @@ export {
   useFeatureFlagValue,
 } from './feature-flags.queries';
 export { useAuthState } from './hooks';
-export { withCacheOnSuccess } from './mutations';
+export { useLocale } from './locale';
+export { type HookMutationOptions, withCacheOnSuccess } from './mutations';
 export {
   cacheOwnerKey,
   createQueryPersistOptions,

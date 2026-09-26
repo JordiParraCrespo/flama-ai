@@ -1,5 +1,5 @@
+import { useAbilityState } from '@flama/frontend-core/react';
 import type { NavItem, NavTo } from '../lib/nav';
-import { useAbilityState } from './use-ability';
 import { useShellConfig } from './use-shell';
 
 /**

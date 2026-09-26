@@ -1,16 +1,10 @@
 'use client';
 
 import type { UpdateUserSettingsDto } from '@flama/shared/schemas/profile';
-import {
-  type UseMutationOptions,
-  type UseQueryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UserSettingsEntity } from '../modules/user-settings/user-settings.entity';
 import { useFlamaApp } from './context';
-import { withCacheOnSuccess } from './mutations';
+import { type HookMutationOptions, withCacheOnSuccess } from './mutations';
 import { userSettingsKeys } from './query-keys';
 
 export { userSettingsKeys };
@@ -28,7 +22,7 @@ export function useUserSettings(
 }
 
 export function useUpdateUserSettings(
-  options?: UseMutationOptions<UserSettingsEntity, Error, UpdateUserSettingsDto>,
+  options?: HookMutationOptions<UserSettingsEntity, Error, UpdateUserSettingsDto>,
 ) {
   const app = useFlamaApp();
   const queryClient = useQueryClient();

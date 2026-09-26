@@ -1,5 +1,13 @@
 import type { Role } from '@flama/shared';
 
+/**
+ * The avatar fallback for someone with no picture: the first letter of each
+ * name, upper-cased. One definition for every entity that names a person.
+ */
+export function personInitials(firstName: string, lastName: string): string {
+  return `${firstName.trim().charAt(0)}${lastName.trim().charAt(0)}`.toUpperCase();
+}
+
 export class UserEntity {
   constructor(
     public readonly id: string,
@@ -14,6 +22,11 @@ export class UserEntity {
 
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;
+  }
+
+  /** Fallback for the avatar: the initials shown when there is no picture. */
+  get initials(): string {
+    return personInitials(this.firstName, this.lastName);
   }
 
   get isAdmin(): boolean {

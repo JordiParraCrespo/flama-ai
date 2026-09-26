@@ -31,6 +31,6 @@ export class OrganizationOrmEntity {
   @Column({ type: 'int', default: 1 })
   roleVersion!: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

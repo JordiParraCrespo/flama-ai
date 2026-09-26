@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { IncomingHttpHeaders } from 'node:http';
+import { AppError } from '@flama/backend-core';
 import type {
   AddMemberDto,
   CreateOrganizationDto,
@@ -21,6 +22,7 @@ import type { UserRoleRepositoryPort } from '../roles/database/user-role.reposit
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from '../roles/roles.di-tokens';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
 import { MemberOrmEntity } from './database/member.orm-entity';
+import { OrganizationErrors } from './domain/organization.errors';
 import type {
   FullOrganizationResponseDto,
   MemberResponseDto,
@@ -446,11 +448,11 @@ export class OrganizationsService {
     return (await this.enrichMembers([member]))[0];
   }
 
-  async getActiveMember(headers: IncomingHttpHeaders): Promise<MemberResponseDto> {
-    const result = await invokeOrganizationApi(() =>
-      auth.api.getActiveMember({ headers: this.headers(headers) }),
-    );
-    return (await this.enrichMembers([mapMember(result)]))[0];
+  /** The caller's own membership in `organizationId`. */
+  async getMembership(organizationId: string, userId: string): Promise<MemberResponseDto> {
+    const member = await this.memberRecords.findOne({ where: { organizationId, userId } });
+    if (!member) throw new AppError(OrganizationErrors.NOT_A_MEMBER);
+    return (await this.enrichMembers([mapMember(member)]))[0];
   }
 
   private async enrichMembers(members: MemberResponseDto[]): Promise<MemberResponseDto[]> {

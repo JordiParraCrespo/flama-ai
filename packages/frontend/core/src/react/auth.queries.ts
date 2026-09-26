@@ -8,7 +8,11 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { SocialAuthIntent, SocialProvider } from '../modules/auth/auth.client';
+import type {
+  OAuthConsentParams,
+  SocialAuthIntent,
+  SocialProvider,
+} from '../modules/auth/auth.client';
 import { useFlamaApp } from './context';
 import { featureFlagsQueryOptions } from './feature-flags.queries';
 import { withCacheOnSuccess } from './mutations';
@@ -138,6 +142,22 @@ export function useChangePassword(
   return useMutation({
     mutationFn: ({ currentPassword, newPassword }) =>
       app.auth.changePassword(currentPassword, newPassword),
+    ...options,
+  });
+}
+
+/**
+ * Answer an OAuth client's consent request. Resolves with the redirect URI the
+ * caller hands the browser to; nothing in the cache changes, since the grant is
+ * the OAuth client's, not this app's.
+ */
+export function useRespondToConsent(
+  options?: Omit<UseMutationOptions<string, Error, OAuthConsentParams>, 'mutationFn'>,
+) {
+  const app = useFlamaApp();
+
+  return useMutation({
+    mutationFn: (params: OAuthConsentParams) => app.auth.respondToConsent(params),
     ...options,
   });
 }

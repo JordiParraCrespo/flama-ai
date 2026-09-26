@@ -1,11 +1,11 @@
+import type { ReactNode } from 'react';
+import { type Control, type FieldValues, type Path, useWatch } from 'react-hook-form';
 import {
   checkPassword,
   meetsRequirements,
   PasswordRequirements,
   type PasswordRule,
-} from '@flama/frontend-web';
-import type { ReactNode } from 'react';
-import { type Control, type FieldValues, type Path, useWatch } from 'react-hook-form';
+} from './password-requirements';
 
 /**
  * The live password checklist, subscribed at the leaf.
@@ -13,6 +13,9 @@ import { type Control, type FieldValues, type Path, useWatch } from 'react-hook-
  * It watches the password field (and the confirmation, when the screen has
  * one) itself, so every keystroke re-renders this checklist and whatever the
  * render prop returns — the submit button it gates — and not the whole form.
+ *
+ * In the kit because two features need it: sign-up and reset in `auth`, and
+ * the invitation's account step in `organizations`.
  */
 export function PasswordChecklist<TValues extends FieldValues>({
   control,

@@ -21,6 +21,6 @@ export class MemberOrmEntity {
   @Column({ type: 'varchar', default: 'member' })
   role!: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 }

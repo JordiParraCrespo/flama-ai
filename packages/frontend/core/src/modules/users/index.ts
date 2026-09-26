@@ -1,4 +1,4 @@
-export { UserEntity } from './user.entity';
+export { personInitials, UserEntity } from './user.entity';
 export { UsersErrors } from './users.errors';
 export { UsersModule } from './users.module';
 export { UsersRepository } from './users.repository';

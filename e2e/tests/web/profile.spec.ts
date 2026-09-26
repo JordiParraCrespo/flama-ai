@@ -71,19 +71,6 @@ test('lists every pane and moves between them', async ({ page }) => {
   await api.dispose();
 });
 
-test('opens the team page from the card', async ({ page }) => {
-  const { user, api } = await provisionedUser('profileteam');
-  await signInAs(page, user);
-  await openProfile(page);
-
-  // A link rendered through the design system's `Button`, which is what gives
-  // it `role="button"`.
-  await page.getByRole('button', { name: 'View team card' }).click();
-  await expect(page).toHaveURL(/\/team$/);
-
-  await api.dispose();
-});
-
 test.describe('the avatar', () => {
   // A 1×1 PNG is enough: the point is not the pixels but that the stored image
   // is fetched and *decoded* (`naturalWidth > 0`), which only holds if the API
@@ -354,7 +341,9 @@ test.describe('the sessions pane', () => {
     const before = await sessionRows(page).count();
     expect(before).toBeGreaterThan(1);
 
+    // A row's "Sign out" only asks; the dialog is what revokes.
     await page.getByRole('button', { name: 'Sign out', exact: true }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Sign out', exact: true }).click();
     await expect(sessionRows(page)).toHaveCount(before - 1);
 
     // The row is gone because the server dropped it, not because the list
@@ -420,6 +409,10 @@ test.describe('the sessions pane', () => {
     await openPane(page, 'Sessions', 'Sessions');
 
     await page.getByRole('button', { name: 'Sign out all other sessions' }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Sign out all other sessions' })
+      .click();
 
     // Only the browser reading the page survives, and the button has nothing
     // left to do.

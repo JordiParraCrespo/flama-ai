@@ -9,7 +9,11 @@ export function withFeaturePrefix<const T extends readonly unknown[]>(
   return [feature, ...key];
 }
 
-/** Query keys of the signed-in user's own preferences. */
+/**
+ * Query keys of the signed-in user's own preferences. Here rather than beside
+ * the hooks in `user-settings.queries.ts` for the same reason as `authKeys`
+ * below: `persistence.ts` reads it at module load.
+ */
 export const userSettingsKeys = {
   all: ['userSettings'] as const,
   me: () => [...userSettingsKeys.all, 'me'] as const,

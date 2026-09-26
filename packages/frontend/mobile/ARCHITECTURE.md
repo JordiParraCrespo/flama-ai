@@ -2,9 +2,11 @@
 
 The mobile kit is what `apps/mobile` (and `apps/admin-mobile`, a plugin) share below
 their routes. Its top level is **concerns**, not kinds: `src/<concern>/<kind>/`,
-where the kinds are the ones a feature has (`components/`, `hooks/`, `lib/`).
-Most of what is here is glue — native modules, storage, a bundler-level
-bootstrap — so `lib/` is the largest kind, and there is no `dialogs/`.
+where the kinds are the ones a feature has (`components/`, `hooks/`, `lib/`,
+and in `auth` also `forms/` and `screens/`: the sign-in, forgot-password and
+reset-password forms and the two screens both mobile apps mount). Most of what
+is here is glue — native modules, storage, a bundler-level bootstrap — so
+`lib/` is the largest kind, and there is no `dialogs/`.
 
 The package is source-exported: `main`, and one subpath per concern
 (`./analytics`, `./auth`, `./config`, `./forms`, `./i18n`, `./layout`,
@@ -17,12 +19,12 @@ compiles it with the app.
 | --- | --- | --- |
 | `platform` | `createQueryPersistence`, `ExpoSecureStoreService`, the MMKV stores (`storage`, `stateStorage`, `queryStorage`), `initPurchases`, `Sentry`/`sentryEnabled`, the fetch polyfills | leaf |
 | `theme` | `THEME` (the NativeWind variable sets), `NAV_THEME` for React Navigation, `BrandGlyph`, `ThemeToggle` | leaf |
-| `config` | `configManager` over the kernel's `ConfigManager`, `AppConfig`, `staticConfig`, `ConfigManagerContext`, `useConfig` | leaf |
+| `config` | `configManager` over the kernel's `ConfigManager`, `AppConfig`, `staticConfig`, `ConfigManagerContext`, `useConfig` — it reads `platform`'s storage | middle |
 | `forms` | `useZodResolver`, `FormField` (a `Controller` field with its label and error) | leaf |
 | `analytics` | `createMobileAnalyticsClient` (PostHog), `ScreenViewTracker` | leaf |
-| `i18n` | the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`, `LanguageSwitcher` — it reads `platform`'s MMKV store for the saved locale | middle |
-| `layout` | `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback` | middle |
-| `auth` | the sign-in chrome: `AuthLayout`, `BrandLogo`, the `Auth*` primitives, `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`, `SocialLoginButtons`, the provider marks | top |
+| `i18n` | the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`, `LanguageSwitcher`, and — re-exported from `@flama/frontend-core` — `useLocale` and the date formatters; it reads `platform`'s MMKV store for the saved locale | middle |
+| `layout` | `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback` (optional title, message and retrying state) | middle |
+| `auth` | the sign-in chrome: `AuthLayout`, `BrandLogo`, the `Auth*` primitives, `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`, `SocialLoginButtons`, the provider marks, `SignOutButton` (owns `useLogout`); `LoginForm`, `ForgotPasswordForm`, `ResetPasswordForm`; `ForgotPasswordScreen`, `ResetPasswordScreen` | top |
 
 `auth` is the one concern on top, and it is on top because it is the one that
 composes: it frames a screen with the wordmark, the theme pill and the
@@ -37,8 +39,9 @@ which passes them to `packages/tsconfig/depcruise/frontend-kit.cjs`.
 ## The layering, and why
 
 A leaf imports only `@flama/design-system-mobile` and
-`@flama/frontend-core`. A middle concern may import a leaf, and `auth` on top
-may import anything below it. Nothing imports upwards.
+`@flama/frontend-core` — no other concern, not even another leaf
+(`leaves-import-no-leaf`). A middle concern may import a leaf, and `auth` on
+top may import anything below it. Nothing imports upwards.
 
 The rule exists for the reason it exists on web: the concern everyone reaches
 for — here `platform`, with storage and the query client in it — must stay at

@@ -29,6 +29,8 @@
   "expired": "Caducado",
   "revoked": "Revocado",
   "revoke": "Revocar",
+  "revokeTitle": "¿Revocar «{{name}}»?",
+  "revokeDescription": "Todo lo que use este token dejará de funcionar de inmediato. No se puede deshacer.",
   "created": "Token creado",
   "shownOnce": "Cópialo ahora: es la única vez que se muestra.",
   "copy": "Copiar",

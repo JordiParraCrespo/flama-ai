@@ -38,12 +38,3 @@ export function describeScopes(
 
   return { scopes: matched, unknown: [...requested] };
 }
-
-export async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { message?: string };
-    return body.message ?? `Request failed with ${response.status}`;
-  } catch {
-    return `Request failed with ${response.status}`;
-  }
-}

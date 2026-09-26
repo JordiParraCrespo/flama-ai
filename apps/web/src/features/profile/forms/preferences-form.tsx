@@ -12,7 +12,6 @@ import {
   RowMeta,
   SectionCard,
   SectionRow,
-  useTheme,
   useZodResolver,
 } from '@flama/frontend-web';
 import {
@@ -33,27 +32,27 @@ import { useTranslation } from 'react-i18next';
  * resolver: the endpoint is a full replace, so what is sent is the whole
  * document, validated, rather than the one switch that moved.
  *
- * Theme and language are read from the app rather than from the saved
- * document: both are applied locally the moment they change and persist per
- * device, so the server's copy is the cross-device default, not the truth about
- * what this browser is currently showing.
+ * Theme and language arrive as props rather than from the saved document: the
+ * section reads what this browser is showing, and applies a change itself. The
+ * form only collects and submits.
  */
 export function PreferencesForm({
   saved,
+  theme,
+  locale,
   disabled,
   onSubmit,
 }: {
   /** The server's copy of the document, once it has arrived. */
   saved: Partial<UpdateUserSettingsDto> | undefined;
+  /** The theme this browser is showing. */
+  theme: UpdateUserSettingsDto['theme'];
+  /** The language this browser is showing. */
+  locale: Locale;
   disabled: boolean;
   onSubmit: (values: UpdateUserSettingsDto) => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const { theme, setTheme } = useTheme();
-
-  const locale = (LOCALES as readonly string[]).includes(i18n.resolvedLanguage ?? '')
-    ? (i18n.resolvedLanguage as Locale)
-    : DEFAULT_USER_SETTINGS.locale;
+  const { t } = useTranslation();
 
   const { control, handleSubmit, setValue } = useForm<UpdateUserSettingsDto>({
     resolver: useZodResolver(updateUserSettingsSchema),
@@ -89,24 +88,26 @@ export function PreferencesForm({
   return (
     <form onSubmit={submit} noValidate>
       <SectionCard className="mb-6">
-        <SectionRow>
-          <RowMeta
-            name={t('profile.preferences.darkTheme')}
-            description={t('profile.preferences.darkThemeDescription')}
-          />
-          <RowControl>
-            <Switch
-              aria-label={t('profile.preferences.darkTheme')}
-              checked={theme === 'dark'}
-              disabled={disabled}
-              onCheckedChange={(checked) => {
-                const next = checked ? 'dark' : 'light';
-                setTheme(next);
-                save('theme', next);
-              }}
-            />
-          </RowControl>
-        </SectionRow>
+        <Controller
+          control={control}
+          name="theme"
+          render={({ field }) => (
+            <SectionRow>
+              <RowMeta
+                name={t('profile.preferences.darkTheme')}
+                description={t('profile.preferences.darkThemeDescription')}
+              />
+              <RowControl>
+                <Switch
+                  aria-label={t('profile.preferences.darkTheme')}
+                  checked={field.value === 'dark'}
+                  disabled={disabled}
+                  onCheckedChange={(checked) => save('theme', checked ? 'dark' : 'light')}
+                />
+              </RowControl>
+            </SectionRow>
+          )}
+        />
 
         <FieldRow label={t('profile.preferences.language')}>
           <Controller
@@ -117,11 +118,7 @@ export function PreferencesForm({
                 items={localeLabels}
                 value={field.value}
                 disabled={disabled}
-                onValueChange={(next) => {
-                  const value = next as Locale;
-                  void i18n.changeLanguage(value);
-                  save('locale', value);
-                }}
+                onValueChange={(next) => save('locale', next as Locale)}
               >
                 <SelectTrigger
                   id="preferences-language"

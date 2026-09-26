@@ -42,6 +42,10 @@
     "credentialsNote": "Only devices appear here. API keys and connected apps are revoked under API & webhooks — signing out a device leaves them working.",
     "description": "Devices currently signed in to your account. Sign out anything you don't recognise.",
     "empty": "No devices are signed in.",
+    "revokeDescription": "That device will have to sign in again before it can reach your account.",
+    "revokeOthersDescription": "Every device but this one will have to sign in again. API keys and connected apps keep working.",
+    "revokeOthersTitle": "Sign out every other device?",
+    "revokeTitle": "Sign out {{device}}?",
     "signOut": "Sign out",
     "signOutAll": "Sign out all other sessions",
     "thisDevice": "This device",
@@ -49,7 +53,6 @@
     "unknownDevice": "Unrecognised device",
     "unknownLocation": "Unknown address"
   },
-  "viewTeamCard": "View team card",
   "preferences": {
     "title": "Preferences",
     "description": "How the workspace looks and what lands in your inbox.",

@@ -1,3 +1,5 @@
+import { personInitials } from '@flama/frontend-core';
+
 /**
  * The signed-in user's own account, as the profile screen needs it.
  *
@@ -27,9 +29,7 @@ export class ProfileEntity {
 
   /** Fallback for the avatar: the initials shown when there is no picture. */
   get initials(): string {
-    const first = this.firstName.trim().charAt(0);
-    const last = this.lastName.trim().charAt(0);
-    return `${first}${last}`.toUpperCase();
+    return personInitials(this.firstName, this.lastName);
   }
 }
 

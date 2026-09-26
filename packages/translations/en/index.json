@@ -122,7 +122,8 @@
       "FLAG_004": "That segment could not be found.",
       "FLAG_005": "A segment with that key already exists.",
       "FLAG_006": "That segment is still used by a flag. Remove it from the flag's rules first.",
-      "FLAG_007": "Those segment conditions are not valid."
+      "FLAG_007": "Those segment conditions are not valid.",
+      "OAUTH_CONSENT_NO_REDIRECT": "The server did not say where to send you next."
     }
   },
   "auth": {
@@ -146,7 +147,6 @@
       "failedMessage": "Could not sign in.",
       "continueWithGithub": "Continue with GitHub",
       "continueWithGoogle": "Continue with Google",
-      "keepSignedIn": "Keep me signed in",
       "socialFailed": "Could not start social sign-in. Try again, or sign in with your email and password."
     },
     "register": {
@@ -243,10 +243,6 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back, {{name}}.",
-    "totalUsers": "Total Users",
-    "activeSessions": "Active Sessions",
-    "apiCalls": "API Calls",
-    "uptime": "Uptime",
     "gettingStarted": "Getting Started",
     "gettingStartedDescription": "This is a placeholder dashboard. Connect your data and customize it.",
     "accountStatus": "Your role is <role>{{role}}</role> and your account is <status>{{status}}</status>.",
@@ -583,6 +579,8 @@
     "expired": "Expired",
     "revoked": "Revoked",
     "revoke": "Revoke",
+    "revokeTitle": "Revoke “{{name}}”?",
+    "revokeDescription": "Anything using this token stops working immediately. This cannot be undone.",
     "created": "Token created",
     "shownOnce": "Copy it now — this is the only time it is shown.",
     "copy": "Copy",
@@ -603,7 +601,7 @@
     "invalidTitle": "This link has expired",
     "invalidDescription": "Start the connection again from the application that sent you here.",
     "backToDashboard": "Back to dashboard",
-    "noRedirect": "The server did not say where to send you next."
+    "unknownClient": "An application"
   },
   "onboarding": {
     "description": "Your account is ready. Create a workspace for your team, or join one you have been invited to.",
@@ -806,6 +804,10 @@
       "credentialsNote": "Only devices appear here. API keys and connected apps are revoked under API & webhooks — signing out a device leaves them working.",
       "description": "Devices currently signed in to your account. Sign out anything you don't recognise.",
       "empty": "No devices are signed in.",
+      "revokeDescription": "That device will have to sign in again before it can reach your account.",
+      "revokeOthersDescription": "Every device but this one will have to sign in again. API keys and connected apps keep working.",
+      "revokeOthersTitle": "Sign out every other device?",
+      "revokeTitle": "Sign out {{device}}?",
       "signOut": "Sign out",
       "signOutAll": "Sign out all other sessions",
       "thisDevice": "This device",
@@ -813,7 +815,6 @@
       "unknownDevice": "Unrecognised device",
       "unknownLocation": "Unknown address"
     },
-    "viewTeamCard": "View team card",
     "preferences": {
       "title": "Preferences",
       "description": "How the workspace looks and what lands in your inbox.",
@@ -1012,16 +1013,10 @@
       "notifications": "Notifications",
       "security": "Security"
     },
-    "saved": "Saved",
     "security": {
       "description": "Every device signed in to your account, and a way to end any of them.",
       "sessions": "Active sessions",
-      "sessionsNote": "Only devices appear here. API keys and connected apps are revoked under API & webhooks — signing out a device leaves them working.",
-      "signOut": "Sign out",
-      "signOutOthers": "Sign out all others",
-      "thisDevice": "This device",
-      "title": "Security",
-      "unknownDevice": "Unknown device"
+      "title": "Security"
     },
     "subtitle": "Workspace-wide configuration for {{organization}}.",
     "subtitleFallback": "Workspace-wide configuration.",

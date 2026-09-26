@@ -1,6 +1,9 @@
 import { LayoutDashboard, Settings } from '@flama/design-system-web/icons';
 import { useMyPermissions } from '@flama/frontend-core/react';
-import type { PermissionDefinition } from '@flama/shared/permissions';
+import {
+  defineAbilitiesFromPermissions,
+  type PermissionDefinition,
+} from '@flama/shared/permissions';
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NavItem } from '../lib/nav';
@@ -22,7 +25,22 @@ const NAV: readonly NavItem[] = [
  * open must not be routed in a circle.
  */
 
-vi.mock('@flama/frontend-core/react', () => ({ useMyPermissions: vi.fn() }));
+// The permission query is the one thing stubbed. `useAbilityState` lives in
+// the kernel beside it, so the stub rebuilds the ability from the permissions
+// the same way the real hook does; everything under test here is the nav's.
+vi.mock('@flama/frontend-core/react', () => {
+  const useMyPermissions = vi.fn();
+  return {
+    useMyPermissions,
+    useAbilityState: () => {
+      const { data, isError } = useMyPermissions();
+      return {
+        ability: data ? defineAbilitiesFromPermissions(data) : undefined,
+        isUnavailable: !data && isError,
+      };
+    },
+  };
+});
 
 function signedInWith(permissions: PermissionDefinition[]) {
   vi.mocked(useMyPermissions).mockReturnValue({
