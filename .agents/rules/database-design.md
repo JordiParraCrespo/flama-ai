@@ -155,12 +155,6 @@ explains why this is a table of its own). Read one before writing a new one.
   "startsAt" <= interval '7 days'`) wherever an open-ended row would block
   others. Without `isfinite`, `'infinity'` fails with an arithmetic error
   instead of the constraint's name.
-- A column holding a link the app will navigate to is checked as an in-app
-  path: it starts with one `/`, and contains no backslash, whitespace or
-  control character (`"link" ~ '^/[^/\\]' AND "link" !~ '[\\[:space:][:cntrl:]]'`).
-  Browsers read `//host`, `/\host` and `/<tab>/host` as another site, so a
-  looser check is an open redirect. External links are their own column,
-  `https://` only.
 - Secrets are never stored in the clear: store a SHA-256 hex digest
   (`varchar(64)`) with a unique index, plus a short non-secret display prefix,
   as `api_token` does.
