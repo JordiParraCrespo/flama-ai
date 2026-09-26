@@ -18,7 +18,7 @@ effective permissions = credential scopes ∩ owner's live CASL ability
 ```
 
 A browser session carries no scopes and is governed by roles alone. An API
-token or OAuth grant is additionally narrowed. Two properties fall out of this
+token is additionally narrowed. Two properties fall out of this
 and must not be broken:
 
 - a token can never be minted with more reach than its creator has
@@ -30,8 +30,8 @@ and must not be broken:
 
 `packages/shared/src/scopes/catalog.ts` defines the permission groups, each
 with a Read and an Edit level. **Add a resource there and nowhere else** — the
-API guard, the MCP tool registry, the CLI and the web permission picker all
-read from it.
+API guard and the web permission picker both read from it, and so does every
+client a token is handed to: a scope removed from it breaks them all.
 
 - `write` implies `read` on the same resource (`expandScopes`). Never grant both
   explicitly; grant `write`.
@@ -74,9 +74,8 @@ identity or data already served to anonymous callers (currently
 ## Credential handling
 
 - Token secrets are **only** ever stored as a SHA-256 digest. Never log a
-  secret, never put one in a cache key (`credentialId` for OAuth is a digest
-  prefix for exactly this reason), never add an endpoint that returns one after
-  creation.
+  secret, never put one in a cache key, never add an endpoint that returns one
+  after creation.
 - Authentication failures share one opaque error (`TOKEN_003`) whether the
   token is unknown, revoked or expired — distinguishing them hands out a
   probing oracle. Authorization failures are specific, because the caller
@@ -98,15 +97,3 @@ plugin). It is cached per credential for ten minutes.
 
 If you add a façade that calls `auth.api.*` with the incoming headers, this
 already works. If you bypass the guard, it will not.
-
-## The MCP server and the CLI
-
-Neither is in this repo: they are the `mcp` and `cli` plugins
-(`pnpm plugin:add mcp`, `pnpm plugin:add cli`), and their rules travel with
-them in `apps/mcp/AGENTS.md` and `apps/cli/AGENTS.md`. The `mcp` plugin also
-makes the API an OAuth provider — Better Auth's MCP plugin, bound behind
-`OAUTH_GRANT_VERIFIER` — and adds the consent screen. What stays true here is
-the contract they consume: the scope catalog above is what a credential is
-scoped against, so a scope removed from `packages/shared/src/scopes/` breaks
-installed MCP clients and CLIs alike, and an MCP tool declares the same scope
-its endpoint's `@RequireScopes` does.

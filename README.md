@@ -26,7 +26,7 @@ added when a project wants them, with `pnpm plugin:add <id>`:
 | Plugin          | What it adds                                                          |
 | --------------- | --------------------------------------------------------------------- |
 | `cli`           | `apps/cli` — the `flama` command line, driven by scoped API tokens     |
-| `mcp`           | `apps/mcp` — MCP server (stdio + Streamable HTTP), scope-filtered tools, and the API's OAuth provider for MCP clients |
+| `mcp`           | `apps/mcp` — MCP server over the API, and the OAuth provider its clients sign in through |
 | `docs`          | `apps/docs` — the Docusaurus site                                     |
 | `admin-web`     | `apps/admin-web` — control plane for users, roles and permissions     |
 | `admin-mobile`  | `apps/admin-mobile` — the Expo control plane                          |
@@ -133,9 +133,8 @@ second implementation of it.
 | API Docs (Swagger) | http://localhost:3001/api/docs |
 | Runner             | http://localhost:3006          |
 
-`pnpm plugin:add admin-web` serves the control plane on `:3003`,
-`pnpm plugin:add docs` the Docusaurus site on `:3002`, and
-`pnpm plugin:add mcp` the MCP server's HTTP entrypoint on `:3005/mcp`.
+`pnpm plugin:add admin-web` serves the control plane on `:3003`, and
+`pnpm plugin:add docs` the Docusaurus site on `:3002`.
 
 ## Tech stack
 
@@ -146,7 +145,7 @@ second implementation of it.
 - **Mobile**: Expo, NativeWind + rn-primitives
 - **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
 - **Authorization**: Database-backed RBAC — roles and permissions managed through the API, enforced with CASL
-- **Scoped credentials**: API tokens — and, with the `cli` and `mcp` plugins, their clients — share one scope catalog; a credential's effective access is the intersection of its scopes and the user's roles
+- **API tokens**: scoped by one shared catalog — a token's effective access is the intersection of its scopes and the user's roles
 - **Validation**: Zod
 - **State**: Zustand + TanStack Query
 - **DI**: InversifyJS (frontend), NestJS (backend)

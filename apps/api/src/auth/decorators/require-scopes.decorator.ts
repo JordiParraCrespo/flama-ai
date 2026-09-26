@@ -4,7 +4,7 @@ import { SetMetadata } from '@nestjs/common';
 export const REQUIRE_SCOPES_KEY = 'require_scopes';
 
 /**
- * Declares the scopes a *scoped credential* (API token or OAuth access token)
+ * Declares the scopes a *scoped credential* (an API token)
  * must carry to call this route. Browser sessions ignore it — they are governed
  * by `@CheckPolicies` and the user's roles.
  *

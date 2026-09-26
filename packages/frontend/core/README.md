@@ -21,9 +21,7 @@ query-cache persistence policy, and the contracts the two products meet on.
   `NoopAnalyticsClient`, `ANALYTICS_EVENTS`, `sanitizeUrlProperties`, the
   `IAnalyticsClient` port.
 - **modules/auth** — `AuthService`, `AuthRepository`, `AuthModule`,
-  `AuthErrors`, `createAuthStore` (also at `./state`), the `IAuthClient` port
-  (with the optional `respondToConsent` a platform hosting the OAuth consent
-  page implements).
+  `AuthErrors`, `createAuthStore` (also at `./state`), the `IAuthClient` port.
 - **modules/capabilities** — `CapabilitiesService`, `CapabilitiesRepository`,
   `CapabilitiesModule`, `CapabilitiesErrors`.
 - **modules/feature-flags** — `FeatureFlagsService`, `FeatureFlagsRepository`,
@@ -50,8 +48,7 @@ query-cache persistence policy, and the contracts the two products meet on.
 
 - `FlamaProvider`, `useFlamaApp`, `useAuthState`.
 - Session: `useLogin`, `useLogout`, `useSessionRestore`, `useSocialLogin`,
-  `useForgotPassword`, `useResetPassword`, `useChangePassword`,
-  `useRespondToConsent`, `authKeys`.
+  `useForgotPassword`, `useResetPassword`, `useChangePassword`, `authKeys`.
 - Permissions: `useAbilityState` / `useAbility`, the caller's CASL ability
   rebuilt from `useMyPermissions`.
 - Locale and errors: `useLocale` (the resolved language to format in),

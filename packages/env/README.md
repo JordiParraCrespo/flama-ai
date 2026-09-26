@@ -42,7 +42,5 @@ const { root, loaded, applied } = loadEnv();
   `database/seed.ts`, `generate-openapi.ts`) and `auth/infrastructure/better-auth.config.ts` load it first.
 - `apps/mobile` (and `apps/admin-mobile`, a plugin) — each app's `app.config.ts` calls it so
   Expo/Metro inline `EXPO_PUBLIC_*` values from the root `.env`.
-- `apps/mcp` (the `mcp` plugin) — both entrypoints load it (a no-op when the
-  server is installed outside the repo).
 - `apps/web` does **not** need it: `vite.config.ts` points `envDir` at the
   workspace root, so Vite reads the root `.env` itself.

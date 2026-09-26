@@ -17,7 +17,6 @@ export {
   useLogin,
   useLogout,
   useResetPassword,
-  useRespondToConsent,
   useSessionRestore,
   useSocialLogin,
 } from './auth.queries';

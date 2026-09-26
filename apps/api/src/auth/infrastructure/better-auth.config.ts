@@ -12,6 +12,7 @@ import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
+// flama:plugins auth-plugin-imports
 
 // flama:begin organizations
 import { organizationPlugin, withActiveOrganization } from './organization-plugin.config';
@@ -144,9 +145,8 @@ export const auth = betterAuth({
      * Two columns on Better Auth's `session` table that say a row is not a
      * device.
      *
-     * `DelegatedSessionAdapter` mints internal sessions so an API token or an
-     * OAuth client can reach the façades that resolve their caller through
-     * Better Auth. Those rows are bridges, not sign-ins, and the profile and
+     * `DelegatedSessionAdapter` mints internal sessions so a scoped credential
+     * can reach the façades that resolve their caller through Better Auth. Those rows are bridges, not sign-ins, and the profile and
      * security "Active sessions" lists read `delegated` to leave them out. It
      * is a persisted fact rather than the `userAgent` prefix they also carry:
      * a user agent is a label a client chooses, and a browser that sent
@@ -338,7 +338,7 @@ export const auth = betterAuth({
     // Accepts `Authorization: Bearer <session token>`. Used by the API's own
     // auth guard, which mints a short-lived delegated session for a scoped
     // credential so the organization/admin façades — which resolve the caller
-    // through Better Auth — keep working for API tokens and OAuth clients.
+    // through Better Auth — keep working for API tokens.
     bearer(),
   ],
 });

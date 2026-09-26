@@ -49,7 +49,7 @@ const INITIAL_GENERATION = 'initial';
  *
  * Several modules (organizations, members, invitations, workspaces, admin) are
  * façades over Better Auth's server API, which resolves the caller from their
- * session. An API token or OAuth access token carries no such session, so this
+ * session. A scoped credential carries no such session, so this
  * service mints a short-lived one for the credential's owner and hands back its
  * token; the auth guard then presents it as `Authorization: Bearer <token>`,
  * which the Better Auth `bearer` plugin accepts.
@@ -61,8 +61,8 @@ const INITIAL_GENERATION = 'initial';
  * The rows are marked `delegated` (see `auth.ts`), which keeps them out of the
  * profile and security "Active sessions" lists: they are bridges, not devices,
  * and offering someone a "Sign out" button for one would promise a revocation
- * it cannot deliver — the credential mints another on its next request. API
- * tokens and OAuth grants are revoked where they are managed.
+ * it cannot deliver — the credential mints another on its next request. A
+ * credential is revoked where it is managed.
  */
 @Injectable()
 export class DelegatedSessionAdapter implements DelegatedSessionPort {
@@ -194,7 +194,7 @@ export class DelegatedSessionAdapter implements DelegatedSessionPort {
    *
    * Rotating a generation stamp rather than deleting keys is what makes this
    * possible: the cache offers no wildcard delete, and the credential ids are
-   * spread across API tokens and OAuth grants. One write moves the user onto
+   * spread across every credential the user holds. One write moves the user onto
    * fresh keys and every stale entry becomes unreachable at once.
    */
   async invalidateForUser(userId: string): Promise<void> {

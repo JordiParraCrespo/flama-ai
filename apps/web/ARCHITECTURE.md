@@ -96,8 +96,7 @@ while carrying every other key through untouched.
 `_auth/_public/` the four sign-in screens, `_auth/accept-invitation.tsx` the
 invitation, `_auth/onboarding.tsx` the workspace step. It is not "every page
 outside the console" — `/`, `/about`, `/privacy` and `/terms` are outside it
-too (and `/oauth/consent`, with the `mcp` plugin), each its own page with no
-shared chrome.
+too, each its own page with no shared chrome.
 
 The layout carries no guard, because its children want three different answers
 to "who may be here":

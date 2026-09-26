@@ -48,6 +48,7 @@ export const IMAGES = {
   // flama:begin runner
   runner: '@flama/runner',
   // flama:end runner
+  // flama:plugins images
 };
 
 /**

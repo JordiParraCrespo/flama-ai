@@ -2,7 +2,6 @@ export type {
   AuthSession,
   AuthSessionUser,
   IAuthClient,
-  OAuthConsentParams,
   SignUpParams,
   SocialAuthIntent,
   SocialProvider,

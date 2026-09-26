@@ -12,6 +12,7 @@ import { CredentialScopeResolver } from './application/credential-scope.resolver
 import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
 import { CREDENTIAL_SCOPE, CREDENTIAL_VERIFIER, DELEGATED_SESSION } from './auth.di-tokens';
 import { Account } from './database/account.orm-entity';
+// flama:plugins auth-entity-imports
 import { Session } from './database/session.orm-entity';
 import { Verification } from './database/verification.orm-entity';
 import { ApiAuthGuard } from './guards/api-auth.guard';
@@ -20,14 +21,15 @@ import { PoliciesGuard } from './guards/policies.guard';
 import { ScopesGuard } from './guards/scopes.guard';
 import { BetterAuthCredentialVerifierAdapter } from './infrastructure/better-auth-credential-verifier.adapter';
 import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adapter';
+// flama:plugins auth-provider-imports
 
 /**
  * Registers the Better Auth tables with TypeORM (so the schema is created /
  * migrated alongside the rest of the app) and exposes the guards that
  * authenticate and authorize requests:
  *
- * - {@link ApiAuthGuard} — authenticates a session cookie, an API token or an
- *   OAuth access token, and populates `request.user` / `request.scopeContext`.
+ * - {@link ApiAuthGuard} — authenticates a session or an API token, and
+ *   populates `request.user` / `request.scopeContext`.
  * - {@link PoliciesGuard} — CASL check against the caller's roles.
  * - {@link ScopesGuard} — registered globally in `AppModule`; narrows scoped
  *   credentials to the permissions and organizations they were granted.
@@ -35,8 +37,7 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
  * The Better Auth HTTP handler itself is wired up via
  * `AuthModule.forRoot({ auth })` from `@thallesp/nestjs-better-auth` in
  * the root `AppModule`. The organization/team tables are Better-Auth-owned too
- * (organization plugin), as are the OAuth tables (MCP plugin, with the MCP
- * server); all are grouped here alongside session/account.
+ * (organization plugin), and are grouped here alongside session/account.
  */
 /**
  * Marked `@Global` for the same reason as `RolesModule`: the guards below are
@@ -52,6 +53,7 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
       Session,
       Account,
       Verification,
+      // flama:plugins auth-entities
       // flama:begin organizations
       OrganizationOrmEntity,
       MemberOrmEntity,
@@ -72,6 +74,7 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
     { provide: CREDENTIAL_VERIFIER, useClass: BetterAuthCredentialVerifierAdapter },
     { provide: CREDENTIAL_SCOPE, useClass: CredentialScopeResolver },
     { provide: DELEGATED_SESSION, useClass: DelegatedSessionAdapter },
+    // flama:plugins auth-providers
   ],
   // Guards are inbound adapters other modules apply with `@UseGuards`; the rest
   // is published as tokens, so nothing downstream names a concrete class.

@@ -186,7 +186,7 @@ installed it also needs a row in `apps/docs/docs/errors.md`. See
 - `go.md` — the Go service template (`apps/runner`): layout, ports, errors,
   auth, what to reach for instead of a framework
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
-- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens, OAuth for MCP clients
+- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens
 
 #### Authorization (roles & permissions)
 
@@ -210,14 +210,10 @@ expiry that `pnpm check:flags` enforces in CI. The guide is
 ### Scoped credentials
 
 Governed by the **scope catalog** in `packages/shared/src/scopes/`. Roles say
-what a person may do; scopes say what a credential — an API token, or an MCP
-client's OAuth grant — may do on their behalf, and effective access is the
-intersection — see `.agents/rules/scopes-and-credentials.md`, and the
-permission catalog in `packages/shared/src/scopes/README.md`.
-
-The MCP server is the `mcp` plugin (`pnpm plugin:add mcp`): one tool registry,
-two entrypoints, every tool declaring `requiredScopes`, and with it the API's
-OAuth provider for MCP clients and the web consent screen.
+what a person may do; scopes say what an API token may do on their behalf, and
+effective access is the intersection — see
+`.agents/rules/scopes-and-credentials.md`, and the permission catalog in
+`packages/shared/src/scopes/README.md`.
 
 ### Go services (`apps/runner` + `packages/go/*`)
 
@@ -375,9 +371,8 @@ pnpm changeset          # Create a changeset for versioning
 - New env vars go in the root `.env.example` with a note on what they do; never
   add a per-package `.env` (see `.agents/rules/api-config.md`)
 - New API endpoints need Swagger decorators and `@RequireScopes`; without the
-  scope they are unreachable by API tokens and MCP clients. Afterwards run
+  scope they are unreachable by API tokens. Afterwards run
   `pnpm generate:api-client`
-- With the `mcp` plugin, a new MCP tool declares the same scope its endpoint requires
 - Keep the pluggable service pattern: abstract class → concrete implementations → factory in module
 - New translations go in `packages/translations/{locale}/{area}.json`, then
   run `pnpm --filter @flama/translations assemble` so `{locale}/index.json`

@@ -1,6 +1,5 @@
 import { AppError } from '@flama/backend-core';
-import { parseScopeString, toResourceScope } from '@flama/shared';
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { API_TOKEN_REPOSITORY } from '../../api-tokens/api-tokens.di-tokens';
 import type { ApiTokenRepositoryPort } from '../../api-tokens/database/api-token.repository.port';
 import { ApiTokenErrors } from '../../api-tokens/domain/api-token.errors';
@@ -10,10 +9,9 @@ import {
 } from '../../api-tokens/domain/api-token-secret.factory';
 import type { UserRepositoryPort } from '../../users/database/user.repository.port';
 import { USER_REPOSITORY } from '../../users/user.di-tokens';
-import { CREDENTIAL_VERIFIER, OAUTH_GRANT_VERIFIER } from '../auth.di-tokens';
+import { CREDENTIAL_VERIFIER } from '../auth.di-tokens';
 import type { CredentialOwner, ScopeContext, ScopedRequest } from '../domain/scope-context.types';
 import type { CredentialVerifierPort } from '../infrastructure/credential-verifier.port';
-import type { OAuthGrantVerifierPort } from '../infrastructure/oauth-grant-verifier.port';
 
 /** Header carrying an API token, for clients that prefer it over `Authorization`. */
 const API_KEY_HEADER = 'x-api-key';
@@ -28,14 +26,13 @@ interface WithResolution {
 /**
  * Turns the credential on a request into a {@link ScopeContext}.
  *
- * Three kinds of credential reach the API:
+ * Two kinds of credential reach the API:
  *
- * - **Browser session cookie** — no scope context; the user's roles govern.
+ * - **Session** — a browser cookie, or the session token the mobile app and
+ *   a CLI sign-in present as a bearer credential. No scope context; the
+ *   user's roles govern.
  * - **API token** (`flama_pat_…`, in `Authorization: Bearer` or `x-api-key`)
  *   — looked up by digest, checked for revocation, expiry and source IP.
- * - **OAuth access token** — verified through `OAUTH_GRANT_VERIFIER`, its
- *   granted scopes carried through. Only a deployment that is an OAuth
- *   provider (the MCP server's) binds one; without it, no grant exists.
  *
  * A bearer credential that cannot be resolved is rejected rather than ignored:
  * silently falling back to a cookie would let a stale token act with the
@@ -53,9 +50,6 @@ export class CredentialScopeResolver {
     private readonly users: UserRepositoryPort,
     @Inject(CREDENTIAL_VERIFIER)
     private readonly credentials: CredentialVerifierPort,
-    @Optional()
-    @Inject(OAUTH_GRANT_VERIFIER)
-    private readonly oauthGrants?: OAuthGrantVerifierPort,
   ) {}
 
   /** Resolve (once per request) the scoped credential, or `null` for a session. */
@@ -72,7 +66,7 @@ export class CredentialScopeResolver {
     if (isApiTokenSecret(presented)) {
       return this.resolveApiToken(presented, request);
     }
-    return this.resolveOAuthToken(request);
+    return this.rejectUnlessSession(request);
   }
 
   /** The raw credential string, from either supported header. */
@@ -123,38 +117,12 @@ export class CredentialScopeResolver {
     };
   }
 
-  private async resolveOAuthToken(request: ScopedRequest): Promise<ScopeContext | null> {
-    const session = (await this.oauthGrants?.verify(request.headers)) ?? null;
-
-    // Not an OAuth access token. It may still be a session token presented as
-    // a bearer credential — that is how the mobile app and the CLI's sign-in
-    // flow authenticate. Those carry no scopes, so hand them back to the
-    // session path rather than rejecting them.
-    if (!session) return this.rejectUnlessSession(request);
-
-    const { scopes } = parseScopeString(session.scopes);
-
-    return {
-      kind: 'oauth',
-      // The grant has no id of its own, so derive a stable one by digesting the
-      // access token — never the token itself, which would put a live secret
-      // into cache keys and logs.
-      credentialId: `oauth:${hashApiTokenSecret(session.accessToken).slice(0, 32)}`,
-      userId: session.userId,
-      owner: await this.loadOwner(session.userId),
-      scopes,
-      // OAuth grants are not organization-restricted: the consent screen grants
-      // permissions, and the user's own memberships bound their reach.
-      resourceScope: toResourceScope(null),
-      expiresAt: session.accessTokenExpiresAt ? new Date(session.accessTokenExpiresAt) : null,
-    };
-  }
-
   /**
-   * A bearer credential that is neither an API token nor an OAuth grant is only
-   * acceptable if the provider recognises it as a session token; anything else
-   * is rejected rather than ignored, so a stale token can never fall through to
-   * a cookie session's full rights.
+   * A bearer credential that is not an API token is only acceptable if the
+   * provider recognises it as a session token — the mobile app and a CLI
+   * sign-in authenticate that way, and carry no scopes. Anything else is
+   * rejected rather than ignored, so a stale token can never fall through to a
+   * cookie session's full rights.
    */
   private async rejectUnlessSession(request: ScopedRequest): Promise<null> {
     const recognised = await this.credentials.hasValidSession(request.headers);

@@ -3,7 +3,6 @@ import { TOKENS } from '../../di/tokens';
 import type {
   AuthSession,
   IAuthClient,
-  OAuthConsentParams,
   SignUpParams,
   SocialAuthIntent,
   SocialProvider,
@@ -43,13 +42,6 @@ export class AuthRepository {
 
   changePassword(currentPassword: string, newPassword: string): Promise<void> {
     return this.client.changePassword(currentPassword, newPassword);
-  }
-
-  respondToConsent(params: OAuthConsentParams): Promise<string> {
-    if (!this.client.respondToConsent) {
-      throw new Error('This platform does not host the OAuth consent page');
-    }
-    return this.client.respondToConsent(params);
   }
 
   logout(): Promise<void> {

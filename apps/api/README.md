@@ -1,8 +1,7 @@
 # @flama/api
 
 The NestJS REST API: authentication through Better Auth, organizations and
-invitations, users and roles, profiles, API tokens, and the endpoints the
-CLI and the MCP server drive. Every response error is an RFC 7807 problem
+invitations, users and roles, profiles, and API tokens. Every response error is an RFC 7807 problem
 document; every endpoint carries Swagger decorators and a scope, from which
 `@flama/api-client` is generated.
 

@@ -6,11 +6,11 @@ everything else on this page.
 | Layer            | Governs                                    | Lives in                 |
 | ---------------- | ------------------------------------------ | ------------------------ |
 | **Roles** (CASL) | What a _person_ may do                     | The `role` table         |
-| **Scopes**       | What a _credential_ may do on their behalf | The token or OAuth grant |
+| **Scopes**       | What a _credential_ may do on their behalf | The API token            |
 
 A browser session carries no scopes: it can do whatever its owner's roles
-allow. An API token or an MCP client's OAuth grant is additionally narrowed to
-the scopes it was given, and the two are intersected on every request:
+allow. An API token is additionally narrowed to the scopes it was given, and
+the two are intersected on every request:
 
 ```
 effective permissions = credential scopes ∩ owner's live CASL ability
@@ -41,8 +41,8 @@ level. Edit implies Read.
 | Feature flags       | `flags:read` `flags:write`             | Flag targeting, kill switches and segments               |
 
 The catalog is defined once, in `packages/shared/src/scopes/catalog.ts`, and is
-consumed by the API guard, the MCP server, the CLI and the web permission
-picker. Adding a resource there makes it appear on every surface.
+consumed by the API guard and the web permission picker. Adding a resource
+there makes it appear on every surface.
 
 Privileged user administration is deliberately its own group: a token that
 manages the user directory should not also be able to ban people or take over
@@ -100,19 +100,6 @@ Present one as `Authorization: Bearer flama_pat_…` or in `x-api-key`.
 > reports. Behind a load balancer that is the proxy's address unless you
 > configure `trust proxy`, so set that up before relying on the restriction.
 
-### OAuth 2.1 (for MCP clients)
-
-With the `mcp` plugin installed, Better Auth's MCP plugin turns the API into
-an OAuth provider: discovery metadata, dynamic client registration,
-authorization and token endpoints. A client that hits the remote MCP server
-without a token gets a `401` carrying `WWW-Authenticate: Bearer
-resource_metadata=…`, follows it, registers itself, and sends the user to the
-consent screen at `/oauth/consent`.
-
-The consent screen lists the requested permissions with the catalog's own
-descriptions. Better Auth grants or refuses the request as a whole; someone who
-wants to grant something narrower can create an API token instead.
-
 ## Asking what a credential can do
 
 ```
@@ -120,9 +107,9 @@ GET /api/v1/me/credential
 ```
 
 Returns the credential kind, its `grantedScopes`, and the `effectiveScopes`
-those amount to after the owner's roles are applied. The MCP server filters its
-tool list by exactly this, and `flama whoami` prints it — including a warning
-when a granted scope has gone inert because the owner's roles changed.
+those amount to after the owner's roles are applied — what a client should
+offer, and where a granted scope that went inert when the owner's roles
+changed shows up.
 
 ## Error codes
 

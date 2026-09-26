@@ -309,7 +309,7 @@ export class OrganizationsService {
    * browser. The table pages what it is handed, so a facet applied after the
    * response narrows the page on screen and silently drops every match sitting
    * on a page nobody scrolled to — and a filter that is not in the response is
-   * a filter no other client (the CLI, an MCP tool, a CSV export) can ask for.
+   * a filter no other client (an API token's script, a CSV export) can ask for.
    */
   async listMembers(
     headers: IncomingHttpHeaders,

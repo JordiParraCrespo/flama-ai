@@ -232,18 +232,6 @@ describe('API tokens & scopes (integration)', () => {
       expect(constraints.every((constraint) => constraint.delete_rule === 'CASCADE')).toBe(true);
     });
 
-    it('creates the Better Auth OAuth tables the MCP plugin needs', async () => {
-      const tables: { table_name: string }[] = await dataSource.query(
-        `SELECT table_name FROM information_schema.tables
-          WHERE table_name IN ('oauthApplication', 'oauthAccessToken', 'oauthConsent')`,
-      );
-      expect(tables.map((table) => table.table_name).sort()).toEqual([
-        'oauthAccessToken',
-        'oauthApplication',
-        'oauthConsent',
-      ]);
-    });
-
     it('grants the seeded user role permission over its own tokens', async () => {
       const [role]: { permissions: { action: string; subject: string }[] }[] =
         await dataSource.query(`SELECT permissions FROM "role" WHERE name = 'user'`);
