@@ -7,14 +7,15 @@ import { loginThroughUi, provisionedUser, registerThroughUi } from '../../suppor
 const NEW_PASSWORD = 'Rotated!Password9';
 
 test.describe('web auth UI', () => {
-  test('a visitor can register and lands inside the app, not on a refusal', async ({ page }) => {
+  test('a visitor can register and lands on the dashboard', async ({ page }) => {
+    // flama:begin organizations
+    test.skip(true, 'with organizations a new account starts at onboarding: onboarding.spec.ts');
+    // flama:end organizations
     const user = newUser('uireg');
 
     await registerThroughUi(page, user);
 
-    // With organizations, registering creates an account and not a workspace,
-    // so the next screen is onboarding; without them, it is the dashboard.
-    await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 20_000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
     expect(await findUserByEmail(user.email), 'the account really exists').toBeTruthy();
   });
 
@@ -192,12 +193,12 @@ test.describe('web auth UI', () => {
   test('registering with an email already taken shows an error', async ({ page }) => {
     const user = newUser('uidupe');
     await registerThroughUi(page, user);
-    await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 20_000 });
+    await expect(page).not.toHaveURL(/\/register/, { timeout: 20_000 });
     await page.context().clearCookies();
 
     await registerThroughUi(page, user);
 
-    await expect(page).not.toHaveURL(/\/(onboarding|dashboard)/);
+    await expect(page).toHaveURL(/\/register/);
     await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
   });
 

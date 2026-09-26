@@ -4,17 +4,11 @@ import { signedUpContext, type TestUser } from './auth';
 // flama:begin organizations
 import { createOrganization } from './organizations';
 // flama:end organizations
-// flama:plugins tenancy-imports
 
 /**
  * Helpers for the `web` project: the journeys every browser spec starts from.
- *
- * Registering creates an account and nothing else — an account belongs to no
- * workspace until it creates one from `/onboarding` or an invitation puts it in
- * one — so most specs want a user who already has somewhere to work. That is
- * {@link provisionedUser}: sign-up and workspace creation through the API, so
- * the spec spends its time on the screen it is about rather than on the two
- * screens before it.
+ * {@link provisionedUser} signs up through the API, so a spec spends its time
+ * on the screen it is about rather than on the ones before it.
  */
 
 export async function registerThroughUi(page: Page, user: TestUser): Promise<void> {
@@ -42,19 +36,13 @@ export async function signInAs(
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 30_000 });
 }
 
-/**
- * A fresh account with a session cookie to match — and, with organizations, a
- * workspace of its own, so the shell opens rather than sending it to onboarding.
- */
+/** A fresh account the shell opens for, with a session cookie to match. */
 export async function provisionedUser(prefix = 'user') {
   const { api, user, userId } = await signedUpContext(prefix);
-  const workspace = {
-    // flama:begin organizations
-    organizationId: await createOrganization(api),
-    // flama:end organizations
-    // flama:plugins provision-workspace
-  };
-  return { api, user, userId, ...workspace };
+  // flama:begin organizations
+  await createOrganization(api);
+  // flama:end organizations
+  return { api, user, userId };
 }
 
 /**

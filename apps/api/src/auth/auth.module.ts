@@ -7,7 +7,6 @@ import { OrganizationOrmEntity } from '../organizations/database/organization.or
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
 // flama:end organizations
-// flama:plugins tenancy-entity-imports
 import { UsersModule } from '../users/user.module';
 import { CredentialScopeResolver } from './application/credential-scope.resolver';
 import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
@@ -63,7 +62,6 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
       TeamOrmEntity,
       TeamMemberOrmEntity,
       // flama:end organizations
-      // flama:plugins tenancy-entities
       OAuthApplicationOrmEntity,
       OAuthAccessTokenOrmEntity,
       OAuthConsentOrmEntity,

@@ -213,7 +213,6 @@ const LEDGER = [
     kind: 'file-name-not-admitted',
   },
   // flama:end organizations
-  // flama:plugins api-structure-ledger
 ];
 const tsFiles = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile());
 const subDirs = (dir) => readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());

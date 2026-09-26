@@ -4,7 +4,6 @@ import type { ComponentType, ReactNode } from 'react';
 // flama:begin organizations
 import { WorkspaceGate } from '@/features/organizations/sections/workspace-gate';
 // flama:end organizations
-// flama:plugins shell-imports
 import { NAV, USER_MENU_LINKS } from '@/lib/nav';
 
 export const Route = createFileRoute('/_authenticated')({
@@ -18,15 +17,14 @@ type ShellGate = ComponentType<{
 }>;
 
 /**
- * The gates the shell opens through, outermost first. With organizations,
- * one decides whether the caller has somewhere to work, and which workspace
- * the shell names; with none, the shell opens straight away.
+ * The gates the shell opens through, outermost first. Each may hold the shell
+ * back (with organizations, until the caller has somewhere to work) and may
+ * name the workspace it shows; with none, the shell opens straight away.
  */
 const GATES: ShellGate[] = [
   // flama:begin organizations
   WorkspaceGate,
   // flama:end organizations
-  // flama:plugins shell-gates
 ];
 
 function AuthenticatedShell() {
@@ -35,6 +33,9 @@ function AuthenticatedShell() {
       <Outlet />
     </AppShell>
   );
-  const [Gate] = GATES;
-  return Gate ? <Gate>{shell}</Gate> : shell();
+  const open = GATES.reduceRight<(workspace?: ShellWorkspace) => ReactNode>(
+    (inner, Gate) => (outer) => <Gate>{(named) => inner(named ?? outer)}</Gate>,
+    shell,
+  );
+  return open();
 }

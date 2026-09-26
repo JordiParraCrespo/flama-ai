@@ -1,7 +1,7 @@
 import { ResourceRegistry } from '@flama/backend-authz';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { AbilityFactory } from '../../../roles/application/ability.factory';
-import { toCatalogResponse } from '../../authz.mapper';
+import { toCatalogResponse } from '../../authz-catalog.mapper';
 import type { AuthzCatalogResponseDto } from '../../dtos/authz-catalog.response.dto';
 import { FindAuthzCatalogQuery } from './find-catalog.query';
 

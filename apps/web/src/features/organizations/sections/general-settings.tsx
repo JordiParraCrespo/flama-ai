@@ -1,5 +1,4 @@
 import { Alert, AlertDescription, toast } from '@flama/design-system-web';
-import { Settings } from '@flama/design-system-web/icons';
 import { useOrganizations, useUpdateOrganization } from '@flama/frontend-consumer/organizations';
 import { SectionHead, useErrorMessage } from '@flama/frontend-web';
 import { useTranslation } from 'react-i18next';
@@ -61,10 +60,3 @@ export function GeneralSettingsSection() {
     </>
   );
 }
-
-/** The settings route's General pane: this section, under its key and icon. */
-export const generalSettingsPane = {
-  key: 'general',
-  icon: Settings,
-  Pane: GeneralSettingsSection,
-} as const;

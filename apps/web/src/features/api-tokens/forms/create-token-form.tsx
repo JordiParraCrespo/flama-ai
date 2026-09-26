@@ -2,14 +2,11 @@ import {
   Alert,
   AlertDescription,
   Button,
-  Checkbox,
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
   Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -19,8 +16,8 @@ import {
   Skeleton,
 } from '@flama/design-system-web';
 import type { PermissionGroup, Scope } from '@flama/shared';
-import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { type ReactNode, useState } from 'react';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { PermissionField } from '@/features/api-tokens/components/permission-field';
 import { PermissionPicker } from '@/features/api-tokens/components/permission-picker';
@@ -65,28 +62,33 @@ const EMPTY_TOKEN_FORM: TokenFormFields = {
   organizationIds: [],
 };
 
-/** The full-page "create a token" form: name, permissions, lifetime, workspaces. */
+/**
+ * The full-page "create a token" form: name, permissions, lifetime, and the
+ * fields another feature adds as `children` — they read the form from its
+ * context, the way organizations adds the workspaces a token is restricted to.
+ */
 export function CreateTokenForm({
   groups,
   grantable,
   loadingCatalog,
-  organizations,
   isPending,
   error,
   onSubmit,
+  children,
 }: {
   groups: readonly PermissionGroup[];
   grantable: Scope[];
   loadingCatalog: boolean;
-  organizations: { id: string; name: string }[];
   isPending: boolean;
   /** The resolved failure message, if the last attempt failed. */
   error?: string;
   /** Resolves once the token is created; rejects when the request fails. */
   onSubmit: (values: CreateTokenFormValues) => Promise<void>;
+  children?: ReactNode;
 }) {
   const { t } = useTranslation();
 
+  const form = useForm<TokenFormFields>({ defaultValues: EMPTY_TOKEN_FORM });
   const {
     control,
     register,
@@ -94,7 +96,7 @@ export function CreateTokenForm({
     reset,
     getValues,
     formState: { errors },
-  } = useForm<TokenFormFields>({ defaultValues: EMPTY_TOKEN_FORM });
+  } = form;
 
   const [permissionsMessage, setPermissionsMessage] = useState<string>();
 
@@ -135,123 +137,95 @@ export function CreateTokenForm({
   }, permissionsGranted);
 
   return (
-    <form onSubmit={submit} noValidate>
-      <FieldGroup>
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+    <FormProvider {...form}>
+      <form onSubmit={submit} noValidate>
+        <FieldGroup>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-        <Field data-invalid={Boolean(errors.name)}>
-          <FieldLabel htmlFor="token-name">{t('apiTokens.name')}</FieldLabel>
-          <Input
-            {...register('name', {
-              required: t('validation.required'),
-              maxLength: {
-                value: 80,
-                message: t('validation.maxLength', { max: 80 }),
-              },
-            })}
-            id="token-name"
-            placeholder={t('apiTokens.namePlaceholder')}
-            maxLength={80}
-            aria-invalid={Boolean(errors.name)}
-            disabled={isPending}
-          />
-          <FieldError errors={[errors.name]} />
-        </Field>
-
-        <PermissionField
-          control={control}
-          name="permissions"
-          label={t('apiTokens.permissions')}
-          hint={t('apiTokens.permissionsHint')}
-          message={permissionsMessage}
-        >
-          {loadingCatalog ? (
-            <div className="flex flex-col gap-2" aria-busy="true">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ) : (
-            <PermissionPicker
-              groups={groups}
-              grantable={grantable}
-              control={control}
-              name="permissions"
+          <Field data-invalid={Boolean(errors.name)}>
+            <FieldLabel htmlFor="token-name">{t('apiTokens.name')}</FieldLabel>
+            <Input
+              {...register('name', {
+                required: t('validation.required'),
+                maxLength: {
+                  value: 80,
+                  message: t('validation.maxLength', { max: 80 }),
+                },
+              })}
+              id="token-name"
+              placeholder={t('apiTokens.namePlaceholder')}
+              maxLength={80}
+              aria-invalid={Boolean(errors.name)}
               disabled={isPending}
             />
-          )}
-        </PermissionField>
+            <FieldError errors={[errors.name]} />
+          </Field>
 
-        <Controller
-          control={control}
-          name="expiresInDays"
-          render={({ field }) => (
-            <Field>
-              <FieldLabel htmlFor="token-expiry">{t('apiTokens.expiry')}</FieldLabel>
-              <Select
-                value={String(field.value)}
-                onValueChange={(next) => field.onChange(next === 'null' ? null : Number(next))}
+          <PermissionField
+            control={control}
+            name="permissions"
+            label={t('apiTokens.permissions')}
+            hint={t('apiTokens.permissionsHint')}
+            message={permissionsMessage}
+          >
+            {loadingCatalog ? (
+              <div className="flex flex-col gap-2" aria-busy="true">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : (
+              <PermissionPicker
+                groups={groups}
+                grantable={grantable}
+                control={control}
+                name="permissions"
                 disabled={isPending}
-              >
-                <SelectTrigger id="token-expiry">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LIFETIMES.map((days) => (
-                    <SelectItem key={String(days)} value={String(days)}>
-                      {days === null ? t('apiTokens.never') : t('apiTokens.days', { count: days })}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
-        />
+              />
+            )}
+          </PermissionField>
 
-        {organizations.length > 0 && (
           <Controller
             control={control}
-            name="organizationIds"
+            name="expiresInDays"
             render={({ field }) => (
               <Field>
-                <FieldLabel>{t('apiTokens.organizations')}</FieldLabel>
-                <FieldDescription>{t('apiTokens.organizationsHint')}</FieldDescription>
-                <div className="flex flex-col gap-2">
-                  {organizations.map((organization) => (
-                    <div key={organization.id} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`org-${organization.id}`}
-                        checked={field.value.includes(organization.id)}
-                        onCheckedChange={(checked) =>
-                          field.onChange(
-                            checked
-                              ? [...field.value, organization.id]
-                              : field.value.filter((id) => id !== organization.id),
-                          )
-                        }
-                        disabled={isPending}
-                      />
-                      <Label htmlFor={`org-${organization.id}`} className="cursor-pointer text-sm">
-                        {organization.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+                <FieldLabel htmlFor="token-expiry">{t('apiTokens.expiry')}</FieldLabel>
+                <Select
+                  value={String(field.value)}
+                  onValueChange={(next) => field.onChange(next === 'null' ? null : Number(next))}
+                  disabled={isPending}
+                >
+                  <SelectTrigger id="token-expiry">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LIFETIMES.map((days) => (
+                      <SelectItem key={String(days)} value={String(days)}>
+                        {days === null
+                          ? t('apiTokens.never')
+                          : t('apiTokens.days', { count: days })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             )}
           />
-        )}
 
-        <Separator />
+          {children}
 
-        <Button type="submit" disabled={isPending}>
-          {isPending ? t('common.loading') : t('apiTokens.createButton')}
-        </Button>
-      </FieldGroup>
-    </form>
+          <Separator />
+
+          <Button type="submit" disabled={isPending}>
+            {isPending ? t('common.loading') : t('apiTokens.createButton')}
+          </Button>
+        </FieldGroup>
+      </form>
+    </FormProvider>
   );
 }

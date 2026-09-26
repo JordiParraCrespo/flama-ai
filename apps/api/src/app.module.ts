@@ -44,7 +44,6 @@ import { HealthModule } from './health/health.module';
 // flama:begin organizations
 import { OrganizationsModule } from './organizations/organizations.module';
 // flama:end organizations
-// flama:plugins tenancy-module-import
 import { OutboxModule } from './outbox/outbox.module';
 import { ProfileModule } from './profile/profile.module';
 import { QueueModule } from './queue/queue.module';
@@ -184,7 +183,6 @@ import { UsersModule } from './users/user.module';
     // flama:begin organizations
     OrganizationsModule,
     // flama:end organizations
-    // flama:plugins tenancy-module
     // flama:plugins api-modules
   ],
   providers: [

@@ -11,7 +11,6 @@ import { Verification } from '../auth/database/verification.orm-entity';
 // flama:begin organizations
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
 // flama:end organizations
-// flama:plugins grant-entity-import
 import { FeatureFlagOrmEntity } from '../feature-flags/database/feature-flag.orm-entity';
 import { FlagChangeOrmEntity } from '../feature-flags/database/flag-change.orm-entity';
 import { FlagSegmentOrmEntity } from '../feature-flags/database/flag-segment.orm-entity';
@@ -22,7 +21,6 @@ import { OrganizationOrmEntity } from '../organizations/database/organization.or
 import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
 // flama:end organizations
-// flama:plugins tenancy-entity-imports
 import { UserSettingsOrmEntity } from '../profile/database/user-settings.orm-entity';
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
@@ -56,7 +54,6 @@ export default new DataSource({
     // flama:begin organizations
     AccessGrantOrmEntity,
     // flama:end organizations
-    // flama:plugins grant-entity
     UserRoleOrmEntity,
     // flama:begin organizations
     OrganizationOrmEntity,
@@ -65,7 +62,6 @@ export default new DataSource({
     TeamOrmEntity,
     TeamMemberOrmEntity,
     // flama:end organizations
-    // flama:plugins tenancy-entities
     FeatureFlagOrmEntity,
     FlagSegmentOrmEntity,
     FlagChangeOrmEntity,

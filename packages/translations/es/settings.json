@@ -31,8 +31,6 @@
     "sessions": "Sesiones activas",
     "title": "Seguridad"
   },
-  "subtitle": "Configuración de todo el espacio de trabajo de {{organization}}.",
-  "subtitleFallback": "Configuración de todo el espacio de trabajo.",
-  "subtitleAccount": "Tu cuenta, su seguridad y su acceso a la API.",
+  "subtitle": "Tu cuenta, su seguridad y su acceso a la API.",
   "title": "Configuración"
 }

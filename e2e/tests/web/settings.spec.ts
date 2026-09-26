@@ -30,6 +30,9 @@ test('lists every section', async ({ page }) => {
   await openSettings(page);
 
   const nav = sectionNav(page);
+  // flama:begin organizations
+  await expect(nav.getByRole('button', { name: 'General', exact: true })).toBeVisible();
+  // flama:end organizations
   for (const label of ['Security', 'API & webhooks']) {
     await expect(nav.getByRole('button', { name: label, exact: true })).toBeVisible();
   }

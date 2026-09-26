@@ -1,35 +1,24 @@
 import { Cpu, ShieldCheck } from '@flama/design-system-web/icons';
 import { PageHead, SectionNav } from '@flama/frontend-web';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiKeysSection } from '@/features/api-tokens/sections/api-keys';
 // flama:begin organizations
-import { generalSettingsPane } from '@/features/organizations/sections/general-settings';
-import { WorkspaceSettingsSubtitle } from '@/features/organizations/sections/settings-subtitle';
+import { GENERAL_SETTINGS_SECTION } from '@/features/organizations/lib/settings-section';
+import { GeneralSettingsSection } from '@/features/organizations/sections/general-settings';
 // flama:end organizations
-// flama:plugins settings-imports
 import { SecuritySection } from '@/features/profile/sections/security';
 
 /** The sub-nav's sections, in the design's order. */
 const SECTIONS = [
   // flama:begin organizations
-  generalSettingsPane,
+  GENERAL_SETTINGS_SECTION,
   // flama:end organizations
-  // flama:plugins settings-panes
-  { key: 'security', icon: ShieldCheck, Pane: SecuritySection },
-  { key: 'api', icon: Cpu, Pane: ApiKeysSection },
+  { key: 'security', icon: ShieldCheck },
+  { key: 'api', icon: Cpu },
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]['key'];
-
-/** What the heading says under the title: the workspace with organizations, else the account. */
-const SUBTITLES: ComponentType[] = [
-  // flama:begin organizations
-  WorkspaceSettingsSubtitle,
-  // flama:end organizations
-  // flama:plugins settings-subtitles
-];
 
 const PANES: readonly SectionKey[] = SECTIONS.map((section) => section.key);
 
@@ -61,8 +50,6 @@ function SettingsPage() {
   const { t } = useTranslation();
   const { section = SECTIONS[0].key } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const Pane = SECTIONS.find((candidate) => candidate.key === section)?.Pane;
-  const [Subtitle] = SUBTITLES;
 
   // Replaces the search rather than merging into it, so a table's own state
   // does not follow the reader into a pane that has no table.
@@ -70,10 +57,7 @@ function SettingsPage() {
 
   return (
     <>
-      <PageHead
-        title={t('settings.title')}
-        sub={Subtitle ? <Subtitle /> : t('settings.subtitleAccount')}
-      />
+      <PageHead title={t('settings.title')} sub={t('settings.subtitle')} />
 
       <SectionNav
         label={t('settings.nav.label')}
@@ -81,7 +65,11 @@ function SettingsPage() {
         active={section}
         onSelect={go}
       >
-        {Pane && <Pane />}
+        {/* flama:begin organizations */}
+        {section === 'general' && <GeneralSettingsSection />}
+        {/* flama:end organizations */}
+        {section === 'security' && <SecuritySection />}
+        {section === 'api' && <ApiKeysSection />}
       </SectionNav>
     </>
   );

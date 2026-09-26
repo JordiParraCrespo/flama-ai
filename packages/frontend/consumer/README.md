@@ -42,15 +42,13 @@ An app becomes the consumer product by loading `consumerModules` into
 - `CONSUMER_NON_PERSISTED_FEATURES` — the feature prefixes an app keeps out
   of the persisted query cache.
 
-`@flama/frontend-consumer/organizations` (`src/react/organizations.queries.ts`)
-holds the organization hooks on a subpath of their own, because organizations
-are optional (`pnpm starter:prune --without organizations`): an import of the
-subpath goes with the feature, and nothing in `/react` names it. It exports
-`useOrganizations`, `useCreateOrganization`, `useUpdateOrganization`,
-`useOrganizationMembers`, `useRemoveOrganizationMember`,
-`useUpdateOrganizationMemberRole`, `useInviteMembers`,
-`useOrganizationInvitations`, `useCancelOrganizationInvitation`,
-`useMyInvitations`, `useAcceptInvitation` and `organizationsKeys`.
+`@flama/frontend-consumer/organizations` (`src/organizations/`) holds the
+organization hooks: `useOrganizations`, `useCreateOrganization`,
+`useUpdateOrganization`, `useOrganizationMembers`,
+`useRemoveOrganizationMember`, `useUpdateOrganizationMemberRole`,
+`useInviteMembers`, `useOrganizationInvitations`,
+`useCancelOrganizationInvitation`, `useMyInvitations`,
+`useAcceptInvitation` and `organizationsKeys`.
 
 ## How to use it
 

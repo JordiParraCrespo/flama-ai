@@ -54,10 +54,11 @@
  *     },
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
- *     // another optional feature's tree, or a shared path's, and is skipped
- *     // without it; a JSON edit's file is named here the same way.
- *     "files":     { "<destination>": "<path inside the plugin>" },
- *     "filesNeed": { "<destination or JSON file>": "<feature id or shared path>" },
+ *     // another optional feature's tree, `filesNeedPath` one inside a shared
+ *     // path, and each is skipped without it.
+ *     "files":         { "<destination>": "<path inside the plugin>" },
+ *     "filesNeed":     { "<destination>": "<feature id>" },
+ *     "filesNeedPath": { "<destination>": "<shared path>" },
  *
  *     // OP 1 — a block of text at an anchor. Inserted immediately above the
  *     // `flama:plugins <anchor>` comment, fenced with this plugin's id.
@@ -71,13 +72,18 @@
  *     "coOwned": [{ "file", "anchor", "order", "source", "needs" }],
  *
  *     // A path carried in because every feature that needed it has left.
- *     "sharedFiles": { "<destination>": "<path inside the plugin>" }
+ *     "sharedFiles": { "<destination>": "<path inside the plugin>" },
+ *
+ *     // A feature the starter still ships leaves no anchor, only its fences:
+ *     // the starter's copy of each file it has blocks in, merged back
+ *     // three-way (`replaySnapshots` in ops.mjs).
+ *     "snapshots": [{ "file", "source", "needs" }]
  *   }
  *
  * OP 3 is the `json` list above, run backwards: what a prune removes, an
- * install puts back. There is no fourth. The ops are `ops.mjs`; reading a
- * plugin and deciding whether a project can take it is `source.mjs`; this
- * file is the command. Text goes through `markers.mjs` and JSON through
+ * install puts back. There is no fourth: a snapshot is op 1 without the slot.
+ * The ops are `ops.mjs`; reading a plugin and deciding whether a project can
+ * take it is `source.mjs`; this file is the command. Text goes through `markers.mjs` and JSON through
  * `json-text.mjs`, whose delete and insert come in pairs — that is what makes
  * an install and a removal exact inverses, and the round trip in the plugins
  * repo, into the full starter and into pruned projects, is what proves it.
@@ -96,6 +102,7 @@ import {
   insertBlocks,
   joinShared,
   projectFeatures,
+  replaySnapshots,
   trimCopied,
   writeFeature,
 } from './ops.mjs';
@@ -150,13 +157,16 @@ function add(manifest, options) {
   if (problems.length) fail(`this project cannot take the plugin:\n  ${problems.join('\n  ')}`);
 
   // A file can belong inside another optional feature's tree — the CLI's docs
-  // page lives under `apps/docs` — or inside a shared path that went with the
-  // last app needing it, as the organizations module does inside
-  // `packages/frontend/consumer`. In a project without it there is nowhere to
-  // put the file and nothing to read it, so it is skipped rather than dropped
-  // into an empty directory. A feature is named by its id, a shared path by
-  // the path, and only a path has a slash.
-  const absent = (destination) => missing(manifest.filesNeed?.[destination], features);
+  // page lives under `apps/docs` (`filesNeed`) — or inside a shared path that
+  // went with the last app needing it, as the organizations module does
+  // inside `packages/frontend/consumer` (`filesNeedPath`). In a project
+  // without it there is nowhere to put the file and nothing to read it, so it
+  // is skipped rather than dropped into an empty directory.
+  const absent = (destination) => {
+    const feature = manifest.filesNeed?.[destination];
+    const path = manifest.filesNeedPath?.[destination];
+    return Boolean(feature && !features[feature]) || Boolean(path && !existsSync(join(ROOT, path)));
+  };
   const destinations = Object.keys(manifest.files).filter((d) => !absent(d));
   for (const destination of destinations) {
     if (existsSync(join(ROOT, destination)) && !force) {
@@ -194,9 +204,8 @@ function add(manifest, options) {
   }
   for (const [destination, from] of Object.entries(manifest.files)) {
     if (absent(destination)) {
-      console.log(
-        `  skip   ${destination} (no ${manifest.filesNeed[destination]} in this project)`,
-      );
+      const need = manifest.filesNeed?.[destination] ?? manifest.filesNeedPath?.[destination];
+      console.log(`  skip   ${destination} (no ${need} in this project)`);
       continue;
     }
     copy(destination, from);
@@ -207,6 +216,7 @@ function add(manifest, options) {
   // block goes at — the bundle budgets step holds the control plane's slot.
   const joined = joinShared(manifest, features, dryRun);
   insertBlocks(manifest, joined, features, dryRun);
+  replaySnapshots(manifest, features, dryRun);
   applyJsonEdits(manifest, dryRun);
   writeFeature(manifest, paths, dryRun);
 
@@ -223,12 +233,6 @@ function add(manifest, options) {
     runPrune(['--check']);
   }
   console.log(`\nInstalled ${manifest.id}. Next: pnpm install${followUps(manifest)}`);
-}
-
-/** Whether what a file needs — a feature id, or a shared path — is not here. */
-function missing(dep, features) {
-  if (!dep) return false;
-  return dep.includes('/') ? !existsSync(join(ROOT, dep)) : !features[dep];
 }
 
 function followUps(manifest) {

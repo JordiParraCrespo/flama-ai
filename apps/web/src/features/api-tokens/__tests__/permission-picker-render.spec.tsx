@@ -100,7 +100,6 @@ function renderForm(onSubmit = vi.fn(async () => {})) {
       groups={GROUPS}
       grantable={GRANTABLE}
       loadingCatalog={false}
-      organizations={[]}
       isPending={false}
       onSubmit={onSubmit}
     />,

@@ -445,3 +445,60 @@ test('a dry run sees the shared block it puts back, and places blocks inside it'
   assert.match(out, /block\s+config\.txt \(above flama:plugins inner-slot\)/);
   assert.equal(readFileSync(join(project, 'config.txt'), 'utf8'), before);
 });
+
+test('a shipped feature replays its blocks onto a file the project has changed since', () => {
+  const project = fixture();
+  const before = ['top', 'middle', 'local-edit', 'bottom', ''].join('\n');
+  writeFileSync(join(project, 'app.txt'), before);
+  execFileSync('git', ['-C', project, 'add', '-A']);
+  execFileSync('git', [
+    '-C',
+    project,
+    '-c',
+    'user.name=t',
+    '-c',
+    'user.email=t@t',
+    'commit',
+    '-qm',
+    'y',
+  ]);
+
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, {
+    id: 'delta',
+    feature: { title: 'Delta', summary: 'delta', identifiers: ['delta-app'], paths: [] },
+    files: {},
+    snapshots: [{ file: 'app.txt', source: 'snapshots/app.txt' }],
+  });
+  // The starter's copy: the feature's block, and none of the project's edit.
+  mkdirSync(join(from, 'plugins', 'delta', 'snapshots'), { recursive: true });
+  const starter = [
+    'top',
+    '# flama:begin delta',
+    'delta-line',
+    '# flama:end delta',
+    'middle',
+    'bottom',
+    '',
+  ];
+  writeFileSync(join(from, 'plugins', 'delta', 'snapshots', 'app.txt'), starter.join('\n'));
+
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+  execFileSync('node', [script, 'add', 'delta', '--from', from], { env: FIXTURE_ENV });
+  assert.equal(
+    readFileSync(join(project, 'app.txt'), 'utf8'),
+    [
+      'top',
+      '# flama:begin delta',
+      'delta-line',
+      '# flama:end delta',
+      'middle',
+      'local-edit',
+      'bottom',
+      '',
+    ].join('\n'),
+  );
+
+  execFileSync('node', [script, 'remove', 'delta'], { env: FIXTURE_ENV });
+  assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), before);
+});

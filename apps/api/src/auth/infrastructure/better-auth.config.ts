@@ -18,7 +18,6 @@ import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
 import { organizationPlugin, withActiveOrganization } from './organization-plugin.config';
 
 // flama:end organizations
-// flama:plugins tenancy-imports
 
 /**
  * Access-control roles for the admin plugin. Every name listed in `adminRoles`
@@ -318,7 +317,6 @@ export const auth = betterAuth({
       },
     },
     // flama:end organizations
-    // flama:plugins session-hooks
   },
   plugins: [
     // flama:begin mobile
@@ -341,7 +339,6 @@ export const auth = betterAuth({
     // flama:begin organizations
     organizationPlugin(frontendUrl),
     // flama:end organizations
-    // flama:plugins tenancy-plugin
     // Accepts `Authorization: Bearer <session token>`. Used by the API's own
     // auth guard, which mints a short-lived delegated session for a scoped
     // credential so the organization/admin façades — which resolve the caller

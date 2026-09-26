@@ -5,7 +5,6 @@ import { ApiTokensModule } from '../modules/api-tokens';
 import type { OrganizationsService } from '../modules/organizations';
 import { OrganizationsModule } from '../modules/organizations';
 // flama:end organizations
-// flama:plugins tenancy-imports
 import type { ProfileService } from '../modules/profile';
 import { ProfileModule } from '../modules/profile';
 import { TOKENS } from './tokens';
@@ -20,7 +19,6 @@ export const consumerModules = [
   // flama:begin organizations
   OrganizationsModule,
   // flama:end organizations
-  // flama:plugins tenancy-module
   ProfileModule,
 ];
 
@@ -61,9 +59,7 @@ export class ConsumerApp {
   get organizations(): OrganizationsService {
     return this.kernel.container.get(TOKENS.OrganizationsService);
   }
-
   // flama:end organizations
-  // flama:plugins tenancy-service
   get profile(): ProfileService {
     return this.kernel.container.get(TOKENS.ProfileService);
   }

@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { WorkspaceGate } from '../../features/organizations/sections/workspace-gate';
 
 // flama:end organizations
-// flama:plugins app-gate-imports
 
 /** Stands between a signed-in reader and the app's screens. */
 type AppGate = ComponentType<{ children: ReactNode }>;
@@ -21,7 +20,6 @@ const GATES: AppGate[] = [
   // flama:begin organizations
   WorkspaceGate,
   // flama:end organizations
-  // flama:plugins app-gates
 ];
 
 export default function AppLayout() {
@@ -45,6 +43,8 @@ export default function AppLayout() {
       />
     </Stack>
   );
-  const [Gate] = GATES;
-  return Gate ? <Gate>{stack}</Gate> : stack;
+  return GATES.reduceRight<ReactNode>(
+    (inner, Gate) => <Gate key={Gate.displayName ?? Gate.name}>{inner}</Gate>,
+    stack,
+  );
 }

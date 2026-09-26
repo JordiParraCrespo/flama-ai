@@ -5,8 +5,8 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TOKENS } from '../../di/tokens';
 import type { OrganizationEntity } from '../../modules/organizations';
+import { fakeKernel } from '../../react/__tests__/fake-kernel';
 import { organizationsKeys, useCreateOrganization } from '../organizations.queries';
-import { fakeKernel } from './fake-kernel';
 
 const CREATED = { id: 'org-1', name: 'Acme', slug: 'acme', logo: null } as OrganizationEntity;
 

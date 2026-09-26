@@ -2,7 +2,6 @@ import { adminClient, inferAdditionalFields } from 'better-auth/client/plugins';
 // flama:begin organizations
 import { organizationClientPlugin } from './organization-client';
 // flama:end organizations
-// flama:plugins client-plugin-imports
 import { userAdditionalFields } from './user-fields';
 
 /**
@@ -27,14 +26,12 @@ export function sharedClientPlugins() {
     // `authClient.organization.*`.
     organizationClientPlugin(),
     // flama:end organizations
-    // flama:plugins client-plugins
   ] as const;
 }
 
 // flama:begin organizations
 export { organizationSharedOptions } from './organization-options';
 // flama:end organizations
-// flama:plugins tenancy-exports
 export type {
   AuthSession,
   AuthSessionUser,

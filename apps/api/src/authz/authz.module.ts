@@ -10,7 +10,6 @@ import { TeamOrmEntity } from '../organizations/database/team.orm-entity';
 import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-entity';
 import { ORGANIZATION_RESOURCES } from '../organizations/organizations.resource';
 // flama:end organizations
-// flama:plugins tenancy-imports
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { RoleResource } from '../roles/roles.resource';
 import { UserResource } from '../users/users.resource';
@@ -30,7 +29,6 @@ import { AccessScopeInterceptor } from './interceptors/access-scope.interceptor'
 import { FindAccessGrantsHttpController } from './queries/find-access-grants/find-access-grants.http.controller';
 import { FindAccessGrantsQueryHandler } from './queries/find-access-grants/find-access-grants.query-handler';
 // flama:end organizations
-// flama:plugins grant-imports
 import { FindAuthzCatalogHttpController } from './queries/find-catalog/find-catalog.http.controller';
 import { FindAuthzCatalogQueryHandler } from './queries/find-catalog/find-catalog.query-handler';
 
@@ -42,36 +40,9 @@ const httpControllers = [
   CreateAccessGrantHttpController,
   RevokeAccessGrantHttpController,
   // flama:end organizations
-  // flama:plugins grant-controllers
 ];
 
 const queryHandlers: Provider[] = [FindAuthzCatalogQueryHandler];
-// flama:begin organizations
-// Access grants are rows inside an organization, and the scope pieces resolve
-// one: none of it exists in a project without organizations.
-const tenancy = {
-  providers: [
-    CreateAccessGrantCommandHandler,
-    RevokeAccessGrantCommandHandler,
-    FindAccessGrantsQueryHandler,
-    AccessGrantMapper,
-    { provide: ACCESS_GRANT_REPOSITORY, useClass: AccessGrantRepository },
-    ActiveOrganizationResolver,
-    PrincipalResidencyChecker,
-    AccessScopeInterceptor,
-    SCOPE_RESOLVER_PROVIDER,
-  ] as Provider[],
-  exports: [
-    SCOPE_RESOLVER_PROVIDER,
-    ACCESS_GRANT_REPOSITORY,
-    AccessScopeInterceptor,
-    ActiveOrganizationResolver,
-  ],
-  entities: [AccessGrantOrmEntity, MemberOrmEntity, TeamOrmEntity, TeamMemberOrmEntity],
-  resources: ORGANIZATION_RESOURCES,
-};
-// flama:end organizations
-// flama:plugins tenancy
 
 /**
  * Wires the authorization kernel into the application: every module's resource
@@ -93,9 +64,11 @@ const tenancy = {
     TypeOrmModule.forFeature([
       RoleOrmEntity,
       // flama:begin organizations
-      ...tenancy.entities,
+      AccessGrantOrmEntity,
+      MemberOrmEntity,
+      TeamOrmEntity,
+      TeamMemberOrmEntity,
       // flama:end organizations
-      // flama:plugins tenancy-entities
     ]),
     AuthzKernelModule.forFeature([
       UserResource,
@@ -103,25 +76,33 @@ const tenancy = {
       ApiTokenResource,
       FeatureFlagResource,
       // flama:begin organizations
-      ...tenancy.resources,
+      ...ORGANIZATION_RESOURCES,
       // flama:end organizations
-      // flama:plugins tenancy-resources
     ]),
   ],
   controllers: [...httpControllers],
   providers: [
     ...queryHandlers,
     // flama:begin organizations
-    ...tenancy.providers,
+    CreateAccessGrantCommandHandler,
+    RevokeAccessGrantCommandHandler,
+    FindAccessGrantsQueryHandler,
+    AccessGrantMapper,
+    { provide: ACCESS_GRANT_REPOSITORY, useClass: AccessGrantRepository },
+    ActiveOrganizationResolver,
+    PrincipalResidencyChecker,
+    AccessScopeInterceptor,
+    SCOPE_RESOLVER_PROVIDER,
     // flama:end organizations
-    // flama:plugins tenancy-providers
   ],
   exports: [
     TypeOrmModule,
     // flama:begin organizations
-    ...tenancy.exports,
+    SCOPE_RESOLVER_PROVIDER,
+    ACCESS_GRANT_REPOSITORY,
+    AccessScopeInterceptor,
+    ActiveOrganizationResolver,
     // flama:end organizations
-    // flama:plugins tenancy-exports
   ],
 })
 export class AuthzModule {}

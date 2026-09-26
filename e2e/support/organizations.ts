@@ -1,4 +1,5 @@
 import { type APIRequestContext, expect } from '@playwright/test';
+import { signedUpContext } from './auth';
 
 /** Organizations through the API, for the specs that need one to exist. */
 
@@ -27,4 +28,15 @@ export async function inviteByApi(
   });
   expect(response.status(), `inviting ${email} should succeed`).toBe(201);
   return ((await response.json()) as { id: string }).id;
+}
+
+/**
+ * A fresh account that owns a workspace, and the workspace's id: sign-up
+ * creates an account and nothing else, so the specs that invite into it or
+ * read it back make one first.
+ */
+export async function provisionedOwner(prefix = 'owner') {
+  const { api, user, userId } = await signedUpContext(prefix);
+  const organizationId = await createOrganization(api);
+  return { api, user, userId, organizationId };
 }

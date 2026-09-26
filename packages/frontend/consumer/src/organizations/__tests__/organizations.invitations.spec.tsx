@@ -4,8 +4,8 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TOKENS } from '../../di/tokens';
+import { fakeKernel } from '../../react/__tests__/fake-kernel';
 import { useAcceptInvitation, useMyInvitations } from '../organizations.queries';
-import { fakeKernel } from './fake-kernel';
 
 /**
  * Membership of this product comes from an invitation, so these two are the

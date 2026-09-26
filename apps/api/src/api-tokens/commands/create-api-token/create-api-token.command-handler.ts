@@ -1,6 +1,6 @@
 import { AppError } from '@flama/backend-core';
 import { ungrantableScopes } from '@flama/shared';
-import { Inject } from '@nestjs/common';
+import { Inject, Optional } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { AbilityFactory } from '../../../roles/application/ability.factory';
 import { API_TOKEN_REPOSITORY, ORGANIZATION_MEMBERSHIP_READER } from '../../api-tokens.di-tokens';
@@ -39,8 +39,11 @@ export class CreateApiTokenCommandHandler
   constructor(
     @Inject(API_TOKEN_REPOSITORY)
     private readonly apiTokenRepository: ApiTokenRepositoryPort,
+    // Bound by the organizations module. Without it nobody belongs to any
+    // organization, so a token restricted to one is refused.
+    @Optional()
     @Inject(ORGANIZATION_MEMBERSHIP_READER)
-    private readonly memberships: OrganizationMembershipReaderPort,
+    private readonly memberships: OrganizationMembershipReaderPort | undefined,
     private readonly abilityFactory: AbilityFactory,
   ) {}
 
@@ -92,7 +95,9 @@ export class CreateApiTokenCommandHandler
   ): Promise<void> {
     if (!command.organizationIds || command.organizationIds.length === 0) return;
 
-    const memberOf = new Set(await this.memberships.findOrganizationIdsForUser(command.actor.id));
+    const memberOf = new Set(
+      (await this.memberships?.findOrganizationIdsForUser(command.actor.id)) ?? [],
+    );
     const foreign = command.organizationIds.filter((id) => !memberOf.has(id));
     if (foreign.length > 0) throw new AppError(ApiTokenErrors.NOT_A_MEMBER);
   }

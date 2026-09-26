@@ -82,7 +82,7 @@ const SCAN_SKIP = [
  * agent to reword.
  */
 const CHECK_SKIP = [/\.md$/, /^\.changeset\//, /\.spec\.ts$/, /\.test\.ts$/];
-const COMMENT_LINE_RE = /^\s*(?:#|\/\/|\/\*|\*|<!--|--|;)/;
+const COMMENT_LINE_RE = /^\s*(?:#|\/\/|\/\*|\*|<!--|--|;|\{\s*\/\*)/;
 
 // ---------------------------------------------------------------------------
 // Manifest
@@ -223,6 +223,7 @@ function check(manifest) {
 
   const allPaths = [
     ...Object.values(manifest.features).flatMap((feature) => feature.paths),
+    ...Object.values(manifest.features).flatMap((feature) => Object.keys(feature.keeps ?? {})),
     ...Object.keys(manifest.shared),
   ];
   for (const path of allPaths) {

@@ -6,7 +6,7 @@
  *   pnpm starter:init --keep web,e2e,organizations --yes   # the same defaults, unattended
  *   pnpm starter:init --keep web --add '' --yes            # nothing added
  *
- * Two questions decide a project: which of the apps the starter ships to
+ * Two questions decide a project: which of the features the starter ships to
  * keep, and which plugins to add. This asks both (or reads `--keep` and
  * `--add`), shows the plan, and carries it out: the prune, then each plugin
  * after the ones it requires, the manifest check once, `pnpm install` once,
@@ -48,8 +48,9 @@ const ROOT = resolve(HERE, '..', '..');
 
 /**
  * What a project gets when it answers nothing: the browser app, its
- * end-to-end suite, and the docs site. Most projects start here; the rest — a
- * phone app, the control plane, a Go service — is a question each.
+ * end-to-end suite, organizations, and the docs site. Most projects start
+ * here; the rest — a phone app, the control plane, a Go service — is a
+ * question each.
  */
 export const DEFAULT_KEEP = ['web', 'e2e', 'organizations'];
 export const DEFAULT_ADD = ['docs'];
@@ -115,7 +116,7 @@ export function plan(manifest, plugins, keep, add, exists = () => true) {
   const shipped = Object.keys(manifest.features).filter((id) => !manifest.features[id].plugin);
   const problems = [];
   for (const id of keep) {
-    if (!shipped.includes(id)) problems.push(`"${id}" is not an app this starter ships`);
+    if (!shipped.includes(id)) problems.push(`"${id}" is not a feature this starter ships`);
   }
   for (const id of add) {
     if (!plugins[id]) problems.push(`there is no plugin "${id}"`);

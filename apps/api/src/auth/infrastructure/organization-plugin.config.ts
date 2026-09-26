@@ -52,82 +52,58 @@ export function organizationPlugin(frontendUrl: string) {
 /**
  * The organization (and workspace) a new session should open in, as the data
  * Better Auth's `session.create.before` hook returns — or nothing, for an
- * account that belongs to no organization yet.
+ * account that belongs to no organization yet. A failed query fails the
+ * sign-in: guessing "no organization" would send a member to onboarding.
  */
 export async function withActiveOrganization<
   T extends { userId: string } & Record<string, unknown>,
 >(pool: Pool, session: T) {
-  try {
-    const { rows } = await pool.query<{
-      organizationId: string;
-      teamId: string | null;
-    }>(
-      // Which organization a returning user lands in.
-      //
-      // Ordered by "the one they last had open", then by the most
-      // recently joined. It used to be the *oldest* membership, which
-      // was whichever workspace they happened to reach first — for an
-      // invitee that was the personal organization sign-up provisioned
-      // a second or two before the invitation was accepted, so they
-      // signed back in to an empty workspace of their own instead of
-      // the one that invited them, without the org-scoped role the
-      // invitation granted, and the dashboard answered 403.
-      //
-      // The session row is the memory, and an explicit sign-out
-      // deletes it; that is why the fallback is most-recently-joined
-      // rather than oldest. Someone invited to a second workspace does
-      // land there on their next sign-in, which is the same answer the
-      // acceptance itself gave them and the one they can change with
-      // the organization switcher.
-      //
-      // The workspace is chosen the same way: one the user actually
-      // belongs to, falling back to the organization's own default, so
-      // the session never points at a team they are not in.
-      `SELECT m."organizationId",
-              COALESCE(mine."id", fallback."id") AS "teamId"
-         FROM "member" m
-         LEFT JOIN LATERAL (
-           SELECT t."id"
-             FROM "team" t
-             JOIN "teamMember" tm ON tm."teamId" = t."id" AND tm."userId" = $1
-            WHERE t."organizationId" = m."organizationId"
-            ORDER BY t."createdAt" ASC
-            LIMIT 1
-         ) mine ON true
-         LEFT JOIN LATERAL (
-           SELECT t."id"
-             FROM "team" t
-            WHERE t."organizationId" = m."organizationId"
-            ORDER BY t."createdAt" ASC
-            LIMIT 1
-         ) fallback ON true
-        WHERE m."userId" = $1
-        ORDER BY COALESCE(
-                   m."organizationId" = (
-                     SELECT s."activeOrganizationId"
-                       FROM "session" s
-                      WHERE s."userId" = $1
-                        AND s."activeOrganizationId" IS NOT NULL
-                      ORDER BY s."updatedAt" DESC
-                      LIMIT 1
-                   ),
-                   false
-                 ) DESC,
-                 m."createdAt" DESC
-        LIMIT 1`,
-      [session.userId],
-    );
-    const active = rows[0];
-    if (!active) return;
-    return {
-      data: {
-        ...session,
-        activeOrganizationId: active.organizationId,
-        activeTeamId: active.teamId ?? undefined,
-      },
-    };
-  } catch {
-    // Organization tables not migrated yet — leave the session as-is.
-    return;
-  }
+  const { rows } = await pool.query<{ organizationId: string; teamId: string | null }>(
+    // The organization they last had open, else the one they joined most
+    // recently: an explicit sign-out deletes the session row that remembers,
+    // and an invitee should land where the invitation put them. The workspace
+    // is one they belong to, else the organization's first.
+    `SELECT m."organizationId",
+            COALESCE(mine."id", fallback."id") AS "teamId"
+       FROM "member" m
+       LEFT JOIN LATERAL (
+         SELECT t."id"
+           FROM "team" t
+           JOIN "teamMember" tm ON tm."teamId" = t."id" AND tm."userId" = $1
+          WHERE t."organizationId" = m."organizationId"
+          ORDER BY t."createdAt" ASC
+          LIMIT 1
+       ) mine ON true
+       LEFT JOIN LATERAL (
+         SELECT t."id"
+           FROM "team" t
+          WHERE t."organizationId" = m."organizationId"
+          ORDER BY t."createdAt" ASC
+          LIMIT 1
+       ) fallback ON true
+      WHERE m."userId" = $1
+      ORDER BY COALESCE(
+                 m."organizationId" = (
+                   SELECT s."activeOrganizationId"
+                     FROM "session" s
+                    WHERE s."userId" = $1
+                      AND s."activeOrganizationId" IS NOT NULL
+                    ORDER BY s."updatedAt" DESC
+                    LIMIT 1
+                 ),
+                 false
+               ) DESC,
+               m."createdAt" DESC
+      LIMIT 1`,
+    [session.userId],
+  );
+  const active = rows[0];
+  if (!active) return;
+  return {
+    data: {
+      ...session,
+      activeOrganizationId: active.organizationId,
+      activeTeamId: active.teamId ?? undefined,
+    },
+  };
 }

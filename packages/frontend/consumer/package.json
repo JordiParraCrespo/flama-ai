@@ -14,8 +14,8 @@
       "import": "./dist/react/index.js"
     },
     "./organizations": {
-      "types": "./dist/react/organizations.queries.d.ts",
-      "import": "./dist/react/organizations.queries.js"
+      "types": "./dist/organizations/organizations.queries.d.ts",
+      "import": "./dist/organizations/organizations.queries.js"
     }
   },
   "peerDependencies": {

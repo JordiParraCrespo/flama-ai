@@ -13,7 +13,6 @@ export const TOKENS = {
   OrganizationsRepository: Symbol.for('OrganizationsRepository'),
   OrganizationsService: Symbol.for('OrganizationsService'),
   // flama:end organizations
-  // flama:plugins tenancy-tokens
   ProfileRepository: Symbol.for('ProfileRepository'),
   ProfileService: Symbol.for('ProfileService'),
 } as const;

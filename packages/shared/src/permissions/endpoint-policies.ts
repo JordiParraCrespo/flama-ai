@@ -35,7 +35,6 @@ export const ENDPOINT_POLICIES = {
   // flama:begin organizations
   '/organizations/:orgId/members': [{ action: 'read', subject: 'Member' }],
   // flama:end organizations
-  // flama:plugins tenancy-endpoint-policies
   '/roles': [{ action: 'read', subject: 'Role' }],
   '/tokens': [{ action: 'read', subject: 'ApiToken' }],
   '/admin/users': [{ action: 'manage', subject: 'User' }],
