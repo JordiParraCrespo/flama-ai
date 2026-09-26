@@ -467,16 +467,34 @@ export class OrganizationsService {
     }));
   }
 
-  /** Keep Better Auth's organization role and the app's scoped RBAC role aligned. */
+  /**
+   * Keep Better Auth's organization role and the app's scoped RBAC role aligned.
+   *
+   * Only the role that stands for the membership (`owner` or `user`) is
+   * swapped. Custom roles an admin assigned in this organization are the
+   * member's too, and a roster change must not take them away.
+   */
   private async assignApplicationRole(
     userId: string,
     organizationId: string,
     organizationRole: string,
   ): Promise<void> {
-    const roleName = applicationRoleFor(organizationRole);
-    const role = await this.roles.findOneByName(roleName, null);
-    if (role.isNone()) throw new Error(`Required system role "${roleName}" is missing`);
-    await this.userRoles.setRolesForUser(userId, [role.unwrap().id], organizationId);
+    const membershipRoleIds = new Map<string, string>();
+    for (const name of MEMBERSHIP_ROLES) {
+      const role = await this.roles.findOneByName(name, null);
+      if (role.isNone()) throw new Error(`Required system role "${name}" is missing`);
+      membershipRoleIds.set(name, role.unwrap().id);
+    }
+    // The port answers a scoped read with the global assignments included;
+    // those are not this scope's to rewrite.
+    const [inScope, global] = await Promise.all([
+      this.userRoles.findRoleIdsForUser(userId, organizationId),
+      this.userRoles.findRoleIdsForUser(userId, null),
+    ]);
+    const membership = [...membershipRoleIds.values()];
+    const custom = inScope.filter((id) => !global.includes(id) && !membership.includes(id));
+    const roleId = membershipRoleIds.get(applicationRoleFor(organizationRole)) as string;
+    await this.userRoles.setRolesForUser(userId, [...custom, roleId], organizationId);
   }
 
   /**
@@ -519,6 +537,9 @@ export class OrganizationsService {
     };
   }
 }
+
+/** The application roles a membership maps onto; see {@link applicationRoleFor}. */
+const MEMBERSHIP_ROLES = ['owner', 'user'] as const;
 
 /**
  * Map Better Auth membership roles onto the application's system roles.
