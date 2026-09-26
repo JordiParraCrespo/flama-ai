@@ -54,9 +54,10 @@
  *     },
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
- *     // another optional feature's tree and is skipped without it.
+ *     // another optional feature's tree, or a shared path's, and is skipped
+ *     // without it; a JSON edit's file is named here the same way.
  *     "files":     { "<destination>": "<path inside the plugin>" },
- *     "filesNeed": { "<destination>": "<feature id>" },
+ *     "filesNeed": { "<destination or JSON file>": "<feature id or shared path>" },
  *
  *     // OP 1 — a block of text at an anchor. Inserted immediately above the
  *     // `flama:plugins <anchor>` comment, fenced with this plugin's id.
@@ -149,13 +150,13 @@ function add(manifest, options) {
   if (problems.length) fail(`this project cannot take the plugin:\n  ${problems.join('\n  ')}`);
 
   // A file can belong inside another optional feature's tree — the CLI's docs
-  // page lives under `apps/docs`. In a project without that feature there is
-  // nowhere to put it and no site to read it, so it is skipped rather than
-  // dropped into an empty directory.
-  const absent = (destination) => {
-    const dep = manifest.filesNeed?.[destination];
-    return Boolean(dep) && !features[dep];
-  };
+  // page lives under `apps/docs` — or inside a shared path that went with the
+  // last app needing it, as the organizations module does inside
+  // `packages/frontend/consumer`. In a project without it there is nowhere to
+  // put the file and nothing to read it, so it is skipped rather than dropped
+  // into an empty directory. A feature is named by its id, a shared path by
+  // the path, and only a path has a slash.
+  const absent = (destination) => missing(manifest.filesNeed?.[destination], features);
   const destinations = Object.keys(manifest.files).filter((d) => !absent(d));
   for (const destination of destinations) {
     if (existsSync(join(ROOT, destination)) && !force) {
@@ -222,6 +223,12 @@ function add(manifest, options) {
     runPrune(['--check']);
   }
   console.log(`\nInstalled ${manifest.id}. Next: pnpm install${followUps(manifest)}`);
+}
+
+/** Whether what a file needs — a feature id, or a shared path — is not here. */
+function missing(dep, features) {
+  if (!dep) return false;
+  return dep.includes('/') ? !existsSync(join(ROOT, dep)) : !features[dep];
 }
 
 function followUps(manifest) {

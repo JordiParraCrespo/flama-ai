@@ -92,8 +92,10 @@ by those fences.
 
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
-it back. Six today: `cli`, `docs`, `admin-web`, `admin-mobile`, `qa` and
-`billing`, the one that is a module of the API rather than an app.
+it back. Seven today: `cli`, `docs`, `admin-web`, `admin-mobile`, `qa`,
+`billing`, a module of the API rather than an app, and `organizations`, which
+the starter also ships: the plugin is how a project that pruned it gets it
+back, and the plugins repo fails when it stops reproducing the starter's copy.
 
 ```bash
 pnpm plugin:list                  # what is on offer, and what is installed

@@ -347,8 +347,11 @@ export function applyJsonEdits(manifest, dryRun) {
   for (const edit of manifest.feature.json ?? []) {
     const target = join(ROOT, edit.file);
     if (!existsSync(target)) {
-      if (edit.needs) {
-        console.log(`  skip   ${edit.file} (no ${edit.needs} in this project)`);
+      // The file lives in a tree this project pruned — the consumer package,
+      // gone with the last app that needed it — so the edit has nothing to say.
+      const needs = edit.needs ?? manifest.filesNeed?.[edit.file];
+      if (needs) {
+        console.log(`  skip   ${edit.file} (no ${needs} in this project)`);
         continue;
       }
       fail(`${edit.file} does not exist; cannot apply a JSON edit`);
