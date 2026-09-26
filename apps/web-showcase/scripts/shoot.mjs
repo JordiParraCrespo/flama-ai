@@ -2,14 +2,16 @@
 /**
  * Start the built showcase and screenshot the top and named sections,
  * light and dark. Fails if the server never answers or a page logs errors.
+ * The browser plumbing is the design-export skill's, shared with its
+ * artboard renderer.
  *
- *   pnpm --filter <scope>/web-showcase build
- *   node shoot-showcase.mjs --out /tmp/shots --sections colors,type,buttons [--app apps/web-showcase] [--port 3002]
+ *   pnpm --filter @flama/web-showcase build
+ *   node apps/web-showcase/scripts/shoot.mjs --out /tmp/shots --sections colors,type,buttons [--port 3002]
  */
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
-import { REPO_ROOT, applyTheme, args, launch, shootAll, startServer } from './lib/browser.mjs';
+import { REPO_ROOT, applyTheme, args, launch, shootAll, startServer } from '../../../.agents/skills/design-export-port/scripts/lib/browser.mjs';
 
 const a = args({
   app: { default: 'apps/web-showcase' },

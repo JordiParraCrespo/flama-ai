@@ -25,7 +25,6 @@
       "identifiers": ["apps/web-showcase", "@flama/web-showcase"],
       "paths": [
         "apps/web-showcase",
-        ".agents/skills/design-export-port",
         ".agents/skills/next-best-practices",
         ".agents/skills/next-cache-components",
         ".agents/skills/next-upgrade",
@@ -33,14 +32,10 @@
       ],
       "json": [
         {
-          "file": "turbo.json",
-          "path": ["tasks", "build", "outputs"],
-          "remove": [".next/**", "!.next/cache/**"]
-        },
-        {
           "file": "biome.json",
           "path": ["files", "includes"],
-          "remove": ["!**/.next"]
+          "remove": ["!**/apps/web-showcase"],
+          "at": [20]
         }
       ]
     },
@@ -48,7 +43,15 @@
       "title": "Mobile design-system showcase",
       "summary": "apps/mobile-showcase — Expo gallery of @flama/design-system-mobile",
       "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
-      "paths": ["apps/mobile-showcase"]
+      "paths": ["apps/mobile-showcase"],
+      "json": [
+        {
+          "file": "biome.json",
+          "path": ["files", "includes"],
+          "remove": ["!**/apps/mobile-showcase"],
+          "at": [21]
+        }
+      ]
     },
     "e2e": {
       "title": "End-to-end tests",
@@ -197,6 +200,10 @@
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
       "neededBy": ["web", "mobile"]
+    },
+    ".agents/skills/design-export-port": {
+      "identifiers": [".agents/skills/design-export-port", "/design-export-port"],
+      "neededBy": ["web"]
     },
     ".agents/skills/scaffold-feature": {
       "identifiers": [".agents/skills/scaffold-feature", "/scaffold-feature"],

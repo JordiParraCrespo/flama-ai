@@ -35,4 +35,34 @@ pnpm --filter @flama/web-showcase dev
 pnpm --filter @flama/web-showcase build
 ```
 
-See [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md) for the design-system rules this gallery demonstrates.
+The **Foundations** section (`/foundations`) is the rendered reference for the
+tokens: check a token or component change there in **both** light and dark —
+the sidebar carries the theme switch.
+
+## Rebuilding it from a design export
+
+`/design-export-port` lands an export on `@flama/design-system-web`; this
+gallery is the optional last step. `src/lib/toc.ts` lists the inventory in
+the export's grouping; each entry is a `<Spec id>` on the page showing every
+state the screens use, with a usage line; foundations come first, colours in
+both themes side by side. Keep the existing demo files where they still show
+a component the inventory keeps, and replace the ones that show what was
+dropped. Sections that hold state are client components.
+
+Build, then shoot it: `scripts/shoot.mjs` starts the built app, captures the
+top and the section ids you name in light and dark, applies both theme
+selectors, and exits non-zero on console errors or a server that never
+answers.
+
+```bash
+pnpm --filter @flama/web-showcase build
+node apps/web-showcase/scripts/shoot.mjs --out /tmp/shots --sections colors,type,buttons
+```
+
+## Rules
+
+[`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md) holds for
+this gallery too, with one exception: it builds its tables on the `Table`
+primitives rather than `DataTable`, which ships in `@flama/frontend-web` and
+belongs to the product apps. It imports each component by its `./name`
+subpath, so it is not what keeps the package barrel honest — `apps/web` is.

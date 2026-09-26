@@ -34,3 +34,10 @@ pnpm --filter @flama/mobile-showcase android
 ```
 
 See [`.agents/rules/frontend-ui.md`](../../.agents/rules/frontend-ui.md) and [`.agents/rules/forms.md`](../../.agents/rules/forms.md).
+`lint:design` lints `app` and `lib` only.
+
+`global.css` mirrors the design-system tokens in the bare-HSL form NativeWind
+needs, like `apps/mobile/global.css`; keep it in step with
+`packages/frontend/design-system/web/src/styles/globals.css`, the source of
+truth. Preview a new `@flama/design-system-mobile` component here as well as
+on a screen in `apps/mobile`.
