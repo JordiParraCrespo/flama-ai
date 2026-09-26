@@ -1,5 +1,223 @@
 # @flama/translations
 
+## 0.3.0
+
+### Minor Changes
+
+- 548b754: Stripe billing leaves the starter for the `billing` plugin, and the `leads`
+  example is removed.
+
+  - `@flama/api` no longer ships `BillingModule`, its migrations, the `stripe`
+    config or the `stripe` dependency, and no longer ships `LeadsModule`.
+    `pnpm plugin:add billing` puts billing back, then
+    `pnpm generate:api-client`.
+  - `@flama/shared` drops the `billing` and `leads` scope resources and
+    permission groups, the `stripe_billing` capability, the `Billing` subject,
+    the `/billing/subscriptions` endpoint policy and the billing and lead schemas.
+  - `@flama/api-client` drops the billing and leads endpoints and models. Its
+    legacy models now take `Scope`, `ScopeResource` and `ClientCapabilities` from
+    `@flama/shared` instead of spelling them out. `openapi-ts` reads
+    `apps/api/openapi.json` from the right path again, so `src/generated` is
+    regenerated.
+  - `@flama/translations` drops the `BILLING_*` and `LEAD_*` error copy; the
+    plugin carries the billing copy.
+  - `@flama/web`'s permission picker gives a resource without an icon of its own
+    a generic key icon, so a plugin's scope group renders without an edit here.
+
+- af46e89: Bring every user-facing error into the RFC 7807 catalog.
+
+  The organization and admin façades threw bare `HttpException`s carrying Better
+  Auth's `{ message, code }` body, expecting the code to survive. It did not:
+  `AllExceptionsFilter` reads a `code` from `AppError` alone, so ~46 call sites
+  answered with a codeless problem document whose `title` was only the status
+  phrase ("Conflict"). The auth guards had the same gap.
+
+  - **`@flama/backend-core`** — new `ApiAuthProblemResponses()` documents the
+    401/403 every guarded route can produce, applied once per controller class.
+    A test now pins the deliberate rule that a bare `HttpException` carries no
+    `code`.
+  - **`apps/api`** — new `AuthErrors` (`AUTH_001`/`AUTH_002`), `OrganizationErrors`
+    (`ORG_001`–`ORG_016`) and `AdminErrors` (`ADMIN_001`–`ADMIN_008`) catalogs.
+    `betterAuthInvoker` folds Better Auth's ~85 upstream codes onto them, keeping
+    the original as an `upstreamCode` extension member. Guards throw catalog
+    errors instead of Nest's codeless ones; `PoliciesGuard` now reports a missing
+    principal as 401 rather than 403.
+  - **`@flama/translations`** — new `errors` namespace with a message per code in
+    both locales, so clients stop rendering the server's English `detail`.
+  - **`@flama/frontend-core`** — new `createErrorMessageResolver` translating a
+    failure from its problem `code`.
+  - **`@flama/frontend-consumer`** — the organizations repository no longer
+    swallows a failed read into an empty list.
+  - **`@flama/api-client`** — regenerated; the documented failures now reach the
+    OpenAPI document.
+
+- c27a7f4: Port the rn-bedrock mobile stack into Flama: Expo SDK 57 + dev client, nitro-fetch, MMKV, Sentry/RevenueCat optional keys, gorhom sheet forks, Legend List, expo-image, nano-icons, hey-api client generation, and namespaced translation files.
+
+  - `@flama/frontend-mobile` owns the shared mobile glue: the MMKV query
+    persistence wrapper, the polyfills, `FormField` and SecureStore.
+  - `@flama/frontend-core` gains `ConfigManager` under `@flama/frontend-core/config`.
+
+- 6bf67a5: Adopt React Hook Form across `apps/web` and `apps/mobile`.
+
+  Every auth form on both platforms now runs through `useForm`, validated against
+  the Zod schemas in `@flama/shared` via `@hookform/resolvers`. Web forms were
+  uncontrolled `FormData` reads leaning on native browser validation, and mobile
+  screens held one `useState` per field and reported the first Zod failure in an
+  `Alert`. Both now surface per-field errors inline, next to the input that caused
+  them, and no longer submit until the whole form parses.
+
+  `@flama/frontend-core` gains a `/validation` entrypoint exporting
+  `createZodErrorMap`, and `@flama/frontend-web` and `@flama/frontend-mobile`
+  each ship the `useZodResolver` hook that wires it into React Hook Form.
+  The shared schemas carry English messages because the API validates against the
+  same objects, so the map re-derives the message from the Zod issue code and
+  resolves it against a `validation.*` translation key. Each app passes its own
+  `t`, which keeps the messages localised without duplicating the schemas.
+  `TranslateFn` is deliberately narrow — a `t` typed over the full catalog is
+  assignable to it, so a missing key is a compile error rather than a raw key
+  rendered to the user.
+
+  The auth schemas in `@flama/shared` no longer hardcode their failure messages.
+  Zod short-circuits any error map when a check states its own message, so
+  `z.string().email('Invalid email address')` pinned every consumer to English. The
+  shapes are unchanged, and nothing outside the two frontends read those strings —
+  the API authenticates through Better Auth rather than these schemas.
+
+  `@flama/shared` also adds a `./schemas/auth` export. `apps/web` could not import
+  the schemas from the package root: that pulls in the scope catalog and CASL,
+  neither of which belongs in the browser bundle. The narrow subpath depends on
+  nothing but Zod. Because workspace `dist` folders sit outside `node_modules`,
+  `apps/web/vite.config.ts` now points the CommonJS interop plugin and
+  `optimizeDeps` at it — without that, Rollup cannot see the named exports.
+
+  `@flama/translations` adds the `validation.*` messages the error map resolves
+  (`required`, `email`, `minLength`, `maxLength`, `minItems`, `maxItems`) plus
+  `apiTokens.permissionsRequired`, in both English and Spanish.
+
+- f96d51a: Add server-evaluated feature flags, wired into the API, web and mobile.
+
+  Flags are declared in code, targeted in the database, evaluated on the server
+  and read on every client from one endpoint — the shape Stripe and Revolut
+  describe for their own.
+
+  - **`@flama/shared`** gains `feature-flags/`: the `FEATURE_FLAGS` catalog
+    (every flag the code may read, with its kind, owner, safe default and — for
+    temporary flags — expiry), the pure evaluator (ordered rules, segments,
+    semver targeting on the app build, deterministic MurmurHash3 percentage
+    splits bucketed by organization), and the Zod schemas for targeting writes.
+    `@flama/shared/feature-flags/catalog` is a Zod-free subpath for the web
+    bundle. A `flags` scope group and a `FeatureFlag` subject join the catalogs.
+  - **`@flama/api`** gains a `feature-flags` module. Every replica holds all
+    targeting in memory and evaluates without I/O, polling a cheap fingerprint
+    to stay in sync and keeping its last good snapshot through a database blip.
+    `GET /v1/feature-flags` serves the caller's evaluated client flags (signed
+    out too); the control-plane endpoints under `/v1/feature-flags/admin`,
+    `/segments` and `/changes` edit targeting, pull kill switches, manage
+    segments, explain an evaluation and read the audit trail, which every change
+    lands on through the outbox. `@RequireFlag('key')` gates a route on a flag,
+    and token creation is now behind the `api_token_creation` kill switch. New
+    error codes `FLAG_001`–`FLAG_007`. Migration `AddFeatureFlags`.
+  - **`@flama/frontend-core`**: a `feature-flags` kernel module and
+    `useFeatureFlag` / `useFeatureFlagValue` / `useFeatureFlags`, typed by the
+    catalog, reading the API rather than PostHog. Flags are prefetched as soon as
+    the session is known, persisted with the query cache, and an `experiment`
+    flag records a `feature_flag_exposed` event. `FlamaApp.create` takes
+    `featureFlags: { platform, appVersion }`.
+
+    **Breaking:** feature flags leave the analytics port. `IAnalyticsClient` no
+    longer has `getFeatureFlags` / `onFeatureFlags`, `AnalyticsService` no longer
+    serves flags, `analyticsKeys.flags` is gone, and `isFlagEnabled` moved to the
+    `feature-flags` module. `useFeatureFlag(key)` keeps its name but now takes a
+    catalog key and reads the server's answer.
+
+  - **`@flama/frontend-web` / `@flama/frontend-mobile`**: the PostHog adapters
+    drop their flag methods and switch PostHog's own flag loading off. The mobile
+    query client now follows `AppState`, so `refetchOnWindowFocus` works on a
+    phone and a pulled kill switch lands when the app returns to the foreground.
+    The unused `featureFlags` section of the mobile remote config is removed:
+    remote config is for tunables, not flags.
+  - **`@flama/web` / `@flama/mobile`** report their platform and build, and the
+    web API-tokens screen reads `api_token_creation`.
+
+  `pnpm check:flags` (in CI) fails on a temporary flag past its expiry date and
+  on a flag the catalog declares but no code reads.
+
+- 48d1b41: Make the web delivery path carry its weight: compression, caching, a real CSP,
+  and a budget that keeps first load honest.
+
+  The built SPAs were served by a 14-line nginx config that set none of the three
+  things nginx does not do by default. The official image ships `gzip` commented
+  out, so the ~1.1MB entry chunk went over the wire uncompressed; hashed assets
+  got no `Cache-Control`, so every repeat visit revalidated all ~50 chunks; and
+  the Content-Security-Policy that `index.html` and `public/theme-init.js` were
+  already written against — both keep the theme bootstrap in a separate file
+  specifically to avoid an inline-script exception — did not exist. All three are
+  now set, with the policy's third-party origins in one substituted
+  `CSP_EXTRA_ORIGINS` variable (defaulted in the Dockerfile, overridable per
+  deployment through `helm/flama/values.yaml`). Measured on the current build:
+  1,130KB → 324KB for the entry chunk, 152KB → 24KB for the stylesheet.
+
+  On the critical path itself:
+
+  - **Only the default locale is bundled.** `@flama/translations` grew two
+    narrower entrypoints — `/locales` for metadata and `/lazy` for one catalog per
+    chunk — because importing `locales` or `Messages` from the root barrel put
+    every catalog in the entry chunk. The Spanish catalog was measurably inside
+    what an English reader downloaded before anything rendered.
+  - **The session lookup starts before the bundle parses.** Nothing renders until
+    `useSessionRestore` resolves, and that request used to begin only after the
+    bundle had downloaded, parsed and mounted React. `public/session-preload.js`
+    issues it from `<head>`; `consumeSessionPreload` in `@flama/auth` takes the
+    answer once, and falls back to the auth client for anything unusable, so the
+    worst case is a wasted request rather than a reader treated as signed out.
+  - **Route chunks are prefetched on intent.** `defaultPreload: 'intent'` means
+    hovering a link fetches the route it points at, instead of every navigation
+    starting a request.
+  - **Dependencies are chunked per library** via a shared
+    `@flama/tsconfig/vite-chunks.mjs`, so a release invalidates app code (42KB) and
+    leaves the vendor chunks cached (263KB). Splitting costs ~48KB gzipped on a
+    cold first load, which is the trade the `immutable` caching above pays for —
+    the number is recorded in that file.
+  - `sideEffects` declared on `@flama/design-system-web` (CSS excepted),
+    `@flama/translations` and `@flama/api-client`, worth ~7KB gzipped.
+
+  And so it stays fixed: `pnpm check:bundle` gzips everything the built
+  `index.html` references and fails past a committed budget, in CI after
+  `pnpm build`. Vite's own 500KB warning prints and passes, which is how a 1.1MB
+  entry chunk went unnoticed. The Playwright `api` project runs in CI too — 69
+  specs that existed and that no job ran, five of which had been failing since the
+  console mailbox line gained a `Locale:` segment the e2e helper never learned
+  about. The `web` project stays out until it is repaired: it drives a `/team`
+  route `apps/web` no longer has, and 15 of its 64 specs fail on `main`. See
+  `e2e/README.md`.
+
+### Patch Changes
+
+- 7fdcefc: Capability registry: a missing optional key disables a feature instead of
+  booting with a `'not-set'` sentinel.
+
+  - `@flama/shared` exports `DEPLOYMENT_CAPABILITIES` / `DeploymentCapabilities`
+    — the catalog of optional features a deployment may or may not have
+    (`google_oauth`, `github_oauth`, `stripe_billing`, `s3_storage`,
+    `email_delivery`), plus the `CLIENT_CAPABILITIES` wire subset.
+  - `@flama/backend-core` gains a `CapabilitiesService` registry: the app
+    resolves its capability set from config once at boot, logs it at startup,
+    and every consumer asks the registry instead of comparing raw config against
+    sentinel values.
+  - The API's OAuth config keys are now genuinely optional
+    (`z.string().optional()`) rather than defaulting to `'not-set'`; blank or
+    whitespace-only env vars normalize to `undefined` across the optional
+    OAuth/Stripe/S3/email keys. The client-facing subset of the resolved set
+    (`CLIENT_CAPABILITIES`: the OAuth providers and `stripe_billing`) is served
+    at `GET /health/capabilities` (exempt from scope checks, like other
+    anonymous reads); server-internal capabilities stay in the startup log.
+  - `@flama/api-client` picks up the generated `HealthApi.deploymentCapabilities()`.
+  - `@flama/frontend-core` adds a `capabilities` module and a
+    `useDeploymentCapabilities()` hook; the web login page uses it to render
+    only configured social providers, and to name the env vars to set when none
+    are (only after a successful read — an unreachable API or a failed refetch
+    with retained stale data is not a missing configuration).
+
 ## 0.2.0
 
 ### Minor Changes
