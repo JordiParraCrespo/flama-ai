@@ -91,6 +91,10 @@ test('parseArgs reads the command, the id and where to get the plugin', () => {
     { command: 'remove', id: 'cli', dryRun: true, force: true },
   );
 
+  // A caller that installs several plugins installs once, itself.
+  assert.equal(parseArgs(['add', 'cli']).install, true);
+  assert.equal(parseArgs(['add', 'cli', '--no-install']).install, false);
+
   // `list` takes no id.
   assert.equal(parseArgs(['list']).command, 'list');
 });
@@ -264,10 +268,14 @@ function install(project, extra = [], manifest = BETA) {
       from,
       result: {
         code: 0,
-        out: execFileSync('node', [script, 'add', 'beta', '--from', from, ...extra], {
-          encoding: 'utf8',
-          env: FIXTURE_ENV,
-        }),
+        out: execFileSync(
+          'node',
+          [script, 'add', '--no-install', 'beta', '--from', from, ...extra],
+          {
+            encoding: 'utf8',
+            env: FIXTURE_ENV,
+          },
+        ),
       },
     };
   } catch (error) {
@@ -329,7 +337,10 @@ test('removing the plugin returns the project to its exact bytes', () => {
   assert.notEqual(status(), '', 'the install changed nothing');
 
   const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  execFileSync('node', [script, 'remove', 'beta'], { encoding: 'utf8', env: FIXTURE_ENV });
+  execFileSync('node', [script, 'remove', '--no-install', 'beta'], {
+    encoding: 'utf8',
+    env: FIXTURE_ENV,
+  });
 
   const dirty = status();
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
@@ -350,7 +361,7 @@ test('a feature that shapes generated files says how to rebuild them, both ways'
   assert.match(result.out, /Installed beta\. Next: pnpm install, pnpm generate:x/);
 
   const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  const out = execFileSync('node', [script, 'remove', 'beta'], {
+  const out = execFileSync('node', [script, 'remove', '--no-install', 'beta'], {
     encoding: 'utf8',
     env: FIXTURE_ENV,
   });
@@ -376,7 +387,7 @@ test('a plugin cannot declare the one JSON shape that has no inverse', () => {
   let code = 0;
   let out = '';
   try {
-    const args = [script, 'add', 'beta', '--from', from];
+    const args = [script, 'add', '--no-install', 'beta', '--from', from];
     out = execFileSync('node', args, { encoding: 'utf8', env: FIXTURE_ENV });
   } catch (error) {
     code = error.status;
@@ -409,11 +420,17 @@ test('into a project that pruned the other owner, the shared block comes back as
   assert.doesNotMatch(config, /gamma\|beta|beta\|gamma/);
 
   // And the copied file arrived as the prune would have left it: `zeta` is
-  // no feature here, so its block is gone and the rest is untouched.
-  assert.equal(readFileSync(join(project, 'beta', 'notes.txt'), 'utf8'), 'kept\n');
+  // no feature here, so its block is emptied and the rest is untouched.
+  assert.equal(
+    readFileSync(join(project, 'beta', 'notes.txt'), 'utf8'),
+    'kept\n# flama:begin zeta\n# flama:end zeta\n',
+  );
 
   const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  execFileSync('node', [script, 'remove', 'beta'], { encoding: 'utf8', env: FIXTURE_ENV });
+  execFileSync('node', [script, 'remove', '--no-install', 'beta'], {
+    encoding: 'utf8',
+    env: FIXTURE_ENV,
+  });
   const dirty = execFileSync('git', ['-C', project, 'status', '--porcelain'], { encoding: 'utf8' });
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
 });
@@ -438,18 +455,22 @@ test('a dry run sees the shared block it puts back, and places blocks inside it'
   writeFileSync(join(from, 'plugins', 'beta', 'files', 'beta', 'index.txt'), 'beta\n');
   const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
   const before = readFileSync(join(project, 'config.txt'), 'utf8');
-  const out = execFileSync('node', [script, 'add', 'beta', '--from', from, '--dry-run'], {
-    encoding: 'utf8',
-    env: FIXTURE_ENV,
-  });
+  const out = execFileSync(
+    'node',
+    [script, 'add', '--no-install', 'beta', '--from', from, '--dry-run'],
+    {
+      encoding: 'utf8',
+      env: FIXTURE_ENV,
+    },
+  );
   assert.match(out, /block\s+config\.txt \(above flama:plugins inner-slot\)/);
   assert.equal(readFileSync(join(project, 'config.txt'), 'utf8'), before);
 });
 
-test('a shipped feature replays its blocks onto a file the project has changed since', () => {
+/** A project whose `app.txt` is `lines`, and a `delta` plugin carrying the starter's copy. */
+function deltaSetup(lines) {
   const project = fixture();
-  const before = ['top', 'middle', 'local-edit', 'bottom', ''].join('\n');
-  writeFileSync(join(project, 'app.txt'), before);
+  writeFileSync(join(project, 'app.txt'), lines.join('\n'));
   execFileSync('git', ['-C', project, 'add', '-A']);
   execFileSync('git', [
     '-C',
@@ -482,25 +503,52 @@ test('a shipped feature replays its blocks onto a file the project has changed s
     '',
   ];
   writeFileSync(join(from, 'plugins', 'delta', 'snapshots', 'app.txt'), starter.join('\n'));
+  return { project, from, script: join(project, 'scripts', 'plugins', 'plugin.mjs') };
+}
 
-  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  execFileSync('node', [script, 'add', 'delta', '--from', from], { env: FIXTURE_ENV });
-  assert.equal(
-    readFileSync(join(project, 'app.txt'), 'utf8'),
-    [
-      'top',
-      '# flama:begin delta',
-      'delta-line',
-      '# flama:end delta',
-      'middle',
-      'local-edit',
-      'bottom',
-      '',
-    ].join('\n'),
-  );
+const DELTA_FILLED = [
+  'top',
+  '# flama:begin delta',
+  'delta-line',
+  '# flama:end delta',
+  'middle',
+  'local-edit',
+  'bottom',
+  '',
+].join('\n');
 
-  execFileSync('node', [script, 'remove', 'delta'], { env: FIXTURE_ENV });
-  assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), before);
+test('a shipped feature replays its blocks into the fences its prune left', () => {
+  // What a prune leaves: the feature's fences, empty, where it stood — and an
+  // edit the project made since.
+  const before = [
+    'top',
+    '# flama:begin delta',
+    '# flama:end delta',
+    'middle',
+    'local-edit',
+    'bottom',
+    '',
+  ];
+  const { project, from, script } = deltaSetup(before);
+
+  execFileSync('node', [script, 'add', '--no-install', 'delta', '--from', from], {
+    env: FIXTURE_ENV,
+  });
+  assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), DELTA_FILLED);
+
+  execFileSync('node', [script, 'remove', '--no-install', 'delta'], { env: FIXTURE_ENV });
+  assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), before.join('\n'));
+});
+
+test('a project pruned before prunes kept fences still takes the blocks', () => {
+  // Pruned the old way, the block went whole: no fence marks where it stood,
+  // so the merge base is the starter's copy without it.
+  const { project, from, script } = deltaSetup(['top', 'middle', 'local-edit', 'bottom', '']);
+
+  execFileSync('node', [script, 'add', '--no-install', 'delta', '--from', from], {
+    env: FIXTURE_ENV,
+  });
+  assert.equal(readFileSync(join(project, 'app.txt'), 'utf8'), DELTA_FILLED);
 });
 
 test("a file of another feature's inside the plugin's tree lands only beside that feature", () => {
@@ -542,11 +590,13 @@ test("a file of another feature's inside the plugin's tree lands only beside tha
   const project = fixture();
   const before = readFileSync(join(project, 'scripts', 'starter', 'features.json'), 'utf8');
   const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
-  execFileSync('node', [script, 'add', 'epsilon', '--from', from], { env: FIXTURE_ENV });
+  execFileSync('node', [script, 'add', '--no-install', 'epsilon', '--from', from], {
+    env: FIXTURE_ENV,
+  });
   assert.equal(readFileSync(join(project, 'epsilon', 'alpha-tool.txt'), 'utf8'), 'alpha\n');
   assert.deepEqual(features(project).alpha.paths, ['alpha', 'epsilon/alpha-tool.txt']);
 
-  execFileSync('node', [script, 'remove', 'epsilon'], { env: FIXTURE_ENV });
+  execFileSync('node', [script, 'remove', '--no-install', 'epsilon'], { env: FIXTURE_ENV });
   assert.equal(readFileSync(join(project, 'scripts', 'starter', 'features.json'), 'utf8'), before);
   assert.equal(existsSync(join(project, 'epsilon')), false);
 
@@ -554,7 +604,9 @@ test("a file of another feature's inside the plugin's tree lands only beside tha
   // pruned, which no check would notice.
   const pruned = fixture({ pruned: true });
   const prunedScript = join(pruned, 'scripts', 'plugins', 'plugin.mjs');
-  execFileSync('node', [prunedScript, 'add', 'epsilon', '--from', from], { env: FIXTURE_ENV });
+  execFileSync('node', [prunedScript, 'add', '--no-install', 'epsilon', '--from', from], {
+    env: FIXTURE_ENV,
+  });
   assert.equal(existsSync(join(pruned, 'epsilon', 'alpha-tool.txt')), false);
   assert.equal(existsSync(join(pruned, 'epsilon', 'index.txt')), true);
 });

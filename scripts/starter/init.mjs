@@ -41,7 +41,14 @@ import {
   pluginIds,
   resolveSource,
 } from '../plugins/source.mjs';
-import { expandKeep, mentions, printMentions, regenerateSteps, resolveRemoval } from './prune.mjs';
+import {
+  expandKeep,
+  mentions,
+  printMentions,
+  regenerateSteps,
+  resolveRemoval,
+  runRegenerate,
+} from './prune.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -231,7 +238,14 @@ function stage(result, source) {
     step('scripts/starter/prune.mjs', ['--without', without, '--no-install', '--no-report']);
   }
   for (const id of result.add) {
-    step('scripts/plugins/plugin.mjs', ['add', id, '--from', source.dir, '--no-check']);
+    step('scripts/plugins/plugin.mjs', [
+      'add',
+      id,
+      '--from',
+      source.dir,
+      '--no-check',
+      '--no-install',
+    ]);
   }
   // Once, over the finished tree: each install would otherwise pay for it.
   step('scripts/starter/prune.mjs', ['--check']);
@@ -318,10 +332,13 @@ async function main() {
         ...removal.shared.flatMap((path) => manifest.shared[path].identifiers),
       ]),
     );
-    const followUps = regenerateSteps([
+    // Once, after the install, for everything that came or went.
+    const regenerate = regenerateSteps([
       ...removal.features.map((id) => manifest.features[id]),
       ...result.add.map((id) => plugins[id].feature),
     ]);
+    if (options.install) runRegenerate(regenerate);
+    const followUps = options.install ? [] : regenerate;
     const kept = result.keep.length ? `, ${result.keep.join(', ')}` : '';
     const added = result.add.length ? `, and ${result.add.join(', ')}` : '';
     console.log(`

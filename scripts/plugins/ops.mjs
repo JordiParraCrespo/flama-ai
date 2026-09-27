@@ -38,6 +38,7 @@ import {
   blockAbove,
   dropBlocks,
   findAnchor,
+  hasFilledBlock,
   MarkerError,
   markerIds,
   widenMarker,
@@ -315,7 +316,7 @@ export function insertBlocks(manifest, alreadyTouched, known, dryRun) {
     const content = readText(block.file);
     if (
       !touched.has(block.file) &&
-      grammar(() => markerIds(block.file, content)).has(manifest.id)
+      grammar(() => hasFilledBlock(block.file, content, manifest.id))
     ) {
       fail(`${block.file} already carries a "${manifest.id}" block`);
     }
@@ -340,11 +341,16 @@ export function replaySnapshots(manifest, known, dryRun) {
     const source = join(manifest.dir, snapshot.source);
     if (!existsSync(source)) fail(`${manifest.id}: snapshot "${snapshot.source}" is missing`);
     const content = readText(snapshot.file);
-    if (grammar(() => markerIds(snapshot.file, content)).has(manifest.id)) {
+    if (grammar(() => hasFilledBlock(snapshot.file, content, manifest.id))) {
       fail(`${snapshot.file} already carries a "${manifest.id}" block`);
     }
     const ours = trimText(manifest, snapshot.file, readFileSync(source, 'utf8'), known, false);
-    const base = grammar(() => dropBlocks(snapshot.file, ours, new Set([manifest.id]))) ?? ours;
+    // The project's copy holds this plugin's emptied fences where a prune left
+    // them — unless it was pruned before prunes kept them, in which case the
+    // blocks went whole and the base has to say so too.
+    const whole = !grammar(() => markerIds(snapshot.file, content)).has(manifest.id);
+    const base =
+      grammar(() => dropBlocks(snapshot.file, ours, new Set([manifest.id]), { whole })) ?? ours;
     const merged = mergeThreeWay(snapshot.file, content, base, ours);
     console.log(`  blocks ${snapshot.file} (from the starter's copy)`);
     writeText(snapshot.file, merged, dryRun);

@@ -173,7 +173,45 @@ export function widenMarker(line, id, at) {
 }
 
 /**
- * `content` with every block owned only by `removed` ids taken out, and every
+ * Every block in `content`, as `{ ids, begin, end }` line indexes of its two
+ * fences, outermost first. Throws `MarkerError` like `annotate`.
+ */
+function blocksOf(file, content) {
+  const blocks = [];
+  const open = [];
+  annotate(file, content).forEach(({ line, marker }, index) => {
+    if (!marker) return;
+    const [, kind, spec] = MARKER_RE.exec(line);
+    if (kind === 'begin') {
+      const block = { ids: spec.split('|'), begin: index, end: -1 };
+      blocks.push(block);
+      open.push(block);
+    } else {
+      open.pop().end = index;
+    }
+  });
+  return blocks;
+}
+
+/**
+ * Whether a slot put this block where it is: a `flama:plugins` anchor follows
+ * it, with nothing between but blank lines, other anchors, and other whole
+ * blocks — the stack several plugins leave above one slot.
+ */
+function slotted(lines, block, blocks) {
+  const byBegin = new Map(blocks.map((other) => [other.begin, other]));
+  for (let i = block.end + 1; i < lines.length; i++) {
+    if (ANCHOR_RE.test(lines[i])) return true;
+    if (!lines[i].trim()) continue;
+    const sibling = byBegin.get(i);
+    if (!sibling) return false;
+    i = sibling.end;
+  }
+  return false;
+}
+
+/**
+ * `content` with every block owned only by `removed` ids emptied, and every
  * co-owned fence narrowed to the owners that are left. Null when the file has
  * no blocks at all, so a caller can skip rewriting it.
  *
@@ -184,19 +222,59 @@ export function widenMarker(line, id, at) {
  * project that pruned `mobile` long ago — and it should arrive the way the
  * prune would have left it.
  *
- * Markers survive. `plugin:remove` is the pruner, and it finds a plugin's
- * lines by its fences; stripping them would make an installed plugin
- * unremovable and a co-owned block unwidenable by the next install.
+ * A block empties; its fences stay. The fences are the feature's own place in
+ * the file — `/admin/users` between `/tokens` and the flags row, the `admin`
+ * scope group between `users` and `roles` — and a plugin that brings the
+ * feature back merges into that hole, not into a slot every plugin shares.
+ * Two plugins filling one list keep a fence apiece between them, so their
+ * merges never meet. The exception is a block a slot put there (`slotted`):
+ * the slot is its place, and it goes whole, leaving the slot as it was.
+ *
+ * Markers survive for the same reason. `plugin:remove` is the pruner, and it
+ * finds a plugin's lines by its fences; stripping them would make an installed
+ * plugin unremovable and a co-owned block unwidenable by the next install.
+ *
+ * `whole` takes every block out whole, fences and all: what a prune did before
+ * it kept them, which a project pruned then still looks like.
  */
-export function dropBlocks(file, content, removed) {
-  const out = [];
-  let touched = false;
-  for (const { line, stack, marker } of annotate(file, content)) {
-    if (stack.length) touched = true;
-    if (stack.some(({ ids }) => ids.every((id) => removed.has(id)))) continue;
-    out.push(marker ? narrowMarker(line, removed) : line);
+export function dropBlocks(file, content, removed, { whole = false } = {}) {
+  const blocks = blocksOf(file, content);
+  if (!blocks.length) return null;
+  const lines = content.split('\n');
+  const gone = (block) => block.ids.every((id) => removed.has(id));
+  const drop = new Set();
+  const kept = new Set();
+  for (const block of blocks) {
+    if (!gone(block) || drop.has(block.begin)) continue;
+    for (let i = block.begin; i <= block.end; i++) drop.add(i);
+    if (!whole && !slotted(lines, block, blocks)) {
+      kept.add(block.begin);
+      kept.add(block.end);
+    }
   }
-  return touched ? collapseBlankRuns(out.join('\n')) : null;
+  const out = lines.flatMap((line, index) => {
+    if (kept.has(index)) return [line];
+    if (drop.has(index)) return [];
+    return [MARKER_RE.test(line) ? narrowMarker(line, removed) : line];
+  });
+  return collapseBlankRuns(out.join('\n'));
+}
+
+/**
+ * Whether the block whose begin fence is at `index` holds nothing — what a
+ * prune leaves of a feature that may come back, and so the one kind of block
+ * that may name a feature the project does not have.
+ */
+export function isEmptyBlock(file, content, index) {
+  const block = blocksOf(file, content).find((candidate) => candidate.begin === index);
+  return Boolean(block) && block.end === block.begin + 1;
+}
+
+/** Whether `content` holds a block naming `id` that has lines in it. */
+export function hasFilledBlock(file, content, id) {
+  return blocksOf(file, content).some(
+    (block) => block.ids.includes(id) && block.end > block.begin + 1,
+  );
 }
 
 /** Deleting a block leaves the blank lines either side of it; keep one. */
