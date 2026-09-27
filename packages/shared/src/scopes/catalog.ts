@@ -15,7 +15,9 @@ export type ScopeAccessLevel = (typeof SCOPE_ACCESS_LEVELS)[number];
 export const SCOPE_RESOURCES = [
   'profile',
   'users',
+  // flama:begin admin-api
   'admin',
+  // flama:end admin-api
   'roles',
   'organizations',
   'members',
@@ -114,6 +116,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       },
     },
   },
+  // flama:begin admin-api
   {
     resource: 'admin',
     label: 'User administration',
@@ -136,6 +139,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       },
     },
   },
+  // flama:end admin-api
   {
     resource: 'roles',
     label: 'Roles & permissions',
