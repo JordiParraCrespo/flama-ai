@@ -2,6 +2,7 @@ import * as CollapsiblePrimitive from '@rn-primitives/collapsible';
 import { AlertTriangle, Check, ChevronDown, Loader2 } from 'lucide-react-native';
 import * as React from 'react';
 import { ScrollView, View } from 'react-native';
+import { useControlled } from '../../hooks/use-controlled';
 import { cn } from '../../lib/utils';
 import { Icon } from './icon';
 import { Text, TextClassContext } from './text';
@@ -47,19 +48,17 @@ function ToolCall({
   className,
   ...props
 }: React.ComponentProps<typeof CollapsiblePrimitive.Root> & { status?: ToolCallStatus }) {
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
-  const open = openProp ?? uncontrolledOpen;
-
-  function handleOpenChange(next: boolean) {
-    if (openProp === undefined) setUncontrolledOpen(next);
-    onOpenChange?.(next);
-  }
+  const [open, setOpen] = useControlled({
+    value: openProp,
+    defaultValue: defaultOpen,
+    onChange: onOpenChange,
+  });
 
   return (
     <ToolCallContext.Provider value={{ status, open }}>
       <CollapsiblePrimitive.Root
         open={open}
-        onOpenChange={handleOpenChange}
+        onOpenChange={setOpen}
         className={cn(
           'w-full overflow-hidden rounded-xl border border-border-subtle bg-card',
           className,
