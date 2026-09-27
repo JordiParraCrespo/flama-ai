@@ -6,9 +6,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 /**
  * The permission picker's render budget, measured through the form that ships.
  *
- * The catalog has nine groups and each offers three levels, so the picker is
- * twenty-seven toggles. It used to hold one flat `Scope[]` for all of them,
- * which made every click a re-render of the whole thing; each row takes its own
+ * Each group offers three levels, so the picker is three toggles a group. It
+ * used to hold one flat `Scope[]` for all of them, which made every click a
+ * re-render of the whole thing; each row takes its own
  * field off the form now, so a click costs the three toggles of one row.
  *
  * `CreateTokenForm` is mounted rather than the picker on a bare `useForm`,
@@ -121,7 +121,7 @@ afterEach(() => {
 });
 
 describe('PermissionPicker render budget', () => {
-  it('grants one group without redrawing the other ten', () => {
+  it('grants one group without redrawing the others', () => {
     const { picks } = renderForm();
     // Mounting draws every toggle; `useController` registering each row's field
     // draws them a second time. What matters is what a *click* costs after
