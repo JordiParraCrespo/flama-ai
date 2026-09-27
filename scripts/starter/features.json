@@ -19,21 +19,6 @@
       "identifiers": ["apps/mobile", "@flama/mobile"],
       "paths": ["apps/mobile"]
     },
-    "revenuecat": {
-      "title": "RevenueCat in-app purchases",
-      "summary": "apps/mobile/purchases.ts — the RevenueCat SDK, configured at launch from per-store keys",
-      "identifiers": ["react-native-purchases", "EXPO_PUBLIC_REVENUECAT_"],
-      "paths": ["apps/mobile/purchases.ts"],
-      "requires": ["mobile"],
-      "json": [
-        {
-          "file": "apps/mobile/package.json",
-          "path": ["dependencies"],
-          "set": { "react-native-purchases": "^10.9.1" },
-          "setAt": [50]
-        }
-      ]
-    },
     "e2e": {
       "title": "End-to-end tests",
       "summary": "e2e/ — Playwright suites against the running API and web app",
