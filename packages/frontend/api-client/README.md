@@ -25,7 +25,8 @@ moving to the SDK; nothing regenerates its services. Its models in
 the post-processing step (`scripts/openapi-postprocess.mjs`), so each DTO has
 one definition and it follows the API: a plugin that adds a scope or a
 capability reaches them through its `regenerate` step, without anyone editing
-this package. DTOs only the hey-api output defines are exported by name from
+this package. Every DTO the API describes has a file there, including those of
+endpoints the retired generator never covered, and is exported by name from
 the package root.
 
 ## What's inside

@@ -30,12 +30,14 @@ export type { ClientFeatureFlagsResponseDto } from './common/models/ClientFeatur
 export type { CreateAccessGrantRequest } from './common/models/CreateAccessGrantRequest';
 export type { CreateApiTokenRequest } from './common/models/CreateApiTokenRequest';
 export type { CreatedApiTokenResponseDto } from './common/models/CreatedApiTokenResponseDto';
+export type { CreateFlagSegmentRequest } from './common/models/CreateFlagSegmentRequest';
 export type { CreateOrganizationRequest } from './common/models/CreateOrganizationRequest';
 export type { CreateRoleRequest } from './common/models/CreateRoleRequest';
 export type { CreateWorkspaceRequest } from './common/models/CreateWorkspaceRequest';
 export type { CurrentCredentialResponseDto } from './common/models/CurrentCredentialResponseDto';
 export type { FeatureFlagConfigResponseDto } from './common/models/FeatureFlagConfigResponseDto';
 export type { FeatureFlagResponseDto } from './common/models/FeatureFlagResponseDto';
+export type { FlagChangePaginationMetaDto } from './common/models/FlagChangePaginationMetaDto';
 export type { FlagChangeResponseDto } from './common/models/FlagChangeResponseDto';
 export type { FlagConditionDto } from './common/models/FlagConditionDto';
 export type { FlagEvaluationResponseDto } from './common/models/FlagEvaluationResponseDto';
@@ -69,6 +71,9 @@ export type { ScopePolicyDto } from './common/models/ScopePolicyDto';
 export type { SetUserPasswordRequest } from './common/models/SetUserPasswordRequest';
 export type { SetUserRoleRequest } from './common/models/SetUserRoleRequest';
 export type { SlugAvailabilityResponseDto } from './common/models/SlugAvailabilityResponseDto';
+export type { ToggleFeatureFlagRequest } from './common/models/ToggleFeatureFlagRequest';
+export type { UpdateFeatureFlagRequest } from './common/models/UpdateFeatureFlagRequest';
+export type { UpdateFlagSegmentRequest } from './common/models/UpdateFlagSegmentRequest';
 export type { UpdateMemberRoleRequest } from './common/models/UpdateMemberRoleRequest';
 export type { UpdateOrganizationRequest } from './common/models/UpdateOrganizationRequest';
 export type { UpdateProfileRequest } from './common/models/UpdateProfileRequest';
@@ -102,11 +107,3 @@ export { ProfileApi } from './data-access/api/openapi/services/ProfileApi';
 export { RolesApi } from './data-access/api/openapi/services/RolesApi';
 export { UsersApi } from './data-access/api/openapi/services/UsersApi';
 export { WorkspacesApi } from './data-access/api/openapi/services/WorkspacesApi';
-// DTOs the hey-api output alone defines
-export type {
-  CreateFlagSegmentRequest,
-  FlagChangePaginationMetaDto,
-  ToggleFeatureFlagRequest,
-  UpdateFeatureFlagRequest,
-  UpdateFlagSegmentRequest,
-} from './generated/types.gen';
