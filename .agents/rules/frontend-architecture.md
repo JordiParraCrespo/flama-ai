@@ -195,6 +195,30 @@ name the jobs and split *those*.
   caller feeds it, or the test passes on the shape it was meant to forbid.
 - **Contexts split by change rate.** A provider that holds a value and its
   setters exposes them so a toggle does not re-render the tree.
+- **Generic React hooks live in the design systems' `hooks/`.** `useControlled`
+  (the `value` / `defaultValue` / `onChange` triple), `useDebouncedValue`,
+  `useDebouncedCallback` and `useNow` are exported from
+  `@flama/design-system-web` and `@flama/design-system-mobile` alike — same
+  names, same signatures, same behaviour — because the design system is the
+  lowest React package the kits, the apps and its own components all share,
+  and a primitive both platforms need is mirrored there. A hook there knows
+  nothing of the product or of a query; one that does belongs in a product
+  package or a feature's `hooks/`. Before writing a timer, a
+  controlled/uncontrolled pair or a latest-ref, check that directory.
+- **A clock is an input, never a read in render.** `Date.now()` or
+  `new Date()` inside render — including a helper's `now = new Date()`
+  default, like `formatRelativeTime`'s — is cached by the compiler on the
+  inputs it can see, so an age stops moving. Take the time from
+  `useNow(interval)` in the lowest component that draws it and pass it in:
+  `SessionRow` ticks once a minute for its own "last seen", so a tick
+  re-renders one row and not the session list with its dialogs. A one-second
+  countdown gets a leaf of its own for the same reason.
+- **Entity queries opt into `shareEntities`.** The entities are classes, which
+  TanStack Query's default structural sharing does not look into, and every
+  `Date` in one is a new object, so without it every refetch hands every
+  reader a new object per row. A query hook that returns entities passes
+  `structuralSharing: shareEntities` (from `@flama/frontend-core/react`); a
+  reader that needs one field of a list narrows it with `select`.
 
 ## Patterns agents get wrong
 
@@ -217,3 +241,5 @@ name the jobs and split *those*.
   every cell with it.
 - Reaching for `useEffect` to reset a form when a prop changes: React Hook
   Form's `values` option does it.
+- Hand-rolling a debounce timer or a `value ?? internal` pair in a component
+  when the design system's `hooks/` already has it.
