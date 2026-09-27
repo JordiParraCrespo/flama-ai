@@ -1,19 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import {
-  mapSession,
-  mapSessionsFromResult,
-  mapSuccess,
-  mapUser,
-  mapUserFromResult,
-  mapUserList,
-} from '../admin.mappers';
+import { AdminUserMapper } from '../admin-user.mapper';
 
-describe('mapUser', () => {
+const mapper = new AdminUserMapper();
+
+describe('toResponse', () => {
   it('maps a full Better Auth user record', () => {
     const createdAt = new Date('2024-01-01T00:00:00.000Z');
     const banExpires = new Date('2024-02-01T00:00:00.000Z');
 
-    const result = mapUser({
+    const result = mapper.toResponse({
       id: 'u1',
       email: 'a@b.com',
       name: 'Alice',
@@ -39,7 +34,7 @@ describe('mapUser', () => {
   });
 
   it('applies safe defaults for missing/nullish fields', () => {
-    const result = mapUser({
+    const result = mapper.toResponse({
       id: 1,
       email: 'x@y.com',
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -56,7 +51,7 @@ describe('mapUser', () => {
   });
 
   it('parses string dates into Date instances', () => {
-    const result = mapUser({
+    const result = mapper.toResponse({
       id: 'u1',
       email: 'a@b.com',
       createdAt: '2024-03-15T10:00:00.000Z',
@@ -68,16 +63,16 @@ describe('mapUser', () => {
   });
 
   it('returns a defensive shape for a completely empty input', () => {
-    const result = mapUser({});
+    const result = mapper.toResponse({});
     expect(result.id).toBe('undefined');
     expect(result.email).toBe('undefined');
     expect(result.role).toBeNull();
   });
 });
 
-describe('mapUserFromResult', () => {
+describe('toResponse envelopes', () => {
   it('unwraps a `{ user }` envelope', () => {
-    const result = mapUserFromResult({
+    const result = mapper.toResponse({
       user: {
         id: 'u1',
         email: 'a@b.com',
@@ -88,7 +83,7 @@ describe('mapUserFromResult', () => {
   });
 
   it('maps a bare user object when there is no envelope', () => {
-    const result = mapUserFromResult({
+    const result = mapper.toResponse({
       id: 'u2',
       email: 'c@d.com',
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -97,9 +92,9 @@ describe('mapUserFromResult', () => {
   });
 });
 
-describe('mapUserList', () => {
+describe('toListResponse', () => {
   it('maps the paginated user list envelope', () => {
-    const result = mapUserList({
+    const result = mapper.toListResponse({
       users: [
         { id: 'u1', email: 'a@b.com', createdAt: '2024-01-01T00:00:00.000Z' },
         { id: 'u2', email: 'c@d.com', createdAt: '2024-01-01T00:00:00.000Z' },
@@ -116,7 +111,7 @@ describe('mapUserList', () => {
   });
 
   it('defaults total to 0 and limit/offset to null when absent', () => {
-    const result = mapUserList({});
+    const result = mapper.toListResponse({});
     expect(result.users).toEqual([]);
     expect(result.total).toBe(0);
     expect(result.limit).toBeNull();
@@ -124,14 +119,16 @@ describe('mapUserList', () => {
   });
 });
 
-describe('mapSession', () => {
+describe('toSessionsResponse: one session', () => {
   it('maps a session record with defaults', () => {
-    const result = mapSession({
-      id: 's1',
-      userId: 'u1',
-      expiresAt: '2024-01-01T00:00:00.000Z',
-      createdAt: '2024-01-01T00:00:00.000Z',
-    });
+    const [result] = mapper.toSessionsResponse([
+      {
+        id: 's1',
+        userId: 'u1',
+        expiresAt: '2024-01-01T00:00:00.000Z',
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
+    ]);
 
     expect(result.id).toBe('s1');
     expect(result.userId).toBe('u1');
@@ -142,9 +139,9 @@ describe('mapSession', () => {
   });
 });
 
-describe('mapSessionsFromResult', () => {
+describe('toSessionsResponse', () => {
   it('unwraps a `{ sessions }` envelope', () => {
-    const result = mapSessionsFromResult({
+    const result = mapper.toSessionsResponse({
       sessions: [
         {
           id: 's1',
@@ -159,21 +156,21 @@ describe('mapSessionsFromResult', () => {
   });
 
   it('returns an empty array when there are no sessions', () => {
-    expect(mapSessionsFromResult({})).toEqual([]);
+    expect(mapper.toSessionsResponse({})).toEqual([]);
   });
 });
 
-describe('mapSuccess', () => {
+describe('toSuccessResponse', () => {
   it('reads the `success` flag', () => {
-    expect(mapSuccess({ success: true })).toEqual({ success: true });
-    expect(mapSuccess({ success: false })).toEqual({ success: false });
+    expect(mapper.toSuccessResponse({ success: true })).toEqual({ success: true });
+    expect(mapper.toSuccessResponse({ success: false })).toEqual({ success: false });
   });
 
   it('falls back to the `status` flag', () => {
-    expect(mapSuccess({ status: true })).toEqual({ success: true });
+    expect(mapper.toSuccessResponse({ status: true })).toEqual({ success: true });
   });
 
   it('is false when neither flag is present', () => {
-    expect(mapSuccess({})).toEqual({ success: false });
+    expect(mapper.toSuccessResponse({})).toEqual({ success: false });
   });
 });

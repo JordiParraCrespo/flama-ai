@@ -611,6 +611,15 @@ export type AdminUserListResponseDto = {
     offset: number | null;
 };
 
+export type AdminSessionResponseDto = {
+    id: string;
+    userId: string;
+    expiresAt: string;
+    ipAddress: string | null;
+    userAgent: string | null;
+    createdAt: string;
+};
+
 export type AdminCreateUserRequest = {
     email: string;
     name: string;
@@ -618,19 +627,15 @@ export type AdminCreateUserRequest = {
     role?: string | Array<string>;
 };
 
-export type RevokeSessionRequest = {
-    sessionId: string;
-};
-
-export type AdminSuccessResponseDto = {
-    success: boolean;
-};
-
 export type AdminUpdateUserRequest = {
     name?: string;
     firstName?: string;
     lastName?: string;
     image?: string;
+};
+
+export type AdminSuccessResponseDto = {
+    success: boolean;
 };
 
 export type SetUserRoleRequest = {
@@ -642,13 +647,8 @@ export type BanUserRequest = {
     banExpiresIn?: number;
 };
 
-export type AdminSessionResponseDto = {
-    id: string;
-    userId: string;
-    expiresAt: string;
-    ipAddress: string | null;
-    userAgent: string | null;
-    createdAt: string;
+export type RevokeUserSessionRequest = {
+    sessionId: string;
 };
 
 export type SetUserPasswordRequest = {
@@ -3118,12 +3118,12 @@ export type ListUsersData = {
     body?: never;
     path?: never;
     query?: {
-        searchValue?: string;
-        searchField?: 'email' | 'name';
-        limit?: number;
-        offset?: number;
-        sortBy?: string;
         sortDirection?: 'asc' | 'desc';
+        sortBy?: unknown;
+        offset?: number;
+        limit?: number;
+        searchField?: 'email' | 'name';
+        searchValue?: unknown;
     };
     url: '/api/v1/admin/users';
 };
@@ -3138,9 +3138,9 @@ export type ListUsersErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3182,9 +3182,9 @@ export type CreateUserErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3209,96 +3209,6 @@ export type CreateUserResponses = {
 
 export type CreateUserResponse = CreateUserResponses[keyof CreateUserResponses];
 
-export type StopImpersonatingData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/admin/stop-impersonating';
-};
-
-export type StopImpersonatingErrors = {
-    /**
-     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
-     */
-    400: ProblemDetailsDto;
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * ADMIN_001 — The user does not exist
-     */
-    404: ProblemDetailsDto;
-    /**
-     * ADMIN_002 — A user with that email already exists
-     */
-    409: ProblemDetailsDto;
-    /**
-     * ADMIN_008 — The admin service failed to handle the request
-     */
-    502: ProblemDetailsDto;
-};
-
-export type StopImpersonatingError = StopImpersonatingErrors[keyof StopImpersonatingErrors];
-
-export type StopImpersonatingResponses = {
-    200: AdminUserResponseDto;
-};
-
-export type StopImpersonatingResponse = StopImpersonatingResponses[keyof StopImpersonatingResponses];
-
-export type RevokeSession2Data = {
-    body: RevokeSessionRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/admin/users/{id}/sessions/revoke';
-};
-
-export type RevokeSession2Errors = {
-    /**
-     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
-     */
-    400: ProblemDetailsDto;
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * ADMIN_009 — Session not found
-     */
-    404: ProblemDetailsDto;
-    /**
-     * ADMIN_002 — A user with that email already exists
-     */
-    409: ProblemDetailsDto;
-    /**
-     * ADMIN_008 — The admin service failed to handle the request
-     */
-    502: ProblemDetailsDto;
-};
-
-export type RevokeSession2Error = RevokeSession2Errors[keyof RevokeSession2Errors];
-
-export type RevokeSession2Responses = {
-    200: AdminSuccessResponseDto;
-};
-
-export type RevokeSession2Response = RevokeSession2Responses[keyof RevokeSession2Responses];
-
 export type RemoveUserData = {
     body?: never;
     path: {
@@ -3318,9 +3228,9 @@ export type RemoveUserErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3364,9 +3274,9 @@ export type GetUserErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3410,9 +3320,9 @@ export type UpdateUserErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3437,191 +3347,7 @@ export type UpdateUserResponses = {
 
 export type UpdateUserResponse = UpdateUserResponses[keyof UpdateUserResponses];
 
-export type SetRoleData = {
-    body: SetUserRoleRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/admin/users/{id}/role';
-};
-
-export type SetRoleErrors = {
-    /**
-     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
-     */
-    400: ProblemDetailsDto;
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * ADMIN_001 — The user does not exist
-     */
-    404: ProblemDetailsDto;
-    /**
-     * ADMIN_002 — A user with that email already exists
-     */
-    409: ProblemDetailsDto;
-    /**
-     * ADMIN_008 — The admin service failed to handle the request
-     */
-    502: ProblemDetailsDto;
-};
-
-export type SetRoleError = SetRoleErrors[keyof SetRoleErrors];
-
-export type SetRoleResponses = {
-    200: AdminUserResponseDto;
-};
-
-export type SetRoleResponse = SetRoleResponses[keyof SetRoleResponses];
-
-export type BanData = {
-    body: BanUserRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/admin/users/{id}/ban';
-};
-
-export type BanErrors = {
-    /**
-     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
-     */
-    400: ProblemDetailsDto;
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * ADMIN_001 — The user does not exist
-     */
-    404: ProblemDetailsDto;
-    /**
-     * ADMIN_002 — A user with that email already exists
-     */
-    409: ProblemDetailsDto;
-    /**
-     * ADMIN_008 — The admin service failed to handle the request
-     */
-    502: ProblemDetailsDto;
-};
-
-export type BanError = BanErrors[keyof BanErrors];
-
-export type BanResponses = {
-    200: AdminUserResponseDto;
-};
-
-export type BanResponse = BanResponses[keyof BanResponses];
-
-export type UnbanData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/admin/users/{id}/unban';
-};
-
-export type UnbanErrors = {
-    /**
-     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
-     */
-    400: ProblemDetailsDto;
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * ADMIN_001 — The user does not exist
-     */
-    404: ProblemDetailsDto;
-    /**
-     * ADMIN_002 — A user with that email already exists
-     */
-    409: ProblemDetailsDto;
-    /**
-     * ADMIN_008 — The admin service failed to handle the request
-     */
-    502: ProblemDetailsDto;
-};
-
-export type UnbanError = UnbanErrors[keyof UnbanErrors];
-
-export type UnbanResponses = {
-    200: AdminUserResponseDto;
-};
-
-export type UnbanResponse = UnbanResponses[keyof UnbanResponses];
-
-export type ImpersonateData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/admin/users/{id}/impersonate';
-};
-
-export type ImpersonateErrors = {
-    /**
-     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
-     */
-    400: ProblemDetailsDto;
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * ADMIN_001 — The user does not exist
-     */
-    404: ProblemDetailsDto;
-    /**
-     * ADMIN_002 — A user with that email already exists
-     */
-    409: ProblemDetailsDto;
-    /**
-     * ADMIN_008 — The admin service failed to handle the request
-     */
-    502: ProblemDetailsDto;
-};
-
-export type ImpersonateError = ImpersonateErrors[keyof ImpersonateErrors];
-
-export type ImpersonateResponses = {
-    200: AdminUserResponseDto;
-};
-
-export type ImpersonateResponse = ImpersonateResponses[keyof ImpersonateResponses];
-
-export type ListSessionsData = {
+export type ListUserSessionsData = {
     body?: never;
     path: {
         id: string;
@@ -3630,7 +3356,7 @@ export type ListSessionsData = {
     url: '/api/v1/admin/users/{id}/sessions';
 };
 
-export type ListSessionsErrors = {
+export type ListUserSessionsErrors = {
     /**
      * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
      */
@@ -3640,9 +3366,9 @@ export type ListSessionsErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3659,15 +3385,289 @@ export type ListSessionsErrors = {
     502: ProblemDetailsDto;
 };
 
-export type ListSessionsError = ListSessionsErrors[keyof ListSessionsErrors];
+export type ListUserSessionsError = ListUserSessionsErrors[keyof ListUserSessionsErrors];
 
-export type ListSessionsResponses = {
+export type ListUserSessionsResponses = {
     200: Array<AdminSessionResponseDto>;
 };
 
-export type ListSessionsResponse = ListSessionsResponses[keyof ListSessionsResponses];
+export type ListUserSessionsResponse = ListUserSessionsResponses[keyof ListUserSessionsResponses];
 
-export type RevokeSessionsData = {
+export type SetUserRoleData = {
+    body: SetUserRoleRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/users/{id}/role';
+};
+
+export type SetUserRoleErrors = {
+    /**
+     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
+     */
+    400: ProblemDetailsDto;
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+     */
+    403: ProblemDetailsDto;
+    /**
+     * ADMIN_001 — The user does not exist
+     */
+    404: ProblemDetailsDto;
+    /**
+     * ADMIN_002 — A user with that email already exists
+     */
+    409: ProblemDetailsDto;
+    /**
+     * ADMIN_008 — The admin service failed to handle the request
+     */
+    502: ProblemDetailsDto;
+};
+
+export type SetUserRoleError = SetUserRoleErrors[keyof SetUserRoleErrors];
+
+export type SetUserRoleResponses = {
+    200: AdminUserResponseDto;
+};
+
+export type SetUserRoleResponse = SetUserRoleResponses[keyof SetUserRoleResponses];
+
+export type BanUserData = {
+    body: BanUserRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/users/{id}/ban';
+};
+
+export type BanUserErrors = {
+    /**
+     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
+     */
+    400: ProblemDetailsDto;
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+     */
+    403: ProblemDetailsDto;
+    /**
+     * ADMIN_001 — The user does not exist
+     */
+    404: ProblemDetailsDto;
+    /**
+     * ADMIN_002 — A user with that email already exists
+     */
+    409: ProblemDetailsDto;
+    /**
+     * ADMIN_008 — The admin service failed to handle the request
+     */
+    502: ProblemDetailsDto;
+};
+
+export type BanUserError = BanUserErrors[keyof BanUserErrors];
+
+export type BanUserResponses = {
+    200: AdminUserResponseDto;
+};
+
+export type BanUserResponse = BanUserResponses[keyof BanUserResponses];
+
+export type UnbanUserData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/users/{id}/unban';
+};
+
+export type UnbanUserErrors = {
+    /**
+     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
+     */
+    400: ProblemDetailsDto;
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+     */
+    403: ProblemDetailsDto;
+    /**
+     * ADMIN_001 — The user does not exist
+     */
+    404: ProblemDetailsDto;
+    /**
+     * ADMIN_002 — A user with that email already exists
+     */
+    409: ProblemDetailsDto;
+    /**
+     * ADMIN_008 — The admin service failed to handle the request
+     */
+    502: ProblemDetailsDto;
+};
+
+export type UnbanUserError = UnbanUserErrors[keyof UnbanUserErrors];
+
+export type UnbanUserResponses = {
+    200: AdminUserResponseDto;
+};
+
+export type UnbanUserResponse = UnbanUserResponses[keyof UnbanUserResponses];
+
+export type ImpersonateUserData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/users/{id}/impersonate';
+};
+
+export type ImpersonateUserErrors = {
+    /**
+     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
+     */
+    400: ProblemDetailsDto;
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+     */
+    403: ProblemDetailsDto;
+    /**
+     * ADMIN_001 — The user does not exist
+     */
+    404: ProblemDetailsDto;
+    /**
+     * ADMIN_002 — A user with that email already exists
+     */
+    409: ProblemDetailsDto;
+    /**
+     * ADMIN_008 — The admin service failed to handle the request
+     */
+    502: ProblemDetailsDto;
+};
+
+export type ImpersonateUserError = ImpersonateUserErrors[keyof ImpersonateUserErrors];
+
+export type ImpersonateUserResponses = {
+    200: AdminUserResponseDto;
+};
+
+export type ImpersonateUserResponse = ImpersonateUserResponses[keyof ImpersonateUserResponses];
+
+export type StopImpersonatingData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/admin/stop-impersonating';
+};
+
+export type StopImpersonatingErrors = {
+    /**
+     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
+     */
+    400: ProblemDetailsDto;
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+     */
+    403: ProblemDetailsDto;
+    /**
+     * ADMIN_001 — The user does not exist
+     */
+    404: ProblemDetailsDto;
+    /**
+     * ADMIN_002 — A user with that email already exists
+     */
+    409: ProblemDetailsDto;
+    /**
+     * ADMIN_008 — The admin service failed to handle the request
+     */
+    502: ProblemDetailsDto;
+};
+
+export type StopImpersonatingError = StopImpersonatingErrors[keyof StopImpersonatingErrors];
+
+export type StopImpersonatingResponses = {
+    200: AdminUserResponseDto;
+};
+
+export type StopImpersonatingResponse = StopImpersonatingResponses[keyof StopImpersonatingResponses];
+
+export type RevokeUserSessionData = {
+    body: RevokeUserSessionRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/users/{id}/sessions/revoke';
+};
+
+export type RevokeUserSessionErrors = {
+    /**
+     * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
+     */
+    400: ProblemDetailsDto;
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
+     */
+    403: ProblemDetailsDto;
+    /**
+     * ADMIN_009 — Session not found
+     */
+    404: ProblemDetailsDto;
+    /**
+     * ADMIN_002 — A user with that email already exists
+     */
+    409: ProblemDetailsDto;
+    /**
+     * ADMIN_008 — The admin service failed to handle the request
+     */
+    502: ProblemDetailsDto;
+};
+
+export type RevokeUserSessionError = RevokeUserSessionErrors[keyof RevokeUserSessionErrors];
+
+export type RevokeUserSessionResponses = {
+    200: AdminSuccessResponseDto;
+};
+
+export type RevokeUserSessionResponse = RevokeUserSessionResponses[keyof RevokeUserSessionResponses];
+
+export type RevokeUserSessionsData = {
     body?: never;
     path: {
         id: string;
@@ -3676,7 +3676,7 @@ export type RevokeSessionsData = {
     url: '/api/v1/admin/users/{id}/revoke-sessions';
 };
 
-export type RevokeSessionsErrors = {
+export type RevokeUserSessionsErrors = {
     /**
      * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
      */
@@ -3686,9 +3686,9 @@ export type RevokeSessionsErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3705,15 +3705,15 @@ export type RevokeSessionsErrors = {
     502: ProblemDetailsDto;
 };
 
-export type RevokeSessionsError = RevokeSessionsErrors[keyof RevokeSessionsErrors];
+export type RevokeUserSessionsError = RevokeUserSessionsErrors[keyof RevokeUserSessionsErrors];
 
-export type RevokeSessionsResponses = {
+export type RevokeUserSessionsResponses = {
     200: AdminSuccessResponseDto;
 };
 
-export type RevokeSessionsResponse = RevokeSessionsResponses[keyof RevokeSessionsResponses];
+export type RevokeUserSessionsResponse = RevokeUserSessionsResponses[keyof RevokeUserSessionsResponses];
 
-export type SetPasswordData = {
+export type SetUserPasswordData = {
     body: SetUserPasswordRequest;
     path: {
         id: string;
@@ -3722,7 +3722,7 @@ export type SetPasswordData = {
     url: '/api/v1/admin/users/{id}/set-password';
 };
 
-export type SetPasswordErrors = {
+export type SetUserPasswordErrors = {
     /**
      * ADMIN_005 / ADMIN_007 — The role is not assignable, or the request was otherwise rejected
      */
@@ -3732,9 +3732,9 @@ export type SetPasswordErrors = {
      */
     401: ProblemDetailsDto;
     /**
-     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
-     *
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     *
+     * ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned
      */
     403: ProblemDetailsDto;
     /**
@@ -3751,13 +3751,13 @@ export type SetPasswordErrors = {
     502: ProblemDetailsDto;
 };
 
-export type SetPasswordError = SetPasswordErrors[keyof SetPasswordErrors];
+export type SetUserPasswordError = SetUserPasswordErrors[keyof SetUserPasswordErrors];
 
-export type SetPasswordResponses = {
+export type SetUserPasswordResponses = {
     200: AdminSuccessResponseDto;
 };
 
-export type SetPasswordResponse = SetPasswordResponses[keyof SetPasswordResponses];
+export type SetUserPasswordResponse = SetUserPasswordResponses[keyof SetUserPasswordResponses];
 
 export type GetClientFeatureFlagsData = {
     body?: never;

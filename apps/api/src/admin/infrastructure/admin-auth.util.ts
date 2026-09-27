@@ -1,11 +1,13 @@
 import type { ErrorDefinition } from '@flama/backend-ddd';
-import { type BetterAuthFailure, betterAuthInvoker } from '../auth/infrastructure/better-auth.util';
-import { AdminErrors } from './domain/admin.errors';
+import {
+  type BetterAuthFailure,
+  betterAuthInvoker,
+} from '../../auth/infrastructure/better-auth.util';
+import { AdminErrors } from '../domain/admin.errors';
 
 /**
- * Better Auth's `ADMIN_ERROR_CODES` → this module's catalog. Same shape as
- * `organizations/organization-error.mapper.ts`: known codes are folded onto a
- * catalog entry, the `YOU_ARE_NOT_ALLOWED_TO_*` family collapses to one entry,
+ * Better Auth's `ADMIN_ERROR_CODES` → this module's catalog. Known codes are
+ * folded onto a catalog entry, the `YOU_ARE_NOT_ALLOWED_TO_*` family collapses to one entry,
  * and anything unrecognised falls back to a status-derived entry so a future
  * Better Auth code still produces a documented problem.
  */
@@ -15,7 +17,9 @@ const BY_UPSTREAM_CODE: Readonly<Record<string, ErrorDefinition>> = {
 
   YOU_CANNOT_BAN_YOURSELF: AdminErrors.SELF_TARGET_FORBIDDEN,
   YOU_CANNOT_REMOVE_YOURSELF: AdminErrors.SELF_TARGET_FORBIDDEN,
-  YOU_CANNOT_IMPERSONATE_ADMINS: AdminErrors.SELF_TARGET_FORBIDDEN,
+  // The target is another administrator and the caller lacks the permission to
+  // impersonate one — a missing grant, not a request aimed at themselves.
+  YOU_CANNOT_IMPERSONATE_ADMINS: AdminErrors.NOT_ALLOWED,
 
   INVALID_ROLE_TYPE: AdminErrors.INVALID_ROLE,
   YOU_ARE_NOT_ALLOWED_TO_SET_NON_EXISTENT_VALUE: AdminErrors.INVALID_ROLE,
@@ -50,6 +54,6 @@ export function mapAdminError({ upstreamCode, status }: BetterAuthFailure): Erro
 
 /**
  * Wraps an `auth.api.*` admin call so its failures become catalog `AppError`s.
- * Every call in this module goes through it.
+ * Every call the gateway makes goes through it.
  */
 export const invokeAdminApi = betterAuthInvoker(mapAdminError);

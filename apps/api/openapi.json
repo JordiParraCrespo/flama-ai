@@ -4466,11 +4466,34 @@
         "operationId": "listUsers",
         "parameters": [
           {
-            "name": "searchValue",
+            "name": "sortDirection",
             "required": false,
             "in": "query",
             "schema": {
+              "enum": ["asc", "desc"],
               "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
             }
           },
           {
@@ -4483,37 +4506,10 @@
             }
           },
           {
-            "name": "limit",
+            "name": "searchValue",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortDirection",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": ["asc", "desc"],
-              "type": "string"
-            }
+            "schema": {}
           }
         ],
         "responses": {
@@ -4548,7 +4544,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4641,7 +4637,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4726,7 +4722,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4777,7 +4773,7 @@
     },
     "/api/v1/admin/users/{id}/sessions/revoke": {
       "post": {
-        "operationId": "revokeSession",
+        "operationId": "revokeUserSession",
         "parameters": [
           {
             "name": "id",
@@ -4793,7 +4789,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RevokeSessionRequest"
+                "$ref": "#/components/schemas/RevokeUserSessionRequest"
               }
             }
           }
@@ -4830,7 +4826,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4924,7 +4920,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5026,7 +5022,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5118,7 +5114,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5169,7 +5165,7 @@
     },
     "/api/v1/admin/users/{id}/role": {
       "post": {
-        "operationId": "setRole",
+        "operationId": "setUserRole",
         "parameters": [
           {
             "name": "id",
@@ -5222,7 +5218,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5273,7 +5269,7 @@
     },
     "/api/v1/admin/users/{id}/ban": {
       "post": {
-        "operationId": "ban",
+        "operationId": "banUser",
         "parameters": [
           {
             "name": "id",
@@ -5326,7 +5322,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5377,7 +5373,7 @@
     },
     "/api/v1/admin/users/{id}/unban": {
       "post": {
-        "operationId": "unban",
+        "operationId": "unbanUser",
         "parameters": [
           {
             "name": "id",
@@ -5420,7 +5416,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5471,7 +5467,7 @@
     },
     "/api/v1/admin/users/{id}/impersonate": {
       "post": {
-        "operationId": "impersonate",
+        "operationId": "impersonateUser",
         "parameters": [
           {
             "name": "id",
@@ -5514,7 +5510,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5565,7 +5561,7 @@
     },
     "/api/v1/admin/users/{id}/sessions": {
       "get": {
-        "operationId": "listSessions",
+        "operationId": "listUserSessions",
         "parameters": [
           {
             "name": "id",
@@ -5611,7 +5607,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5662,7 +5658,7 @@
     },
     "/api/v1/admin/users/{id}/revoke-sessions": {
       "post": {
-        "operationId": "revokeSessions",
+        "operationId": "revokeUserSessions",
         "parameters": [
           {
             "name": "id",
@@ -5705,7 +5701,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5756,7 +5752,7 @@
     },
     "/api/v1/admin/users/{id}/set-password": {
       "post": {
-        "operationId": "setPassword",
+        "operationId": "setUserPassword",
         "parameters": [
           {
             "name": "id",
@@ -5809,7 +5805,7 @@
             }
           },
           "403": {
-            "description": "ADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned\n\nAUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this",
+            "description": "AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this\n\nADMIN_003 / ADMIN_004 / ADMIN_006 — The account may not perform this administrative action, it targets the caller themselves, or the target is banned",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -8771,16 +8767,6 @@
         },
         "required": ["email", "name"]
       },
-      "RevokeSessionRequest": {
-        "type": "object",
-        "properties": {
-          "sessionId": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": ["sessionId"]
-      },
       "AdminSuccessResponseDto": {
         "type": "object",
         "properties": {
@@ -8843,6 +8829,16 @@
             "exclusiveMinimum": true
           }
         }
+      },
+      "RevokeUserSessionRequest": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["sessionId"]
       },
       "AdminSessionResponseDto": {
         "type": "object",

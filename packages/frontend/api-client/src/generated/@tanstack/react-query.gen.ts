@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { accept, add, addMember, assign, ban, cancel, catalog, changePassword, check, checkSlug, create, create2, create3, create4, create5, createFlagSegment, createUser, current, deleteAvatar, deleteFlagSegment, deploymentCapabilities, evaluateFeatureFlag, findAll, findAll2, findAll3, findFeatureFlag, findFeatureFlags, findFlagChanges, findFlagSegments, findOne, findOne2, findSessions, findUserRoles, get, getClientFeatureFlags, getFull, getMembership, getProfile, getSettings, getUser, impersonate, invite, leave, list, list2, list3, list4, list5, listMembers, listMine, listMine2, listSessions, listUsers, me, type Options, permissions, permissions2, readiness, reject, remove, remove2, remove3, remove4, remove5, removeMember, removeUser, revoke, revoke2, revokeOtherSessions, revokeSession, revokeSession2, revokeSessions, setActive, setActive2, setPassword, setRole, stopImpersonating, toggleFeatureFlag, unban, update, update2, update3, update4, updateFeatureFlag, updateFlagSegment, updatePermissions, updateProfile, updateRole, updateSettings, updateUser, uploadAvatar } from '../sdk.gen';
-import type { AcceptData, AcceptError, AcceptResponse, AddData, AddError, AddMemberData, AddMemberError, AddMemberResponse, AddResponse, AssignData, AssignError, AssignResponse, BanData, BanError, BanResponse, CancelData, CancelError, CancelResponse, CatalogData, CatalogError, CatalogResponse, ChangePasswordData, ChangePasswordError, ChangePasswordResponse, CheckData, CheckError, CheckResponse, CheckSlugData, CheckSlugError, CheckSlugResponse, Create2Data, Create2Error, Create2Response, Create3Data, Create3Error, Create3Response, Create4Data, Create4Error, Create4Response, Create5Data, Create5Error, Create5Response, CreateData, CreateError, CreateFlagSegmentData, CreateFlagSegmentError, CreateFlagSegmentResponse, CreateResponse, CreateUserData, CreateUserError, CreateUserResponse, CurrentData, CurrentError, CurrentResponse, DeleteAvatarData, DeleteAvatarError, DeleteAvatarResponse, DeleteFlagSegmentData, DeleteFlagSegmentError, DeleteFlagSegmentResponse, DeploymentCapabilitiesData, DeploymentCapabilitiesResponse, EvaluateFeatureFlagData, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, FindAll2Data, FindAll2Error, FindAll2Response, FindAll3Data, FindAll3Error, FindAll3Response, FindAllData, FindAllError, FindAllResponse, FindFeatureFlagData, FindFeatureFlagError, FindFeatureFlagResponse, FindFeatureFlagsData, FindFeatureFlagsError, FindFeatureFlagsResponse, FindFlagChangesData, FindFlagChangesError, FindFlagChangesResponse, FindFlagSegmentsData, FindFlagSegmentsError, FindFlagSegmentsResponse, FindOne2Data, FindOne2Error, FindOne2Response, FindOneData, FindOneError, FindOneResponse, FindSessionsData, FindSessionsError, FindSessionsResponse, FindUserRolesData, FindUserRolesError, FindUserRolesResponse, GetClientFeatureFlagsData, GetClientFeatureFlagsResponse, GetData, GetError, GetFullData, GetFullError, GetFullResponse, GetMembershipData, GetMembershipError, GetMembershipResponse, GetProfileData, GetProfileError, GetProfileResponse, GetResponse, GetSettingsData, GetSettingsError, GetSettingsResponse, GetUserData, GetUserError, GetUserResponse, ImpersonateData, ImpersonateError, ImpersonateResponse, InviteData, InviteError, InviteResponse, LeaveData, LeaveError, LeaveResponse, List2Data, List2Error, List2Response, List3Data, List3Error, List3Response, List4Data, List4Error, List4Response, List5Data, List5Error, List5Response, ListData, ListError, ListMembersData, ListMembersError, ListMembersResponse, ListMine2Data, ListMine2Error, ListMine2Response, ListMineData, ListMineError, ListMineResponse, ListResponse, ListSessionsData, ListSessionsError, ListSessionsResponse, ListUsersData, ListUsersError, ListUsersResponse, MeData, MeError, MeResponse, Permissions2Data, Permissions2Error, Permissions2Response, PermissionsData, PermissionsError, PermissionsResponse, ReadinessData, ReadinessError, ReadinessResponse, RejectData, RejectError, RejectResponse, Remove2Data, Remove2Error, Remove3Data, Remove3Error, Remove3Response, Remove4Data, Remove4Error, Remove4Response, Remove5Data, Remove5Error, Remove5Response, RemoveData, RemoveError, RemoveMemberData, RemoveMemberError, RemoveMemberResponse, RemoveUserData, RemoveUserError, RemoveUserResponse, Revoke2Data, Revoke2Error, Revoke2Response, RevokeData, RevokeError, RevokeOtherSessionsData, RevokeOtherSessionsError, RevokeOtherSessionsResponse, RevokeResponse, RevokeSession2Data, RevokeSession2Error, RevokeSession2Response, RevokeSessionData, RevokeSessionError, RevokeSessionResponse, RevokeSessionsData, RevokeSessionsError, RevokeSessionsResponse, SetActive2Data, SetActive2Error, SetActive2Response, SetActiveData, SetActiveError, SetActiveResponse, SetPasswordData, SetPasswordError, SetPasswordResponse, SetRoleData, SetRoleError, SetRoleResponse, StopImpersonatingData, StopImpersonatingError, StopImpersonatingResponse, ToggleFeatureFlagData, ToggleFeatureFlagError, ToggleFeatureFlagResponse, UnbanData, UnbanError, UnbanResponse, Update2Data, Update2Error, Update2Response, Update3Data, Update3Error, Update3Response, Update4Data, Update4Error, Update4Response, UpdateData, UpdateError, UpdateFeatureFlagData, UpdateFeatureFlagError, UpdateFeatureFlagResponse, UpdateFlagSegmentData, UpdateFlagSegmentError, UpdateFlagSegmentResponse, UpdatePermissionsData, UpdatePermissionsError, UpdatePermissionsResponse, UpdateProfileData, UpdateProfileError, UpdateProfileResponse, UpdateResponse, UpdateRoleData, UpdateRoleError, UpdateRoleResponse, UpdateSettingsData, UpdateSettingsError, UpdateSettingsResponse, UpdateUserData, UpdateUserError, UpdateUserResponse, UploadAvatarData, UploadAvatarError, UploadAvatarResponse } from '../types.gen';
+import { accept, add, addMember, assign, banUser, cancel, catalog, changePassword, check, checkSlug, create, create2, create3, create4, create5, createFlagSegment, createUser, current, deleteAvatar, deleteFlagSegment, deploymentCapabilities, evaluateFeatureFlag, findAll, findAll2, findAll3, findFeatureFlag, findFeatureFlags, findFlagChanges, findFlagSegments, findOne, findOne2, findSessions, findUserRoles, get, getClientFeatureFlags, getFull, getMembership, getProfile, getSettings, getUser, impersonateUser, invite, leave, list, list2, list3, list4, list5, listMembers, listMine, listMine2, listUsers, listUserSessions, me, type Options, permissions, permissions2, readiness, reject, remove, remove2, remove3, remove4, remove5, removeMember, removeUser, revoke, revoke2, revokeOtherSessions, revokeSession, revokeUserSession, revokeUserSessions, setActive, setActive2, setUserPassword, setUserRole, stopImpersonating, toggleFeatureFlag, unbanUser, update, update2, update3, update4, updateFeatureFlag, updateFlagSegment, updatePermissions, updateProfile, updateRole, updateSettings, updateUser, uploadAvatar } from '../sdk.gen';
+import type { AcceptData, AcceptError, AcceptResponse, AddData, AddError, AddMemberData, AddMemberError, AddMemberResponse, AddResponse, AssignData, AssignError, AssignResponse, BanUserData, BanUserError, BanUserResponse, CancelData, CancelError, CancelResponse, CatalogData, CatalogError, CatalogResponse, ChangePasswordData, ChangePasswordError, ChangePasswordResponse, CheckData, CheckError, CheckResponse, CheckSlugData, CheckSlugError, CheckSlugResponse, Create2Data, Create2Error, Create2Response, Create3Data, Create3Error, Create3Response, Create4Data, Create4Error, Create4Response, Create5Data, Create5Error, Create5Response, CreateData, CreateError, CreateFlagSegmentData, CreateFlagSegmentError, CreateFlagSegmentResponse, CreateResponse, CreateUserData, CreateUserError, CreateUserResponse, CurrentData, CurrentError, CurrentResponse, DeleteAvatarData, DeleteAvatarError, DeleteAvatarResponse, DeleteFlagSegmentData, DeleteFlagSegmentError, DeleteFlagSegmentResponse, DeploymentCapabilitiesData, DeploymentCapabilitiesResponse, EvaluateFeatureFlagData, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, FindAll2Data, FindAll2Error, FindAll2Response, FindAll3Data, FindAll3Error, FindAll3Response, FindAllData, FindAllError, FindAllResponse, FindFeatureFlagData, FindFeatureFlagError, FindFeatureFlagResponse, FindFeatureFlagsData, FindFeatureFlagsError, FindFeatureFlagsResponse, FindFlagChangesData, FindFlagChangesError, FindFlagChangesResponse, FindFlagSegmentsData, FindFlagSegmentsError, FindFlagSegmentsResponse, FindOne2Data, FindOne2Error, FindOne2Response, FindOneData, FindOneError, FindOneResponse, FindSessionsData, FindSessionsError, FindSessionsResponse, FindUserRolesData, FindUserRolesError, FindUserRolesResponse, GetClientFeatureFlagsData, GetClientFeatureFlagsResponse, GetData, GetError, GetFullData, GetFullError, GetFullResponse, GetMembershipData, GetMembershipError, GetMembershipResponse, GetProfileData, GetProfileError, GetProfileResponse, GetResponse, GetSettingsData, GetSettingsError, GetSettingsResponse, GetUserData, GetUserError, GetUserResponse, ImpersonateUserData, ImpersonateUserError, ImpersonateUserResponse, InviteData, InviteError, InviteResponse, LeaveData, LeaveError, LeaveResponse, List2Data, List2Error, List2Response, List3Data, List3Error, List3Response, List4Data, List4Error, List4Response, List5Data, List5Error, List5Response, ListData, ListError, ListMembersData, ListMembersError, ListMembersResponse, ListMine2Data, ListMine2Error, ListMine2Response, ListMineData, ListMineError, ListMineResponse, ListResponse, ListUsersData, ListUsersError, ListUserSessionsData, ListUserSessionsError, ListUserSessionsResponse, ListUsersResponse, MeData, MeError, MeResponse, Permissions2Data, Permissions2Error, Permissions2Response, PermissionsData, PermissionsError, PermissionsResponse, ReadinessData, ReadinessError, ReadinessResponse, RejectData, RejectError, RejectResponse, Remove2Data, Remove2Error, Remove3Data, Remove3Error, Remove3Response, Remove4Data, Remove4Error, Remove4Response, Remove5Data, Remove5Error, Remove5Response, RemoveData, RemoveError, RemoveMemberData, RemoveMemberError, RemoveMemberResponse, RemoveUserData, RemoveUserError, RemoveUserResponse, Revoke2Data, Revoke2Error, Revoke2Response, RevokeData, RevokeError, RevokeOtherSessionsData, RevokeOtherSessionsError, RevokeOtherSessionsResponse, RevokeResponse, RevokeSessionData, RevokeSessionError, RevokeSessionResponse, RevokeUserSessionData, RevokeUserSessionError, RevokeUserSessionResponse, RevokeUserSessionsData, RevokeUserSessionsError, RevokeUserSessionsResponse, SetActive2Data, SetActive2Error, SetActive2Response, SetActiveData, SetActiveError, SetActiveResponse, SetUserPasswordData, SetUserPasswordError, SetUserPasswordResponse, SetUserRoleData, SetUserRoleError, SetUserRoleResponse, StopImpersonatingData, StopImpersonatingError, StopImpersonatingResponse, ToggleFeatureFlagData, ToggleFeatureFlagError, ToggleFeatureFlagResponse, UnbanUserData, UnbanUserError, UnbanUserResponse, Update2Data, Update2Error, Update2Response, Update3Data, Update3Error, Update3Response, Update4Data, Update4Error, Update4Response, UpdateData, UpdateError, UpdateFeatureFlagData, UpdateFeatureFlagError, UpdateFeatureFlagResponse, UpdateFlagSegmentData, UpdateFlagSegmentError, UpdateFlagSegmentResponse, UpdatePermissionsData, UpdatePermissionsError, UpdatePermissionsResponse, UpdateProfileData, UpdateProfileError, UpdateProfileResponse, UpdateResponse, UpdateRoleData, UpdateRoleError, UpdateRoleResponse, UpdateSettingsData, UpdateSettingsError, UpdateSettingsResponse, UpdateUserData, UpdateUserError, UpdateUserResponse, UploadAvatarData, UploadAvatarError, UploadAvatarResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1301,40 +1301,6 @@ export const createUserMutation = (options?: Partial<Options<CreateUserData>>): 
 };
 
 /**
- * Stop impersonating and restore the admin session
- */
-export const stopImpersonatingMutation = (options?: Partial<Options<StopImpersonatingData>>): UseMutationOptions<StopImpersonatingResponse, StopImpersonatingError, Options<StopImpersonatingData>> => {
-    const mutationOptions: UseMutationOptions<StopImpersonatingResponse, StopImpersonatingError, Options<StopImpersonatingData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await stopImpersonating({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Revoke one of a user's sessions by id
- */
-export const revokeSession2Mutation = (options?: Partial<Options<RevokeSession2Data>>): UseMutationOptions<RevokeSession2Response, RevokeSession2Error, Options<RevokeSession2Data>> => {
-    const mutationOptions: UseMutationOptions<RevokeSession2Response, RevokeSession2Error, Options<RevokeSession2Data>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await revokeSession2({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
  * Delete a user
  */
 export const removeUserMutation = (options?: Partial<Options<RemoveUserData>>): UseMutationOptions<RemoveUserResponse, RemoveUserError, Options<RemoveUserData>> => {
@@ -1386,13 +1352,31 @@ export const updateUserMutation = (options?: Partial<Options<UpdateUserData>>): 
     return mutationOptions;
 };
 
+export const listUserSessionsQueryKey = (options: Options<ListUserSessionsData>) => createQueryKey('listUserSessions', options);
+
+/**
+ * List a user's sessions
+ */
+export const listUserSessionsOptions = (options: Options<ListUserSessionsData>) => queryOptions<ListUserSessionsResponse, ListUserSessionsError, ListUserSessionsResponse, ReturnType<typeof listUserSessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listUserSessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listUserSessionsQueryKey(options)
+});
+
 /**
  * Set a user's global role
  */
-export const setRoleMutation = (options?: Partial<Options<SetRoleData>>): UseMutationOptions<SetRoleResponse, SetRoleError, Options<SetRoleData>> => {
-    const mutationOptions: UseMutationOptions<SetRoleResponse, SetRoleError, Options<SetRoleData>> = {
+export const setUserRoleMutation = (options?: Partial<Options<SetUserRoleData>>): UseMutationOptions<SetUserRoleResponse, SetUserRoleError, Options<SetUserRoleData>> => {
+    const mutationOptions: UseMutationOptions<SetUserRoleResponse, SetUserRoleError, Options<SetUserRoleData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await setRole({
+            const { data } = await setUserRole({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1406,10 +1390,10 @@ export const setRoleMutation = (options?: Partial<Options<SetRoleData>>): UseMut
 /**
  * Ban a user
  */
-export const banMutation = (options?: Partial<Options<BanData>>): UseMutationOptions<BanResponse, BanError, Options<BanData>> => {
-    const mutationOptions: UseMutationOptions<BanResponse, BanError, Options<BanData>> = {
+export const banUserMutation = (options?: Partial<Options<BanUserData>>): UseMutationOptions<BanUserResponse, BanUserError, Options<BanUserData>> => {
+    const mutationOptions: UseMutationOptions<BanUserResponse, BanUserError, Options<BanUserData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await ban({
+            const { data } = await banUser({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1423,10 +1407,10 @@ export const banMutation = (options?: Partial<Options<BanData>>): UseMutationOpt
 /**
  * Unban a user
  */
-export const unbanMutation = (options?: Partial<Options<UnbanData>>): UseMutationOptions<UnbanResponse, UnbanError, Options<UnbanData>> => {
-    const mutationOptions: UseMutationOptions<UnbanResponse, UnbanError, Options<UnbanData>> = {
+export const unbanUserMutation = (options?: Partial<Options<UnbanUserData>>): UseMutationOptions<UnbanUserResponse, UnbanUserError, Options<UnbanUserData>> => {
+    const mutationOptions: UseMutationOptions<UnbanUserResponse, UnbanUserError, Options<UnbanUserData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await unban({
+            const { data } = await unbanUser({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1440,10 +1424,10 @@ export const unbanMutation = (options?: Partial<Options<UnbanData>>): UseMutatio
 /**
  * Impersonate a user (issues an impersonation session)
  */
-export const impersonateMutation = (options?: Partial<Options<ImpersonateData>>): UseMutationOptions<ImpersonateResponse, ImpersonateError, Options<ImpersonateData>> => {
-    const mutationOptions: UseMutationOptions<ImpersonateResponse, ImpersonateError, Options<ImpersonateData>> = {
+export const impersonateUserMutation = (options?: Partial<Options<ImpersonateUserData>>): UseMutationOptions<ImpersonateUserResponse, ImpersonateUserError, Options<ImpersonateUserData>> => {
+    const mutationOptions: UseMutationOptions<ImpersonateUserResponse, ImpersonateUserError, Options<ImpersonateUserData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await impersonate({
+            const { data } = await impersonateUser({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1454,31 +1438,47 @@ export const impersonateMutation = (options?: Partial<Options<ImpersonateData>>)
     return mutationOptions;
 };
 
-export const listSessionsQueryKey = (options: Options<ListSessionsData>) => createQueryKey('listSessions', options);
+/**
+ * Stop impersonating and restore the admin session
+ */
+export const stopImpersonatingMutation = (options?: Partial<Options<StopImpersonatingData>>): UseMutationOptions<StopImpersonatingResponse, StopImpersonatingError, Options<StopImpersonatingData>> => {
+    const mutationOptions: UseMutationOptions<StopImpersonatingResponse, StopImpersonatingError, Options<StopImpersonatingData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await stopImpersonating({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 /**
- * List a user's sessions
+ * Revoke one of a user's sessions by id
  */
-export const listSessionsOptions = (options: Options<ListSessionsData>) => queryOptions<ListSessionsResponse, ListSessionsError, ListSessionsResponse, ReturnType<typeof listSessionsQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listSessions({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listSessionsQueryKey(options)
-});
+export const revokeUserSessionMutation = (options?: Partial<Options<RevokeUserSessionData>>): UseMutationOptions<RevokeUserSessionResponse, RevokeUserSessionError, Options<RevokeUserSessionData>> => {
+    const mutationOptions: UseMutationOptions<RevokeUserSessionResponse, RevokeUserSessionError, Options<RevokeUserSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await revokeUserSession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 /**
  * Revoke all of a user's sessions
  */
-export const revokeSessionsMutation = (options?: Partial<Options<RevokeSessionsData>>): UseMutationOptions<RevokeSessionsResponse, RevokeSessionsError, Options<RevokeSessionsData>> => {
-    const mutationOptions: UseMutationOptions<RevokeSessionsResponse, RevokeSessionsError, Options<RevokeSessionsData>> = {
+export const revokeUserSessionsMutation = (options?: Partial<Options<RevokeUserSessionsData>>): UseMutationOptions<RevokeUserSessionsResponse, RevokeUserSessionsError, Options<RevokeUserSessionsData>> => {
+    const mutationOptions: UseMutationOptions<RevokeUserSessionsResponse, RevokeUserSessionsError, Options<RevokeUserSessionsData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await revokeSessions({
+            const { data } = await revokeUserSessions({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1492,10 +1492,10 @@ export const revokeSessionsMutation = (options?: Partial<Options<RevokeSessionsD
 /**
  * Set a user's password
  */
-export const setPasswordMutation = (options?: Partial<Options<SetPasswordData>>): UseMutationOptions<SetPasswordResponse, SetPasswordError, Options<SetPasswordData>> => {
-    const mutationOptions: UseMutationOptions<SetPasswordResponse, SetPasswordError, Options<SetPasswordData>> = {
+export const setUserPasswordMutation = (options?: Partial<Options<SetUserPasswordData>>): UseMutationOptions<SetUserPasswordResponse, SetUserPasswordError, Options<SetUserPasswordData>> => {
+    const mutationOptions: UseMutationOptions<SetUserPasswordResponse, SetUserPasswordError, Options<SetUserPasswordData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await setPassword({
+            const { data } = await setUserPassword({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

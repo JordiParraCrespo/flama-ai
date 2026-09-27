@@ -1,9 +1,9 @@
 import type { IncomingHttpHeaders } from 'node:http';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// `../auth/auth` opens a real Postgres pool at import time, so mock it before
-// the service pulls it in. Each `auth.api.*` method is a vi.fn we can assert on.
-vi.mock('../../auth/infrastructure/better-auth.config', () => ({
+// The Better Auth config opens a real Postgres pool at import time, so mock it
+// before the gateway pulls it in. Each `auth.api.*` method is a vi.fn we can assert on.
+vi.mock('../../../auth/infrastructure/better-auth.config', () => ({
   auth: {
     api: {
       listUsers: vi.fn(),
@@ -24,8 +24,9 @@ vi.mock('../../auth/infrastructure/better-auth.config', () => ({
   },
 }));
 
-import { auth } from '../../auth/infrastructure/better-auth.config';
-import { AdminService } from '../admin.service';
+import { auth } from '../../../auth/infrastructure/better-auth.config';
+import { AdminUserMapper } from '../../admin-user.mapper';
+import { AdminAuthGateway } from '../admin-auth.gateway';
 
 const api = auth.api as unknown as Record<string, ReturnType<typeof vi.fn>>;
 const headers: IncomingHttpHeaders = {
@@ -42,12 +43,12 @@ const userRecord = {
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
-describe('AdminService', () => {
-  let service: AdminService;
+describe('AdminAuthGateway', () => {
+  let service: AdminAuthGateway;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new AdminService();
+    service = new AdminAuthGateway(new AdminUserMapper());
   });
 
   it('lists users forwarding query params and mapping the envelope', async () => {
@@ -136,7 +137,7 @@ describe('AdminService', () => {
 
   it('bans a user with reason and expiry', async () => {
     api.banUser.mockResolvedValue(userRecord);
-    await service.ban(headers, 'u1', {
+    await service.banUser(headers, 'u1', {
       banReason: 'abuse',
       banExpiresIn: 3600,
     });
@@ -149,13 +150,13 @@ describe('AdminService', () => {
 
   it('unbans a user', async () => {
     api.unbanUser.mockResolvedValue(userRecord);
-    await service.unban(headers, 'u1');
+    await service.unbanUser(headers, 'u1');
     expect(api.unbanUser).toHaveBeenCalledWith(expect.objectContaining({ body: { userId: 'u1' } }));
   });
 
   it('removes a user and reports success', async () => {
     api.removeUser.mockResolvedValue({ success: true });
-    const result = await service.remove(headers, 'u1');
+    const result = await service.removeUser(headers, 'u1');
     expect(result).toEqual({ success: true });
   });
 
@@ -209,7 +210,7 @@ describe('AdminService', () => {
 
   it('revokes all sessions', async () => {
     api.revokeUserSessions.mockResolvedValue({ status: true });
-    const result = await service.revokeAllSessions(headers, 'u1');
+    const result = await service.revokeSessions(headers, 'u1');
     expect(result).toEqual({ success: true });
   });
 
@@ -224,8 +225,8 @@ describe('AdminService', () => {
     );
   });
 
-  describe('impersonation (returns Set-Cookie headers to forward)', () => {
-    it('impersonate returns the mapped user and Better Auth headers', async () => {
+  describe('impersonation (returns the Set-Cookie values to forward)', () => {
+    it('impersonate returns the mapped user and its cookies', async () => {
       const outHeaders = new Headers({ 'set-cookie': 'session=impersonated' });
       api.impersonateUser.mockResolvedValue({
         response: { user: userRecord },
@@ -235,7 +236,7 @@ describe('AdminService', () => {
       const result = await service.impersonate(headers, 'u1');
 
       expect(result.user.id).toBe('u1');
-      expect(result.headers).toBe(outHeaders);
+      expect(result.cookies).toEqual(['session=impersonated']);
       expect(api.impersonateUser).toHaveBeenCalledWith(
         expect.objectContaining({
           body: { userId: 'u1' },
@@ -244,7 +245,7 @@ describe('AdminService', () => {
       );
     });
 
-    it('stopImpersonating returns the restored user and headers', async () => {
+    it('stopImpersonating returns the restored user and its cookies', async () => {
       const outHeaders = new Headers({ 'set-cookie': 'session=admin' });
       api.stopImpersonating.mockResolvedValue({
         response: { user: userRecord },
@@ -254,7 +255,7 @@ describe('AdminService', () => {
       const result = await service.stopImpersonating(headers);
 
       expect(result.user.id).toBe('u1');
-      expect(result.headers).toBe(outHeaders);
+      expect(result.cookies).toEqual(['session=admin']);
       expect(api.stopImpersonating).toHaveBeenCalledWith(
         expect.objectContaining({ returnHeaders: true }),
       );

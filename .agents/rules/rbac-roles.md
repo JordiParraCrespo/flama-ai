@@ -237,9 +237,10 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   than writing the tables, so Better Auth stays the single source of truth.
   There is no app-owned aggregate, but the module contract still applies: the
   target is a port plus a gateway in `infrastructure/` and one use-case slice
-  per operation. Both modules still carry the pre-contract
-  controller → service → `auth.api` layout and are being migrated — add a new
-  operation as a slice, never to the old service (see `apps/api/AGENTS.md`).
+  per operation, which is how `admin/` is cut. `organizations/` still carries
+  the pre-contract controller → service → `auth.api` layout and is being
+  migrated — add a new operation as a slice, never to the old service (see
+  `apps/api/AGENTS.md`).
   Impersonation forwards Better Auth's `Set-Cookie` to the client.
 - **Workspaces = teams** — modelled on the org plugin's teams feature
   (`team` / `teamMember`).

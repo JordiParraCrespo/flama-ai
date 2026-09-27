@@ -1,7 +1,7 @@
 import type { ErrorDefinition } from '@flama/backend-ddd';
 import { describe, expect, it } from 'vitest';
-import { mapAdminError } from '../admin-error.mapper';
-import { AdminErrors } from '../domain/admin.errors';
+import { AdminErrors } from '../../domain/admin.errors';
+import { mapAdminError } from '../admin-auth.util';
 
 const map = (upstreamCode: string | undefined, status: number) =>
   mapAdminError({ upstreamCode, status });
@@ -19,7 +19,11 @@ describe('mapAdminError', () => {
     expect(map('YOU_ARE_NOT_ALLOWED_TO_BAN_USERS', 403)).toBe(AdminErrors.NOT_ALLOWED);
     expect(map('YOU_CANNOT_BAN_YOURSELF', 400)).toBe(AdminErrors.SELF_TARGET_FORBIDDEN);
     expect(map('YOU_CANNOT_REMOVE_YOURSELF', 400)).toBe(AdminErrors.SELF_TARGET_FORBIDDEN);
-    expect(map('YOU_CANNOT_IMPERSONATE_ADMINS', 403)).toBe(AdminErrors.SELF_TARGET_FORBIDDEN);
+  });
+
+  it('reads a refused admin impersonation as a missing grant, not a self-target', () => {
+    // The target is another administrator; the caller is not involved.
+    expect(map('YOU_CANNOT_IMPERSONATE_ADMINS', 403)).toBe(AdminErrors.NOT_ALLOWED);
   });
 
   it('collapses the YOU_ARE_NOT_ALLOWED_TO_* family onto NOT_ALLOWED', () => {
