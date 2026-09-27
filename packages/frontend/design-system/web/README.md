@@ -2,8 +2,7 @@
 
 Web component library for Flama — shadcn/ui-style components built on
 [Base UI](https://base-ui.com/) primitives and Tailwind CSS v4. Consumed by
-`apps/web`, `apps/admin-web` and `packages/frontend/web`, previewed in
-`apps/web-showcase`.
+`apps/web` and `packages/frontend/web`.
 
 ## Usage
 
@@ -54,8 +53,8 @@ import preset from "@flama/design-system-web/tailwind-config";
 
 The brand is monochrome-first and flat: three inks over white surfaces, hairline
 borders instead of elevation, near-black pill CTAs, and colour only for status.
-See [`../AGENTS.md`](../AGENTS.md) for the rules, and the showcase's
-`/foundations` page for the rendered reference.
+See [`../AGENTS.md`](../AGENTS.md) for the rules, and
+[`src/styles/globals.css`](./src/styles/globals.css) for the tokens themselves.
 
 `react`, `react-dom`, and `recharts` are peer dependencies supplied by the app.
 
@@ -86,4 +85,4 @@ and the findings it inherited are in `.agents/rules/frontend-ui.md`.
 
 ## Consumed by
 
-`apps/web`, `apps/admin-web`, `apps/web-showcase`, `packages/frontend/web`.
+`apps/web`, `packages/frontend/web`.

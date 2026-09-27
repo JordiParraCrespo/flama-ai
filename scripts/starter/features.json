@@ -19,37 +19,6 @@
       "identifiers": ["apps/mobile", "@flama/mobile"],
       "paths": ["apps/mobile"]
     },
-    "web-showcase": {
-      "title": "Web design-system showcase",
-      "summary": "apps/web-showcase — Next.js gallery of @flama/design-system-web",
-      "identifiers": ["apps/web-showcase", "@flama/web-showcase"],
-      "paths": [
-        "apps/web-showcase",
-        ".agents/skills/design-export-port",
-        ".agents/skills/next-best-practices",
-        ".agents/skills/next-cache-components",
-        ".agents/skills/next-upgrade",
-        "packages/tsconfig/tsconfig.nextjs.json"
-      ],
-      "json": [
-        {
-          "file": "turbo.json",
-          "path": ["tasks", "build", "outputs"],
-          "remove": [".next/**", "!.next/cache/**"]
-        },
-        {
-          "file": "biome.json",
-          "path": ["files", "includes"],
-          "remove": ["!**/.next"]
-        }
-      ]
-    },
-    "mobile-showcase": {
-      "title": "Mobile design-system showcase",
-      "summary": "apps/mobile-showcase — Expo gallery of @flama/design-system-mobile",
-      "identifiers": ["apps/mobile-showcase", "@flama/mobile-showcase"],
-      "paths": ["apps/mobile-showcase"]
-    },
     "e2e": {
       "title": "End-to-end tests",
       "summary": "e2e/ — Playwright suites against the running API and web app",
@@ -126,11 +95,11 @@
   "shared": {
     "packages/frontend/design-system/web": {
       "identifiers": ["packages/frontend/design-system/web", "@flama/design-system-web"],
-      "neededBy": ["web", "web-showcase"]
+      "neededBy": ["web"]
     },
     "packages/frontend/design-system/mobile": {
       "identifiers": ["packages/frontend/design-system/mobile", "@flama/design-system-mobile"],
-      "neededBy": ["mobile", "mobile-showcase"]
+      "neededBy": ["mobile"]
     },
     "packages/frontend/core": {
       "identifiers": ["packages/frontend/core", "@flama/frontend-core"],
@@ -161,7 +130,7 @@
     "packages/tsconfig/tsconfig.expo.json": {
       "$comment": "Everything Expo leaves in the kept apps: the Better Auth expo plugin in apps/api, the EXPO_PUBLIC_* pass-through in turbo.json, the react-native override.",
       "identifiers": ["tsconfig.expo", "EXPO_PUBLIC_", "@better-auth/expo", "react-native"],
-      "neededBy": ["mobile", "mobile-showcase"],
+      "neededBy": ["mobile"],
       "json": [
         {
           "file": "turbo.json",
@@ -197,6 +166,10 @@
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
       "neededBy": ["web", "mobile"]
+    },
+    ".agents/skills/design-export-port": {
+      "identifiers": [".agents/skills/design-export-port", "/design-export-port"],
+      "neededBy": ["web"]
     },
     ".agents/skills/scaffold-feature": {
       "identifiers": [".agents/skills/scaffold-feature", "/scaffold-feature"],

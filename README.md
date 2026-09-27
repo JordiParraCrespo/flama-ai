@@ -13,27 +13,13 @@ below is optional except the API — keep what you're building, prune the rest
 | `apps/api`              | NestJS REST API — Domain-Driven Hexagon architecture, DB-backed RBAC, queues, caching, storage, email |
 | `apps/web`               | Consumer Vite + TanStack Router SPA                                       |
 | `apps/mobile`            | Consumer Expo app — NativeWind, i18next, SecureStore                     |
-| `apps/web-showcase`      | Next.js showcase for the web design system                                |
-| `apps/mobile-showcase`   | Expo showcase for the mobile design system                                |
 
 ### Plugins
 
 Not everything ships in the box. These are packaged in
 [`flama-ai-plugins`](https://github.com/JordiParraCrespo/flama-ai-plugins) and
-added when a project wants them, with `pnpm plugin:add <id>`:
-
-| Plugin          | What it adds                                                          |
-| --------------- | --------------------------------------------------------------------- |
-| `cli`           | `apps/cli` — the `flama` command line, driven by scoped API tokens     |
-| `mcp`           | `apps/mcp` — MCP server over the API, and the OAuth provider its clients sign in through |
-| `runner`        | `apps/runner` + `packages/go/*` — Go service template (REST + WS, API keys) the API delegates long-lived work to |
-| `docs`          | `apps/docs` — the Docusaurus site                                     |
-| `admin-web`     | `apps/admin-web` — control plane for users, roles and permissions     |
-| `admin-mobile`  | `apps/admin-mobile` — the Expo control plane                          |
-| `qa`            | `qa/` — the scenario-driven Playwright pack (needs `admin-web`)       |
-| `billing`       | Stripe subscriptions in the API: checkout, portal, webhooks, metrics  |
-
-`pnpm plugin:list` shows them and marks what is already installed, and
+added when a project wants them, with `pnpm plugin:add <id>`.
+`pnpm plugin:list` shows what is on offer and marks what is already installed, and
 `pnpm plugin:remove <id>` takes one back out — see
 [Starting your own project](#starting-your-own-project).
 
@@ -110,7 +96,7 @@ pnpm starter:init --keep web,e2e,organizations --yes
 The same two directions stay available afterwards, one feature at a time:
 
 ```bash
-pnpm starter:prune --without web-showcase   # take out something the starter shipped
+pnpm starter:prune --without mobile         # take out something the starter shipped
 pnpm plugin:list                            # what is on offer, and what you already have
 pnpm plugin:add admin-web                   # the control plane, back in your project
 pnpm plugin:remove admin-web

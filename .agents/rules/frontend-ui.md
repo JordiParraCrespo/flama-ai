@@ -2,7 +2,6 @@
 paths:
   - "apps/web/**/*"
   - "apps/admin-web/**/*"
-  - "apps/web-showcase/**/*"
   - "packages/frontend/design-system/web/**/*"
   - "packages/frontend/web/**/*"
 ---
@@ -34,8 +33,8 @@ Why: an error callout was hand-rolled in nineteen places while `Alert` sat
 exported, empty and loading states in five while `EmptyState` was used by one,
 and a whole second table was built beside `DataTable`.
 
-`DataTable` ships in `@flama/frontend-web`, so that row is the apps' only;
-`apps/web-showcase` builds on the `Table` primitives. In the apps every table
+`DataTable` ships in `@flama/frontend-web`, so that row is the apps' only.
+In the apps every table
 goes through `DataTable`, and a direct `Table` import needs a comment saying
 why. Everything placed in the table's header bar takes
 `TABLE_HEADER_CONTROL_SIZE` from the kit; a heading or description goes above
@@ -144,8 +143,7 @@ Biome owns correctness; oxlint's own categories are off.
   a role colour from the database) get a line-level disable, not a rewrite.
 - `require-static-classes` is off: shared class constants are the convention.
 - Mobile runs the same rules minus `no-unknown-classes` and `no-inline-styles`
-  (Tailwind 3 and React Native's `style` prop). `apps/mobile-showcase` lints
-  `app` and `lib` only.
+  (Tailwind 3 and React Native's `style` prop).
 
 Rules sit at `warn` while inherited findings are worked off. Promote a rule to
 `error` in `oxlint.design.json` once its count reaches zero; never lower one

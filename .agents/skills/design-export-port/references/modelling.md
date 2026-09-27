@@ -23,7 +23,7 @@ Product-invariant. No pixel values, no product component names.
 - **Third-party marks are a component**; icons come from the set the
   system names, never pasted SVG.
 - **A live engine ships as its frame** (surface, chrome, a static line
-  vocabulary for the showcase); the engine is wired in the app.
+  vocabulary for previews); the engine is wired in the app.
 - **Drop what the screens do not use**, even if the export lists it.
 
 ## Base UI and Tailwind v4 traps

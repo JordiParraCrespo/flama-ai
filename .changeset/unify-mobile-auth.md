@@ -2,7 +2,6 @@
 "@flama/design-system-mobile": minor
 "@flama/frontend-mobile": minor
 "@flama/mobile": minor
-"@flama/mobile-showcase": patch
 ---
 
 Give the Expo apps the same sign-in screens as the web apps.

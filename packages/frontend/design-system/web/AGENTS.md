@@ -1,8 +1,7 @@
 # @flama/design-system-web — Agent Instructions
 
 Web UI component library: shadcn/ui components + Tailwind, built with tsup.
-Consumed by `apps/web`, `apps/admin-web`, `apps/web-showcase` and
-`packages/frontend/web`.
+Consumed by `apps/web` and `packages/frontend/web`.
 
 > Read the root [`CLAUDE.md`](../../../../CLAUDE.md) and the design-system overview
 > in [`../AGENTS.md`](../AGENTS.md) first.
@@ -29,15 +28,12 @@ tsup.config.ts    # build config
 - **Export new components from `index.ts`.** This is enforced:
   `scripts/check-exports.mjs` runs as the package's `test` script and fails the
   build when a file in `src/components/` exports something the barrel does not.
-  Every component also has a `./name` subpath in package.json, and the two
-  consumers use different ones: `apps/web-showcase` imports each component by
-  subpath, while `apps/web` takes components from the root and only icons by
-  subpath. So a missing barrel entry does not break the showcase — it just
-  makes the component invisible to the product app, which is how `Breadcrumb`
-  and `Collapsible` sat unused until an audit went looking, by which time a
-  screen had hand-rolled a breadcrumb.
+  `apps/web` takes components from the root (only icons by subpath), so a
+  component the barrel does not export does not exist for the product —
+  which is how `Breadcrumb` and `Collapsible` sat unused until an audit went
+  looking, by which time a screen had hand-rolled a breadcrumb.
   If something must stay internal, do not export it from its own module either.
-- Preview new components in `apps/web-showcase`.
+- Look at a new component on a screen in `apps/web`, light and dark.
 
 ## Commands
 

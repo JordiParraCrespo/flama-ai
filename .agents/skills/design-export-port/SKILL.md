@@ -1,6 +1,6 @@
 ---
 name: design-export-port
-description: Port a design export (a design system as tokens plus screen artboards, from Claude Design or a similar tool) onto this repo's web design system and rebuild the web showcase from it. Use this whenever the user says they uploaded or exported designs, wants the design system, tokens, colours, typography, foundations or showcase built or updated from a design, asks to "set up the design system" from a design folder, or wants the components a set of screens need — even if they only mention colours or foundations at first. Covers reading the export, rendering the artboards, reviewing them page by page to derive the component inventory, porting tokens, building components on Base UI, rebuilding the showcase, docs, verification and the PR.
+description: Port a design export (a design system as tokens plus screen artboards, from Claude Design or a similar tool) onto this repo's web design system. Use this whenever the user says they uploaded or exported designs, wants the design system, tokens, colours, typography or foundations built or updated from a design, asks to "set up the design system" from a design folder, or wants the components a set of screens need — even if they only mention colours or foundations at first. Covers reading the export, rendering the artboards, reviewing them page by page to derive the component inventory, porting tokens, building components on Base UI, checking them in the app, docs, verification and the PR.
 ---
 
 # Port a design export onto the design system
@@ -8,8 +8,8 @@ description: Port a design export (a design system as tokens plus screen artboar
 A design export is two things: a **design system** (tokens, a readme with
 the rationale, usually per-component CSS) and **artboards** (screens that
 run on that system, often with a small override layer). The job is to make
-`packages/frontend/design-system/web` and `apps/web-showcase` say what the export
-says, on this repo's conventions.
+`packages/frontend/design-system/web` say what the export says, on this
+repo's conventions.
 
 This skill is the invariant workflow. It does not know which brand, face,
 palette or component names the export carries; the repo's own documents do
@@ -56,7 +56,7 @@ Find the export root the user points at (ask if unsure). Read in order:
 
 Then the repo side: `globals.css`, the package README and AGENTS.md, the
 frontend rule, and every import of the package from the apps (`apps/web`
-imports the package root; the showcase imports subpaths). Note the web /
+imports the package root). Note the web /
 mobile mirror: a variant added on web needs its mobile counterpart or a
 note in the PR saying why not.
 
@@ -139,34 +139,28 @@ Keep the JS `tailwind.config.ts` preset in sync with the same values.
   exports callers still use. Add previous variant names only for callers
   that exist; delete what nothing imports.
 - Mirror the API change in the mobile package or record why not.
-- Restyle the shadcn `Sidebar` rather than replacing it; the showcase
-  shell uses its provider and mobile sheet.
+- Restyle the shadcn `Sidebar` rather than replacing it; the app shell
+  (`packages/frontend/web`) uses its provider and mobile sheet.
 
 `references/modelling.md` also lists the Base UI traps that recur (typing
 `useRender` props, `nativeButton` when rendering an anchor, Select
 positioning).
 
-## 6. Showcase
+## 6. Check it in the app
 
-`apps/web-showcase` is the rendered reference and the inventory's table
-of contents. Its `src/lib/toc.ts` lists the inventory in the export's
-grouping; each entry is a `<Spec id>` on the page showing every state the
-screens use, with a usage line; foundations come first, colours in both
-themes side by side. Keep the showcase's existing demo files where they
-still show a component the inventory keeps; replace the ones that show
-what was dropped. Pages that hold state are client components.
-
-Build, then `scripts/shoot-showcase.mjs` starts the built app, captures
-the top and the section ids you name in light and dark, applies both theme
-selectors, and exits non-zero on console errors or a server that never
-answers.
+`apps/web` is where the port is seen. Build it and walk the screens that
+use what changed, light and dark, against the artboards: the sign-in and
+settings screens carry most of the form family, the shell the navigation.
+Where the export adds a component no screen uses yet, the PR says so
+rather than adding a screen to show it off. An app with a gallery of the
+package documents how to rebuild it in its own AGENTS.md.
 
 ## 7. Verify
 
-- `tsc --noEmit` in the package, the showcase, and every app importing
-  the package (filter to errors naming the package).
+- `tsc --noEmit` in the package and every app importing it (filter to
+  errors naming the package).
 - The package's export check.
-- `next build` in the showcase, then the shooter.
+- `apps/web` builds, and `pnpm check:bundle` still passes.
 - `pnpm starter:check`: anything in this skill or the export that names an
   optional app is listed under that app's feature in
   `scripts/starter/features.json`; if the repo tracks the export as a
@@ -175,13 +169,13 @@ answers.
 ## 8. Docs, in the same PR
 
 `packages/frontend/design-system/AGENTS.md` (rules and vocabulary as now agreed),
-the package README (what is inside), `apps/web-showcase/CLAUDE.md`, the
+the package README (what is inside), the
 export's own README (where it went, which overrides won), and the root
 agent notes if a stated rule changed.
 
 ## 9. Ship
 
 One PR: tokens, the inventory by family, what was dropped and why, the
-showcase, docs, the verification list, the out-of-scope list. Append a
+screens checked, docs, the verification list, the out-of-scope list. Append a
 dated note to `references/` with what this export needed that the
 workflow did not predict, labelled as not to be replayed.

@@ -1,5 +1,6 @@
 /**
- * Shared plumbing for the two shooters: argv, Playwright, a child server,
+ * Shared plumbing for the screenshot scripts (the artboard renderer here, and
+ * any app that imports it to shoot its own pages): argv, Playwright, a child server,
  * and a page loop that fails loudly.
  *
  * Playwright is resolved from whichever workspace package already depends
