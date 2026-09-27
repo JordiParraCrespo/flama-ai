@@ -1,0 +1,11 @@
+{
+  "preamble": "You are working in the Flama monorepo. Make the change the way this codebase already does this kind of thing. When you are done, `@flama/frontend-consumer` must build (`pnpm --filter @flama/frontend-consumer build`) and its tests must pass. Do not commit and do not open a pull request.",
+  "tasks": [
+    {
+      "id": "api-token-rename",
+      "title": "Rename an API token",
+      "prompt": "Settings → API tokens is getting a Rename action. Wire up the data layer for it in `@flama/frontend-consumer`:\n\n- `ApiTokensService.rename(id: string, name: string): Promise<ApiTokenEntity>`. The API is `PATCH /api/v1/tokens/{id}` with a `{ name }` body, and it answers with the renamed token.\n- A `useRenameApiToken(options?)` hook exported from `@flama/frontend-consumer/react`. Its variables are `{ id, name }`. The rename dialog will pass its own `onSuccess` to close itself and show a toast, and the token list must show the new name straight after.\n\nNo UI in this change.",
+      "plugins": ["mutation-on-success"]
+    }
+  ]
+}

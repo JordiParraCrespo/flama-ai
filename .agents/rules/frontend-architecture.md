@@ -13,8 +13,9 @@ Where a thing goes on the frontend, and what it may import. Every rule here is
 checked: dependency-cruiser (`pnpm arch`) for imports, `pnpm check:structure`
 for names, shapes and where a query is subscribed to, Biome for effects and
 memo, Biome plugins in `biome-plugins/` for query keys, `skipToken` and
-mutation cache updates (each plugin's header says what it matches, and
-`biome-plugins/fixtures/` holds its cases), and a `*-render.spec.tsx` for
+mutation cache updates (each plugin's header says what it matches,
+`biome-plugins/fixtures/` holds its cases, and `scripts/evals/query-keys/`
+measures whether an agent follows them unprompted), and a `*-render.spec.tsx` for
 what a component costs. The Claude Code Stop hook
 runs all three. The layer model and the cookbooks are in
 [`packages/frontend/ARCHITECTURE.md`](../../packages/frontend/ARCHITECTURE.md)

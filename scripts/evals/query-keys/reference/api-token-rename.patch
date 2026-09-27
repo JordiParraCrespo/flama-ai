@@ -1,0 +1,109 @@
+diff --git a/packages/frontend/consumer/src/modules/api-tokens/api-tokens.errors.ts b/packages/frontend/consumer/src/modules/api-tokens/api-tokens.errors.ts
+index c1d2251..cb71759 100644
+--- a/packages/frontend/consumer/src/modules/api-tokens/api-tokens.errors.ts
++++ b/packages/frontend/consumer/src/modules/api-tokens/api-tokens.errors.ts
+@@ -21,4 +21,8 @@ export const ApiTokensErrors = {
+     code: 'TOKENS_CLIENT_005',
+     message: 'Failed to revoke the API token',
+   },
++  RENAME_FAILED: {
++    code: 'TOKENS_CLIENT_006',
++    message: 'Failed to rename the API token',
++  },
+ } as const satisfies Record<string, ErrorDefinition>;
+diff --git a/packages/frontend/consumer/src/modules/api-tokens/api-tokens.repository.ts b/packages/frontend/consumer/src/modules/api-tokens/api-tokens.repository.ts
+index b2d5412..cbb2ae1 100644
+--- a/packages/frontend/consumer/src/modules/api-tokens/api-tokens.repository.ts
++++ b/packages/frontend/consumer/src/modules/api-tokens/api-tokens.repository.ts
+@@ -1,4 +1,4 @@
+-import { type ApiTokenResponseDto, ApiTokensApi } from '@flama/api-client';
++import { type ApiTokenResponseDto, ApiTokensApi, heyApiClient } from '@flama/api-client';
+ import { AppError, MapApiError } from '@flama/frontend-core';
+ import type { CreateApiTokenDto } from '@flama/shared';
+ import { injectable } from 'inversify';
+@@ -46,6 +46,17 @@ export class ApiTokensRepository {
+     return { token: toEntity(result), secret: result.token };
+   }
+ 
++  @MapApiError(ApiTokensErrors.RENAME_FAILED)
++  async rename(id: string, name: string): Promise<ApiTokenEntity> {
++    const { data, error } = await heyApiClient.patch<{ 200: ApiTokenResponseDto }>({
++      url: '/api/v1/tokens/{id}',
++      path: { id },
++      body: { name },
++    });
++    if (error || !data) throw new AppError(ApiTokensErrors.RENAME_FAILED);
++    return toEntity(data);
++  }
++
+   @MapApiError(ApiTokensErrors.REVOKE_FAILED)
+   async revoke(id: string): Promise<void> {
+     await ApiTokensApi.revoke(id);
+diff --git a/packages/frontend/consumer/src/modules/api-tokens/api-tokens.service.ts b/packages/frontend/consumer/src/modules/api-tokens/api-tokens.service.ts
+index 57050e9..e987655 100644
+--- a/packages/frontend/consumer/src/modules/api-tokens/api-tokens.service.ts
++++ b/packages/frontend/consumer/src/modules/api-tokens/api-tokens.service.ts
+@@ -24,6 +24,10 @@ export class ApiTokensService {
+     return this.repository.create(dto);
+   }
+ 
++  rename(id: string, name: string): Promise<ApiTokenEntity> {
++    return this.repository.rename(id, name);
++  }
++
+   revoke(id: string): Promise<void> {
+     return this.repository.revoke(id);
+   }
+diff --git a/packages/frontend/consumer/src/react/api-tokens.queries.ts b/packages/frontend/consumer/src/react/api-tokens.queries.ts
+index 463bf2d..a624714 100644
+--- a/packages/frontend/consumer/src/react/api-tokens.queries.ts
++++ b/packages/frontend/consumer/src/react/api-tokens.queries.ts
+@@ -79,6 +79,32 @@ export function useCreateApiToken(
+   });
+ }
+ 
++export interface RenameApiTokenVariables {
++  id: string;
++  name: string;
++}
++
++/**
++ * Rename a token. The saved row is written into the token list where it sits;
++ * the permission catalog and the current credential do not depend on a
++ * token's name, so they are left alone.
++ */
++export function useRenameApiToken(
++  options?: HookMutationOptions<ApiTokenEntity, Error, RenameApiTokenVariables>,
++) {
++  const app = useConsumerApp();
++  const queryClient = useQueryClient();
++
++  return useMutation({
++    mutationFn: ({ id, name }: RenameApiTokenVariables) => app.apiTokens.rename(id, name),
++    ...withCacheOnSuccess(options, (token) => {
++      queryClient.setQueryData<ApiTokenEntity[]>(apiTokensKeys.list(), (current) =>
++        current?.map((row) => (row.id === token.id ? token : row)),
++      );
++    }),
++  });
++}
++
+ export function useRevokeApiToken(options?: HookMutationOptions<void, Error, string>) {
+   const app = useConsumerApp();
+   const queryClient = useQueryClient();
+diff --git a/packages/frontend/consumer/src/react/index.ts b/packages/frontend/consumer/src/react/index.ts
+index 5dca787..9ee0afe 100644
+--- a/packages/frontend/consumer/src/react/index.ts
++++ b/packages/frontend/consumer/src/react/index.ts
+@@ -1,9 +1,11 @@
+ export {
+   apiTokensKeys,
++  type RenameApiTokenVariables,
+   useApiTokens,
+   useCreateApiToken,
+   useCurrentCredential,
+   usePermissionCatalog,
++  useRenameApiToken,
+   useRevokeApiToken,
+ } from './api-tokens.queries';
+ export { useRegister } from './auth.queries';

@@ -187,6 +187,10 @@
       "identifiers": [".agents/skills/tanstack-routing", "/tanstack-routing"],
       "neededBy": ["web"]
     },
+    "scripts/evals/query-keys": {
+      "identifiers": [],
+      "neededBy": ["web", "mobile"]
+    },
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
       "neededBy": ["web", "mobile"]
