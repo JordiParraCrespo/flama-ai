@@ -1,5 +1,6 @@
 import { type UserResponseDto, UsersApi } from '@flama/api-client';
 import type { PermissionDefinition, Role, UpdateUserDto } from '@flama/shared';
+import { permissionSchema } from '@flama/shared/schemas/role';
 import { injectable } from 'inversify';
 import { AppError } from '../core/errors';
 import { MapApiError } from '../core/map-api-error.decorator';
@@ -20,16 +21,19 @@ function toEntity(data: UserResponseDto): UserEntity {
 }
 
 /**
- * `GET /users/me/permissions` serves raw CASL rules, so the wire type is a bag
- * of unknown members (`conditions` and `fields` are free-form). Keep the rules
- * that carry the two members `PermissionDefinition` requires — a rule missing
- * either could not be applied to an ability anyway — so nothing has to be cast.
+ * `GET /users/me/permissions` serves CASL rules as a free-form wire type. Parse
+ * them with the shared rule schema: a rule missing its `action` or `subject` is
+ * a broken payload, and dropping it would build an ability from part of the
+ * caller's rules, so the whole set is refused instead.
  */
-function toPermissions(rules: Array<{ [key: string]: unknown }>): PermissionDefinition[] {
-  return rules.filter(
-    (rule): rule is { [key: string]: unknown } & PermissionDefinition =>
-      typeof rule.action === 'string' && typeof rule.subject === 'string',
-  );
+const permissionsSchema = permissionSchema.array();
+
+function toPermissions(rules: unknown): PermissionDefinition[] {
+  const parsed = permissionsSchema.safeParse(rules);
+  if (!parsed.success) {
+    throw new AppError(UsersErrors.PERMISSIONS_INVALID, { cause: parsed.error });
+  }
+  return parsed.data;
 }
 
 @injectable()

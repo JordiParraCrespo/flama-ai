@@ -17,4 +17,8 @@ export const UsersErrors = {
     code: 'USERS_CLIENT_004',
     message: 'Failed to delete user',
   },
+  PERMISSIONS_INVALID: {
+    code: 'USERS_CLIENT_005',
+    message: 'Received malformed permissions',
+  },
 } as const satisfies Record<string, ErrorDefinition>;

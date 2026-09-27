@@ -154,20 +154,32 @@ describe('UsersRepository', () => {
       ]);
     });
 
-    it('drops a rule without the action and subject an ability needs', async () => {
-      // The wire type is free-form, so the repository narrows instead of
-      // casting: a rule missing either member could not be applied anyway.
+    it('keeps a rule’s conditions and fields', async () => {
       api.permissions.mockResolvedValue({
         permissions: [
-          { action: 'read', subject: 'Lead', conditions: { ownerId: 'me' } },
-          { action: 'read' },
-          { subject: 'Lead' },
+          { action: 'read', subject: 'Lead', conditions: { ownerId: 'me' }, fields: ['name'] },
         ],
       });
 
       await expect(repository.myPermissions()).resolves.toEqual([
-        { action: 'read', subject: 'Lead', conditions: { ownerId: 'me' } },
+        { action: 'read', subject: 'Lead', conditions: { ownerId: 'me' }, fields: ['name'] },
       ]);
+    });
+
+    it.each([
+      ['an action', { subject: 'Lead' }],
+      ['a subject', { action: 'read' }],
+    ])('refuses the whole set when a rule is missing %s', async (_, broken) => {
+      // Dropping the broken rule would build an ability from part of the
+      // caller's rules — a lost `inverted` rule widens access — so fail closed.
+      api.permissions.mockResolvedValue({
+        permissions: [{ action: 'read', subject: 'Lead' }, broken],
+      });
+
+      const error = await repository.myPermissions().catch((thrown: AppError) => thrown);
+
+      expect(error).toBeInstanceOf(AppError);
+      expect((error as AppError).code).toBe('USERS_CLIENT_005');
     });
 
     it('returns an empty rule set as itself', async () => {

@@ -2,7 +2,4 @@
 "@flama/frontend-core": patch
 ---
 
-Narrow the caller's effective permissions instead of casting them:
-`GET /users/me/permissions` serves free-form CASL rules, and
-`UsersRepository.myPermissions` now keeps the ones that carry an `action` and a
-`subject`.
+`UsersRepository.myPermissions` parses the caller's permissions with the shared rule schema and refuses a malformed set (`USERS_CLIENT_005`) instead of casting it.
