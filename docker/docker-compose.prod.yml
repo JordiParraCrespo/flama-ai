@@ -39,18 +39,23 @@ services:
     # — which drifts: anything missing from it (email delivery, S3, TRUST_PROXY,
     # a plugin's settings) could not be configured at all. Run with
     # `--env-file .env` from the repo root (`pnpm docker:prod`) so the `${…}`
-    # values in this file are read from the same file.
+    # values in this file are read from the same file. Required: a production
+    # stack without it would boot on the defaults below, so Compose refuses to
+    # start instead.
     env_file:
       - path: ../.env
-        required: false
+        required: true
     # Only what this file knows better than `.env`, which it overrides: the
     # service names on the compose network, and the database credentials the
     # `postgres` service above was created with — interpolated from the same
     # source as its own, so the two can never disagree. Nothing here may be a
     # `${VAR}` that is also in `.env` for the API's own sake: an interpolation
-    # that resolves blank overrides the real value from `env_file`.
+    # that resolves blank overrides the real value from `env_file`. The one
+    # exception is `BETTER_AUTH_SECRET`, whose `:?` cannot resolve blank — an
+    # unset or empty secret stops Compose before any container starts.
     environment:
       NODE_ENV: production
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in the root .env (openssl rand -base64 32)}
       PORT: 3001
       DB_HOST: postgres
       DB_PORT: 5432
