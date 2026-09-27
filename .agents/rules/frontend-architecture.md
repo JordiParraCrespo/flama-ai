@@ -232,6 +232,16 @@ name the jobs and split *those*.
   `structuralSharing: shareEntities` (from `@flama/frontend-core/react`); a
   reader that needs one field of a list narrows it with `select`.
 
+## Routing is its own skill
+
+`apps/web` routes with TanStack Router, where a file's name decides both its
+URL and the layout chain that renders it. Before adding, moving or guarding a
+route — or touching `routeTree.gen.ts`, `tsr.config.json`, `beforeLoad`,
+`validateSearch` or route `staticData` — read the `/tanstack-routing` skill
+(`.agents/skills/tanstack-routing/`). It carries the file-name table, the
+guard and search-param rules, and the check that proves a restructure did not
+change a URL. `apps/mobile` routes with expo-router and is not covered by it.
+
 ## Patterns agents get wrong
 
 - Creating `components/<screen>/` at the app root. That is the pre-features
@@ -255,3 +265,8 @@ name the jobs and split *those*.
   Form's `values` option does it.
 - Hand-rolling a debounce timer or a `value ?? internal` pair in a component
   when the design system's `hooks/` already has it.
+- Renaming a route file without checking the URL it produces. In file-based
+  routing a rename is a URL change; `/tanstack-routing` has the diff that
+  catches it.
+- Putting two opposite guards on one shared layout route instead of giving
+  each subtree a pathless child that carries its own.

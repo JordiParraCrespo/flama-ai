@@ -183,6 +183,10 @@
       "identifiers": [".agents/skills/frontend-audit", "/frontend-audit"],
       "neededBy": ["web", "mobile"]
     },
+    ".agents/skills/tanstack-routing": {
+      "identifiers": [".agents/skills/tanstack-routing", "/tanstack-routing"],
+      "neededBy": ["web"]
+    },
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
       "neededBy": ["web", "mobile"]
