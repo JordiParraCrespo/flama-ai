@@ -144,13 +144,7 @@ with before it touches anything.
 anatomy, the `@flama/backend-ddd` building blocks, and the "add a module"
 cookbook. Use the `/scaffold-module` skill to generate a compliant module
 skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
-(`pnpm arch`, run in CI and by a Claude Code Stop hook). What neither script
-can see — a command returning a read model, a query that writes, a bare Nest
-exception, an event that skips the outbox — is the
-`.agents/routines/hexagon-audit.md` review: a prompt for a scheduled routine
-(optional; `.agents/routines/README.md` says how to set one up) that keeps one
-`hexagon-audit` issue current and opens a small fix pull request, with its
-evals beside it.
+(`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
 Detailed rules live in `.agents/rules/`, each scoped by a `paths` glob so it
 loads only for the code it governs. Three are frontend:
@@ -255,12 +249,7 @@ only in `hooks/`, the React Compiler on, no manual memo) and what enforces
 them are `.agents/rules/frontend-architecture.md`. The layer model and the
 cookbooks are `packages/frontend/ARCHITECTURE.md` and each app's
 `ARCHITECTURE.md`; `/scaffold-feature` produces the shape; `pnpm arch`,
-`pnpm check:structure` and Biome hold it. `/frontend-audit` reviews the
-frontend against them, including the re-renders the compiler does not prevent
-and the components it silently leaves uncompiled (`pnpm check:compiler`); with
-`--fix` it fixes the findings that are safe to fix in one pull request, and a
-project that wants it daily can point a scheduled routine at
-`/frontend-audit routine`. `scripts/evals/frontend-audit/` grades the prompt.
+`pnpm check:structure` and Biome hold it.
 
 ### Web (apps/web)
 
@@ -339,7 +328,7 @@ pnpm ci:local           # The CI suite, locally, over what this branch affects �
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
 pnpm check:flags        # Feature flags: none past expiry, none declared but unread
-pnpm check:compiler     # What the React Compiler leaves uncompiled, per app, silently
+pnpm check:compiler     # React Compiler bailouts per app; fails on a file outside its baseline
 pnpm docker:dev         # Start Postgres + Redis
 pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning

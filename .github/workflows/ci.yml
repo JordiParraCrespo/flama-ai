@@ -81,9 +81,9 @@ jobs:
       # flama:begin web|mobile
       # What the React Compiler leaves uncompiled, per app, run with the
       # compiler that app's build runs. Every build ships a bailout as written
-      # and says nothing, so this is where one shows up. It reports and never
-      # fails (`--strict` would): whether a bailout matters depends on the
-      # clock the component sits on, which is `/frontend-audit`'s judgment.
+      # and says nothing, so this is where one shows up. It fails on a file
+      # outside scripts/check-react-compiler.baseline.mjs, the bailouts already
+      # accepted, and names the listed ones that have gone so the list shrinks.
       - name: React Compiler bailouts
         run: pnpm check:compiler
       # flama:end web|mobile

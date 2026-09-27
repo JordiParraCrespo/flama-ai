@@ -10,8 +10,7 @@
         "e2e/tests/web",
         "helm/flama/templates/web-deployment.yaml",
         ".agents/skills/shadcn/evals/evals.json",
-        ".agents/skills/scaffold-feature/evals",
-        "scripts/evals/frontend-audit"
+        ".agents/skills/scaffold-feature/evals"
       ]
     },
     "mobile": {
@@ -175,21 +174,17 @@
       "neededBy": ["web", "mobile"],
       "scripts": ["check:compiler"]
     },
-    "scripts/check-react-compiler.test.mjs": {
+    "scripts/check-react-compiler.baseline.mjs": {
       "identifiers": [],
       "neededBy": ["web", "mobile"]
     },
-    ".agents/skills/frontend-audit": {
-      "identifiers": [".agents/skills/frontend-audit", "/frontend-audit"],
+    "scripts/check-react-compiler.test.mjs": {
+      "identifiers": [],
       "neededBy": ["web", "mobile"]
     },
     ".agents/skills/tanstack-routing": {
       "identifiers": [".agents/skills/tanstack-routing", "/tanstack-routing"],
       "neededBy": ["web"]
-    },
-    "scripts/evals/query-keys": {
-      "identifiers": [],
-      "neededBy": ["web", "mobile"]
     },
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
