@@ -17,7 +17,7 @@ compiles it with the app.
 
 | Concern | What it holds | Layer |
 | --- | --- | --- |
-| `platform` | `createQueryPersistence`, `ExpoSecureStoreService`, the MMKV stores (`storage`, `stateStorage`, `queryStorage`), `initPurchases`, `Sentry`/`sentryEnabled`, the fetch polyfills | leaf |
+| `platform` | `createQueryPersistence`, `ExpoSecureStoreService`, the MMKV stores (`storage`, `stateStorage`, `queryStorage`), `Sentry`/`sentryEnabled`, the fetch polyfills | leaf |
 | `theme` | `THEME` (the NativeWind variable sets), `NAV_THEME` for React Navigation, `BrandGlyph`, `ThemeToggle` | leaf |
 | `config` | `configManager` over the kernel's `ConfigManager`, `AppConfig`, `staticConfig`, `ConfigManagerContext`, `useConfig` — it reads `platform`'s storage | middle |
 | `forms` | `useZodResolver`, `FormField` (a `Controller` field with its label and error) | leaf |

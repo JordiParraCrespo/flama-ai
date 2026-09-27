@@ -34,7 +34,7 @@ pnpm --filter @flama/mobile arch && pnpm check:structure
 
 - Reaching for `useEffect` in a screen. Biome allows it only in `hooks/`; the
   one exception is `app/_layout.tsx`, whose single commented effect loads the
-  config manager and the purchases SDK once per launch.
+  config manager once per launch.
 - Dropping `field.onBlur` in a `Controller`: `touched` never updates and
   blur-mode validation silently does nothing.
 - Moving the nitro-fetch polyfill off the first line of `index.ts`, or changing
