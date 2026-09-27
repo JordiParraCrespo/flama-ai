@@ -108,12 +108,13 @@ Then:
 'use client';
 
 import {
+  type EntityQueryOptions,
   type HookMutationOptions,
-  shareEntities,
+  useEntityQuery,
   withCacheOnSuccess,
 } from '@flama/frontend-core/react';
 import type { CreateThingDto } from '@flama/shared/schemas/thing';
-import { skipToken, type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { skipToken, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ThingEntity } from '../modules/things/thing.entity';
 import type { ThingFilters } from '../modules/things/things.repository';
 import { useConsumerApp } from './context';
@@ -137,25 +138,23 @@ export const thingsKeys = {
 
 export function useThings(
   filters?: ThingFilters,
-  options?: Omit<UseQueryOptions<ThingEntity[], Error>, 'queryKey' | 'queryFn'>,
+  options?: EntityQueryOptions<ThingEntity[]>,
 ) {
   const app = useConsumerApp();
-  return useQuery({
+  // Entities are classes: `useEntityQuery` shares them across refetches.
+  return useEntityQuery({
     queryKey: thingsKeys.list(filters),
     queryFn: () => app.things.findAll(filters),
-    // Entities are classes: without this every refetch is a new object per row.
-    structuralSharing: shareEntities,
     ...options,
   });
 }
 
 export function useThing(id: string | undefined) {
   const app = useConsumerApp();
-  return useQuery({
+  return useEntityQuery({
     queryKey: thingsKeys.detail(id),
     // skipToken, never `enabled`: the input stays in the key and the queryFn needs no `!`.
     queryFn: id ? () => app.things.findOne(id) : skipToken,
-    structuralSharing: shareEntities,
   });
 }
 

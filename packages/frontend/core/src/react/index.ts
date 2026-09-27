@@ -25,6 +25,7 @@ export {
   useDeploymentCapabilities,
 } from './capabilities.queries';
 export { FlamaProvider, useFlamaApp } from './context';
+export { type EntityQueryOptions, useEntityQuery } from './entity-query';
 export { type ResolvedErrorMessage, useErrorMessage } from './error-message';
 export {
   type FeatureFlagReadOptions,

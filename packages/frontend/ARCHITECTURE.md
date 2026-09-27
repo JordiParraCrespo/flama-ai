@@ -209,9 +209,10 @@ Nothing moves before its second consumer appears; nothing is written twice.
    (`all → lists() → list(filters) → details() → detail(id)`, filters appended
    only when set so `list()` stays a prefix), and query and mutation hooks over
    `useConsumerApp()`. A query missing its input gates on `skipToken`, and one
-   that returns entities passes `structuralSharing: shareEntities` from
-   `@flama/frontend-core/react`, so a refetch that changed nothing keeps every
-   row's identity; mutation options are `HookMutationOptions`, and the cache
+   that returns entities calls `useEntityQuery` from
+   `@flama/frontend-core/react` instead of `useQuery`, which applies
+   `shareEntities` so a refetch that changed nothing keeps every row's
+   identity; mutation options are `HookMutationOptions`, and the cache
    update — `setQueryData` for the row the server returned,
    `invalidateQueries` on the narrowest prefix — goes through
    `withCacheOnSuccess`. The Biome plugins in `biome-plugins/` hold the key,
