@@ -33,6 +33,7 @@ flama/
 │   │   ├── api-client/   # Auto-generated typed client from Swagger (@flama/api-client)
 │   │   ├── web/          # What both Vite apps share: shell, auth chrome, table, i18n… (@flama/frontend-web)
 │   │   ├── mobile/       # What both Expo apps share: config, storage, analytics… (@flama/frontend-mobile)
+│   │   ├── react-hooks/  # Generic React hooks below both design systems: useControlled, useNow… (@flama/react-hooks)
 │   │   └── design-system/
 │   │       ├── web/      # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
 │   │       └── mobile/   # NativeWind + rn-primitives (@flama/design-system-mobile)
@@ -318,6 +319,7 @@ packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
 packages/translations        → used by web, mobile, api (email copy via backend/i18n)
+packages/frontend/react-hooks          → used by both design systems, frontend/web, web (React only)
 packages/frontend/design-system/web    → used by web, frontend/web
 packages/frontend/design-system/mobile → used by mobile, frontend/mobile
 packages/frontend/api-client  → used by frontend/core, frontend/consumer

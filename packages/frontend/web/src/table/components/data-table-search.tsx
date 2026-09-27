@@ -1,4 +1,5 @@
-import { SearchInput, useDebouncedCallback } from '@flama/design-system-web';
+import { SearchInput } from '@flama/design-system-web';
+import { useDebouncedCallback } from '@flama/react-hooks';
 import { useState } from 'react';
 import {
   type DataTableSearch as DataTableSearchProps,

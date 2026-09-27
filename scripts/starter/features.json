@@ -116,6 +116,10 @@
       "identifiers": ["packages/frontend/consumer", "@flama/frontend-consumer"],
       "neededBy": ["web", "mobile"]
     },
+    "packages/frontend/react-hooks": {
+      "identifiers": ["packages/frontend/react-hooks", "@flama/react-hooks"],
+      "neededBy": ["web", "mobile"]
+    },
     "packages/frontend/web": {
       "identifiers": ["packages/frontend/web", "@flama/frontend-web"],
       "neededBy": ["web"]

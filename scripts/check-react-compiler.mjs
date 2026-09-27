@@ -38,8 +38,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** What every app bundles: the kernel and the product package. */
-const SHARED = ['packages/frontend/core/src', 'packages/frontend/consumer/src'];
+/** What every app bundles: the kernel, the product package and the generic hooks. */
+const SHARED = [
+  'packages/frontend/core/src',
+  'packages/frontend/consumer/src',
+  'packages/frontend/react-hooks/src',
+];
 
 /**
  * Each app, the compiler its build runs, and what that build compiles. The

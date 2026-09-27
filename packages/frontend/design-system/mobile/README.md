@@ -37,10 +37,9 @@ depend on the monorepo layout.
 - `src/components/ui/*` — Accordion, AlertDialog, Avatar, BrandMark, Button,
   Card, Dialog, DropdownMenu, Select, Tabs, Tooltip, Text, and more — each with
   its own export.
-- `src/hooks/` — the generic React hooks, exported from the root:
-  `useControlled`, `useDebouncedValue`, `useDebouncedCallback` and `useNow`,
-  mirrored name for name and behaviour for behaviour from
-  `@flama/design-system-web`, plus `useHardwareBack` (Android's back button).
+- `src/hooks/` — `useHardwareBack` (Android's back button), exported from the
+  root. The generic hooks (`useControlled`, `useDebounced*`, `useNow`) are
+  `@flama/react-hooks`; import them from there.
 - `src/lib/utils` — `cn()` (clsx + tailwind-merge).
 - `tailwind.config.js` — the NativeWind preset and design-system source glob.
 
