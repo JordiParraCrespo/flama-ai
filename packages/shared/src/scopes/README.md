@@ -31,7 +31,6 @@ level. Edit implies Read.
 | ------------------- | -------------------------------------- | -------------------------------------------------------- |
 | Profile             | `profile:read` `profile:write`         | The credential owner's own account                       |
 | Users               | `users:read` `users:write`             | The user directory                                       |
-| User administration | `admin:read` `admin:write`             | Bans, impersonation, password resets, session revocation |
 | Roles & permissions | `roles:read` `roles:write`             | Role definitions and assignments                         |
 | Organizations       | `organizations:read` `…:write`         | Organizations                                            |
 | Members             | `members:read` `members:write`         | Organization membership and member roles                 |
@@ -41,12 +40,9 @@ level. Edit implies Read.
 | Feature flags       | `flags:read` `flags:write`             | Flag targeting, kill switches and segments               |
 
 The catalog is defined once, in `packages/shared/src/scopes/catalog.ts`, and is
-consumed by the API guard and the web permission picker. Adding a resource
-there makes it appear on every surface.
-
-Privileged user administration is deliberately its own group: a token that
-manages the user directory should not also be able to ban people or take over
-their accounts.
+consumed by the API guard and the web permission picker. The groups above are
+the starter's own. A plugin that adds a resource owns its row in the catalog
+and every surface that renders it — its copy, its client, its routes.
 
 ## Resource scoping
 

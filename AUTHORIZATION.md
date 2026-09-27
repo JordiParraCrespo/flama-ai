@@ -81,7 +81,7 @@ not a product feature; it is the executable specification.
 | `PoliciesGuard` + `@CheckPolicies`, ability attached to `request.ability`                         | `apps/api/src/auth/guards/policies.guard.ts`                                  |
 | Credential scopes: catalog, `@RequireScopes`, `ScopesGuard` (**fails closed**), `grantableScopes` | `packages/shared/src/scopes/`, `apps/api/src/auth/guards/scopes.guard.ts`     |
 | Organization-restricted credentials (`ResourceScope`, `@OrganizationScoped`)                      | `packages/shared/src/scopes/resource-scope.ts`                                |
-| Platform tier: Better Auth `admin` plugin, `superadmin` role, impersonation                       | `apps/api/src/auth/infrastructure/better-auth.config.ts`, `apps/api/src/admin/`                            |
+| Platform tier: Better Auth `admin` plugin, `superadmin` role, impersonation                       | `apps/api/src/auth/infrastructure/better-auth.config.ts`                      |
 | Orgs, members, teams (= workspaces), `session.activeOrganizationId` / `activeTeamId`              | `apps/api/src/organizations/`, `apps/api/src/auth/database/session.orm-entity.ts` |
 | Transactional outbox for domain events                                                            | `packages/backend/ddd/src/outbox/`                                            |
 | Permission picker UI + `GET /v1/tokens/permissions` serving `{ groups, grantable }`               | `apps/web/src/components/permission-picker.tsx`                               |

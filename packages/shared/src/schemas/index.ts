@@ -1,5 +1,4 @@
 // flama:begin admin-api
-export * from './admin.schema';
 // flama:end admin-api
 export * from './api-token.schema';
 export * from './auth.schema';

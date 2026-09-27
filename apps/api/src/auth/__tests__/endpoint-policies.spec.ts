@@ -3,7 +3,6 @@ import { ENDPOINT_POLICIES, type GuardedEndpoint } from '@flama/shared';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { describe, expect, it } from 'vitest';
 // flama:begin admin-api
-import { ListUsersHttpController } from '../../admin/queries/list-users/list-users.http.controller';
 // flama:end admin-api
 import { FindApiTokensHttpController } from '../../api-tokens/queries/find-api-tokens/find-api-tokens.http.controller';
 import { FindFeatureFlagsHttpController } from '../../feature-flags/queries/find-feature-flags/find-feature-flags.http.controller';
@@ -38,7 +37,6 @@ const HANDLERS: Record<GuardedEndpoint, { controller: object; handler: string }>
   '/roles': { controller: FindRolesHttpController, handler: 'findAll' },
   '/tokens': { controller: FindApiTokensHttpController, handler: 'findAll' },
   // flama:begin admin-api
-  '/admin/users': { controller: ListUsersHttpController, handler: 'listUsers' },
   // flama:end admin-api
   '/feature-flags/admin': {
     controller: FindFeatureFlagsHttpController,

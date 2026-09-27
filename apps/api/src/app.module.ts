@@ -22,7 +22,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 // flama:begin admin-api
-import { AdminModule } from './admin/admin.module';
 // flama:end admin-api
 import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { AuthModule } from './auth/auth.module';
@@ -179,7 +178,6 @@ import { UsersModule } from './users/user.module';
     ProfileModule,
     RolesModule,
     // flama:begin admin-api
-    AdminModule,
     // flama:end admin-api
     FeatureFlagsModule,
     HealthModule,
