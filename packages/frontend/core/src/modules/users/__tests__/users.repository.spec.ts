@@ -154,6 +154,22 @@ describe('UsersRepository', () => {
       ]);
     });
 
+    it('drops a rule without the action and subject an ability needs', async () => {
+      // The wire type is free-form, so the repository narrows instead of
+      // casting: a rule missing either member could not be applied anyway.
+      api.permissions.mockResolvedValue({
+        permissions: [
+          { action: 'read', subject: 'Lead', conditions: { ownerId: 'me' } },
+          { action: 'read' },
+          { subject: 'Lead' },
+        ],
+      });
+
+      await expect(repository.myPermissions()).resolves.toEqual([
+        { action: 'read', subject: 'Lead', conditions: { ownerId: 'me' } },
+      ]);
+    });
+
     it('returns an empty rule set as itself', async () => {
       // A user with no permissions is a real state — the sidebar shows nothing
       // rather than everything — so `[]` must not be read as a failure.

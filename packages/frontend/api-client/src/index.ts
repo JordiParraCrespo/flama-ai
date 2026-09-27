@@ -102,3 +102,11 @@ export { ProfileApi } from './data-access/api/openapi/services/ProfileApi';
 export { RolesApi } from './data-access/api/openapi/services/RolesApi';
 export { UsersApi } from './data-access/api/openapi/services/UsersApi';
 export { WorkspacesApi } from './data-access/api/openapi/services/WorkspacesApi';
+// DTOs the hey-api output alone defines
+export type {
+  CreateFlagSegmentRequest,
+  FlagChangePaginationMetaDto,
+  ToggleFeatureFlagRequest,
+  UpdateFeatureFlagRequest,
+  UpdateFlagSegmentRequest,
+} from './generated/types.gen';
