@@ -19,6 +19,10 @@ what a component costs. The Claude Code Stop hook
 runs all three. The layer model and the cookbooks are in
 [`packages/frontend/ARCHITECTURE.md`](../../packages/frontend/ARCHITECTURE.md)
 and each app's `ARCHITECTURE.md`; `/scaffold-feature` produces the shape.
+What no script can see — which clock re-renders what, and what the React
+Compiler leaves uncompiled — is `/frontend-audit`'s review
+(`.agents/skills/frontend-audit/`), which reports against these rules by a
+stable ID.
 
 Each rule below was written after finding the thing it forbids in a project
 built from this starter.
@@ -187,6 +191,14 @@ name the jobs and split *those*.
   the page, because the setter that a tick calls lives in the shell above it.
   A split isolates an update only when the state that update writes moves with
   it.
+
+  The compiler also gives up silently. The web build runs its oxc port and
+  the Expo build its Babel plugin, both with the panic threshold at `none`, so
+  a component neither can compile (a ref read or written during render, a
+  default parameter that is an arrow function, a `throw` inside `try`,
+  react-hook-form's `watch()`) ships unmemoised and nothing says so.
+  `pnpm check:compiler` runs each app's own compiler over what that app
+  bundles and lists every one.
 - **A component whose cost is the point gets a render budget.** Name it
   `*-render.spec.tsx` and it runs in the `render-budget` vitest project, which
   does not enable the compiler. `data-table-render.spec.tsx` asserts that a

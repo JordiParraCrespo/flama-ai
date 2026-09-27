@@ -249,7 +249,12 @@ only in `hooks/`, the React Compiler on, no manual memo) and what enforces
 them are `.agents/rules/frontend-architecture.md`. The layer model and the
 cookbooks are `packages/frontend/ARCHITECTURE.md` and each app's
 `ARCHITECTURE.md`; `/scaffold-feature` produces the shape; `pnpm arch`,
-`pnpm check:structure` and Biome hold it.
+`pnpm check:structure` and Biome hold it. `/frontend-audit` reviews the
+frontend against them, including the re-renders the compiler does not prevent
+and the components it silently leaves uncompiled (`pnpm check:compiler`); with
+`--fix` it fixes the findings that are safe to fix in one pull request, and a
+project that wants it daily can point a scheduled routine at
+`/frontend-audit routine`. `scripts/evals/frontend-audit/` grades the prompt.
 
 ### Web (apps/web)
 
@@ -328,6 +333,7 @@ pnpm ci:local           # The CI suite, locally, over what this branch affects â
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
 pnpm check:flags        # Feature flags: none past expiry, none declared but unread
+pnpm check:compiler     # What the React Compiler leaves uncompiled, per app, silently
 pnpm docker:dev         # Start Postgres + Redis
 pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
