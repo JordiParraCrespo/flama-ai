@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
-import { loadCompiler, scan, TARGETS } from './check-react-compiler.mjs';
+import { group, loadCompiler, scan, stale, TARGETS } from './check-react-compiler.mjs';
 
 // A component the compiler must skip (a ref written during render), one it
 // compiles, and a module with no component in it at all.
@@ -42,3 +42,46 @@ for (const target of TARGETS) {
     });
   });
 }
+
+describe('the baseline', () => {
+  const bail = (app, file, line = 1) => ({ app, file, line, reason: 'refs', detail: null });
+  const reports = [
+    {
+      app: 'apps/a',
+      bailouts: [
+        bail('apps/a', 'shared.tsx'),
+        bail('apps/a', 'shared.tsx'),
+        bail('apps/a', 'a.tsx'),
+      ],
+    },
+    { app: 'apps/b', bailouts: [bail('apps/b', 'shared.tsx', 2), bail('apps/b', 'b.tsx')] },
+  ];
+  const baseline = { 'apps/a': ['shared.tsx', 'fixed.tsx'], 'apps/b': ['shared.tsx'] };
+
+  it('prints a file two apps compile once, with its repeats folded', () => {
+    const shared = group(reports, baseline).find((entry) => entry.file === 'shared.tsx');
+    assert.deepEqual(shared.apps, ['apps/a', 'apps/b']);
+    assert.deepEqual(
+      shared.diagnostics.map(({ line, count, apps }) => ({ line, count, apps })),
+      [
+        { line: 1, count: 2, apps: ['apps/a'] },
+        { line: 2, count: 1, apps: ['apps/b'] },
+      ],
+    );
+  });
+
+  it('flags a file only in the apps whose baseline does not list it', () => {
+    const unlisted = group(reports, baseline)
+      .filter((entry) => entry.unlisted.length > 0)
+      .map(({ file, unlisted: apps }) => [file, apps]);
+    assert.deepEqual(unlisted, [
+      ['a.tsx', ['apps/a']],
+      ['b.tsx', ['apps/b']],
+    ]);
+  });
+
+  it('names the listed files that stopped bailing out, in the apps it scanned', () => {
+    assert.deepEqual(stale(reports, baseline), [{ app: 'apps/a', file: 'fixed.tsx' }]);
+    assert.deepEqual(stale([reports[1]], baseline), []);
+  });
+});

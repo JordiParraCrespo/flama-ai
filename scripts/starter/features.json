@@ -175,6 +175,10 @@
       "neededBy": ["web", "mobile"],
       "scripts": ["check:compiler"]
     },
+    "scripts/check-react-compiler.baseline.mjs": {
+      "identifiers": [],
+      "neededBy": ["web", "mobile"]
+    },
     "scripts/check-react-compiler.test.mjs": {
       "identifiers": [],
       "neededBy": ["web", "mobile"]
