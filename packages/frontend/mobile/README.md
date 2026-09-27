@@ -24,7 +24,7 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
 
 - **platform** — `createQueryPersistence` (a `QueryClient` plus MMKV-backed
   `persistOptions`), `ExpoSecureStoreService`, `storage`, `stateStorage`,
-  `queryStorage`, `initPurchases`, `Sentry`, `sentryEnabled`.
+  `queryStorage`, `Sentry`, `sentryEnabled`.
 - **config** — `configManager`, `ConfigManagerContext`, `useConfigManager`,
   `useConfig`, `AppConfig`, `staticConfig`.
 - **forms** — `useZodResolver` and `FormField`; translated API failures come
@@ -66,7 +66,6 @@ import {
   ConfigManagerContext,
   configManager,
   ErrorBoundary,
-  initPurchases,
   NAV_THEME,
   ScreenErrorFallback,
   ScreenViewTracker,
