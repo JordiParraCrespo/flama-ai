@@ -1,9 +1,10 @@
 import { NO_POLICY_KEY } from '@flama/backend-authz';
 import { AppError } from '@flama/backend-core';
-import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
+import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthzErrors } from '../../authz/domain/authz.errors';
-import { AbilityFactory } from '../../roles/application/ability.factory';
+import type { AbilityPort } from '../application/ability.port';
+import { ABILITY } from '../auth.di-tokens';
 import { CHECK_POLICIES_KEY, type PolicyRule } from '../decorators/check-policies.decorator';
 import { ORGANIZATION_PARAM_KEY } from '../decorators/organization-scoped.decorator';
 import { AuthErrors } from '../domain/auth.errors';
@@ -25,7 +26,8 @@ import { AuthErrors } from '../domain/auth.errors';
 export class PoliciesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly abilityFactory: AbilityFactory,
+    @Inject(ABILITY)
+    private readonly abilities: AbilityPort,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -60,7 +62,7 @@ export class PoliciesGuard implements CanActivate {
 
     // Memoized on the request: four call sites resolve the ability during a
     // single request, and `forRequest` also attaches it to `request.ability`.
-    const ability = await this.abilityFactory.forRequest(
+    const ability = await this.abilities.forRequest(
       request,
       this.routeOrganizationId(context, request),
     );

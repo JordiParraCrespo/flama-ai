@@ -93,8 +93,9 @@ export class PublishArticleHttpController {
 ```
 
 - `AuthGuard` (Better Auth) authenticates and populates `request.user`.
-- `PoliciesGuard` builds the ability via `AbilityFactory.createForUser(user)`
-  (union of the user's roles' permissions, falling back to the legacy
+- `PoliciesGuard` asks for the ability through the `AbilityPort` (the `ABILITY`
+  token in `auth.di-tokens.ts`, bound by `RolesModule` to `AbilityFactory`), which
+  builds it with `createForUser(user)` (union of the user's roles' permissions, falling back to the legacy
   `user.role`), checks every `@CheckPolicies` rule, and attaches the built
   ability to `request.ability`.
 - No `@CheckPolicies` ⇒ any authenticated user passes (e.g. `GET /users/me`).
@@ -170,9 +171,10 @@ from the legacy `user.role` column.
 
 ## Wiring notes
 
-- `RolesModule` is `@Global` so the `AbilityFactory` (needed by `PoliciesGuard`
-  in every feature module) and the repository ports are available app-wide
-  without circular module imports.
+- `RolesModule` is `@Global` so the `AbilityFactory`, its `ABILITY` binding
+  (needed by `PoliciesGuard` in every feature module) and the repository ports
+  are available app-wide without circular module imports. `auth` depends on the
+  port, never on `roles/application/ability.factory.ts`.
 - The roles module follows the standard DDD-Hexagon layout
   (`nestjs-architecture.md`); permission editing goes through domain methods
   (`RoleEntity.replacePermissions`), never by mutating ORM records directly.

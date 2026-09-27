@@ -4,7 +4,7 @@ import { defineAbilitiesFromPermissions } from '@flama/shared';
 import type { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AbilityFactory } from '../../../roles/application/ability.factory';
+import type { AbilityPort } from '../../application/ability.port';
 import { CHECK_POLICIES_KEY } from '../../decorators/check-policies.decorator';
 import { ORGANIZATION_PARAM_KEY } from '../../decorators/organization-scoped.decorator';
 import { AuthErrors } from '../../domain/auth.errors';
@@ -31,14 +31,14 @@ function reflectorFor(metadata: Metadata): Reflector {
 }
 
 describe('PoliciesGuard', () => {
-  let abilityFactory: AbilityFactory;
+  let abilityFactory: AbilityPort;
 
   beforeEach(() => {
     abilityFactory = {
       forRequest: vi
         .fn()
         .mockResolvedValue(defineAbilitiesFromPermissions([{ action: 'read', subject: 'Lead' }])),
-    } as unknown as AbilityFactory;
+    } as unknown as AbilityPort;
   });
 
   it('allows a route whose policy the caller satisfies', async () => {

@@ -28,8 +28,9 @@ const TESTS = ['\\.spec\\.ts$', '^src/[^/]+/__tests__/', '^src/__tests__/'];
 const CROSS_MODULE_PUBLIC_SURFACE = [
   '^src/config/', // not a module: the composition root's configuration
   // `roles` is @Global precisely so its AbilityFactory is the app's one
-  // answer to "what may this principal do". Guards in `auth` and handlers
-  // that check grantability ask it by design; it is published surface.
+  // answer to "what may this principal do". Handlers that check grantability
+  // ask it by design; it is published surface. The `auth` kernel does not:
+  // `PoliciesGuard` asks through the ABILITY port, which `roles` binds.
   '^src/roles/application/ability\\.factory\\.ts$',
   '\\.di-tokens\\.ts$', // the token a port is bound to
   '\\.repository\\.port\\.ts$', // the port itself
