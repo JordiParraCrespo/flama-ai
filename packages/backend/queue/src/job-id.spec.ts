@@ -24,6 +24,16 @@ describe('jobId', () => {
     expect(() => jobId('7')).toThrow(/cannot be integers/);
   });
 
+  it.each(['007', '08', '0', '12'])('refuses the all-digit id %j, leading zeros included', (id) => {
+    // `parseInt('007')` reads back as '7', so a parseInt round-trip lets it by.
+    expect(() => jobId(id)).toThrow(/cannot be integers/);
+  });
+
+  it('accepts digits once they are joined to anything else', () => {
+    expect(jobId('invoice', 7)).toBe('invoice-7');
+    expect(jobId('1e3')).toBe('1e3');
+  });
+
   it('refuses no parts at all', () => {
     expect(() => jobId()).toThrow(/at least one part/);
   });

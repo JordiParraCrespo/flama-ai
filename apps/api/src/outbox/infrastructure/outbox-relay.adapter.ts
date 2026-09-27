@@ -1,6 +1,5 @@
 import { hostname } from 'node:os';
 import { type OutboxMessageRecord, OutboxRelay, OutboxService } from '@flama/backend-ddd';
-import { jobId } from '@flama/backend-queue';
 import { QUEUE_NAMES } from '@flama/shared';
 import { InjectQueue } from '@nestjs/bullmq';
 import {
@@ -63,10 +62,8 @@ export class OutboxRelayService implements OnApplicationBootstrap, OnApplication
       // The outbox row id doubles as the BullMQ job id: if the process dies
       // between `queue.add` and `markProcessed`, the reclaimed row re-adds the
       // same job id and BullMQ deduplicates instead of running it twice.
-      // Built through `jobId`, which refuses what BullMQ would (a ':', an
-      // integer) — the row id is a UUID today, and stays safe if that changes.
       await queue.add(message.eventName, message.payload, {
-        jobId: jobId(message.id),
+        jobId: message.id,
       });
       return;
     }

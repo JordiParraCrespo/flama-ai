@@ -9,8 +9,9 @@ dashboard for inspecting queues.
 - `QueueModule` — registers BullMQ with Redis connection config from
   `@nestjs/config`. Queue names come from `QUEUE_NAMES` in `@flama/shared`.
 - `setupBullBoard` — mounts the Bull Board UI on the Express instance.
-- `jobId(...parts)` — builds a custom job id, joining the parts with `-`. It
-  throws on a `:` or an all-digit id, the ids BullMQ refuses at `queue.add`.
+- `jobId(...parts)` — builds a custom job id from several parts, joined with
+  `-`. It throws on a `:` or any all-digit id (`'007'` too), so an id BullMQ
+  would refuse at `queue.add` fails where it is built. A UUID needs no helper.
 
 ## Usage
 
