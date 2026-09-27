@@ -13,17 +13,15 @@ Where a thing goes on the frontend, and what it may import. Every rule here is
 checked: dependency-cruiser (`pnpm arch`) for imports, `pnpm check:structure`
 for names, shapes and where a query is subscribed to, Biome for effects and
 memo, Biome plugins in `biome-plugins/` for query keys, `skipToken` and
-mutation cache updates (each plugin's header says what it matches,
-`biome-plugins/fixtures/` holds its cases, and `scripts/evals/query-keys/`
-measures whether an agent follows them unprompted), and a `*-render.spec.tsx` for
+mutation cache updates (each plugin's header says what it matches, and
+`biome-plugins/fixtures/` holds its cases), `pnpm check:compiler` for what the
+React Compiler leaves uncompiled, and a `*-render.spec.tsx` for
 what a component costs. The Claude Code Stop hook
 runs all three. The layer model and the cookbooks are in
 [`packages/frontend/ARCHITECTURE.md`](../../packages/frontend/ARCHITECTURE.md)
 and each app's `ARCHITECTURE.md`; `/scaffold-feature` produces the shape.
-What no script can see — which clock re-renders what, and what the React
-Compiler leaves uncompiled — is `/frontend-audit`'s review
-(`.agents/skills/frontend-audit/`), which reports against these rules by a
-stable ID.
+What no script can see — which clock re-renders what — is review's, against
+the render rules below.
 
 Each rule below was written after finding the thing it forbids in a project
 built from this starter.
@@ -233,15 +231,48 @@ name the jobs and split *those*.
   `structuralSharing: shareEntities` (from `@flama/frontend-core/react`); a
   reader that needs one field of a list narrows it with `select`.
 
-## Routing is its own skill
+## Routing
 
 `apps/web` routes with TanStack Router, where a file's name decides both its
-URL and the layout chain that renders it. Before adding, moving or guarding a
-route — or touching `routeTree.gen.ts`, `tsr.config.json`, `beforeLoad`,
-`validateSearch` or route `staticData` — read the `/tanstack-routing` skill
-(`.agents/skills/tanstack-routing/`). It carries the file-name table, the
-guard and search-param rules, and the check that proves a restructure did not
-change a URL. `apps/mobile` routes with expo-router and is not covered by it.
+URL and the layout chain that renders it, so renaming a route file is a URL
+change. Before adding, moving or renaming one, read the `/tanstack-routing`
+skill (`.agents/skills/tanstack-routing/`): the file-name table and the diff
+that proves a restructure kept its URLs. `apps/mobile` routes with expo-router
+and none of this section applies to it.
+
+- **`routeTree.gen.ts` is generated.** Never edit it; commit it regenerated
+  with the routes that changed it (`pnpm --filter @flama/web routes`, or any
+  build or `dev`, all reading `tsr.config.json`).
+- **A guard sits on the narrowest route that owns the decision.** A layout
+  route renders chrome; when one layout serves subtrees with different
+  answers, the layout carries no guard and each subtree gets a pathless child
+  that carries its own (`_auth` → `_public`, `onboarding`). Opposite guards
+  stacked on a shared parent are a redirect loop.
+- **Redirects go through the kit.** `redirectSignedOut` / `redirectSignedIn`
+  from `@flama/frontend-web` are a pair (`location.href` into `?redirect=`,
+  then back out); any redirect target read from a URL goes through
+  `sanitizeRedirect`, or it is an open redirect.
+- **`validateSearch` returns the whole search.** A key it does not return is
+  gone by the next navigation, so a route that cares about one key spreads the
+  rest through (nuqs and a table's page key live there too). Keep it cheap: it
+  is critical-path code `autoCodeSplitting` does not split, and a Zod schema
+  comes from a narrow `@flama/shared` subpath or not at all.
+- **`to` is a pathname.** A query goes in `search`, never in the `to` string,
+  which would 404.
+- **A guard is chrome, not authorization.** The API authorizes every request;
+  whether a nav row shows is `policies` in `lib/nav.ts`. A precondition for
+  the whole console is another entry in `_authenticated.tsx`'s `GATES`, not a
+  second guard.
+- **No route has a `loader`.** Screens read through TanStack Query and
+  `defaultPreloadStaleTime: 0` leaves freshness to it, so there is one cache
+  and one staleness rule. The first `loader` is an architectural change, made
+  on purpose in its own diff.
+- **A layout varies by page through route `staticData`**, read once off the
+  innermost match with one `useMatches` select; the key's `declare module`
+  augmentation sits beside its only reader, not in a shared types file.
+- **A route an optional feature owns** is listed in that feature's `paths` in
+  `scripts/starter/features.json`, and every line other routes spend on it is
+  fenced (`flama:begin organizations`); `pnpm starter:check` holds it.
 
 ## Patterns agents get wrong
 
