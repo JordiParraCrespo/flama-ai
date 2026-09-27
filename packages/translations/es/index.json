@@ -105,6 +105,7 @@
       "GRANT_002": "No puedes conceder más acceso del que tienes tú.",
       "GRANT_003": "Esa persona o equipo no forma parte de esta organización.",
       "GRANT_004": "Elige una organización antes de gestionar las concesiones de acceso.",
+      "RATE_001": "Estás enviando solicitudes demasiado rápido. Espera un momento y vuelve a intentarlo.",
       "ADMIN_009": "Esa sesión ya no existe para este usuario.",
       "PROFILE_001": "No hemos encontrado tu perfil.",
       "PROFILE_002": "La contraseña actual no es correcta.",
