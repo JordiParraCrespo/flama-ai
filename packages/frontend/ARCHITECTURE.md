@@ -200,11 +200,14 @@ Nothing moves before its second consumer appears; nothing is written twice.
 9. `src/react/things.queries.ts` — `thingsKeys`, one function per level
    (`all → lists() → list(filters) → details() → detail(id)`, filters appended
    only when set so `list()` stays a prefix), and query and mutation hooks over
-   `useConsumerApp()`. A query missing its input gates on `skipToken`; mutation
-   options are `HookMutationOptions`, and the cache update — `setQueryData` for
-   the row the server returned, `invalidateQueries` on the narrowest prefix —
-   goes through `withCacheOnSuccess`. The Biome plugins in `biome-plugins/`
-   hold all three. A flow that chains calls (sign up, then join) is one hook
+   `useConsumerApp()`. A query missing its input gates on `skipToken`, and one
+   that returns entities passes `structuralSharing: shareEntities` from
+   `@flama/frontend-core/react`, so a refetch that changed nothing keeps every
+   row's identity; mutation options are `HookMutationOptions`, and the cache
+   update — `setQueryData` for the row the server returned,
+   `invalidateQueries` on the narrowest prefix — goes through
+   `withCacheOnSuccess`. The Biome plugins in `biome-plugins/` hold the key,
+   `skipToken` and cache-update rules. A flow that chains calls (sign up, then join) is one hook
    here, not a `useMutation` in a screen.
 10. `src/react/index.ts` — export the keys and hooks by name.
 11. If the module's data must never reach storage, add

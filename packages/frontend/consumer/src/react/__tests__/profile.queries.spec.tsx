@@ -4,6 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { TOKENS } from '../../di/tokens';
+import { UserSessionEntity } from '../../modules/profile/profile.entity';
 import {
   profileKeys,
   useChangeOwnPassword,
@@ -100,6 +101,53 @@ describe('queries', () => {
 
     await waitFor(() => expect(sessions.result.current.isSuccess).toBe(true));
     expect(profile.getSessions).toHaveBeenCalled();
+  });
+
+  /**
+   * The entities are classes, and their dates are new objects on every read,
+   * so the query's default sharing hands every reader a new row per refetch.
+   */
+  it('keeps the rows a refetch did not change', async () => {
+    // Real class instances: a plain object literal would pass on the default
+    // sharing alone and prove nothing.
+    const device = (id: string, lastSeen: string) =>
+      new UserSessionEntity(
+        id,
+        null,
+        'Mozilla/5.0',
+        id === 's-1',
+        new Date('2026-09-01T10:00:00Z'),
+        new Date(lastSeen),
+        new Date('2026-10-01T10:00:00Z'),
+      );
+    const read = (lastSeen: string) => [
+      device('s-1', '2026-09-26T10:00:00Z'),
+      device('s-2', lastSeen),
+    ];
+    const { wrapper, profile, queryClient } = setup();
+    profile.getSessions
+      .mockResolvedValueOnce(read('2026-09-26T10:00:00Z'))
+      .mockResolvedValueOnce(read('2026-09-26T10:00:00Z'))
+      .mockResolvedValue(read('2026-09-26T11:00:00Z'));
+
+    const { result } = renderHook(() => useProfileSessions(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const first = result.current.data;
+
+    // What the cache holds is what every reader is handed next.
+    const cached = () => queryClient.getQueryData<UserSessionEntity[]>(profileKeys.sessions());
+
+    await act(() => queryClient.refetchQueries({ queryKey: profileKeys.sessions() }));
+    expect(profile.getSessions).toHaveBeenCalledTimes(2);
+    expect(cached()).toBe(first);
+
+    await act(() => queryClient.refetchQueries({ queryKey: profileKeys.sessions() }));
+    await waitFor(() => expect(result.current.data).not.toBe(first));
+    expect(result.current.data?.[0]).toBe(first?.[0]);
+    expect(result.current.data?.[1]).not.toBe(first?.[1]);
+    expect(result.current.data?.[1]?.lastSeenAt.toISOString()).toBe('2026-09-26T11:00:00.000Z');
+    // Still the class: the getters a row reads keep working.
+    expect(result.current.data?.[1]?.deviceKind).toBe('desktop');
   });
 });
 

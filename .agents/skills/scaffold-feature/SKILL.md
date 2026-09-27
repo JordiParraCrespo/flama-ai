@@ -83,6 +83,9 @@ it. The steps are the "Add a module to a product package" cookbook in
      appended only when set, so `list()` stays a prefix of every narrowed
      list.
    - `skipToken` for a missing input, never `enabled` beside a `queryFn`.
+   - `structuralSharing: shareEntities` on every query that returns entities:
+     they are classes, and without it every refetch hands each reader a new
+     object per row.
    - Mutation options typed `HookMutationOptions`.
    - Every cache update goes through `withCacheOnSuccess`. Write the row the
      server returned with `setQueryData` when you have it, and invalidate by

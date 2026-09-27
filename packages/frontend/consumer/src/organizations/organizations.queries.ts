@@ -4,6 +4,7 @@ import type { UpdateOrganizationRequest } from '@flama/api-client';
 import {
   type HookMutationOptions,
   MEMBER_LISTS_KEY,
+  shareEntities,
   usersKeys,
   withCacheOnSuccess,
 } from '@flama/frontend-core/react';
@@ -87,6 +88,7 @@ export function useOrganizations(
   return useQuery({
     queryKey: organizationsKeys.list(),
     queryFn: () => app.organizations.findAll(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -109,6 +111,7 @@ export function useOrganizationMembers(
     queryFn: organizationId
       ? () => app.organizations.findMembers(organizationId, filters)
       : skipToken,
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -121,6 +124,7 @@ export function useOrganizationInvitations(
   return useQuery({
     queryKey: organizationsKeys.invitationList(organizationId),
     queryFn: organizationId ? () => app.organizations.findInvitations(organizationId) : skipToken,
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -139,6 +143,7 @@ export function useMyInvitations(
   return useQuery({
     queryKey: organizationsKeys.myInvitations(),
     queryFn: () => app.organizations.findMyInvitations(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }

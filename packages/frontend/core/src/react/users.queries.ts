@@ -13,6 +13,7 @@ import {
 import type { UserEntity } from '../modules/users/user.entity';
 import { useFlamaApp } from './context';
 import { withCacheOnSuccess } from './mutations';
+import { shareEntities } from './share-entities';
 
 export interface UsersListParams {
   page?: number;
@@ -83,6 +84,7 @@ export function useProfile(
   return useQuery({
     queryKey: usersKeys.me(),
     queryFn: () => app.users.me(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -110,6 +112,7 @@ export function useUsers(
   return useQuery({
     queryKey: usersKeys.list(params),
     queryFn: () => app.users.findAll(params?.page, params?.limit, params?.search, params?.role),
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -123,6 +126,7 @@ export function useUser(
   return useQuery({
     queryKey: usersKeys.detail(id),
     queryFn: id ? () => app.users.findById(id) : skipToken,
+    structuralSharing: shareEntities,
     ...options,
   });
 }

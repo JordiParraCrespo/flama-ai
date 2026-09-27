@@ -2,6 +2,7 @@
 
 import {
   type HookMutationOptions,
+  shareEntities,
   usersKeys,
   withCacheOnSuccess,
 } from '@flama/frontend-core/react';
@@ -32,6 +33,7 @@ export function useMyProfile(
   return useQuery({
     queryKey: profileKeys.me(),
     queryFn: () => app.profile.get(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -110,6 +112,7 @@ export function useProfileSessions(
   return useQuery({
     queryKey: profileKeys.sessions(),
     queryFn: () => app.profile.getSessions(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }

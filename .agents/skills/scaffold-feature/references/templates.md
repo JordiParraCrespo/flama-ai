@@ -107,7 +107,11 @@ Then:
 // packages/frontend/consumer/src/react/things.queries.ts
 'use client';
 
-import { type HookMutationOptions, withCacheOnSuccess } from '@flama/frontend-core/react';
+import {
+  type HookMutationOptions,
+  shareEntities,
+  withCacheOnSuccess,
+} from '@flama/frontend-core/react';
 import type { CreateThingDto } from '@flama/shared/schemas/thing';
 import { skipToken, type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ThingEntity } from '../modules/things/thing.entity';
@@ -139,6 +143,8 @@ export function useThings(
   return useQuery({
     queryKey: thingsKeys.list(filters),
     queryFn: () => app.things.findAll(filters),
+    // Entities are classes: without this every refetch is a new object per row.
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -149,6 +155,7 @@ export function useThing(id: string | undefined) {
     queryKey: thingsKeys.detail(id),
     // skipToken, never `enabled`: the input stays in the key and the queryFn needs no `!`.
     queryFn: id ? () => app.things.findOne(id) : skipToken,
+    structuralSharing: shareEntities,
   });
 }
 

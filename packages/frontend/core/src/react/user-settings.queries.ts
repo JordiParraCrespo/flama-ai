@@ -6,6 +6,7 @@ import type { UserSettingsEntity } from '../modules/user-settings/user-settings.
 import { useFlamaApp } from './context';
 import { type HookMutationOptions, withCacheOnSuccess } from './mutations';
 import { userSettingsKeys } from './query-keys';
+import { shareEntities } from './share-entities';
 
 export { userSettingsKeys };
 
@@ -17,6 +18,7 @@ export function useUserSettings(
   return useQuery({
     queryKey: userSettingsKeys.me(),
     queryFn: () => app.userSettings.get(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }

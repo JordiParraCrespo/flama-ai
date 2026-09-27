@@ -1,6 +1,10 @@
 'use client';
 
-import { type HookMutationOptions, withCacheOnSuccess } from '@flama/frontend-core/react';
+import {
+  type HookMutationOptions,
+  shareEntities,
+  withCacheOnSuccess,
+} from '@flama/frontend-core/react';
 import type { CreateApiTokenDto } from '@flama/shared';
 import { type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
@@ -32,6 +36,7 @@ export function useApiTokens(
   return useQuery({
     queryKey: apiTokensKeys.list(),
     queryFn: () => app.apiTokens.findAll(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -61,6 +66,7 @@ export function useCurrentCredential(
   return useQuery({
     queryKey: apiTokensKeys.credential(),
     queryFn: () => app.apiTokens.currentCredential(),
+    structuralSharing: shareEntities,
     ...options,
   });
 }
