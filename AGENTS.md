@@ -144,7 +144,13 @@ with before it touches anything.
 anatomy, the `@flama/backend-ddd` building blocks, and the "add a module"
 cookbook. Use the `/scaffold-module` skill to generate a compliant module
 skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
-(`pnpm arch`, run in CI and by a Claude Code Stop hook).
+(`pnpm arch`, run in CI and by a Claude Code Stop hook). What neither script
+can see — a command returning a read model, a query that writes, a bare Nest
+exception, an event that skips the outbox — is the
+`.agents/routines/hexagon-audit.md` review: a prompt for a scheduled routine
+(optional; `.agents/routines/README.md` says how to set one up) that keeps one
+`hexagon-audit` issue current and opens a small fix pull request, with its
+evals beside it.
 
 Detailed rules live in `.agents/rules/`, each scoped by a `paths` glob so it
 loads only for the code it governs. Three are frontend:
