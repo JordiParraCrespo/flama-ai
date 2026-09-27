@@ -106,5 +106,7 @@ describe('CredentialThrottlerGuard – a blocked request', () => {
     expect((error as AppError).code).toBe('RATE_001');
     expect((error as AppError).getStatus()).toBe(429);
     expect((error as AppError).extensions).toEqual({ retryAfter: 42 });
+    // The number lives in `Retry-After` and `retryAfter`, never in prose.
+    expect((error as AppError).detail).toBeUndefined();
   });
 });
