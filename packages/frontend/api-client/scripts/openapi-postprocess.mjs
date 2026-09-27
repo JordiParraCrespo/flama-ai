@@ -161,8 +161,11 @@ function generateCommonIndex() {
 }
 
 /**
- * Remove model re-exports from the OpenAPI index.ts so consumers
- * import models from src/common instead.
+ * Keep the OpenAPI index.ts true to the tree: drop its model re-exports, so
+ * consumers import models from src/common instead; drop a re-export of a
+ * schema file that no longer exists; and list exactly the service files there
+ * are, so a feature that is pruned or added back takes its legacy services
+ * in and out of it.
  */
 function cleanIndexExports() {
   if (!fs.existsSync(indexFilePath)) {
@@ -170,14 +173,40 @@ function cleanIndexExports() {
     return;
   }
 
-  const lines = fs.readFileSync(indexFilePath, 'utf8').split(/\r?\n/);
-  const filtered = lines.filter(
-    (l) => !/^export\s+(?:type\s+)?\{[^}]*\}\s+from\s+['"]\.\/models\//.test(l.trim()),
-  );
+  const source = fs.readFileSync(indexFilePath, 'utf8');
+  const lines = source.split(/\r?\n/);
+  const target = (l) =>
+    /^export\s+(?:type\s+)?\{[^}]*\}\s+from\s+['"](\.\/[^'"]+)['"]/.exec(l.trim())?.[1];
 
-  if (filtered.length !== lines.length) {
-    fs.writeFileSync(indexFilePath, filtered.join('\n'));
-    console.log('🧹  Removed model exports from index.ts');
+  const servicesDir = path.resolve(apiServicesFolder, 'services');
+  const services = fs.existsSync(servicesDir)
+    ? fs
+        .readdirSync(servicesDir)
+        .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
+        .map((f) => path.basename(f, '.ts'))
+        .sort()
+    : [];
+  const serviceLines = services.map((name) => `export { ${name} } from './services/${name}';`);
+
+  const kept = [];
+  let servicesAt = -1;
+  for (const line of lines) {
+    const from = target(line);
+    if (from?.startsWith('./services/')) {
+      if (servicesAt === -1) servicesAt = kept.length;
+      continue;
+    }
+    if (from?.startsWith('./models/')) continue;
+    if (from && !fs.existsSync(path.resolve(apiServicesFolder, `${from}.ts`))) continue;
+    kept.push(line);
+  }
+  if (servicesAt === -1) servicesAt = kept.length;
+  kept.splice(servicesAt, 0, ...serviceLines);
+
+  const result = kept.join('\n');
+  if (result !== source) {
+    fs.writeFileSync(indexFilePath, result);
+    console.log('🧹  Brought the OpenAPI index.ts exports in line with the tree');
   }
 }
 

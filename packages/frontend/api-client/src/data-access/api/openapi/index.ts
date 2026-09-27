@@ -77,6 +77,7 @@ export { AccessGrantsApi } from './services/AccessGrantsApi';
 export { AdminApi } from './services/AdminApi';
 export { ApiTokensApi } from './services/ApiTokensApi';
 export { AuthorizationApi } from './services/AuthorizationApi';
+export { FeatureFlagsApi } from './services/FeatureFlagsApi';
 export { HealthApi } from './services/HealthApi';
 export { InvitationsApi } from './services/InvitationsApi';
 export { OrganizationInvitationsApi } from './services/OrganizationInvitationsApi';
