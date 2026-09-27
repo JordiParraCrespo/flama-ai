@@ -13,7 +13,6 @@ import {
   ConfigManagerContext,
   configManager,
   ErrorBoundary,
-  initPurchases,
   NAV_THEME,
   ScreenErrorFallback,
   ScreenViewTracker,
@@ -32,11 +31,10 @@ export default function RootLayout() {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  // Synchronises with systems outside React: the remote config manager and
-  // the RevenueCat purchases SDK, both initialised once per app launch.
+  // Synchronises with a system outside React: the remote config manager,
+  // loaded once per app launch.
   useEffect(() => {
     void configManager.load();
-    void initPurchases();
   }, []);
 
   return (

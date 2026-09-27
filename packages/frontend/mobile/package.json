@@ -37,7 +37,6 @@
     "intl-pluralrules": "2.0.1",
     "posthog-react-native": "^4.11.2",
     "react-native-nitro-fetch": "1.7.0",
-    "react-native-purchases": "^10.9.1",
     "zustand": "^5.0.14"
   },
   "peerDependencies": {
