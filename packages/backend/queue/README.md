@@ -9,6 +9,8 @@ dashboard for inspecting queues.
 - `QueueModule` — registers BullMQ with Redis connection config from
   `@nestjs/config`. Queue names come from `QUEUE_NAMES` in `@flama/shared`.
 - `setupBullBoard` — mounts the Bull Board UI on the Express instance.
+- `jobId(...parts)` — builds a custom job id, joining the parts with `-`. It
+  throws on a `:` or an all-digit id, the ids BullMQ refuses at `queue.add`.
 
 ## Usage
 
@@ -19,6 +21,10 @@ import { QueueModule } from "@flama/backend-queue";
 // main.ts — mount the dashboard
 import { setupBullBoard } from "@flama/backend-queue";
 setupBullBoard(app);
+
+// a producer that deduplicates on its own key
+import { jobId } from "@flama/backend-queue";
+await queue.add("invitation", data, { jobId: jobId("invitation", invitationId) });
 ```
 
 ## Scripts
