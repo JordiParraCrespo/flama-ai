@@ -3,7 +3,12 @@ import { ROLES } from '@flama/shared';
 import type { NestInterceptor } from '@nestjs/common';
 import { type CallHandler, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import type { Observable } from 'rxjs';
-import { AbilityFactory } from '../../roles/application/ability.factory';
+import {
+  type AbilityHttpRequest,
+  type AbilityPort,
+  abilityRequestOf,
+} from '../../auth/application/ability.port';
+import { ABILITY } from '../../auth/auth.di-tokens';
 import {
   ACTIVE_ORGANIZATION_HEADER,
   ActiveOrganizationResolver,
@@ -28,24 +33,27 @@ export class AccessScopeInterceptor implements NestInterceptor {
   constructor(
     @Inject(SCOPE_RESOLVER)
     private readonly scopeResolver: ScopeResolverPort,
-    private readonly abilityFactory: AbilityFactory,
+    @Inject(ABILITY)
+    private readonly abilities: AbilityPort,
     private readonly activeOrganization: ActiveOrganizationResolver,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest();
-    const user = request.user as { id?: string; role?: string } | undefined;
+    const subject = abilityRequestOf(request as AbilityHttpRequest);
 
-    if (user?.id) {
+    if (subject?.user.id) {
+      const { user } = subject;
       const organizationId = await this.activeOrganization.resolve({
         userId: user.id,
-        sessionOrganizationId: request.session?.activeOrganizationId ?? null,
+        sessionOrganizationId: subject.session?.activeOrganizationId ?? null,
         header: request.headers?.[ACTIVE_ORGANIZATION_HEADER],
       });
 
-      // The ability is memoized on the request, so asking it whether the caller
-      // holds `manage all` costs nothing the guard was not already paying.
-      const ability = await this.abilityFactory.forRequest(request);
+      // Built for the organization this request acts in. The memo is keyed by
+      // organization, so when the guard resolved the same one this costs
+      // nothing, and when it resolved another this cannot inherit its answer.
+      const ability = await this.abilities.forRequest(subject, organizationId);
 
       request[ACCESS_SCOPE_KEY] = await this.scopeResolver.resolve({
         userId: user.id,

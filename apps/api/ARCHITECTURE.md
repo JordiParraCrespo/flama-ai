@@ -332,13 +332,14 @@ for the working guide. Key points relevant to the architecture:
   owning `Permission` value objects stored as `jsonb`, plus a `user_role` join
   for multiple-roles-per-user). It is the reference for a module that also owns a
   link table and a domain service.
-- It is declared `@Global` so its **`AbilityFactory`** and repository ports are
-  available app-wide without circular module imports. The `auth`
-  `PoliciesGuard` does not import the factory: it asks the `AbilityPort`
-  (`auth/application/ability.port.ts`) through the `ABILITY` token, which
-  `roles` binds to the factory, so the kernel names no feature module.
+- It is declared `@Global` so the **`ABILITY`** port and its repository ports
+  are available app-wide without circular module imports. It binds its
+  `AbilityFactory` to the `AbilityPort` (`auth/application/ability.port.ts`)
+  and exports only the token: `PoliciesGuard` and every handler that checks
+  grantability ask the port, so neither the kernel nor a feature module names
+  the factory.
 - Permissions live in `@flama/shared` (`defineAbilitiesFromPermissions`,
-  `PermissionDefinition`). Controllers stay thin: `@UseGuards(AuthGuard,
+  `PermissionDefinition`). Controllers stay thin: `@UseGuards(ApiAuthGuard,
 PoliciesGuard)` + `@CheckPolicies({ action, subject })`. Instance-level
   (resource-scoped) checks use the ability the guard attaches to
   `request.ability`.
