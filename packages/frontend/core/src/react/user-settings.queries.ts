@@ -1,24 +1,21 @@
 'use client';
 
 import type { UpdateUserSettingsDto } from '@flama/shared/schemas/profile';
-import { type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UserSettingsEntity } from '../modules/user-settings/user-settings.entity';
 import { useFlamaApp } from './context';
+import { type EntityQueryOptions, useEntityQuery } from './entity-query';
 import { type HookMutationOptions, withCacheOnSuccess } from './mutations';
 import { userSettingsKeys } from './query-keys';
-import { shareEntities } from './share-entities';
 
 export { userSettingsKeys };
 
-export function useUserSettings(
-  options?: Omit<UseQueryOptions<UserSettingsEntity, Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useUserSettings(options?: EntityQueryOptions<UserSettingsEntity>) {
   const app = useFlamaApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: userSettingsKeys.me(),
     queryFn: () => app.userSettings.get(),
-    structuralSharing: shareEntities,
     ...options,
   });
 }

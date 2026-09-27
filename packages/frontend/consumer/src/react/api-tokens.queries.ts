@@ -1,8 +1,9 @@
 'use client';
 
 import {
+  type EntityQueryOptions,
   type HookMutationOptions,
-  shareEntities,
+  useEntityQuery,
   withCacheOnSuccess,
 } from '@flama/frontend-core/react';
 import type { CreateApiTokenDto } from '@flama/shared';
@@ -28,15 +29,12 @@ export const apiTokensKeys = {
   credential: () => [...apiTokensKeys.all, 'credential'] as const,
 };
 
-export function useApiTokens(
-  options?: Omit<UseQueryOptions<ApiTokenEntity[], Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useApiTokens(options?: EntityQueryOptions<ApiTokenEntity[]>) {
   const app = useConsumerApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: apiTokensKeys.list(),
     queryFn: () => app.apiTokens.findAll(),
-    structuralSharing: shareEntities,
     ...options,
   });
 }
@@ -58,15 +56,12 @@ export function usePermissionCatalog(
   });
 }
 
-export function useCurrentCredential(
-  options?: Omit<UseQueryOptions<CurrentCredential, Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useCurrentCredential(options?: EntityQueryOptions<CurrentCredential>) {
   const app = useConsumerApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: apiTokensKeys.credential(),
     queryFn: () => app.apiTokens.currentCredential(),
-    structuralSharing: shareEntities,
     ...options,
   });
 }

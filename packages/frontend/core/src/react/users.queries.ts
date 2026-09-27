@@ -12,8 +12,8 @@ import {
 } from '@tanstack/react-query';
 import type { UserEntity } from '../modules/users/user.entity';
 import { useFlamaApp } from './context';
+import { type EntityQueryOptions, useEntityQuery } from './entity-query';
 import { withCacheOnSuccess } from './mutations';
-import { shareEntities } from './share-entities';
 
 export interface UsersListParams {
   page?: number;
@@ -76,57 +76,43 @@ export function useMyPermissions(
   });
 }
 
-export function useProfile(
-  options?: Omit<UseQueryOptions<UserEntity, Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useProfile(options?: EntityQueryOptions<UserEntity>) {
   const app = useFlamaApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: usersKeys.me(),
     queryFn: () => app.users.me(),
-    structuralSharing: shareEntities,
     ...options,
   });
 }
 
 export function useUsers(
   params?: UsersListParams,
-  options?: Omit<
-    UseQueryOptions<
-      {
-        data: UserEntity[];
-        meta: {
-          total: number;
-          page: number;
-          limit: number;
-          totalPages: number;
-        };
-      },
-      Error
-    >,
-    'queryKey' | 'queryFn'
-  >,
+  options?: EntityQueryOptions<{
+    data: UserEntity[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }>,
 ) {
   const app = useFlamaApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: usersKeys.list(params),
     queryFn: () => app.users.findAll(params?.page, params?.limit, params?.search, params?.role),
-    structuralSharing: shareEntities,
     ...options,
   });
 }
 
-export function useUser(
-  id: string | undefined,
-  options?: Omit<UseQueryOptions<UserEntity, Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useUser(id: string | undefined, options?: EntityQueryOptions<UserEntity>) {
   const app = useFlamaApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: usersKeys.detail(id),
     queryFn: id ? () => app.users.findById(id) : skipToken,
-    structuralSharing: shareEntities,
     ...options,
   });
 }

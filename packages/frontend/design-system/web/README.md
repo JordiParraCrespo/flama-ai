@@ -43,12 +43,9 @@ import preset from "@flama/design-system-web/tailwind-config";
 - `src/components/*` — Button, Card, Dialog, DropdownMenu, Sidebar, Table, Tabs,
   Command, Chart (Recharts), Sonner toasts, BrandMark, and more — each with its
   own export.
-- `src/hooks/` — the generic React hooks every UI layer shares, exported from
-  the root: `useControlled` (a controlled/uncontrolled `value`, written once),
-  `useDebouncedValue`, `useDebouncedCallback`, `useNow` (the time as an input
-  that ticks) and `useIsMobile` (viewport). The first four mirror
-  `@flama/design-system-mobile` name for name. Nothing here knows about the
-  product or fetches.
+- `src/hooks/` — `useIsMobile` (viewport), exported from the root. The
+  generic hooks (`useControlled`, `useDebounced*`, `useNow`) are
+  `@flama/react-hooks`; import them from there.
 - `src/lib/utils` — `cn()` (clsx + tailwind-merge).
 - `src/styles/globals.css` — **the canonical brand definition**: primitives
   (`--ink-*`, `--surface-*`, `--accent-*`, `--status-*`, `--data-*`), the shadcn

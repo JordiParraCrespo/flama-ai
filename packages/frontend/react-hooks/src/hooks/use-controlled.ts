@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 /**
  * State a component owns until its caller takes it over: the
@@ -9,7 +9,8 @@ import { useCallback, useState } from 'react';
  * `value ?? internal`, and a setter that writes the internal state only when
  * nobody passed `value` but always tells `onChange`. The copies drift: one
  * forgets to call `onChange` in uncontrolled mode, another resolves a
- * functional update against a stale value.
+ * functional update against the value its render saw, so two in one event
+ * lose one.
  *
  * `undefined` means uncontrolled; `null` is a value like any other, because a
  * picker with nothing picked is a real, controlled state. Whether the caller
@@ -45,16 +46,30 @@ export function useControlled<T>({
   const controlled = value !== undefined;
   const current = controlled ? value : own;
 
-  // `useCallback` is the exception the rule allows in `hooks/`: the setter is
+  // What the component's own state is once every update queued so far lands.
+  // `own` is what the last render saw, so two functional updates in one event
+  // (`setValue((c) => c + 1)` twice) would both start from it and one would be
+  // lost. This mirrors `own` exactly: both start at `defaultValue` and only the
+  // uncontrolled branch below writes either, so the second update starts from
+  // the first, as it would with `useState`, and `onChange` hears each step.
+  const pending = useRef(defaultValue);
+
+  // `useCallback` is the exception the rule allows in a hook: the setter is
   // handed to children and to effects, and a new identity every render would
   // make each of them a re-render path for the component that owns it.
   const setValue = useCallback(
     (next: T | ((current: T) => T)) => {
-      const resolved = typeof next === 'function' ? (next as (current: T) => T)(current) : next;
-      if (!controlled) setOwn(resolved);
+      // Controlled, the caller's `value` is the truth and the update starts
+      // from it; the caller decides whether it lands.
+      const base = controlled ? (value as T) : pending.current;
+      const resolved = typeof next === 'function' ? (next as (current: T) => T)(base) : next;
+      if (!controlled) {
+        pending.current = resolved;
+        setOwn(resolved);
+      }
       onChange?.(resolved);
     },
-    [controlled, current, onChange],
+    [controlled, value, onChange],
   );
 
   return [current, setValue];

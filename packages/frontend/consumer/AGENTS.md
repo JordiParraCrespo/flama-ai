@@ -19,7 +19,7 @@ and the full "add a module" cookbook are
   `pnpm check:structure` allows a feature name a module carries.
 - A new query hook → `src/react/things.queries.ts`, keys derived from
   `thingsKeys.all`, hooks over `useConsumerApp()`, queries that return
-  entities passing `structuralSharing: shareEntities`, mutations invalidating by
+  entities through `useEntityQuery` rather than `useQuery`, mutations invalidating by
   prefix through `withCacheOnSuccess(options, update)` from
   `@flama/frontend-core/react`; export both by name from
   `src/react/index.ts`.

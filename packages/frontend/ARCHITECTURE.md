@@ -42,8 +42,15 @@ packages/frontend/
 ├── admin/       @flama/frontend-admin     modules/ react/ di/   (with the admin plugins)
 ├── api-client/  @flama/api-client         generated from the API's OpenAPI spec
 ├── web/         @flama/frontend-web       <concern>/{components,dialogs,hooks,lib}/
-└── mobile/      @flama/frontend-mobile    <concern>/{components,forms,screens,hooks,lib}/
+├── mobile/      @flama/frontend-mobile    <concern>/{components,forms,screens,hooks,lib}/
+└── react-hooks/ @flama/react-hooks        hooks/   generic React hooks, below both design systems
 ```
+
+`react-hooks` is neither split: `useControlled`, `useDebouncedValue`,
+`useDebouncedCallback` and `useNow` hold no product, no DOM and no React
+Native, so both design systems, both kits and the apps import the one copy. It
+sits under the design systems rather than in the kernel because the design
+systems do not depend on the kernel.
 
 ## The placement grid
 
@@ -53,6 +60,7 @@ packages/frontend/
 | Logic | one product | `consumer` or `admin` |
 | UI or glue | both apps of a platform | `web` or `mobile` |
 | A primitive with the same API on both platforms | | `packages/frontend/design-system/web` and `/mobile` |
+| A generic React hook: React and nothing else | | `packages/frontend/react-hooks` |
 | Everything else | one app | `apps/<app>/features/<module>/<kind>/` |
 
 Two cells are never filled. **Logic in a platform kit**: mobile would have to
@@ -84,7 +92,7 @@ that needed both composes them.
                         └────────────────────────────────────────┘
 
    shared ─► core ─► consumer | admin ─► apps
-   design-system/<platform> ─► frontend/<platform> kit ─► apps
+   react-hooks ─► design-system/<platform> ─► frontend/<platform> kit ─► apps
 ```
 
 - A product package imports the kernel, `@flama/shared` and
@@ -201,9 +209,10 @@ Nothing moves before its second consumer appears; nothing is written twice.
    (`all → lists() → list(filters) → details() → detail(id)`, filters appended
    only when set so `list()` stays a prefix), and query and mutation hooks over
    `useConsumerApp()`. A query missing its input gates on `skipToken`, and one
-   that returns entities passes `structuralSharing: shareEntities` from
-   `@flama/frontend-core/react`, so a refetch that changed nothing keeps every
-   row's identity; mutation options are `HookMutationOptions`, and the cache
+   that returns entities calls `useEntityQuery` from
+   `@flama/frontend-core/react` instead of `useQuery`, which applies
+   `shareEntities` so a refetch that changed nothing keeps every row's
+   identity; mutation options are `HookMutationOptions`, and the cache
    update — `setQueryData` for the row the server returned,
    `invalidateQueries` on the narrowest prefix — goes through
    `withCacheOnSuccess`. The Biome plugins in `biome-plugins/` hold the key,
@@ -231,8 +240,15 @@ public, add `export * from './<concern>'` to `src/index.ts` (and a subpath in
 
 ## What the checkers enforce
 
-`pnpm --filter <pkg> arch` runs dependency-cruiser with one of three factories
+`pnpm --filter <pkg> arch` runs dependency-cruiser with one of four factories
 in `packages/tsconfig/depcruise/`.
+
+`frontend-react.cjs` (`react-hooks`):
+
+- `no-circular`.
+- `react-and-nothing-else` — shipped code imports `react` and no other
+  package: no DOM, no React Native, no library.
+- `knows-no-workspace-package` — no kernel, kit or design system.
 
 `frontend-domain.cjs` (`core`, `consumer`, `admin`):
 

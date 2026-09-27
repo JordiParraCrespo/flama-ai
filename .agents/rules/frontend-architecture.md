@@ -206,29 +206,34 @@ name the jobs and split *those*.
   caller feeds it, or the test passes on the shape it was meant to forbid.
 - **Contexts split by change rate.** A provider that holds a value and its
   setters exposes them so a toggle does not re-render the tree.
-- **Generic React hooks live in the design systems' `hooks/`.** `useControlled`
-  (the `value` / `defaultValue` / `onChange` triple), `useDebouncedValue`,
-  `useDebouncedCallback` and `useNow` are exported from
-  `@flama/design-system-web` and `@flama/design-system-mobile` alike — same
-  names, same signatures, same behaviour — because the design system is the
-  lowest React package the kits, the apps and its own components all share,
-  and a primitive both platforms need is mirrored there. A hook there knows
-  nothing of the product or of a query; one that does belongs in a product
-  package or a feature's `hooks/`. Before writing a timer, a
-  controlled/uncontrolled pair or a latest-ref, check that directory.
-- **A clock is an input, never a read in render.** `Date.now()` or
-  `new Date()` inside render — including a helper's `now = new Date()`
-  default, like `formatRelativeTime`'s — is cached by the compiler on the
-  inputs it can see, so an age stops moving. Take the time from
-  `useNow(interval)` in the lowest component that draws it and pass it in:
-  `SessionRow` ticks once a minute for its own "last seen", so a tick
-  re-renders one row and not the session list with its dialogs. A one-second
-  countdown gets a leaf of its own for the same reason.
-- **Entity queries opt into `shareEntities`.** The entities are classes, which
-  TanStack Query's default structural sharing does not look into, and every
-  `Date` in one is a new object, so without it every refetch hands every
-  reader a new object per row. A query hook that returns entities passes
-  `structuralSharing: shareEntities` (from `@flama/frontend-core/react`); a
+- **A generic React hook has one implementation, in `@flama/react-hooks`.**
+  `useControlled` (the `value` / `defaultValue` / `onChange` triple),
+  `useDebouncedValue`, `useDebouncedCallback` and `useNow` live in
+  `packages/frontend/react-hooks` and nowhere else: both design systems, the
+  kits and the apps import that package by name, and the design systems do not
+  re-export it. It sits below the design systems because they do not depend
+  on the kernel, and it imports React alone (`pnpm arch`). A hook that touches
+  the DOM or React Native stays in its design system's `hooks/`; one that knows
+  the product or a query belongs in a product package or a feature's `hooks/`.
+  Before writing a timer, a controlled/uncontrolled pair or a latest-ref,
+  check `@flama/react-hooks`; never copy one of its hooks into a package.
+- **A clock is an input, never a read in render, and a list has one.**
+  `Date.now()` or `new Date()` inside render — including a helper's
+  `now = new Date()` default, like `formatRelativeTime`'s — is cached by the
+  compiler on the inputs it can see, so an age stops moving. Call
+  `useNow(interval)` once, in the component that maps over the rows, and hand
+  `now` to each row as a prop: `SessionList` owns the one clock for every
+  row's "last seen", and `SessionRow` takes `now` and stays pure. A timer per
+  row is fifty timers for fifty rows. A clock only one thing reads — a
+  one-second countdown — is a leaf of its own that calls `useNow` and renders
+  just that string.
+- **An entity query goes through `useEntityQuery`.** The entities are classes,
+  which TanStack Query's default structural sharing does not look into, and
+  every `Date` in one is a new object, so a plain `useQuery` hands every reader
+  a new object per row on every refetch. `useEntityQuery` (from
+  `@flama/frontend-core/react`, options typed `EntityQueryOptions<T>`) is
+  `useQuery` with `structuralSharing: shareEntities` fixed, so there is nothing
+  to remember per hook. A query whose data is not entities keeps `useQuery`. A
   reader that needs one field of a list narrows it with `select`.
 
 ## Routing

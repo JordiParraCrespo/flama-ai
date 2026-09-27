@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef } from 'react';
  * The outside system this synchronises with is the timer: a pending `setTimeout`
  * outlives the render that scheduled it, so unmounting has to cancel it or a
  * settled search fires into a component that is gone. That is the whole reason
- * this lives in `hooks/` rather than inline in the field.
+ * this is a hook rather than a `setTimeout` inline in the field.
  *
  * `useCallback` and the ref are the exception the rule allows: the returned
  * function is handed to an input's `onChange`, and a new identity every render
@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef } from 'react';
  * problem the debounce exists to solve.
  *
  * `cancelKey` drops a pending call whenever it changes: pass something that
- * says the work queued so far is stale (the web kit's `DataTableSearch` passes
+ * says the work queued so far is stale (`@flama/frontend-web`'s `DataTableSearch` passes
  * a revision it bumps when the URL changes under the field, and never for the
  * echo of its own commit). When the settled
  * value is read during render rather than handed up, `useDebouncedValue` is

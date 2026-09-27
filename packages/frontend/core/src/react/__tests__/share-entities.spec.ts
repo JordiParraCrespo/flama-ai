@@ -41,6 +41,16 @@ describe('shareEntities', () => {
     expect(shared[2]).toBe(previous[2]);
   });
 
+  it('takes a changed entity whole, sharing none of its fields', () => {
+    const previous = [row('a')];
+    const next = [row('a', 'renamed')];
+    const shared = shareEntities(previous, next);
+
+    expect(shared[0]).toBe(next[0]);
+    expect(shared[0]?.checkouts).toBe(next[0]?.checkouts);
+    expect(shared[0]?.checkouts).not.toBe(previous[0]?.checkouts);
+  });
+
   it('sees a change nested in an entity', () => {
     const previous = [row('a')];
     const shared = shareEntities(previous, [row('a', 'a', 'develop')]);
