@@ -2,16 +2,18 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { AdminCreateUserRequest } from '../../../../common/models/AdminCreateUserRequest';
-import type { AdminSessionResponseDto } from '../../../../common/models/AdminSessionResponseDto';
-import type { AdminSuccessResponseDto } from '../../../../common/models/AdminSuccessResponseDto';
-import type { AdminUpdateUserRequest } from '../../../../common/models/AdminUpdateUserRequest';
-import type { AdminUserListResponseDto } from '../../../../common/models/AdminUserListResponseDto';
-import type { AdminUserResponseDto } from '../../../../common/models/AdminUserResponseDto';
-import type { BanUserRequest } from '../../../../common/models/BanUserRequest';
-import type { RevokeSessionRequest } from '../../../../common/models/RevokeSessionRequest';
-import type { SetUserPasswordRequest } from '../../../../common/models/SetUserPasswordRequest';
-import type { SetUserRoleRequest } from '../../../../common/models/SetUserRoleRequest';
+import type {
+    AdminCreateUserRequest,
+    AdminSessionResponseDto,
+    AdminSuccessResponseDto,
+    AdminUpdateUserRequest,
+    AdminUserListResponseDto,
+    AdminUserResponseDto,
+    BanUserRequest,
+    RevokeSessionRequest,
+    SetUserPasswordRequest,
+    SetUserRoleRequest,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

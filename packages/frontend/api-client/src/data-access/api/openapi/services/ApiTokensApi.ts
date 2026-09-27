@@ -2,11 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ApiTokenResponseDto } from '../../../../common/models/ApiTokenResponseDto';
-import type { CreateApiTokenRequest } from '../../../../common/models/CreateApiTokenRequest';
-import type { CreatedApiTokenResponseDto } from '../../../../common/models/CreatedApiTokenResponseDto';
-import type { CurrentCredentialResponseDto } from '../../../../common/models/CurrentCredentialResponseDto';
-import type { PermissionCatalogResponseDto } from '../../../../common/models/PermissionCatalogResponseDto';
+import type {
+    ApiTokenResponseDto,
+    CreateApiTokenRequest,
+    CreatedApiTokenResponseDto,
+    CurrentCredentialResponseDto,
+    PermissionCatalogResponseDto,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

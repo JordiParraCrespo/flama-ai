@@ -20,21 +20,17 @@ and entity mapping stay in one place.
 
 Regenerate after any change to an API endpoint or its Swagger decorators. The
 legacy class client under `src/data-access/` remains until call sites finish
-moving to the SDK; nothing regenerates its services. Its models in
-`src/common/models/` are one-line re-exports of the hey-api types, written by
-the post-processing step (`scripts/openapi-postprocess.mjs`), so each DTO has
-one definition and it follows the API: a plugin that adds a scope or a
-capability reaches them through its `regenerate` step, without anyone editing
-this package. Every DTO the API describes has a file there, including those of
-endpoints the retired generator never covered, and is exported by name from
-the package root.
+moving to the SDK; nothing regenerates its services, and they import their
+DTOs from `src/generated/types.gen.ts`. The post-processing step
+(`scripts/openapi-postprocess.mjs`) writes `src/index.ts`, which exports every
+DTO the API describes by name, so a plugin that adds an endpoint reaches
+consumers through its `regenerate` step without anyone editing this package.
 
 ## What's inside
 
 | Export path                  | Contents                                   |
 | ---------------------------- | ------------------------------------------ |
-| `@flama/api-client`          | Client entry point                         |
-| `@flama/api-client/models`   | Request/response models (re-exported DTOs) |
+| `@flama/api-client`          | Client entry point and every generated DTO |
 | `@flama/api-client/services` | Generated per-tag service classes (`*Api`) |
 
 ## One runtime dependency — by design

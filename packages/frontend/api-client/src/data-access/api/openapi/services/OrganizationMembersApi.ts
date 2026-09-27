@@ -1,6 +1,8 @@
-import type { AddMemberRequest } from '../../../../common/models/AddMemberRequest';
-import type { MemberResponseDto } from '../../../../common/models/MemberResponseDto';
-import type { UpdateMemberRoleRequest } from '../../../../common/models/UpdateMemberRoleRequest';
+import type {
+    AddMemberRequest,
+    MemberResponseDto,
+    UpdateMemberRoleRequest,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
