@@ -55,14 +55,14 @@ export class CredentialThrottlerGuard extends ThrottlerGuard {
    * Answer a blocked request with the catalog error instead of Nest's codeless
    * `ThrottlerException`. The base guard has already set `Retry-After` by the
    * time it calls this; the same number goes in `retryAfter` for clients that
-   * read the body rather than the headers.
+   * read the body rather than the headers. There is no `detail`: the wait is
+   * the only thing that varies, and those two already carry it.
    */
   protected async throwThrottlingException(
     _context: ExecutionContext,
     limit: ThrottlerLimitDetail,
   ): Promise<void> {
     throw new AppError(ThrottlingErrors.TOO_MANY_REQUESTS, {
-      detail: `Rate limit reached; retry in ${limit.timeToBlockExpire}s`,
       extensions: { retryAfter: limit.timeToBlockExpire },
     });
   }

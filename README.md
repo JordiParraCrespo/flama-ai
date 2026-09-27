@@ -151,7 +151,7 @@ pnpm check                # Biome check + fix
 pnpm ci:local             # Pull request CI's checks, locally, over what this branch affects
 pnpm docker:dev           # Start dev infrastructure
 pnpm docker:dev:down      # Stop dev infrastructure
-pnpm docker:prod          # Start production stack (reads the root .env)
+pnpm docker:prod          # Start production stack (requires the root .env and BETTER_AUTH_SECRET)
 pnpm docker:prod:down     # Stop production stack, keeping its volumes
 pnpm changeset            # Create a changeset
 pnpm generate:api-client  # Regenerate API client from Swagger

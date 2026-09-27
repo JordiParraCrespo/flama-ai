@@ -1,7 +1,7 @@
 import { AppError } from '@flama/backend-core';
 import { canAccess } from '@flama/shared';
+import type { AbilityHttpRequest } from '../../auth/application/ability.port';
 import { AuthErrors } from '../../auth/domain/auth.errors';
-import type { AbilityRequest } from '../../roles/application/ability.factory';
 import type { UserEntity } from '../domain/user.entity';
 
 /**
@@ -22,7 +22,7 @@ import type { UserEntity } from '../domain/user.entity';
  * deliberately refuses to hand out.
  */
 export function assertCanAccessUser(
-  request: AbilityRequest,
+  request: Pick<AbilityHttpRequest, 'ability'>,
   action: 'read' | 'update' | 'delete',
   user: UserEntity,
 ): void {

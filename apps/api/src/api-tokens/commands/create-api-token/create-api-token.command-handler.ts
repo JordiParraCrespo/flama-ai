@@ -2,7 +2,8 @@ import { AppError } from '@flama/backend-core';
 import { ungrantableScopes } from '@flama/shared';
 import { Inject, Optional } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { AbilityFactory } from '../../../roles/application/ability.factory';
+import type { AbilityPort } from '../../../auth/application/ability.port';
+import { ABILITY } from '../../../auth/auth.di-tokens';
 import { API_TOKEN_REPOSITORY, ORGANIZATION_MEMBERSHIP_READER } from '../../api-tokens.di-tokens';
 import type { ApiTokenRepositoryPort } from '../../database/api-token.repository.port';
 import type { OrganizationMembershipReaderPort } from '../../database/organization-membership.repository.port';
@@ -44,11 +45,12 @@ export class CreateApiTokenCommandHandler
     @Optional()
     @Inject(ORGANIZATION_MEMBERSHIP_READER)
     private readonly memberships: OrganizationMembershipReaderPort | undefined,
-    private readonly abilityFactory: AbilityFactory,
+    @Inject(ABILITY)
+    private readonly abilities: AbilityPort,
   ) {}
 
   async execute(command: CreateApiTokenCommand): Promise<CreateApiTokenResult> {
-    const ability = await this.abilityFactory.createForUser(
+    const ability = await this.abilities.createForUser(
       { id: command.actor.id, role: command.actor.role },
       { activeOrganizationId: command.actor.activeOrganizationId ?? null },
     );
