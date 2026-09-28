@@ -128,7 +128,7 @@ second implementation of it.
 - **Mobile**: Expo, NativeWind + rn-primitives
 - **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
 - **Authorization**: Database-backed RBAC — roles and permissions managed through the API, enforced with CASL
-- **Scoped credentials**: one shared scope catalog — a credential's effective access is the intersection of its scopes and the user's roles; API tokens are the `api-tokens` plugin
+- **Scoped credentials**: one shared scope catalog — a credential's effective access is the intersection of its scopes and the user's roles
 - **Validation**: Zod
 - **State**: Zustand + TanStack Query
 - **DI**: InversifyJS (frontend), NestJS (backend)

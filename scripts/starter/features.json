@@ -86,13 +86,6 @@
             }
           },
           "needs": "packages/frontend/consumer"
-        },
-        {
-          "file": "scripts/starter/features.json",
-          "path": ["features", "api-tokens", "paths"],
-          "remove": ["apps/web/src/features/organizations/sections/token-organizations-field.tsx"],
-          "at": [3],
-          "needs": "api-tokens"
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]

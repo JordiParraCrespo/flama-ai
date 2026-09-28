@@ -7,4 +7,4 @@
 "@flama/translations": minor
 ---
 
-Personal API tokens (`/v1/tokens`, `/v1/me/credential`, the settings screen, the `tokens` scope, the `api_token_creation` flag) leave the starter for the `api-tokens` plugin. The API keeps sessions, the scope machinery and `SCOPED_CREDENTIAL`, the port a scoped credential binds; `@flama/shared` adds `flagCatalog` and a `./feature-flags/testing` fixture catalog.
+Personal API tokens leave the starter; the API keeps the scope machinery behind a `SCOPED_CREDENTIAL` port, and `@flama/shared` derives its flag exports from whatever catalog it declares, now none.

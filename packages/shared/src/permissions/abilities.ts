@@ -254,9 +254,6 @@ export function defineAbilitiesFromPermissions(
   return build();
 }
 
-// flama:begin api-tokens
-// flama:end api-tokens
-
 /** Placeholder for the caller's active organization (see {@link AbilityContext}). */
 // biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
 const ACTIVE_ORGANIZATION_ID = '${activeOrganizationId}';

@@ -10,12 +10,15 @@ import { GeneralSettingsSection } from '@/features/organizations/sections/genera
 // flama:end organizations
 import { SecuritySection } from '@/features/profile/sections/security';
 
-/** The sub-nav's sections, in the design's order. */
+/**
+ * The sub-nav's sections, in the design's order, each with the pane it opens:
+ * a module that adds a pane adds its row here and nothing else.
+ */
 const SECTIONS = [
   // flama:begin organizations
-  GENERAL_SETTINGS_SECTION,
+  { ...GENERAL_SETTINGS_SECTION, Pane: GeneralSettingsSection },
   // flama:end organizations
-  { key: 'security', icon: ShieldCheck },
+  { key: 'security', icon: ShieldCheck, Pane: SecuritySection },
   // flama:begin api-tokens
   // flama:end api-tokens
 ] as const;
@@ -51,6 +54,7 @@ export const Route = createFileRoute('/_authenticated/settings/')({
 function SettingsPage() {
   const { t } = useTranslation();
   const { section = SECTIONS[0].key } = Route.useSearch();
+  const { Pane } = SECTIONS.find((entry) => entry.key === section) ?? SECTIONS[0];
   const navigate = useNavigate({ from: Route.fullPath });
 
   // Replaces the search rather than merging into it, so a table's own state
@@ -67,12 +71,7 @@ function SettingsPage() {
         active={section}
         onSelect={go}
       >
-        {/* flama:begin organizations */}
-        {section === 'general' && <GeneralSettingsSection />}
-        {/* flama:end organizations */}
-        {section === 'security' && <SecuritySection />}
-        {/* flama:begin api-tokens */}
-        {/* flama:end api-tokens */}
+        <Pane />
       </SectionNav>
     </>
   );

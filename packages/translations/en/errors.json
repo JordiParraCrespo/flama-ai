@@ -7,7 +7,7 @@
     "AUTH_001": "Please sign in to continue.",
     "AUTH_002": "You do not have permission to do that.",
     "USER_001": "That user could not be found.",
-    "TOKEN_003": "That API token is invalid or has expired.",
+    "TOKEN_003": "That credential is invalid or has expired.",
     "TOKEN_005": "This token is missing a permission needed for that action.",
     "TOKEN_006": "That action cannot be performed with an API token.",
     "TOKEN_007": "That token is not scoped to this organization.",

@@ -36,7 +36,7 @@ export const AuthErrors = {
 export const CredentialErrors = {
   INVALID_CREDENTIAL: {
     code: 'TOKEN_003',
-    message: 'Invalid or expired API token',
+    message: 'Invalid or expired credential',
     httpStatus: 401,
   },
   INSUFFICIENT_SCOPE: {

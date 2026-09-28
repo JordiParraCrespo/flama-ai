@@ -46,7 +46,7 @@
       "AUTH_001": "Inicia sesión para continuar.",
       "AUTH_002": "No tienes permiso para hacer eso.",
       "USER_001": "No se ha encontrado ese usuario.",
-      "TOKEN_003": "Ese token de API no es válido o ha caducado.",
+      "TOKEN_003": "Esa credencial no es válida o ha caducado.",
       "TOKEN_005": "A este token le falta un permiso necesario para esa acción.",
       "TOKEN_006": "Esa acción no puede realizarse con un token de API.",
       "TOKEN_007": "Ese token no tiene alcance sobre esta organización.",

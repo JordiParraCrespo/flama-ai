@@ -39,8 +39,7 @@ level. Edit implies Read.
 | Feature flags       | `flags:read` `flags:write`             | Flag targeting, kill switches and segments               |
 
 The catalog is defined once, in `packages/shared/src/scopes/catalog.ts`, and is
-consumed by the API guard and by whatever grants scopes. The groups above are
-the starter's own. A plugin that adds a resource owns its row in the catalog
+consumed by the API guard. The groups above are the starter's own. A plugin that adds a resource owns its row in the catalog
 and every surface that renders it — its copy, its client, its routes.
 
 ## Resource scoping
@@ -84,8 +83,7 @@ list() {}
 
 The starter ships the machinery and no scoped credential of its own: until one
 is bound to `SCOPED_CREDENTIAL` (`apps/api/src/auth`), a bearer credential is a
-session token or nothing. `pnpm plugin:add api-tokens` binds personal access
-tokens, and the `mcp` plugin adds OAuth grants for MCP clients.
+session token or nothing.
 
 ## Error codes
 

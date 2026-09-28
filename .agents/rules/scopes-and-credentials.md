@@ -77,8 +77,7 @@ identity or data already served to anonymous callers (in the starter, the
 The starter accepts sessions only. A scoped credential is a module that binds
 `SCOPED_CREDENTIAL` (`ScopedCredentialPort` in `apps/api/src/auth`): the
 resolver asks it whether it recognises a bearer secret, and for the scope
-context the secret grants. `pnpm plugin:add api-tokens` is the one Flama
-offers; whatever implements the port holds to these:
+context the secret grants. Whatever implements the port holds to these:
 
 - A secret is **only** ever stored as a digest. Never log a secret, never put
   one in a cache key, never add an endpoint that returns one after creation.
