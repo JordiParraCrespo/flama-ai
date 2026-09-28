@@ -204,7 +204,7 @@ export function slotsBefore(manifest) {
  */
 export function placedSlots(manifest, before) {
   const placed = {};
-  for (const file of blockFiles(manifest)) {
+  for (const file of blockFiles(manifest).sort()) {
     const now = grammar(() => slotsOf(file, readText(file), manifest.id));
     const added = [...now].filter((slot) => !before.get(file)?.has(slot)).sort();
     if (added.length) placed[file] = added;
@@ -401,14 +401,17 @@ export function replaySnapshots(manifest, known, dryRun) {
     // The project's copy holds this plugin's emptied fences where a prune left
     // them — unless it was pruned before prunes kept them, in which case the
     // blocks went whole and the base has to say so too.
-    // The rest went as its entry declares: the ones a slot put in place, whole,
-    // which in the starter's copy are the ones that sit on a slot.
+    // The rest went as its entry declares: the ones a slot put in place, whole.
+    // A plugin that carries no declaration is read from the starter's copy,
+    // where a block on a slot is one a slot put there.
     const whole = !grammar(() => markerIds(snapshot.file, content)).has(manifest.id);
-    const slots = new Map([[manifest.id, grammar(() => slotsOf(snapshot.file, ours, manifest.id))]]);
+    const declared = manifest.feature.slots
+      ? new Set(manifest.feature.slots[snapshot.file] ?? [])
+      : grammar(() => slotsOf(snapshot.file, ours, manifest.id));
+    const slots = new Map([[manifest.id, declared]]);
     const base =
-      grammar(() =>
-        dropBlocks(snapshot.file, ours, new Set([manifest.id]), { whole, slots }),
-      ) ?? ours;
+      grammar(() => dropBlocks(snapshot.file, ours, new Set([manifest.id]), { whole, slots })) ??
+      ours;
     const merged = mergeThreeWay(snapshot.file, content, base, ours);
     console.log(`  blocks ${snapshot.file} (from the starter's copy)`);
     writeText(snapshot.file, merged, dryRun);

@@ -47,10 +47,11 @@
  *     "feature": {
  *       "title", "summary", "identifiers", "paths",
  *       "slots":    { "<file>": ["<anchor>"] },
- *       //   Written by the install, not the plugin: the anchors op 1 put a
- *       //   block of this plugin on. Its removal takes those out whole and
- *       //   leaves every other fence as the hole a prune leaves. A starter
- *       //   feature declares its own the same way.
+ *       //   The anchors a block of this feature sits on. The install records
+ *       //   the ones it put a block on, and the removal takes those out whole
+ *       //   and leaves every other fence as the hole a prune leaves. A
+ *       //   feature the starter ships carries the starter's declaration,
+ *       //   which says what its prune took whole where a snapshot lands.
  *       "requires": ["<feature id>"],
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],

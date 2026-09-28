@@ -503,6 +503,13 @@ function dropFromManifest(features, shared, deleted, dryRun) {
       if (next === null) fail(`features.json: "${id}" has no path "${path}" to drop`);
       text = next.text;
     }
+    // And the slots it declares in a file that went with them.
+    for (const file of Object.keys(feature.slots ?? {})) {
+      if (!inside(file)) continue;
+      const next = deleteJsonEntry(text, ['features', id, 'slots'], file);
+      if (next === null) fail(`features.json: "${id}" declares no slots in "${file}" to drop`);
+      text = next;
+    }
   }
 
   // Whatever shared paths remain, the departed are no longer among their

@@ -359,6 +359,43 @@ test('removing the plugin returns the project to its exact bytes', () => {
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
 });
 
+test('pruning a feature takes the slots another declares in the files that went with it', () => {
+  const project = fixture();
+  // A slot inside alpha's tree, which beta fills.
+  writeFileSync(join(project, 'alpha', 'conf.txt'), '# flama:plugins alpha-slot\n');
+  execFileSync('git', ['-C', project, 'add', '-A']);
+  execFileSync('git', [
+    '-C',
+    project,
+    '-c',
+    'user.name=t',
+    '-c',
+    'user.email=t@t',
+    'commit',
+    '-qm',
+    'slot',
+  ]);
+  const manifest = {
+    ...BETA,
+    blocks: [
+      ...BETA.blocks,
+      { file: 'alpha/conf.txt', anchor: 'alpha-slot', source: 'blocks/own.txt' },
+    ],
+  };
+  assert.equal(install(project, [], manifest).result.code, 0);
+  const catalog = join(project, 'scripts/starter/features.json');
+  assert.deepEqual(
+    JSON.parse(readFileSync(catalog, 'utf8')).features.beta.slots['alpha/conf.txt'],
+    ['alpha-slot'],
+  );
+
+  const prune = join(project, 'scripts', 'starter', 'prune.mjs');
+  execFileSync('node', [prune, '--without', 'alpha', '--no-install'], { env: FIXTURE_ENV });
+  const slots = JSON.parse(readFileSync(catalog, 'utf8')).features.beta.slots;
+  assert.deepEqual(Object.keys(slots), ['config.txt', 'slots.txt']);
+  execFileSync('node', [prune, '--check'], { env: FIXTURE_ENV });
+});
+
 test('a feature that shapes generated files says how to rebuild them, both ways', () => {
   // The OpenAPI document and the client carry no markers, so neither the
   // install nor the removal edits them; what they do is name the step. The
