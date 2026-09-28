@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ORGANIZATION_MEMBERSHIP_READER } from '../api-tokens/api-tokens.di-tokens';
+import { ORGANIZATION_MEMBERSHIP } from '../auth/auth.di-tokens';
 import { Session } from '../auth/database/session.orm-entity';
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
@@ -53,8 +53,8 @@ import { WorkspacesService } from './workspaces.service';
     OrganizationsService,
     InvitationsService,
     WorkspacesService,
-    { provide: ORGANIZATION_MEMBERSHIP_READER, useClass: OrganizationMembershipRepository },
+    { provide: ORGANIZATION_MEMBERSHIP, useClass: OrganizationMembershipRepository },
   ],
-  exports: [ORGANIZATION_MEMBERSHIP_READER],
+  exports: [ORGANIZATION_MEMBERSHIP],
 })
 export class OrganizationsModule {}

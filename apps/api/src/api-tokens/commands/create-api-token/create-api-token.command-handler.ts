@@ -3,10 +3,10 @@ import { ungrantableScopes } from '@flama/shared';
 import { Inject, Optional } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { AbilityPort } from '../../../auth/application/ability.port';
-import { ABILITY } from '../../../auth/auth.di-tokens';
-import { API_TOKEN_REPOSITORY, ORGANIZATION_MEMBERSHIP_READER } from '../../api-tokens.di-tokens';
+import type { OrganizationMembershipPort } from '../../../auth/application/organization-membership.port';
+import { ABILITY, ORGANIZATION_MEMBERSHIP } from '../../../auth/auth.di-tokens';
+import { API_TOKEN_REPOSITORY } from '../../api-tokens.di-tokens';
 import type { ApiTokenRepositoryPort } from '../../database/api-token.repository.port';
-import type { OrganizationMembershipReaderPort } from '../../database/organization-membership.repository.port';
 import { ApiTokenEntity } from '../../domain/api-token.entity';
 import { ApiTokenErrors } from '../../domain/api-token.errors';
 import { CreateApiTokenCommand } from './create-api-token.command';
@@ -43,8 +43,8 @@ export class CreateApiTokenCommandHandler
     // Bound by the organizations module. Without it nobody belongs to any
     // organization, so a token restricted to one is refused.
     @Optional()
-    @Inject(ORGANIZATION_MEMBERSHIP_READER)
-    private readonly memberships: OrganizationMembershipReaderPort | undefined,
+    @Inject(ORGANIZATION_MEMBERSHIP)
+    private readonly memberships: OrganizationMembershipPort | undefined,
     @Inject(ABILITY)
     private readonly abilities: AbilityPort,
   ) {}

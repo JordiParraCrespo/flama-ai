@@ -1,8 +1,8 @@
 import { defineAbilitiesFromPermissions } from '@flama/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { OrganizationMembershipPort } from '../../../../auth/application/organization-membership.port';
 import type { AbilityFactory } from '../../../../roles/application/ability.factory';
 import type { ApiTokenRepositoryPort } from '../../../database/api-token.repository.port';
-import type { OrganizationMembershipReaderPort } from '../../../database/organization-membership.repository.port';
 import type { ApiTokenEntity } from '../../../domain/api-token.entity';
 import { CreateApiTokenCommand } from '../create-api-token.command';
 import { CreateApiTokenCommandHandler } from '../create-api-token.command-handler';
@@ -13,7 +13,7 @@ const READER_PERMISSIONS = [{ action: 'read', subject: 'User' }];
 describe('CreateApiTokenCommandHandler', () => {
   let service: CreateApiTokenCommandHandler;
   let repo: Pick<ApiTokenRepositoryPort, 'insert' | 'countActiveForUser'>;
-  let memberships: OrganizationMembershipReaderPort;
+  let memberships: OrganizationMembershipPort;
   let abilityFactory: Pick<AbilityFactory, 'createForUser'>;
 
   const useAbility = (permissions: { action: string; subject: string }[]) => {

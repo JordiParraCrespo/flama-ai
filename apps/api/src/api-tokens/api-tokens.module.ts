@@ -1,8 +1,14 @@
+import { AuthzModule as AuthzKernelModule } from '@flama/backend-authz';
 import { Global, Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SCOPED_CREDENTIAL } from '../auth/auth.di-tokens';
+import { UsersModule } from '../users/user.module';
 import { API_TOKEN_REPOSITORY } from './api-tokens.di-tokens';
 import { ApiTokenMapper } from './api-tokens.mapper';
+import { ApiTokenResource } from './api-tokens.resource';
+import { ApiTokenCredentialResolver } from './application/api-token-credential.resolver';
+import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
 import { CreateApiTokenCommandHandler } from './commands/create-api-token/create-api-token.command-handler';
 import { CreateApiTokenHttpController } from './commands/create-api-token/create-api-token.http.controller';
 import { RevokeApiTokenCommandHandler } from './commands/revoke-api-token/revoke-api-token.command-handler';
@@ -38,17 +44,30 @@ const queryHandlers: Provider[] = [
 const repositories: Provider[] = [{ provide: API_TOKEN_REPOSITORY, useClass: ApiTokenRepository }];
 
 /**
- * API tokens module.
+ * API tokens module: the API's scoped credential, bound to the kernel's
+ * `SCOPED_CREDENTIAL`, and the endpoints that mint and revoke one.
  *
  * Marked `@Global` because the auth layer's credential resolver — used by the
- * globally registered `ScopesGuard` — depends on the token repository, and
- * that guard is instantiated outside any feature module's injector.
+ * globally registered `ScopesGuard` — asks that binding, and that guard is
+ * instantiated outside any feature module's injector.
  */
 @Global()
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([ApiTokenOrmEntity])],
+  imports: [
+    CqrsModule,
+    UsersModule,
+    TypeOrmModule.forFeature([ApiTokenOrmEntity]),
+    AuthzKernelModule.forFeature([ApiTokenResource]),
+  ],
   controllers: [...httpControllers],
-  providers: [...commandHandlers, ...queryHandlers, ...repositories, ApiTokenMapper],
-  exports: [API_TOKEN_REPOSITORY, ApiTokenMapper, TypeOrmModule],
+  providers: [
+    ...commandHandlers,
+    ...queryHandlers,
+    ...repositories,
+    ApiTokenMapper,
+    ApiTokenRevokedDomainEventHandler,
+    { provide: SCOPED_CREDENTIAL, useClass: ApiTokenCredentialResolver },
+  ],
+  exports: [SCOPED_CREDENTIAL],
 })
 export class ApiTokensModule {}

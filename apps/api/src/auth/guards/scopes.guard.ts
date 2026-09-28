@@ -2,11 +2,11 @@ import { AppError } from '@flama/backend-core';
 import { isOrganizationAllowed, missingScopes, type Scope } from '@flama/shared';
 import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ApiTokenErrors } from '../../api-tokens/domain/api-token.errors';
 import type { CredentialScopePort } from '../application/credential-scope.port';
 import { CREDENTIAL_SCOPE } from '../auth.di-tokens';
 import { ORGANIZATION_PARAM_KEY } from '../decorators/organization-scoped.decorator';
 import { ALLOW_ANY_SCOPE_KEY, REQUIRE_SCOPES_KEY } from '../decorators/require-scopes.decorator';
+import { CredentialErrors } from '../domain/auth.errors';
 import type { ScopeContext, ScopedRequest } from '../domain/scope-context.types';
 
 /**
@@ -59,7 +59,7 @@ export class ScopesGuard implements CanActivate {
     ]);
 
     if (!required || required.length === 0) {
-      throw new AppError(ApiTokenErrors.ENDPOINT_NOT_TOKEN_ACCESSIBLE);
+      throw new AppError(CredentialErrors.ENDPOINT_NOT_TOKEN_ACCESSIBLE);
     }
 
     const missing = missingScopes(scopeContext.scopes, required);
@@ -67,7 +67,7 @@ export class ScopesGuard implements CanActivate {
       // Which scopes are missing varies per request, so it belongs in the
       // problem's `detail` (and as an extension a client can act on), never in
       // the catalog message that titles the problem type.
-      throw new AppError(ApiTokenErrors.INSUFFICIENT_SCOPE, {
+      throw new AppError(CredentialErrors.INSUFFICIENT_SCOPE, {
         detail: `This credential is missing: ${missing.join(', ')}`,
         extensions: { missingScopes: missing },
       });
@@ -83,7 +83,7 @@ export class ScopesGuard implements CanActivate {
 
     const organizationId = this.organizationIdFor(context, request);
     if (!isOrganizationAllowed(scopeContext.resourceScope, organizationId)) {
-      throw new AppError(ApiTokenErrors.ORGANIZATION_OUT_OF_SCOPE);
+      throw new AppError(CredentialErrors.ORGANIZATION_OUT_OF_SCOPE);
     }
   }
 
