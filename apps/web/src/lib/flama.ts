@@ -1,5 +1,5 @@
 import { consumerModules } from '@flama/frontend-consumer';
-import { FlamaApp } from '@flama/frontend-core';
+import { createFeatureFlagsModule, FlamaApp } from '@flama/frontend-core';
 import { createWebAnalyticsClient, LocalStorageService } from '@flama/frontend-web';
 import { webAuthClient } from './auth-client';
 
@@ -13,9 +13,11 @@ export const app = FlamaApp.create({
   storage: new LocalStorageService(),
   authClient: webAuthClient,
   analytics: createWebAnalyticsClient(),
-  // What the API can target a flag on besides the session: this is the web
-  // client, at this build.
-  featureFlags: { platform: 'web', appVersion: __APP_VERSION__ },
-  // Loading the consumer product's modules is what makes this app that product.
-  modules: consumerModules,
+  modules: [
+    // Loading the consumer product's modules is what makes this app that product.
+    ...consumerModules,
+    // What the API can target a flag on besides the session: this is the web
+    // client, at this build.
+    createFeatureFlagsModule({ platform: 'web', appVersion: __APP_VERSION__ }),
+  ],
 });

@@ -9,11 +9,18 @@ import type {
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { FlamaApp } from '../di/flama-app';
+import { TOKENS } from '../di/tokens';
 import { isFlagEnabled, resolveFlagValue } from '../modules/feature-flags/feature-flags';
+import type { FeatureFlagsService } from '../modules/feature-flags/feature-flags.service';
 import { useFlamaApp } from './context';
 import { useAuthState } from './hooks';
 
 type FlagAudience = 'signed-in' | 'anonymous';
+
+/** The flags service, which the app bound with `createFeatureFlagsModule`. */
+function featureFlagsOf(app: FlamaApp): FeatureFlagsService {
+  return app.container.get<FeatureFlagsService>(TOKENS.FeatureFlagsService);
+}
 
 /**
  * Query key factory for the `featureFlags` feature.
@@ -38,7 +45,7 @@ export const featureFlagKeys = {
 export function featureFlagsQueryOptions(app: FlamaApp, audience: FlagAudience) {
   return {
     queryKey: featureFlagKeys.evaluated(audience),
-    queryFn: (): Promise<ClientFeatureFlags> => app.featureFlags.get(),
+    queryFn: (): Promise<ClientFeatureFlags> => featureFlagsOf(app).get(),
     // Short enough that a kill switch lands within a minute of the next focus,
     // long enough that navigating between screens does not refetch.
     staleTime: 60 * 1000,
@@ -124,7 +131,7 @@ export function useFeatureFlagValue<K extends ClientFeatureFlagKey>(
   // Exposure is analytics — a system outside React — reported once the value
   // shown is the server's, not the pre-load default.
   useEffect(() => {
-    if (isSuccess) app.featureFlags.recordExposure(key, value);
+    if (isSuccess) featureFlagsOf(app).recordExposure(key, value);
   }, [app, key, value, isSuccess]);
 
   return value;

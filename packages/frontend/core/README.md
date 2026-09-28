@@ -25,9 +25,9 @@ query-cache persistence policy, and the contracts the two products meet on.
 - **modules/capabilities** — `CapabilitiesService`, `CapabilitiesRepository`,
   `CapabilitiesModule`, `CapabilitiesErrors`.
 - **modules/feature-flags** — `FeatureFlagsService`, `FeatureFlagsRepository`,
-  `FeatureFlagsModule`, `FeatureFlagsErrors`, `resolveFlagValue`,
-  `isFlagEnabled`, the `FeatureFlagsClientContext` an app passes to
-  `FlamaApp.create({ featureFlags })`.
+  `FeatureFlagsErrors`, `resolveFlagValue`, `isFlagEnabled`, and
+  `createFeatureFlagsModule`, which an app loads into `FlamaApp.create({ modules })`
+  with the `FeatureFlagsClientContext` it reports.
 - **modules/core** — `createCoreModule`, `AppError`, `toAppError`,
   `MapApiError`, `createErrorMessageResolver`, the `IStorageService` port.
 - **modules/user-settings** / **modules/users** — `UserSettingsEntity`,

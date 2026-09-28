@@ -120,9 +120,9 @@ export const app = FlamaApp.create({
 ```
 
 `FlamaApp` binds the kernel (`createCoreModule`, `AnalyticsModule`,
-`AuthModule`, `CapabilitiesModule`, `FeatureFlagsModule`, `UsersModule`,
-`UserSettingsModule`) and
-then whatever `modules` the app passes. `FlamaProvider` puts the app in
+`AuthModule`, `CapabilitiesModule`, `UsersModule`, `UserSettingsModule`) and
+then whatever `modules` the app passes: the product's, and an optional
+kernel module such as `createFeatureFlagsModule(...)`. `FlamaProvider` puts the app in
 context; `useFlamaApp()` reads it. The kernel only knows kernel services, so a
 product resolves its own through a wrapper over the same container:
 `ConsumerApp.for(app)` behind `useConsumerApp()`, `AdminApp.for(app)` behind

@@ -27,7 +27,7 @@ function setup(flags: Record<string, boolean | string> = {}) {
   const store = createAuthStore();
 
   const app = {
-    featureFlags: { get, recordExposure },
+    container: { get: () => ({ get, recordExposure }) },
     auth: { store },
   } as unknown as FlamaApp;
 
