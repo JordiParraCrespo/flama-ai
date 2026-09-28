@@ -40,7 +40,6 @@ flama/
 │   ├── shared/           # Zod schemas, types, CASL permissions
 │   └── translations/     # Shared i18n JSON files
 ├── docker/               # Docker Compose (dev + prod)
-├── helm/                 # Kubernetes Helm charts
 └── .github/              # GitHub Actions CI/CD
 ```
 
@@ -60,7 +59,7 @@ questions. It ends by listing the prose lines that still name what went —
 code is held to the markers, prose is not, because rewording a sentence takes
 judgment — and those lines are yours to reword, so the docs read as if the
 project had always been this shape. When you add a file that mentions an
-optional app (CI, compose, Helm, `.env.example`, a sidebar), wrap the lines in
+optional app (CI, compose, `.env.example`, a sidebar), wrap the lines in
 `# flama:begin <id>` / `# flama:end <id>`; `pnpm starter:check` fails
 otherwise. A block several apps share (`flama:begin web|mobile`) stays until
 the last of them goes, so its lines must hold for each one alone; a line that
@@ -85,9 +84,10 @@ by those fences.
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
 it back; `pnpm plugin:list` names what a plugins repo offers. Most are apps, some
-are a module of the API, and one, `organizations`, the starter also ships: the
-plugin is how a project that pruned it gets it back, and the plugins repo fails
-when it stops reproducing the starter's copy.
+are a module of the API, `helm` is the Kubernetes chart, and one,
+`organizations`, the starter also ships: the plugin is how a project that
+pruned it gets it back, and the plugins repo fails when it stops reproducing
+the starter's copy.
 
 ```bash
 pnpm plugin:list                  # what is on offer, and what is installed
@@ -340,8 +340,7 @@ pnpm changeset          # Create a changeset for versioning
 
 ## Deployment
 
-- **Tier 1 (~€4/mo)**: Hetzner VPS + Docker Compose for API/DB/Redis, free hosting for web/docs
-- **Tier 2 (~€15-35/mo)**: Hetzner K8s + Helm charts (`helm/flama/`)
+- Docker Compose (`docker/`) for the API, Postgres and Redis
 - Docker images built in CI (GitHub Actions), pushed to GHCR
 - Mobile: EAS Build (Expo)
 

@@ -3,7 +3,7 @@
  * Trim the starter down to the apps you are actually going to build.
  *
  * The optional features are the entries of `features.json` (`--list` prints
- * them). Deleting one by hand leaves dead references in CI, compose, Helm and
+ * them). Deleting one by hand leaves dead references in CI, compose and
  * `.env.example` — the mess this script exists to prevent. What the starter
  * does not ship is a plugin: `pnpm plugin:add <id>` installs one, and removing
  * it comes back here.

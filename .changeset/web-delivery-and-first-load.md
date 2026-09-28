@@ -19,7 +19,7 @@ already written against — both keep the theme bootstrap in a separate file
 specifically to avoid an inline-script exception — did not exist. All three are
 now set, with the policy's third-party origins in one substituted
 `CSP_EXTRA_ORIGINS` variable (defaulted in the Dockerfile, overridable per
-deployment through `helm/flama/values.yaml`). Measured on the current build:
+deployment). Measured on the current build:
 1,130KB → 324KB for the entry chunk, 152KB → 24KB for the stylesheet.
 
 On the critical path itself:
