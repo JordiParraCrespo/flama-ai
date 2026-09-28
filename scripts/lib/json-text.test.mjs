@@ -259,6 +259,24 @@ test('a member is counted at the object, not inside its values', () => {
   assert.equal(deleteJsonEntry(last, ['tasks'], 'lint'), text);
 });
 
+test('renderJsonEntry with expand breaks every array, as the formatter does in a package.json', () => {
+  assert.equal(
+    renderJsonEntry('typesVersions', { '*': { testing: ['./dist/testing.d.ts'] } }, 1, {
+      expand: true,
+    }),
+    [
+      '  "typesVersions": {',
+      '    "*": {',
+      '      "testing": [',
+      '        "./dist/testing.d.ts"',
+      '      ]',
+      '    }',
+      '  }',
+    ].join('\n'),
+  );
+  assert.equal(renderJsonEntry('files', [], 1, { expand: true }), '  "files": []');
+});
+
 test('renderJsonEntry breaks an array whose line, key and comma included, would not fit', () => {
   const paths = [
     'apps/mcp/src/tools/organizations.tools.ts',

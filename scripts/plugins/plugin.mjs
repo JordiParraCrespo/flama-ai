@@ -54,9 +54,11 @@
  *       "requires": ["<feature id>"],
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],
- *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }],
+ *       "json":     [{ "file", "path", "remove", "at", "set", "setAt", "expand" }],
  *       //   A key is always declared with its value (`set`), so every edit
  *       //   runs both ways; `starter:check` keeps the value true to the file.
+ *       //   `expand` writes the value back with every array broken, for a
+ *       //   file the formatter lays out that way.
  *       "regenerate": ["generate:api-client", "generate:openapi"]
  *       //   The root scripts that rebuild the generated files this feature
  *       //   shapes — the OpenAPI document and the client — most complete

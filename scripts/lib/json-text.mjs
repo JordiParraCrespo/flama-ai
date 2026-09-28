@@ -370,6 +370,8 @@ const WIDTH = 100;
 /**
  * Render `value` as an entry of an object, in the style these manifests are
  * written in: two-space indentation, and an array on one line while it fits.
+ * `expand` breaks every array, which is what the formatter does to a
+ * `package.json`; a `json` edit that writes into one says so.
  *
  * A plugin declares its manifest entry as an object, not as a blob of text, so
  * it stays readable and diffable — this is what turns that object back into
@@ -378,27 +380,29 @@ const WIDTH = 100;
  * whatever this produces; matching the house style is what stops an installed
  * plugin looking like a foreign body.
  */
-export function renderJsonEntry(key, value, depth = 1) {
+export function renderJsonEntry(key, value, depth = 1, { expand = false } = {}) {
   const prefix = `${'  '.repeat(depth)}${render(key)}: `;
   // The value starts after the key, and a comma may follow it: both count
   // against the line width, as they do for the formatter.
-  return `${prefix}${renderValue(value, depth, prefix.length + 1)}`;
+  return `${prefix}${renderValue(value, depth, prefix.length + 1, expand)}`;
 }
 
 /** `around` is how much of the value's line is not the value itself. */
-function renderValue(value, depth, around = '  '.repeat(depth).length) {
+function renderValue(value, depth, around = '  '.repeat(depth).length, expand = false) {
   const pad = '  '.repeat(depth);
   if (Array.isArray(value)) {
     if (!value.length) return '[]';
     const inline = `[${value.map((item) => renderValue(item, depth + 1)).join(', ')}]`;
-    if (!inline.includes('\n') && around + inline.length <= WIDTH) return inline;
-    const members = value.map((item) => `${pad}  ${renderValue(item, depth + 1)}`);
+    if (!expand && !inline.includes('\n') && around + inline.length <= WIDTH) return inline;
+    const members = value.map(
+      (item) => `${pad}  ${renderValue(item, depth + 1, undefined, expand)}`,
+    );
     return `[\n${members.join(',\n')}\n${pad}]`;
   }
   if (value && typeof value === 'object') {
     const keys = Object.keys(value);
     if (!keys.length) return '{}';
-    const members = keys.map((key) => renderJsonEntry(key, value[key], depth + 1));
+    const members = keys.map((key) => renderJsonEntry(key, value[key], depth + 1, { expand }));
     return `{\n${members.join(',\n')}\n${pad}}`;
   }
   return JSON.stringify(value);

@@ -501,8 +501,11 @@ export function applyJsonEdits(manifest, dryRun) {
         fail(`${edit.file}: cannot put "${value}" back into ${edit.path.join(' → ')}`);
       text = next;
     }
+    // `expand` is the edit's to say: where the formatter breaks every array,
+    // as it does in a `package.json`, the entry goes back the way it found it.
+    const expand = edit.expand === true;
     for (const [index, [key, value]] of Object.entries(edit.set ?? {}).entries()) {
-      const rendered = renderJsonEntry(key, value, edit.path.length + 1);
+      const rendered = renderJsonEntry(key, value, edit.path.length + 1, { expand });
       const next = insertJsonEntry(text, edit.path, rendered, edit.setAt?.[index]);
       if (next === null)
         fail(`${edit.file}: cannot put "${key}" back into ${edit.path.join(' → ')}`);

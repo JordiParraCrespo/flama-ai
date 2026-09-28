@@ -243,6 +243,8 @@ const BETA = {
       // A key of the file itself, as a translation namespace is.
       { file: 'data.json', path: [], set: { beta: { on: true } }, setAt: [1] },
       { file: 'package.json', path: ['scripts'], set: { beta: 'run beta' }, setAt: [0] },
+      // A file the formatter lays out with every array broken says so.
+      { file: 'package.json', path: [], set: { files: ['beta'] }, setAt: [1], expand: true },
     ],
   },
   files: { beta: 'files/beta' },
@@ -313,6 +315,10 @@ test('an install joins neededBy, edits JSON both ways, and widens the shared blo
   assert.deepEqual(
     Object.keys(JSON.parse(readFileSync(join(project, 'package.json'), 'utf8')).scripts),
     ['beta'],
+  );
+  assert.match(
+    readFileSync(join(project, 'package.json'), 'utf8'),
+    /"files": \[\n {4}"beta"\n {2}\]/,
   );
 
   // The co-owned block gained an owner; its body is untouched.
