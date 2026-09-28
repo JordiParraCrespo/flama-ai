@@ -25,10 +25,7 @@ import type { FlagDefinition, FlagValue } from './types';
  *
  * Removing one: delete the entry and every reader the compiler then names.
  */
-export const FEATURE_FLAGS = {
-  // flama:begin api-tokens
-  // flama:end api-tokens
-} as const satisfies Record<string, FlagDefinition>;
+export const FEATURE_FLAGS = {} as const satisfies Record<string, FlagDefinition>;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;
 

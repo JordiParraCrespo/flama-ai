@@ -34,8 +34,6 @@ test('lists every section', async ({ page }) => {
   await expect(nav.getByRole('button', { name: 'General', exact: true })).toBeVisible();
   // flama:end organizations
   await expect(nav.getByRole('button', { name: 'Security', exact: true })).toBeVisible();
-  // flama:begin api-tokens
-  // flama:end api-tokens
 
   await api.dispose();
 });
@@ -83,6 +81,3 @@ test('Security shows this device among the account’s sessions', async ({ page 
 
   await api.dispose();
 });
-
-// flama:begin api-tokens
-// flama:end api-tokens
