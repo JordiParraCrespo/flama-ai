@@ -13,7 +13,7 @@ import { FeatureFlagGuard, REQUIRE_FLAG_KEY } from '../guards/feature-flag.guard
  *
  * ```ts
  * @Post()
- * @RequireFlag('bulk_export')
+ * @RequireFlag('server_rollout')
  * create() {}
  * ```
  *

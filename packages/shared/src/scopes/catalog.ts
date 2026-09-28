@@ -9,8 +9,7 @@ export const SCOPE_ACCESS_LEVELS = ['read', 'write'] as const;
 export type ScopeAccessLevel = (typeof SCOPE_ACCESS_LEVELS)[number];
 
 /**
- * The resources a credential can be scoped to. One entry per permission group
- * shown on the token-creation and OAuth consent screens.
+ * The resources a credential can be scoped to, one per permission group.
  */
 export const SCOPE_RESOURCES = [
   'profile',
@@ -44,10 +43,10 @@ export interface ScopeLevelDefinition {
   description: string;
   /**
    * CASL rules backing this level. A user may only grant the scope if their
-   * own ability satisfies at least one of them — a token can never be minted
-   * with more reach than its creator has. At request time the route's own
+   * own ability satisfies at least one of them — a credential can never be
+   * granted more reach than its owner has. At request time the route's own
    * `@CheckPolicies` rule is still evaluated against the owner's live ability,
-   * so revoking a role immediately narrows every token they issued.
+   * so revoking a role immediately narrows every credential they issued.
    *
    * Empty means the level is not backed by a policy: it governs the caller's
    * own account, which every authenticated principal may access.
@@ -61,17 +60,17 @@ export interface PermissionGroup {
   description: string;
   /**
    * Marks groups that grant account-takeover-adjacent powers (impersonation,
-   * password resets, minting further credentials). Consent and token screens
-   * call these out; nothing in the enforcement path treats them differently.
+   * password resets, minting further credentials), for whatever grants scopes
+   * to call out; nothing in the enforcement path treats them differently.
    */
   sensitive?: boolean;
   levels: Record<ScopeAccessLevel, ScopeLevelDefinition>;
 }
 
 /**
- * The permission catalog — the single source of truth shared by the API guard,
- * the MCP tool registry, the CLI and the web permission picker. Adding a
- * resource here is the only step needed for it to appear on every surface.
+ * The permission catalog — the single source of truth the API guard reads, and
+ * whatever grants scopes reads with it. A resource added here is one every
+ * scoped credential can be granted.
  */
 export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
   {

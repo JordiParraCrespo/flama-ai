@@ -44,7 +44,7 @@ export const CredentialErrors = {
     message: 'This credential is missing a permission required by this endpoint',
     httpStatus: 403,
   },
-  ENDPOINT_NOT_TOKEN_ACCESSIBLE: {
+  ENDPOINT_NOT_CREDENTIAL_ACCESSIBLE: {
     code: 'TOKEN_006',
     message: 'This endpoint cannot be called with a scoped credential',
     httpStatus: 403,

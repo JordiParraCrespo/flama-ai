@@ -59,7 +59,7 @@ export class ScopesGuard implements CanActivate {
     ]);
 
     if (!required || required.length === 0) {
-      throw new AppError(CredentialErrors.ENDPOINT_NOT_TOKEN_ACCESSIBLE);
+      throw new AppError(CredentialErrors.ENDPOINT_NOT_CREDENTIAL_ACCESSIBLE);
     }
 
     const missing = missingScopes(scopeContext.scopes, required);

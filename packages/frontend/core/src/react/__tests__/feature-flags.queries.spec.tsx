@@ -16,7 +16,9 @@ import {
 // The starter declares no flags; the machinery is tested on a catalog of its own.
 vi.mock('@flama/shared/feature-flags/catalog', async (importOriginal) => {
   const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
-  return withTestFlags(await importOriginal<object>());
+  return withTestFlags(
+    await importOriginal<typeof import('@flama/shared/feature-flags/catalog')>(),
+  );
 });
 
 function setup(flags: Record<string, boolean | string> = {}) {

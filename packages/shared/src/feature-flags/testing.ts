@@ -1,4 +1,4 @@
-import { type BooleanFeatureFlagKey, type ClientFeatureFlagKey, flagCatalog } from './catalog';
+import type { BooleanFeatureFlagKey, ClientFeatureFlagKey, flagCatalog } from './catalog';
 import type { FlagDefinition } from './types';
 
 /**
@@ -45,9 +45,14 @@ export const TEST_FLAGS = {
   },
 } as const satisfies Record<string, FlagDefinition>;
 
-/** A module exporting the catalog, with `TEST_FLAGS` in place of its flags. */
-export function withTestFlags<M extends object>(module: M): M {
-  return { ...module, FEATURE_FLAGS: TEST_FLAGS, ...flagCatalog(TEST_FLAGS) };
+/**
+ * The catalog module, with `TEST_FLAGS` in place of its flags. The helpers are
+ * the module's own `flagCatalog` over them, so this file needs nothing of the
+ * catalog but its types — importing it from a mock of that module would wait
+ * on the mock.
+ */
+export function withTestFlags<M extends { flagCatalog: typeof flagCatalog }>(module: M): M {
+  return { ...module, FEATURE_FLAGS: TEST_FLAGS, ...module.flagCatalog(TEST_FLAGS) };
 }
 
 /*
