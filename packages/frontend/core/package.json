@@ -21,14 +21,6 @@
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"
     },
-    "./feature-flags": {
-      "types": "./dist/modules/feature-flags/index.d.ts",
-      "import": "./dist/modules/feature-flags/index.js"
-    },
-    "./feature-flags/react": {
-      "types": "./dist/react/feature-flags.queries.d.ts",
-      "import": "./dist/react/feature-flags.queries.js"
-    },
     "./state": {
       "types": "./dist/modules/auth/auth.state.d.ts",
       "import": "./dist/modules/auth/auth.state.js"

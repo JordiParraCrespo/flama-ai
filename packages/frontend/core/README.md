@@ -24,10 +24,6 @@ query-cache persistence policy, and the contracts the two products meet on.
   `AuthErrors`, `createAuthStore` (also at `./state`), the `IAuthClient` port.
 - **modules/capabilities** — `CapabilitiesService`, `CapabilitiesRepository`,
   `CapabilitiesModule`, `CapabilitiesErrors`.
-- **modules/feature-flags** — `FeatureFlagsService`, `FeatureFlagsRepository`,
-  `FeatureFlagsErrors`, `resolveFlagValue`, `isFlagEnabled`, and
-  `createFeatureFlagsModule`, which an app loads into `FlamaApp.create({ modules })`
-  with the `FeatureFlagsClientContext` it reports.
 - **modules/core** — `createCoreModule`, `AppError`, `toAppError`,
   `MapApiError`, `createErrorMessageResolver`, the `IStorageService` port.
 - **modules/user-settings** / **modules/users** — `UserSettingsEntity`,
@@ -58,10 +54,6 @@ query-cache persistence policy, and the contracts the two products meet on.
 - Settings: `useUserSettings`, `useUpdateUserSettings`, `userSettingsKeys`.
 - Analytics: `useAnalytics`, `useCaptureEvent`, `usePageView`,
   `useCapturePageView`, `useCaptureOnMount`, `analyticsKeys`.
-- Feature flags: `useFeatureFlag`, `useFeatureFlagValue`, `useFeatureFlags`,
-  `featureFlagKeys`, `featureFlagsQueryOptions`. Values come from the API,
-  typed by the catalog in `@flama/shared`; see
-  `.agents/rules/feature-flags.md`.
 - Capabilities: `useDeploymentCapabilities`, `capabilitiesKeys`.
 - Cache policy: `defaultQueryClientOptions`, `createQueryPersistOptions`,
   `shouldDehydrateQuery`, `KERNEL_NON_PERSISTED_FEATURES`, `cacheOwnerKey`,

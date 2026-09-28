@@ -10,11 +10,6 @@ import { Verification } from '../auth/database/verification.orm-entity';
 // flama:begin organizations
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
 // flama:end organizations
-// flama:begin feature-flags
-import { FeatureFlagOrmEntity } from '../feature-flags/database/feature-flag.orm-entity';
-import { FlagChangeOrmEntity } from '../feature-flags/database/flag-change.orm-entity';
-import { FlagSegmentOrmEntity } from '../feature-flags/database/flag-segment.orm-entity';
-// flama:end feature-flags
 // flama:plugins entity-imports-b-n
 // flama:begin organizations
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
@@ -48,11 +43,6 @@ export default new DataSource({
     Session,
     Account,
     Verification,
-    // flama:begin feature-flags
-    FeatureFlagOrmEntity,
-    FlagSegmentOrmEntity,
-    FlagChangeOrmEntity,
-    // flama:end feature-flags
     // flama:plugins entities
     RoleOrmEntity,
     // flama:begin organizations

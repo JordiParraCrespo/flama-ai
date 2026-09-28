@@ -40,9 +40,6 @@ export const ENDPOINT_POLICIES = {
   // flama:end api-tokens
   // flama:begin admin-api
   // flama:end admin-api
-  // flama:begin feature-flags
-  '/feature-flags/admin': [{ action: 'read', subject: 'FeatureFlag' }],
-  // flama:end feature-flags
   // flama:plugins endpoint-policies
 } satisfies Record<string, readonly [EndpointPolicy, ...EndpointPolicy[]]>;
 

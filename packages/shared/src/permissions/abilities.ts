@@ -54,9 +54,6 @@ export const KNOWN_SUBJECTS = [
   // flama:begin api-tokens
   // flama:end api-tokens
   'AuditLog',
-  // flama:begin feature-flags
-  'FeatureFlag',
-  // flama:end feature-flags
   // flama:plugins known-subjects
   'all',
 ] as const;

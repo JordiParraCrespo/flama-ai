@@ -41,9 +41,6 @@ import {
 } from './config';
 // flama:plugins api-config-imports
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
-// flama:begin feature-flags
-import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
-// flama:end feature-flags
 // flama:plugins api-module-imports-d-g
 import { HealthModule } from './health/health.module';
 // flama:begin organizations
@@ -189,9 +186,6 @@ import { UsersModule } from './users/user.module';
     // flama:begin organizations
     OrganizationsModule,
     // flama:end organizations
-    // flama:begin feature-flags
-    FeatureFlagsModule,
-    // flama:end feature-flags
     // flama:plugins api-modules
   ],
   providers: [

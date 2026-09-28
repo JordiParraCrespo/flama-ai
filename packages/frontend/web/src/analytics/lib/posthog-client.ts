@@ -31,9 +31,9 @@ function stripUrlSecrets(result: CaptureResult | null): CaptureResult | null {
  * Because loading is async but the DI container is built synchronously, calls
  * made before the SDK arrives are queued and replayed on load.
  *
- * Feature flags do not come from here — the API evaluates them — so PostHog's
- * own flag loading is switched off: no `/flags` request per page load, and an
- * ad blocker that eats PostHog cannot change what the product shows.
+ * PostHog's own flag loading is switched off: no `/flags` request per page
+ * load, and an ad blocker that eats PostHog cannot change what the product
+ * shows.
  */
 class PostHogAnalyticsClient implements IAnalyticsClient {
   private posthog: PostHog | null = null;

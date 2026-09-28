@@ -44,9 +44,6 @@ const APP_CONFIG_FILES = [
   'auth-client.ts',
   'nav.ts',
   'query.ts',
-  // flama:begin feature-flags
-  'feature-flags.ts',
-  // flama:end feature-flags
   // flama:plugins app-config-files
 ];
 

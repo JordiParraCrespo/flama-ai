@@ -34,7 +34,7 @@ new feature. Before creating anything, answer these:
   in the product package once and each app gets its own UI.
 - **Which module does the UI render?** A feature is named after a module of
   `packages/frontend/core` (`auth`, `users`, `user-settings`, `capabilities`,
-  `analytics`, `feature-flags`) or of the app's product package
+  `analytics`) or of the app's product package
   (`packages/frontend/consumer`: `organizations`, `profile`), or
   is on the app's allowlist (`dashboard`, `public`). Never name it after a
   page (`settings`, `team`, `home`). `ls packages/frontend/*/src/modules`

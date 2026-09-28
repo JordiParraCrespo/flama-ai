@@ -181,8 +181,6 @@ declared in its module's `domain/*.errors.ts`; with the `docs` plugin
 installed it also needs a row in `apps/docs/docs/errors.md`. See
 `nestjs-architecture.md`.
 
-- `feature-flags.md` — the flag catalog, kinds and safe defaults,
-  `useFeatureFlag` / `@RequireFlag`, what is not a flag
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, scoped credentials
 
@@ -191,19 +189,6 @@ installed it also needs a row in `apps/docs/docs/errors.md`. See
 Database-backed dynamic RBAC: roles and permissions live in the `role` table,
 a user holds many, and routes are guarded with `@CheckPolicies`. The full
 guide is `.agents/rules/rbac-roles.md`.
-
-#### Feature flags
-
-Declared in code, targeted in the database, evaluated on the server, read on
-every client from one endpoint. `FEATURE_FLAGS` in
-`packages/shared/src/feature-flags/catalog.ts` is the only place a flag
-exists; `apps/api/src/feature-flags/` holds each deployment's targeting,
-segments and audit trail, evaluates everything in memory and serves the
-caller's values at `GET /v1/feature-flags`; clients read them with
-`useFeatureFlag('key')` from `@flama/frontend-core/react`, and a route gates
-the same capability with `@RequireFlag('key')`. Temporary flags carry an
-expiry that `pnpm check:flags` enforces in CI. The guide is
-`.agents/rules/feature-flags.md`.
 
 ### Scoped credentials
 
@@ -332,7 +317,6 @@ pnpm check              # Biome lint + format
 pnpm ci:local           # The CI suite, locally, over what this branch affects — run before pushing
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
-pnpm check:flags        # Feature flags: none past expiry, none declared but unread
 pnpm check:compiler     # React Compiler bailouts per app; fails on a file outside its baseline
 pnpm docker:dev         # Start Postgres + Redis
 pnpm generate:api-client # Regenerate typed API client (no database needed)

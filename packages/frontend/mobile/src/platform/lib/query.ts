@@ -56,9 +56,9 @@ export function createQueryPersistence(config: QueryPersistConfig = {}) {
  *
  * React Query's focus detection listens for the browser's `visibilitychange`,
  * which React Native does not have — so without this, `refetchOnWindowFocus`
- * never fires on a phone and a query only refreshes when a screen remounts.
- * That matters most for feature flags: a kill switch pulled while the app sat
- * in the background has to land when the user comes back to it.
+ * never fires on a phone and a query only refreshes when a screen remounts:
+ * whatever changed while the app sat in the background has to land when the
+ * user comes back to it.
  */
 function followAppState(): void {
   if (Platform.OS === 'web') return;

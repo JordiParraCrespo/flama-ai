@@ -23,9 +23,6 @@ export const SCOPE_RESOURCES = [
   'workspaces',
   // flama:begin api-tokens
   // flama:end api-tokens
-  // flama:begin feature-flags
-  'flags',
-  // flama:end feature-flags
   // flama:plugins scope-resources
 ] as const;
 export type ScopeResource = (typeof SCOPE_RESOURCES)[number];
@@ -236,28 +233,6 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
   },
   // flama:begin api-tokens
   // flama:end api-tokens
-  // flama:begin feature-flags
-  {
-    resource: 'flags',
-    label: 'Feature flags',
-    description: 'Feature-flag targeting, kill switches and audience segments on this deployment.',
-    sensitive: true,
-    levels: {
-      read: {
-        scope: 'flags:read',
-        label: 'Read',
-        description: 'List flags, their targeting, segments and change history.',
-        policies: [{ action: 'read', subject: 'FeatureFlag' }],
-      },
-      write: {
-        scope: 'flags:write',
-        label: 'Edit',
-        description: 'Change targeting, pull kill switches and edit segments — for every user.',
-        policies: [{ action: 'update', subject: 'FeatureFlag' }],
-      },
-    },
-  },
-  // flama:end feature-flags
   // flama:plugins permission-groups
 ];
 
