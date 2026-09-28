@@ -84,9 +84,10 @@ by those fences.
 Pruning is one direction; **`pnpm plugin:add <id>`** is the other. A plugin is
 something the starter deliberately does not ship, packaged so a project can add
 it back; `pnpm plugin:list` names what a plugins repo offers. Most are apps, some
-are a module of the API, and one, `organizations`, the starter also ships: the
-plugin is how a project that pruned it gets it back, and the plugins repo fails
-when it stops reproducing the starter's copy.
+are a module of the API, `helm` is the Kubernetes chart, and one,
+`organizations`, the starter also ships: the plugin is how a project that
+pruned it gets it back, and the plugins repo fails when it stops reproducing
+the starter's copy.
 
 ```bash
 pnpm plugin:list                  # what is on offer, and what is installed
@@ -339,8 +340,7 @@ pnpm changeset          # Create a changeset for versioning
 
 ## Deployment
 
-- **Tier 1 (~€4/mo)**: Hetzner VPS + Docker Compose for API/DB/Redis, free hosting for web/docs
-- **Tier 2 (~€15-35/mo)**: Hetzner K8s, with the chart `pnpm plugin:add helm` brings
+- Docker Compose (`docker/`) for the API, Postgres and Redis
 - Docker images built in CI (GitHub Actions), pushed to GHCR
 - Mobile: EAS Build (Expo)
 

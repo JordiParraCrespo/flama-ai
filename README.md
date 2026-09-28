@@ -48,7 +48,7 @@ added when a project wants them, with `pnpm plugin:add <id>`.
 | `e2e`     | Playwright suites against the running API and web app                       |
 
 `pnpm plugin:add qa` adds `qa/`, the scenario-driven pack with maturity
-tracking and screenshots.
+tracking and screenshots, and `pnpm plugin:add helm` the Kubernetes chart.
 
 ## Quick start
 
@@ -135,7 +135,7 @@ second implementation of it.
 - **Testing**: Vitest, Testcontainers, Playwright (`e2e`; the `qa` pack is a plugin)
 - **Linting/formatting**: Biome, plus a design-system usage linter (oxlint) for `apps/web` and `apps/mobile`
 - **CI/CD**: GitHub Actions (`.github/workflows/ci.yml`) over the packages a change affects; `pnpm ci:local` runs the same checks before a push
-- **Deployment**: Docker Compose; Kubernetes with the `helm` plugin
+- **Deployment**: Docker Compose
 
 ## Scripts
 

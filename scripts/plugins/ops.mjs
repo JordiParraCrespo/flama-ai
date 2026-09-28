@@ -307,7 +307,8 @@ export function joinShared(manifest, known, dryRun) {
 /** Op 1, for each of the plugin's own blocks. */
 export function insertBlocks(manifest, alreadyTouched, known, dryRun) {
   // A feature can own several blocks in one file, each at its own anchor —
-  // `helm/values.yaml` holds one per app it deploys — so "this file already
+  // the control plane has one in `.env.example` for the API's URLs and one of
+  // its own — so "this file already
   // carries the plugin" only means something about files this run has not
   // written yet.
   const touched = new Set(alreadyTouched);
