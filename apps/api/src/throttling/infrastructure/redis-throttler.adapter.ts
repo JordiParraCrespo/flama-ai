@@ -16,7 +16,7 @@ type ThrottlerStorageRecord = Awaited<ReturnType<ThrottlerStorage['increment']>>
  * Rate-limit counters in Redis, so the limit means the same thing however many
  * API replicas are running.
  *
- * The default storage is an in-process `Map`. With the Helm chart's replicas
+ * The default storage is an in-process `Map`. With several API replicas
  * that silently multiplies every limit by the replica count — a documented
  * "120 per minute" becomes 360 across three pods, and nobody finds out from
  * reading the decorator. Redis is already a hard dependency here (BullMQ and

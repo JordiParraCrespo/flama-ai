@@ -135,7 +135,7 @@ second implementation of it.
 - **Testing**: Vitest, Testcontainers, Playwright (`e2e`; the `qa` pack is a plugin)
 - **Linting/formatting**: Biome, plus a design-system usage linter (oxlint) for `apps/web` and `apps/mobile`
 - **CI/CD**: GitHub Actions (`.github/workflows/ci.yml`) over the packages a change affects; `pnpm ci:local` runs the same checks before a push
-- **Deployment**: Docker, Helm (K8s)
+- **Deployment**: Docker Compose; Kubernetes with the `helm` plugin
 
 ## Scripts
 

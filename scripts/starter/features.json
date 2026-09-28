@@ -8,7 +8,6 @@
       "paths": [
         "apps/web",
         "e2e/tests/web",
-        "helm/flama/templates/web-deployment.yaml",
         ".agents/skills/shadcn/evals/evals.json",
         ".agents/skills/scaffold-feature/evals"
       ]
@@ -25,21 +24,6 @@
       "identifiers": ["@flama/e2e", "e2e/"],
       "paths": ["e2e"],
       "scripts": ["test:e2e"]
-    },
-    "helm": {
-      "title": "Kubernetes Helm chart",
-      "summary": "helm/ — chart for the Tier 2 (Kubernetes) deployment",
-      "identifiers": ["helm/"],
-      "paths": ["helm"],
-      "json": [
-        {
-          "file": "scripts/starter/features.json",
-          "path": ["features", "web", "paths"],
-          "remove": ["helm/flama/templates/web-deployment.yaml"],
-          "at": [2],
-          "needs": "web"
-        }
-      ]
     },
     "organizations": {
       "title": "Organizations (teams)",
