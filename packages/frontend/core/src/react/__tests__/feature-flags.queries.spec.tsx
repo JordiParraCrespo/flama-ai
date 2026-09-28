@@ -1,3 +1,4 @@
+import { KILL_SWITCH } from '@flama/shared/feature-flags/testing';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
@@ -11,6 +12,12 @@ import {
   useFeatureFlags,
   useFeatureFlagValue,
 } from '../feature-flags.queries';
+
+// The starter declares no flags; the machinery is tested on a catalog of its own.
+vi.mock('@flama/shared/feature-flags/catalog', async (importOriginal) => {
+  const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
+  return withTestFlags(await importOriginal<object>());
+});
 
 function setup(flags: Record<string, boolean | string> = {}) {
   const get = vi.fn().mockResolvedValue({ version: 'v1', flags });
@@ -39,10 +46,10 @@ function setup(flags: Record<string, boolean | string> = {}) {
 
 describe('useFeatureFlag', () => {
   it('reads the catalog default before the answer, then the answer', async () => {
-    const { wrapper } = setup({ api_token_creation: false });
-    const { result } = renderHook(() => useFeatureFlag('api_token_creation'), { wrapper });
+    const { wrapper } = setup({ kill_switch: false });
+    const { result } = renderHook(() => useFeatureFlag(KILL_SWITCH), { wrapper });
 
-    // `api_token_creation` is a kill switch: live until told otherwise.
+    // A kill switch: live until told otherwise.
     expect(result.current).toBe(true);
     await waitFor(() => expect(result.current).toBe(false));
   });
@@ -51,7 +58,7 @@ describe('useFeatureFlag', () => {
     const { wrapper, get } = setup();
     get.mockRejectedValue(new Error('offline'));
     const { result } = renderHook(
-      () => ({ enabled: useFeatureFlag('api_token_creation'), query: useFeatureFlags() }),
+      () => ({ enabled: useFeatureFlag(KILL_SWITCH), query: useFeatureFlags() }),
       { wrapper },
     );
 
@@ -61,11 +68,11 @@ describe('useFeatureFlag', () => {
 
   // Twenty flag reads on a screen must not become twenty requests.
   it('shares one fetch across every read', async () => {
-    const { wrapper, get } = setup({ api_token_creation: true });
+    const { wrapper, get } = setup({ kill_switch: true });
     const { result } = renderHook(
       () => ({
-        a: useFeatureFlag('api_token_creation'),
-        b: useFeatureFlagValue('api_token_creation'),
+        a: useFeatureFlag(KILL_SWITCH),
+        b: useFeatureFlagValue(KILL_SWITCH),
         all: useFeatureFlags(),
       }),
       { wrapper },
@@ -76,28 +83,28 @@ describe('useFeatureFlag', () => {
   });
 
   it('reports the value it served for exposure, once the server has answered', async () => {
-    const { wrapper, recordExposure } = setup({ api_token_creation: false });
-    renderHook(() => useFeatureFlag('api_token_creation'), { wrapper });
+    const { wrapper, recordExposure } = setup({ kill_switch: false });
+    renderHook(() => useFeatureFlag(KILL_SWITCH), { wrapper });
 
-    await waitFor(() => expect(recordExposure).toHaveBeenCalledWith('api_token_creation', false));
-    expect(recordExposure).not.toHaveBeenCalledWith('api_token_creation', true);
+    await waitFor(() => expect(recordExposure).toHaveBeenCalledWith(KILL_SWITCH, false));
+    expect(recordExposure).not.toHaveBeenCalledWith(KILL_SWITCH, true);
   });
 });
 
 describe('sticky reads', () => {
   it('hold the first answer while a live read follows the refetch', async () => {
-    const { wrapper, get, queryClient } = setup({ api_token_creation: true });
+    const { wrapper, get, queryClient } = setup({ kill_switch: true });
     const { result } = renderHook(
       () => ({
-        sticky: useFeatureFlag('api_token_creation', { sticky: true }),
-        live: useFeatureFlag('api_token_creation'),
+        sticky: useFeatureFlag(KILL_SWITCH, { sticky: true }),
+        live: useFeatureFlag(KILL_SWITCH),
         query: useFeatureFlags(),
       }),
       { wrapper },
     );
     await waitFor(() => expect(result.current.query.isSuccess).toBe(true));
 
-    get.mockResolvedValue({ version: 'v2', flags: { api_token_creation: false } });
+    get.mockResolvedValue({ version: 'v2', flags: { kill_switch: false } });
     await act(() => queryClient.invalidateQueries({ queryKey: featureFlagKeys.all }));
 
     await waitFor(() => expect(result.current.live).toBe(false));
@@ -105,13 +112,13 @@ describe('sticky reads', () => {
   });
 
   it('latch afresh when the caller signs in', async () => {
-    const { wrapper, get, store } = setup({ api_token_creation: true });
-    const { result } = renderHook(() => useFeatureFlag('api_token_creation', { sticky: true }), {
+    const { wrapper, get, store } = setup({ kill_switch: true });
+    const { result } = renderHook(() => useFeatureFlag(KILL_SWITCH, { sticky: true }), {
       wrapper,
     });
     await waitFor(() => expect(result.current).toBe(true));
 
-    get.mockResolvedValue({ version: 'v2', flags: { api_token_creation: false } });
+    get.mockResolvedValue({ version: 'v2', flags: { kill_switch: false } });
     act(() => store.setState({ isAuthenticated: true }));
 
     await waitFor(() => expect(result.current).toBe(false));
@@ -121,7 +128,7 @@ describe('sticky reads', () => {
 describe('featureFlagKeys', () => {
   // The login page's anonymous flags must not be what the dashboard renders.
   it('separates a signed-in caller from an anonymous one', async () => {
-    const { wrapper, get, store } = setup({ api_token_creation: true });
+    const { wrapper, get, store } = setup({ kill_switch: true });
     const { result } = renderHook(() => useFeatureFlags(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

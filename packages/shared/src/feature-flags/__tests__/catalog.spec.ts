@@ -1,20 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import {
-  CLIENT_FEATURE_FLAG_KEYS,
-  defaultClientFlagValues,
-  expiredFlags,
-  FEATURE_FLAG_KEYS,
-  FEATURE_FLAGS,
-  getFlagDefinition,
-  isFeatureFlagKey,
-  isValidFlagValue,
-} from '../catalog';
+import { expiredFlags, FEATURE_FLAGS, flagCatalog, isValidFlagValue } from '../catalog';
 import { updateFeatureFlagSchema } from '../schema';
+import { TEST_FLAGS } from '../testing';
 import type { FlagDefinition } from '../types';
 
 describe('the feature-flag catalog', () => {
-  it.each(FEATURE_FLAG_KEYS)('%s is well-formed', (key) => {
-    const definition = getFlagDefinition(key);
+  // The project's flags, whichever it declares, and the ones the tests use.
+  const declared: Record<string, FlagDefinition> = { ...FEATURE_FLAGS, ...TEST_FLAGS };
+
+  it.each(Object.keys(declared))('%s is well-formed', (key) => {
+    const definition = declared[key];
 
     expect(key).toMatch(/^[a-z][a-z0-9_]*$/);
     expect(definition.description.trim()).not.toBe('');
@@ -26,19 +21,22 @@ describe('the feature-flag catalog', () => {
       expect(new Set(definition.variants).size).toBe(definition.variants.length);
     }
   });
+});
 
-  it('lists only client flags as client keys', () => {
-    for (const key of CLIENT_FEATURE_FLAG_KEYS) expect(getFlagDefinition(key).client).toBe(true);
-    expect(Object.keys(defaultClientFlagValues())).toEqual(CLIENT_FEATURE_FLAG_KEYS);
+describe('flagCatalog', () => {
+  const catalog = flagCatalog(TEST_FLAGS);
+
+  it('lists only client flags as client keys, with their defaults', () => {
+    expect(catalog.CLIENT_FEATURE_FLAG_KEYS).toEqual(['kill_switch', 'checkout_copy']);
+    expect(catalog.defaultClientFlagValues()).toEqual({
+      kill_switch: true,
+      checkout_copy: 'control',
+    });
   });
 
   it('recognises its own keys and nothing inherited', () => {
-    expect(isFeatureFlagKey('api_token_creation')).toBe(true);
-    expect(isFeatureFlagKey('toString')).toBe(false);
-  });
-
-  it('keeps the kill switch for token creation live by default', () => {
-    expect(FEATURE_FLAGS.api_token_creation.defaultValue).toBe(true);
+    expect(catalog.isFeatureFlagKey('server_rollout')).toBe(true);
+    expect(catalog.isFeatureFlagKey('toString')).toBe(false);
   });
 });
 

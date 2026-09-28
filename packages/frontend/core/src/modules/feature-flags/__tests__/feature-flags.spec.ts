@@ -1,17 +1,24 @@
-import { describe, expect, it } from 'vitest';
+import { KILL_SWITCH } from '@flama/shared/feature-flags/testing';
+import { describe, expect, it, vi } from 'vitest';
 import { isFlagEnabled, resolveFlagValue } from '../feature-flags';
+
+// The starter declares no flags; the machinery is tested on a catalog of its own.
+vi.mock('@flama/shared/feature-flags/catalog', async (importOriginal) => {
+  const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
+  return withTestFlags(await importOriginal<object>());
+});
 
 describe('resolveFlagValue', () => {
   it('serves what the server said', () => {
-    expect(resolveFlagValue('api_token_creation', { api_token_creation: false })).toBe(false);
+    expect(resolveFlagValue(KILL_SWITCH, { kill_switch: false })).toBe(false);
   });
 
   // Not loaded, unreachable and "this build does not know that value" are one
   // case: the catalog's safe answer.
   it('falls back to the catalog default when the answer is missing or unusable', () => {
-    expect(resolveFlagValue('api_token_creation', undefined)).toBe(true);
-    expect(resolveFlagValue('api_token_creation', {})).toBe(true);
-    expect(resolveFlagValue('api_token_creation', { api_token_creation: 'yes' })).toBe(true);
+    expect(resolveFlagValue(KILL_SWITCH, undefined)).toBe(true);
+    expect(resolveFlagValue(KILL_SWITCH, {})).toBe(true);
+    expect(resolveFlagValue(KILL_SWITCH, { kill_switch: 'yes' })).toBe(true);
   });
 });
 

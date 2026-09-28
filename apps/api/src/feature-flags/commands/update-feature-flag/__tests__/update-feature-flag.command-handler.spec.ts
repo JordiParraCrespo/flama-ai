@@ -8,6 +8,12 @@ import { FlagSegmentEntity } from '../../../domain/flag-segment.entity';
 import { UpdateFeatureFlagCommand } from '../update-feature-flag.command';
 import { UpdateFeatureFlagCommandHandler } from '../update-feature-flag.command-handler';
 
+// The starter declares no flags; the machinery is tested on a catalog of its own.
+vi.mock('@flama/shared', async (importOriginal) => {
+  const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
+  return withTestFlags(await importOriginal<object>());
+});
+
 describe('UpdateFeatureFlagCommandHandler', () => {
   let flags: Pick<FeatureFlagRepositoryPort, 'findOneByKey' | 'save'>;
   let segments: Pick<FlagSegmentRepositoryPort, 'findAll'>;
@@ -38,7 +44,7 @@ describe('UpdateFeatureFlagCommandHandler', () => {
 
   const command = (overrides: Partial<UpdateFeatureFlagCommand> = {}) =>
     new UpdateFeatureFlagCommand({
-      key: 'api_token_creation',
+      key: 'kill_switch',
       enabled: true,
       rules: [
         {
@@ -57,13 +63,13 @@ describe('UpdateFeatureFlagCommandHandler', () => {
     await handler.execute(command());
 
     const saved = vi.mocked(flags.save).mock.calls[0]?.[0] as FeatureFlagEntity;
-    expect(saved.key).toBe('api_token_creation');
+    expect(saved.key).toBe('kill_switch');
     expect(saved.rules).toHaveLength(1);
     expect(saved.domainEvents).toHaveLength(1);
   });
 
   it('updates the existing row, keeping its salt', async () => {
-    const existing = FeatureFlagEntity.createFor('api_token_creation', true);
+    const existing = FeatureFlagEntity.createFor('kill_switch', true);
     vi.mocked(flags.findOneByKey).mockResolvedValue(Some(existing));
 
     await handler.execute(command());

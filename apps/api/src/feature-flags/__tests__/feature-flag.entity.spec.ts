@@ -9,10 +9,10 @@ function eventsOf(entity: { domainEvents: readonly unknown[] }) {
 
 describe('FeatureFlagEntity', () => {
   it('starts configured exactly like no row at all: on, no rules, the default for everyone', () => {
-    const flag = FeatureFlagEntity.createFor('api_token_creation', true);
+    const flag = FeatureFlagEntity.createFor('kill_switch', true);
 
     expect(flag.toConfig()).toMatchObject({
-      key: 'api_token_creation',
+      key: 'kill_switch',
       enabled: true,
       rules: [],
       fallthrough: { value: true },
@@ -22,7 +22,7 @@ describe('FeatureFlagEntity', () => {
   });
 
   it('records who replaced the targeting, why, and the before/after', () => {
-    const flag = FeatureFlagEntity.createFor('api_token_creation', true);
+    const flag = FeatureFlagEntity.createFor('kill_switch', true);
 
     flag.replaceTargeting(
       {
@@ -36,7 +36,7 @@ describe('FeatureFlagEntity', () => {
     const [event] = eventsOf(flag);
     expect(event).toMatchObject({
       subjectType: 'flag',
-      subjectKey: 'api_token_creation',
+      subjectKey: 'kill_switch',
       action: 'targeting_updated',
       actorId: 'admin-1',
       comment: 'staff first',
@@ -47,7 +47,7 @@ describe('FeatureFlagEntity', () => {
   });
 
   it('audits a pulled switch, but not one pulled twice', () => {
-    const flag = FeatureFlagEntity.createFor('api_token_creation', true);
+    const flag = FeatureFlagEntity.createFor('kill_switch', true);
 
     expect(flag.setEnabled(false, { actorId: 'admin-1' })).toBe(true);
     expect(flag.setEnabled(false, { actorId: 'admin-1' })).toBe(false);
@@ -55,7 +55,7 @@ describe('FeatureFlagEntity', () => {
   });
 
   it('lists the segments its rules target, once each', () => {
-    const flag = FeatureFlagEntity.createFor('api_token_creation', true);
+    const flag = FeatureFlagEntity.createFor('kill_switch', true);
     flag.replaceTargeting(
       {
         enabled: true,

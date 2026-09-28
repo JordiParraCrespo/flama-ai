@@ -71,22 +71,43 @@ export type FeatureFlagValueOf<K extends FeatureFlagKey> = Catalog[K] extends {
   ? V
   : boolean;
 
+/**
+ * What the code derives from a catalog — its keys, which of them a client may
+ * read, the lookups and the client defaults — for the catalog it is given.
+ * The exports below are this over {@link FEATURE_FLAGS}; the flag machinery's
+ * own tests hand it `TEST_FLAGS` instead (`./testing`), so they hold whatever
+ * flags a project declares, none included. It returns the exports' names so a
+ * test can spread it over this module.
+ */
+export function flagCatalog<C extends Record<string, FlagDefinition>>(flags: C) {
+  type Key = Extract<keyof C, string>;
+  const keys = Object.keys(flags) as Key[];
+  const clientKeys = keys.filter((key) => flags[key].client);
+  return {
+    FEATURE_FLAG_KEYS: keys,
+    CLIENT_FEATURE_FLAG_KEYS: clientKeys,
+    isFeatureFlagKey: (key: string): key is Key => Object.hasOwn(flags, key),
+    getFlagDefinition: (key: Key): FlagDefinition => flags[key],
+    defaultClientFlagValues: (): Record<Key, FlagValue> =>
+      Object.fromEntries(clientKeys.map((key) => [key, flags[key].defaultValue])) as Record<
+        Key,
+        FlagValue
+      >,
+  };
+}
+
+const catalog = flagCatalog(FEATURE_FLAGS as Record<FeatureFlagKey, FlagDefinition>);
+
 /** Every declared key, in catalog order. */
-export const FEATURE_FLAG_KEYS = Object.keys(FEATURE_FLAGS) as FeatureFlagKey[];
+export const FEATURE_FLAG_KEYS: FeatureFlagKey[] = catalog.FEATURE_FLAG_KEYS;
 
 /** The keys clients may read, in catalog order. */
-export const CLIENT_FEATURE_FLAG_KEYS = FEATURE_FLAG_KEYS.filter(
-  (key) => (FEATURE_FLAGS[key] as FlagDefinition).client,
-) as ClientFeatureFlagKey[];
+export const CLIENT_FEATURE_FLAG_KEYS = catalog.CLIENT_FEATURE_FLAG_KEYS as ClientFeatureFlagKey[];
 
-export function isFeatureFlagKey(key: string): key is FeatureFlagKey {
-  return Object.hasOwn(FEATURE_FLAGS, key);
-}
+export const isFeatureFlagKey: (key: string) => key is FeatureFlagKey = catalog.isFeatureFlagKey;
 
 /** The definition behind a key, widened so callers can branch on `type`. */
-export function getFlagDefinition(key: FeatureFlagKey): FlagDefinition {
-  return FEATURE_FLAGS[key] as FlagDefinition;
-}
+export const getFlagDefinition: (key: FeatureFlagKey) => FlagDefinition = catalog.getFlagDefinition;
 
 /** Whether `value` is one a flag of this definition may take. */
 export function isValidFlagValue(definition: FlagDefinition, value: unknown): value is FlagValue {
@@ -98,11 +119,8 @@ export function isValidFlagValue(definition: FlagDefinition, value: unknown): va
  * The catalog defaults for the client flags — what a client renders before
  * the first response arrives, and what it keeps rendering if it never does.
  */
-export function defaultClientFlagValues(): Record<ClientFeatureFlagKey, FlagValue> {
-  return Object.fromEntries(
-    CLIENT_FEATURE_FLAG_KEYS.map((key) => [key, getFlagDefinition(key).defaultValue]),
-  ) as Record<ClientFeatureFlagKey, FlagValue>;
-}
+export const defaultClientFlagValues: () => Record<ClientFeatureFlagKey, FlagValue> =
+  catalog.defaultClientFlagValues;
 
 /**
  * Flags of a temporary kind whose `expiresAt` is on or before `today`
