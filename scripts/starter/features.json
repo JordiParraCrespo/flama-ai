@@ -10,19 +10,54 @@
         "e2e/tests/web",
         ".agents/skills/shadcn/evals/evals.json",
         ".agents/skills/scaffold-feature/evals"
-      ]
+      ],
+      "slots": {
+        ".agents/hooks/arch-check.sh": ["admin-web"],
+        ".env.example": ["admin-web", "web-env"],
+        ".github/workflows/ci.yml": [
+          "admin-web",
+          "bundle-budgets",
+          "design-lint",
+          "frontend-structure"
+        ],
+        "docker/docker-compose.prod.yml": ["services"],
+        "scripts/check-bundle-size.mjs": ["admin-web"],
+        "scripts/check-frontend-structure.mjs": ["admin-web", "web-kits"],
+        "scripts/check-react-compiler.baseline.mjs": ["compiler-baseline"],
+        "scripts/check-react-compiler.mjs": ["compiler-targets"],
+        "scripts/scaffold-feature.mjs": ["admin-web", "web-templates"]
+      }
     },
     "mobile": {
       "title": "Consumer mobile app",
       "summary": "apps/mobile — Expo app for end users (NativeWind, expo-router)",
       "identifiers": ["apps/mobile", "@flama/mobile"],
-      "paths": ["apps/mobile"]
+      "paths": ["apps/mobile"],
+      "slots": {
+        ".agents/hooks/arch-check.sh": ["admin-web"],
+        ".env.example": ["admin-mobile", "mobile-env"],
+        ".github/workflows/ci.yml": ["design-lint", "frontend-structure"],
+        ".gitignore": ["docs"],
+        "apps/api/src/auth/infrastructure/better-auth.config.ts": [
+          "auth-consts",
+          "auth-imports",
+          "auth-plugins",
+          "trusted-origins"
+        ],
+        "apps/api/src/config/app.config.ts": ["config-env", "config-schema"],
+        "packages/tsconfig/depcruise/frontend-domain.cjs": ["native-modules"],
+        "scripts/check-frontend-structure.mjs": ["admin-mobile", "mobile-kits"],
+        "scripts/scaffold-feature.mjs": ["admin-mobile", "mobile-templates"]
+      }
     },
     "e2e": {
       "title": "End-to-end tests",
       "summary": "e2e/ — Playwright suites against the running API and web app",
       "identifiers": ["@flama/e2e", "e2e/"],
       "paths": ["e2e"],
+      "slots": {
+        "pnpm-workspace.yaml": ["qa"]
+      },
       "scripts": ["test:e2e"]
     },
     "organizations": {
@@ -72,6 +107,9 @@
         "packages/frontend/consumer/src/modules/organizations",
         "packages/frontend/consumer/src/organizations"
       ],
+      "slots": {
+        "apps/api/src/app.module.ts": ["api-modules"]
+      },
       "keeps": {
         "apps/api/src/migrations": "the schema history is one line: later migrations build on these tables, so a project without organizations keeps them, empty"
       },

@@ -194,20 +194,43 @@ function blocksOf(file, content) {
 }
 
 /**
- * Whether a slot put this block where it is: a `flama:plugins` anchor follows
- * it, with nothing between but blank lines, other anchors, and other whole
- * blocks — the stack several plugins leave above one slot.
+ * The slot a block sits on: the name of the `flama:plugins` anchor that
+ * follows it, with nothing between but blank lines, other anchors, and other
+ * whole blocks — the stack several plugins leave above one slot. Null when a
+ * line of the file's own comes first.
  */
-function slotted(lines, block, blocks) {
+function slotOf(lines, block, blocks) {
   const byBegin = new Map(blocks.map((other) => [other.begin, other]));
   for (let i = block.end + 1; i < lines.length; i++) {
-    if (ANCHOR_RE.test(lines[i])) return true;
+    const anchor = ANCHOR_RE.exec(lines[i]);
+    if (anchor) return anchor[2];
     if (!lines[i].trim()) continue;
     const sibling = byBegin.get(i);
-    if (!sibling) return false;
+    if (!sibling) return null;
     i = sibling.end;
   }
-  return false;
+  return null;
+}
+
+/** The slots in `content` a block of `id` sits on, filled or empty. */
+export function slotsOf(file, content, id) {
+  const blocks = blocksOf(file, content);
+  const lines = content.split('\n');
+  return new Set(
+    blocks
+      .filter((block) => block.ids.includes(id))
+      .map((block) => slotOf(lines, block, blocks))
+      .filter(Boolean),
+  );
+}
+
+/** The ids of every block that sits on `slot` in `content`. */
+export function idsOnSlot(file, content, slot) {
+  const blocks = blocksOf(file, content);
+  const lines = content.split('\n');
+  return new Set(
+    blocks.filter((block) => slotOf(lines, block, blocks) === slot).flatMap((block) => block.ids),
+  );
 }
 
 /**
@@ -227,8 +250,15 @@ function slotted(lines, block, blocks) {
  * scope group between `users` and `roles` — and a plugin that brings the
  * feature back merges into that hole, not into a slot every plugin shares.
  * Two plugins filling one list keep a fence apiece between them, so their
- * merges never meet. The exception is a block a slot put there (`slotted`):
- * the slot is its place, and it goes whole, leaving the slot as it was.
+ * merges never meet. The exception is a block a slot put there: the slot is
+ * its place, and it goes whole, leaving the slot as it was.
+ *
+ * Which blocks a slot put there is the feature's to say, never where a block
+ * happens to sit: a hole a prune left can sit right above a filled slot.
+ * `slots` maps each removed id to the anchors in this file it declares a
+ * block on — what the installer records as it puts a block in, and what a
+ * starter feature declares for the blocks it keeps above an anchor. A block
+ * on none of them leaves its fences.
  *
  * Markers survive for the same reason. `plugin:remove` is the pruner, and it
  * finds a plugin's lines by its fences; stripping them would make an installed
@@ -237,17 +267,21 @@ function slotted(lines, block, blocks) {
  * `whole` takes every block out whole, fences and all: what a prune did before
  * it kept them, which a project pruned then still looks like.
  */
-export function dropBlocks(file, content, removed, { whole = false } = {}) {
+export function dropBlocks(file, content, removed, { whole = false, slots = new Map() } = {}) {
   const blocks = blocksOf(file, content);
   if (!blocks.length) return null;
   const lines = content.split('\n');
   const gone = (block) => block.ids.every((id) => removed.has(id));
+  const slotted = (block) => {
+    const slot = slotOf(lines, block, blocks);
+    return Boolean(slot) && block.ids.some((id) => slots.get(id)?.has(slot));
+  };
   const drop = new Set();
   const kept = new Set();
   for (const block of blocks) {
     if (!gone(block) || drop.has(block.begin)) continue;
     for (let i = block.begin; i <= block.end; i++) drop.add(i);
-    if (!whole && !slotted(lines, block, blocks)) {
+    if (!whole && !slotted(block)) {
       kept.add(block.begin);
       kept.add(block.end);
     }

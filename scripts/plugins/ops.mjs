@@ -41,6 +41,7 @@ import {
   hasFilledBlock,
   MarkerError,
   markerIds,
+  slotsOf,
   widenMarker,
 } from '../lib/markers.mjs';
 
@@ -92,7 +93,7 @@ export function projectFeatures() {
  * The manifest's feature entry, in `features.json` key order so an install
  * produces the same file a hand-written entry would.
  */
-export function featureEntry(manifest, landed) {
+export function featureEntry(manifest, landed, slots = {}) {
   const { title, summary, identifiers, paths, keeps, requires, scripts, json, regenerate } =
     manifest.feature;
   return {
@@ -106,6 +107,9 @@ export function featureEntry(manifest, landed) {
     // The paths that actually landed, which is all of them unless a file was
     // skipped for want of the feature whose tree it lives in.
     paths: landed ?? paths,
+    // Where the install put a block in whole, rather than into the fences a
+    // prune left: those are the blocks its removal takes out whole too.
+    slots,
     ...(keeps ? { keeps } : {}),
     ...(requires?.length ? { requires } : {}),
     ...(scripts?.length ? { scripts } : {}),
@@ -128,13 +132,13 @@ export function featureEntry(manifest, landed) {
  * optional and left together — the control plane's domain package belongs to
  * both admin apps and nothing else — and then the plugin carries the entry.
  */
-export function writeFeature(manifest, landed, dryRun) {
+export function writeFeature(manifest, landed, slots, dryRun) {
   console.log(`  edit   ${relative(ROOT, FEATURES_PATH)} (+${manifest.id})`);
   let text = readFileSync(FEATURES_PATH, 'utf8');
   if (JSON.parse(text).features[manifest.id]) {
     fail(`"${manifest.id}" is already a feature of this project — nothing to install`);
   }
-  const entry = featureEntry(manifest, landed);
+  const entry = featureEntry(manifest, landed, slots);
   const inserted = insertJsonEntry(text, ['features'], renderJsonEntry(manifest.id, entry, 2));
   if (inserted === null) fail('features.json: no "features" object to add the entry to');
   text = inserted;
@@ -168,6 +172,46 @@ export function writeFeature(manifest, landed, dryRun) {
   if (!dryRun) writeFileSync(FEATURES_PATH, text);
 }
 
+/** The files the plugin's text ops can write a block into. */
+function blockFiles(manifest) {
+  return [
+    ...new Set(
+      [...(manifest.blocks ?? []), ...(manifest.coOwned ?? []), ...(manifest.snapshots ?? [])]
+        .map((block) => block.file)
+        .filter((file) => existsSync(join(ROOT, file))),
+    ),
+  ];
+}
+
+/**
+ * The slots a block of this plugin already sits on, before it is installed:
+ * the empty fences a prune left. Filling one is not a placement.
+ */
+export function slotsBefore(manifest) {
+  return new Map(
+    blockFiles(manifest).map((file) => [
+      file,
+      grammar(() => slotsOf(file, readText(file), manifest.id)),
+    ]),
+  );
+}
+
+/**
+ * Where the install put a block in whole: a slot a block of this plugin sits
+ * on now and did not before. The entry records them (`slots`), which is how
+ * the prune that removes the plugin knows to take those blocks out whole and
+ * leave its other fences, as the starter's own entries declare theirs.
+ */
+export function placedSlots(manifest, before) {
+  const placed = {};
+  for (const file of blockFiles(manifest)) {
+    const now = grammar(() => slotsOf(file, readText(file), manifest.id));
+    const added = [...now].filter((slot) => !before.get(file)?.has(slot)).sort();
+    if (added.length) placed[file] = added;
+  }
+  return placed;
+}
+
 // ---------------------------------------------------------------------------
 // Text: blocks at anchors
 // ---------------------------------------------------------------------------
@@ -198,14 +242,22 @@ export function checkFences(id, file, body) {
   return null;
 }
 
-/** `content` without the blocks of features the project does not have. */
+/**
+ * `content` without the blocks of features the project does not have.
+ *
+ * Their entries are not here to say which of those blocks a slot put in
+ * place, but the file is: it comes from a starter that had every feature, so
+ * none of its fences is a hole a prune left, and a block on a slot is one a
+ * slot put there.
+ */
 function trimText(manifest, file, content, known, report) {
   const foreign = new Set(
     [...grammar(() => markerIds(file, content))].filter((id) => id !== manifest.id && !known[id]),
   );
   if (!foreign.size) return content;
   if (report) console.log(`  trim   ${file} (no ${[...foreign].join(', ')} in this project)`);
-  return grammar(() => dropBlocks(file, content, foreign)) ?? content;
+  const slots = new Map([...foreign].map((id) => [id, grammar(() => slotsOf(file, content, id))]));
+  return grammar(() => dropBlocks(file, content, foreign, { slots })) ?? content;
 }
 
 /**
@@ -349,9 +401,14 @@ export function replaySnapshots(manifest, known, dryRun) {
     // The project's copy holds this plugin's emptied fences where a prune left
     // them — unless it was pruned before prunes kept them, in which case the
     // blocks went whole and the base has to say so too.
+    // The rest went as its entry declares: the ones a slot put in place, whole,
+    // which in the starter's copy are the ones that sit on a slot.
     const whole = !grammar(() => markerIds(snapshot.file, content)).has(manifest.id);
+    const slots = new Map([[manifest.id, grammar(() => slotsOf(snapshot.file, ours, manifest.id))]]);
     const base =
-      grammar(() => dropBlocks(snapshot.file, ours, new Set([manifest.id]), { whole })) ?? ours;
+      grammar(() =>
+        dropBlocks(snapshot.file, ours, new Set([manifest.id]), { whole, slots }),
+      ) ?? ours;
     const merged = mergeThreeWay(snapshot.file, content, base, ours);
     console.log(`  blocks ${snapshot.file} (from the starter's copy)`);
     writeText(snapshot.file, merged, dryRun);

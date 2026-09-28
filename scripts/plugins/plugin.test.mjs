@@ -40,6 +40,7 @@ test('featureEntry keeps the manifest key order and drops empty lists', () => {
     'plugin',
     'identifiers',
     'paths',
+    'slots',
     'scripts',
   ]);
   assert.equal(entry.plugin, true);
@@ -297,6 +298,12 @@ test('an install joins neededBy, edits JSON both ways, and widens the shared blo
   assert.equal(manifest.features.beta.plugin, true);
   // A shared path is joined, not owned: alpha keeps it too.
   assert.deepEqual(manifest.shared.kit.neededBy, ['alpha', 'beta']);
+  // The blocks it put on a slot are recorded, so its removal takes those out
+  // whole and knows every other fence of its is a hole to keep.
+  assert.deepEqual(manifest.features.beta.slots, {
+    'config.txt': ['the-slot'],
+    'slots.txt': ['own-slot'],
+  });
 
   // The JSON edits ran backwards, each at its own recorded position — `at` for
   // the array value, `setAt` for the object key, so neither reads the other's.

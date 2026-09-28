@@ -8,7 +8,9 @@ import {
   isEmptyBlock,
   MARKER_RE,
   MarkerError,
+  idsOnSlot,
   markerIds,
+  slotsOf,
   widenMarker,
 } from './markers.mjs';
 
@@ -142,7 +144,7 @@ test('dropBlocks empties what only the removed own, and narrows what they share'
   assert.equal(dropBlocks('f', 'plain\n', new Set(['gone'])), null);
 });
 
-test('dropBlocks takes a block a slot put in place out whole', () => {
+test('dropBlocks takes out whole the blocks their entry says a slot put in place', () => {
   const text = [
     'keep',
     '# flama:begin gone',
@@ -155,18 +157,60 @@ test('dropBlocks takes a block a slot put in place out whole', () => {
     '# flama:plugins slot',
     'tail',
   ].join('\n');
+  const slots = new Map([
+    ['gone', new Set(['slot'])],
+    ['other', new Set(['slot'])],
+  ]);
   assert.equal(
-    dropBlocks('f', text, new Set(['gone', 'other'])),
+    dropBlocks('f', text, new Set(['gone', 'other']), { slots }),
     ['keep', '', '# flama:plugins slot', 'tail'].join('\n'),
   );
   // Its neighbour on the slot goes whole too, not only the block nearest it.
   assert.equal(
-    dropBlocks('f', text, new Set(['gone'])),
+    dropBlocks('f', text, new Set(['gone']), { slots }),
     [
       'keep',
       '# flama:begin other',
       'stacked on the same slot',
       '# flama:end other',
+      '',
+      '# flama:plugins slot',
+      'tail',
+    ].join('\n'),
+  );
+});
+
+test('where a block sits decides nothing: a hole above a filled slot stays', () => {
+  const text = [
+    'keep',
+    '# flama:begin hole',
+    'in the list, not on the slot',
+    '# flama:end hole',
+    '# flama:begin gone',
+    'slotted',
+    '# flama:end gone',
+    '',
+    '# flama:plugins slot',
+    'tail',
+  ].join('\n');
+  assert.deepEqual([...slotsOf('f', text, 'hole')], ['slot']);
+  assert.deepEqual([...idsOnSlot('f', text, 'slot')].sort(), ['gone', 'hole']);
+  const slots = new Map([['gone', new Set(['slot'])]]);
+  assert.equal(
+    dropBlocks('f', text, new Set(['hole', 'gone']), { slots }),
+    ['keep', '# flama:begin hole', '# flama:end hole', '', '# flama:plugins slot', 'tail'].join(
+      '\n',
+    ),
+  );
+  // Declaring nothing, both leave their fences.
+  assert.equal(
+    dropBlocks('f', text, new Set(['hole', 'gone'])),
+    [
+      'keep',
+      '# flama:begin hole',
+      '# flama:end hole',
+      '# flama:begin gone',
+      '# flama:end gone',
       '',
       '# flama:plugins slot',
       'tail',

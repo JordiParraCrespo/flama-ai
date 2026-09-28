@@ -46,6 +46,11 @@
  *     // cannot carry a marker, and is read backwards here (see below).
  *     "feature": {
  *       "title", "summary", "identifiers", "paths",
+ *       "slots":    { "<file>": ["<anchor>"] },
+ *       //   Written by the install, not the plugin: the anchors op 1 put a
+ *       //   block of this plugin on. Its removal takes those out whole and
+ *       //   leaves every other fence as the hole a prune leaves. A starter
+ *       //   feature declares its own the same way.
  *       "requires": ["<feature id>"],
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],
@@ -109,8 +114,10 @@ import {
   applyJsonEdits,
   insertBlocks,
   joinShared,
+  placedSlots,
   projectFeatures,
   replaySnapshots,
+  slotsBefore,
   trimCopied,
   writeFeature,
 } from './ops.mjs';
@@ -231,11 +238,12 @@ function add(manifest, options) {
 
   // Shared blocks first: putting one back can bring back the anchor an owned
   // block goes at — the bundle budgets step holds the control plane's slot.
+  const before = slotsBefore(manifest);
   const joined = joinShared(manifest, features, dryRun);
   insertBlocks(manifest, joined, features, dryRun);
   replaySnapshots(manifest, features, dryRun);
   applyJsonEdits(manifest, dryRun);
-  writeFeature(manifest, paths, dryRun);
+  writeFeature(manifest, paths, placedSlots(manifest, before), dryRun);
 
   if (dryRun) {
     console.log('\nDry run: nothing was changed.');
