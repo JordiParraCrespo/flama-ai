@@ -8,10 +8,10 @@ import type { NavItem, NavLink } from '@flama/frontend-web';
  * appear in one and not the other.
  *
  * Both rows are ungated: the dashboard reads only the caller's own profile,
- * and every user manages their own API tokens under Settings. A row that does
+ * and every user's Settings are their own. A row that does
  * need a permission takes its `policies` from `ENDPOINT_POLICIES` in
  * `@flama/shared/permissions`, keyed by the endpoint its screen reads
- * (`ENDPOINT_POLICIES['/tokens']`), never a rule list written out here — the
+ * (`ENDPOINT_POLICIES['/roles']`), never a rule list written out here — the
  * API's `endpoint-policies.spec.ts` holds the controller to that same entry.
  */
 export const NAV = [

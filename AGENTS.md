@@ -29,7 +29,7 @@ flama/
 │   ├── env/              # Root .env loader (@flama/env)
 │   ├── frontend/         # The React tier: logic split by product, glue split by platform
 │   │   ├── core/         # Kernel every app loads: session, users, settings, DI (@flama/frontend-core)
-│   │   ├── consumer/     # The consumer product's domain: organizations, profile, api-tokens (@flama/frontend-consumer)
+│   │   ├── consumer/     # The consumer product's domain: organizations, profile (@flama/frontend-consumer)
 │   │   ├── api-client/   # Auto-generated typed client from Swagger (@flama/api-client)
 │   │   ├── web/          # What both Vite apps share: shell, auth chrome, table, i18n… (@flama/frontend-web)
 │   │   ├── mobile/       # What both Expo apps share: config, storage, analytics… (@flama/frontend-mobile)
@@ -183,7 +183,7 @@ installed it also needs a row in `apps/docs/docs/errors.md`. See
 - `feature-flags.md` — the flag catalog, kinds and safe defaults,
   `useFeatureFlag` / `@RequireFlag`, what is not a flag
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
-- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, API tokens
+- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, scoped credentials
 
 #### Authorization (roles & permissions)
 
@@ -207,7 +207,7 @@ expiry that `pnpm check:flags` enforces in CI. The guide is
 ### Scoped credentials
 
 Governed by the **scope catalog** in `packages/shared/src/scopes/`. Roles say
-what a person may do; scopes say what an API token may do on their behalf, and
+what a person may do; scopes say what a credential acting for them may do, and
 effective access is the intersection — see
 `.agents/rules/scopes-and-credentials.md`, and the permission catalog in
 `packages/shared/src/scopes/README.md`.
@@ -350,7 +350,7 @@ pnpm changeset          # Create a changeset for versioning
 - New env vars go in the root `.env.example` with a note on what they do; never
   add a per-package `.env` (see `.agents/rules/api-config.md`)
 - New API endpoints need Swagger decorators and `@RequireScopes`; without the
-  scope they are unreachable by API tokens. Afterwards run
+  scope they are unreachable by a scoped credential. Afterwards run
   `pnpm generate:api-client`
 - Keep the pluggable service pattern: abstract class → concrete implementations → factory in module
 - New translations go in `packages/translations/{locale}/{area}.json`, then

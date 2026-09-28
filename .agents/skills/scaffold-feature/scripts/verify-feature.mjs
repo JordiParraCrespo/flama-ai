@@ -3,7 +3,7 @@
  * Run the checks a frontend change has to pass, in the order a reviewer would
  * care about them, and stop at the first that fails.
  *
- *   node .agents/skills/scaffold-feature/scripts/verify-feature.mjs --app web [--module api-tokens] [--base main]
+ *   node .agents/skills/scaffold-feature/scripts/verify-feature.mjs --app web [--module profile] [--base main]
  *
  * 1. pnpm check:structure: placement, names, the render-topology scans and
  *    the tests that pin them

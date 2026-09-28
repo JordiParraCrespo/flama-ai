@@ -134,6 +134,6 @@ e2e/
 │   └── mail.ts     # reads the console-provider "mailbox" out of the API log
 └── tests/
     ├── api/        # sign-up, sign-in, password reset, verification, protected
-    │               # routes, authorization, API tokens, session security, OAuth
+    │               # routes, authorization, session security, OAuth
     └── web/        # the same journeys through apps/web in Chromium
 ```

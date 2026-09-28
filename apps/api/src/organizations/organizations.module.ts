@@ -24,8 +24,9 @@ import { WorkspacesService } from './workspaces.service';
  * surface (so the operations appear in the generated `@flama/api-client`). No
  * TypeORM repositories here: the org tables are registered in `AuthModule`.
  */
-// Global for one export: API tokens restricted to an organization check the
-// creator's memberships through it, and without organizations there is none.
+// Global for one export: `ORGANIZATION_MEMBERSHIP`, the kernel's question of
+// which organizations a user is in. A credential restricted to an organization
+// is held to it, and without organizations nothing answers.
 @Global()
 @Module({
   // The user repository enriches member rows with the account behind them;

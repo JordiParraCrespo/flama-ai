@@ -4,7 +4,7 @@
  * The query client's default sharing (`replaceEqualDeep`) keeps an unchanged
  * value's identity across a refetch, but only for plain objects and arrays.
  * Every entity in the frontend packages is a class (`UserEntity`,
- * `OrganizationMemberEntity`, `ApiTokenEntity`), and every `Date` in one is a
+ * `OrganizationMemberEntity`), and every `Date` in one is a
  * new object, so by default each refetch — a window refocus, an invalidation,
  * a poll — hands every reader a new object for every row, and every memo and
  * every compiler-cached cell keyed on one misses: a table re-renders all of its

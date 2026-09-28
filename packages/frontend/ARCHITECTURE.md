@@ -19,7 +19,7 @@ belongs to a product or to both. `core` is the kernel every app loads:
 session (`auth`), `users`, `user-settings`, `capabilities`, `analytics`,
 `feature-flags`, the InversifyJS container (`FlamaApp`, `TOKENS`), `config/`,
 `validation/` and `format/` (dates through `Intl`, for both platforms).
-`consumer` (`api-tokens`, `organizations`, `profile`) and `admin`
+`consumer` (`organizations`, `profile`) and `admin`
 (`admin-users`, `roles`, with its plugin) are the two products. An app loads exactly one, and
 the products never import each other.
 
@@ -155,8 +155,7 @@ not an import:
   filtered by role is stale the moment a role changes hands.
 - `KERNEL_NON_PERSISTED_FEATURES` names the features whose queries never
   reach storage whatever the product (`auth`, `userSettings`);
-  `CONSUMER_NON_PERSISTED_FEATURES` adds the consumer's (`apiTokens`,
-  `profile`), and the app passes it through `nonPersistedFeatures`.
+  `CONSUMER_NON_PERSISTED_FEATURES` adds the consumer's (`profile`), and the app passes it through `nonPersistedFeatures`.
 - `user-settings` is a kernel module, not a consumer one, because both
   products apply the saved theme and locale on mount
   (`useApplyUserSettings` in the web kit reads `useUserSettings`).

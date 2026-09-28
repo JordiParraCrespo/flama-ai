@@ -57,8 +57,8 @@ metro.config.js, tailwind.config.js, global.css
   `@flama/frontend-mobile` (`packages/frontend/mobile`).
 - Primitives are in `@flama/design-system-mobile`.
 - Domain logic is in `@flama/frontend-core` (session, users, user settings,
-  capabilities, analytics) and `@flama/frontend-consumer` (api-tokens,
-  organizations, profile). This app loads the consumer product and never the
+  capabilities, analytics) and `@flama/frontend-consumer`
+  (organizations, profile). This app loads the consumer product and never the
   admin one.
 
 ## More

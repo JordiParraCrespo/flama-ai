@@ -42,7 +42,7 @@ export function DataTableRow<TRow>({
   onRowClick?: (row: TRow) => void;
 }) {
   const { t } = useTranslation();
-  // Resolved per row, not per table: a revoked API token has nothing left to do
+  // Resolved per row, not per table: a revoked credential has nothing left to do
   // to it, and a trigger that opens an empty popup reads as a broken menu
   // rather than as "no actions".
   const menu = rowActions?.(row);

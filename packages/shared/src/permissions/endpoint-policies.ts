@@ -37,7 +37,6 @@ export const ENDPOINT_POLICIES = {
   // flama:end organizations
   '/roles': [{ action: 'read', subject: 'Role' }],
   // flama:begin api-tokens
-  '/tokens': [{ action: 'read', subject: 'ApiToken' }],
   // flama:end api-tokens
   // flama:begin admin-api
   // flama:end admin-api

@@ -31,7 +31,7 @@ added when a project wants them, with `pnpm plugin:add <id>`.
 | `packages/auth`                   | Shared Better Auth config — user fields, plugins, client helpers   |
 | `packages/env`                    | Root `.env` loader shared by the Node apps                         |
 | `packages/frontend/core`          | Kernel every app loads: session, users, user settings, capabilities, analytics, InversifyJS DI |
-| `packages/frontend/consumer`      | Consumer product domain: organizations, profile, api-tokens        |
+| `packages/frontend/consumer`      | Consumer product domain: organizations, profile                    |
 | `packages/frontend/web`           | What both Vite apps share below their routes, by concern           |
 | `packages/frontend/mobile`        | What both Expo apps share below their routes                       |
 | `packages/backend/*`              | Cross-cutting NestJS toolkit: errors/filters (`core`), DDD building blocks (`ddd`), authorization kernel (`authz`), Redis cache (`cache`), queues (`queue`), file storage (`storage`), email (`email`), i18n (`i18n`) |
@@ -128,7 +128,7 @@ second implementation of it.
 - **Mobile**: Expo, NativeWind + rn-primitives
 - **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
 - **Authorization**: Database-backed RBAC — roles and permissions managed through the API, enforced with CASL
-- **API tokens**: scoped by one shared catalog — a token's effective access is the intersection of its scopes and the user's roles
+- **Scoped credentials**: one shared scope catalog — a credential's effective access is the intersection of its scopes and the user's roles; API tokens are the `api-tokens` plugin
 - **Validation**: Zod
 - **State**: Zustand + TanStack Query
 - **DI**: InversifyJS (frontend), NestJS (backend)

@@ -25,7 +25,6 @@ import { Route as AuthPublicLoginRouteImport } from './routes/_auth/_public/logi
 import { Route as AuthPublicRegisterRouteImport } from './routes/_auth/_public/register'
 import { Route as AuthPublicResetPasswordRouteImport } from './routes/_auth/_public/reset-password'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthenticatedSettingsApiTokensRouteImport } from './routes/_authenticated/settings/api-tokens'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,12 +105,6 @@ const AuthenticatedSettingsIndexRoute =
     path: '/settings/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedSettingsApiTokensRoute =
-  AuthenticatedSettingsApiTokensRouteImport.update({
-    id: '/settings/api-tokens',
-    path: '/settings/api-tokens',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -126,7 +119,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthPublicLoginRoute
   '/register': typeof AuthPublicRegisterRoute
   '/reset-password': typeof AuthPublicResetPasswordRoute
-  '/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -142,7 +134,6 @@ export interface FileRoutesByTo {
   '/login': typeof AuthPublicLoginRoute
   '/register': typeof AuthPublicRegisterRoute
   '/reset-password': typeof AuthPublicResetPasswordRoute
-  '/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -162,7 +153,6 @@ export interface FileRoutesById {
   '/_auth/_public/login': typeof AuthPublicLoginRoute
   '/_auth/_public/register': typeof AuthPublicRegisterRoute
   '/_auth/_public/reset-password': typeof AuthPublicResetPasswordRoute
-  '/_authenticated/settings/api-tokens': typeof AuthenticatedSettingsApiTokensRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -180,7 +170,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/reset-password'
-    | '/settings/api-tokens'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,7 +185,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/reset-password'
-    | '/settings/api-tokens'
     | '/settings'
   id:
     | '__root__'
@@ -215,7 +203,6 @@ export interface FileRouteTypes {
     | '/_auth/_public/login'
     | '/_auth/_public/register'
     | '/_auth/_public/reset-password'
-    | '/_authenticated/settings/api-tokens'
     | '/_authenticated/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -342,13 +329,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/settings/api-tokens': {
-      id: '/_authenticated/settings/api-tokens'
-      path: '/settings/api-tokens'
-      fullPath: '/settings/api-tokens'
-      preLoaderRoute: typeof AuthenticatedSettingsApiTokensRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
   }
 }
 
@@ -387,14 +367,12 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedSettingsApiTokensRoute: typeof AuthenticatedSettingsApiTokensRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
-  AuthenticatedSettingsApiTokensRoute: AuthenticatedSettingsApiTokensRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
 }
 

@@ -27,20 +27,6 @@ import type { FlagDefinition, FlagValue } from './types';
  */
 export const FEATURE_FLAGS = {
   // flama:begin api-tokens
-  /**
-   * Kill switch for minting API tokens. Live by default; switching it off stops
-   * new tokens being created (the API refuses, the web app hides the button)
-   * without touching tokens that already exist.
-   */
-  api_token_creation: {
-    description: 'Allow users to create new personal API tokens.',
-    kind: 'ops',
-    owner: 'platform',
-    type: 'boolean',
-    defaultValue: true,
-    client: true,
-    bucketBy: 'user',
-  },
   // flama:end api-tokens
 } as const satisfies Record<string, FlagDefinition>;
 

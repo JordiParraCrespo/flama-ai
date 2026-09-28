@@ -6,7 +6,7 @@ import type { DataTablePagination } from '../lib/data-table-types';
  *
  * `DataTable`'s pagination is controlled because most of its tables are one
  * page of a server-side query — leads, domains and the audit log all ask the
- * API for a page at a time. Members, roles and API tokens are not: those
+ * API for a page at a time. Members and roles are not: those
  * endpoints return everything, so the slice is cut here. Without it a
  * workspace of two hundred members rendered two hundred rows.
  *

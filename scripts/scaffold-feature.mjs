@@ -12,7 +12,7 @@
  * refetched. Starting with the query already one level down makes the shape the
  * checks want the shape that is already there.
  *
- *   node scripts/scaffold-feature.mjs --app web --module api-tokens [--screen api-tokens]
+ *   node scripts/scaffold-feature.mjs --app web --module profile [--screen profile]
  */
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

@@ -8,8 +8,6 @@ import { TOKENS as KERNEL_TOKENS } from '@flama/frontend-core';
 export const TOKENS = {
   ...KERNEL_TOKENS,
   // flama:begin api-tokens
-  ApiTokensRepository: Symbol.for('ApiTokensRepository'),
-  ApiTokensService: Symbol.for('ApiTokensService'),
   // flama:end api-tokens
   // flama:begin organizations
   OrganizationsRepository: Symbol.for('OrganizationsRepository'),

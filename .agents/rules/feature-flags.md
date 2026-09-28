@@ -42,7 +42,7 @@ every reader the compiler then names.
 
 ```ts
 // Client — typed by the catalog; the default until flags load.
-const enabled = useFeatureFlag('api_token_creation');
+const enabled = useFeatureFlag('bulk_export');
 const arm = useFeatureFlagValue('checkout_copy'); // 'control' | 'bold'
 
 // A flow that must not flip mid-way (checkout, transfer, multi-step form)
@@ -50,12 +50,12 @@ const enabled = useFeatureFlag('new_checkout', { sticky: true });
 
 // Server — gate the capability, not just the button
 @Post()
-@RequireFlag('api_token_creation')
+@RequireFlag('bulk_export')
 create() {}
 
 // Server — anywhere else
 constructor(@Inject(FLAG_EVALUATOR) private readonly flags: FlagEvaluatorPort) {}
-this.flags.isEnabled('api_token_creation', flagContextOf(request));
+this.flags.isEnabled('bulk_export', flagContextOf(request));
 ```
 
 **A flag that gates a capability gates it on the server too.** Hiding a button

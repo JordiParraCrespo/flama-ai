@@ -6,11 +6,11 @@ everything else on this page.
 | Layer            | Governs                                    | Lives in                 |
 | ---------------- | ------------------------------------------ | ------------------------ |
 | **Roles** (CASL) | What a _person_ may do                     | The `role` table         |
-| **Scopes**       | What a _credential_ may do on their behalf | The API token            |
+| **Scopes**       | What a _credential_ may do on their behalf | The credential           |
 
 A browser session carries no scopes: it can do whatever its owner's roles
-allow. An API token is additionally narrowed to the scopes it was given, and
-the two are intersected on every request:
+allow. A scoped credential is additionally narrowed to the scopes it was
+given, and the two are intersected on every request:
 
 ```
 effective permissions = credential scopes ∩ owner's live CASL ability
@@ -18,9 +18,9 @@ effective permissions = credential scopes ∩ owner's live CASL ability
 
 Two consequences worth internalising:
 
-- A token can never be minted with more reach than its creator has.
+- A credential can never be granted more reach than its owner has.
 - Revoking someone's role immediately narrows every credential they issued —
-  no need to hunt down tokens.
+  no need to hunt them down.
 
 ## The catalog
 
@@ -36,22 +36,22 @@ level. Edit implies Read.
 | Members             | `members:read` `members:write`         | Organization membership and member roles                 |
 | Invitations         | `invitations:read` `invitations:write` | Pending invitations                                      |
 | Workspaces          | `workspaces:read` `workspaces:write`   | Workspaces (teams) and their members                     |
-| API tokens          | `tokens:read` `tokens:write`           | The owner's own API tokens                               |
 | Feature flags       | `flags:read` `flags:write`             | Flag targeting, kill switches and segments               |
 
 The catalog is defined once, in `packages/shared/src/scopes/catalog.ts`, and is
-consumed by the API guard and the web permission picker. The groups above are
+consumed by the API guard and by whatever grants scopes. The groups above are
 the starter's own. A plugin that adds a resource owns its row in the catalog
 and every surface that renders it — its copy, its client, its routes.
 
 ## Resource scoping
 
-On top of scopes, a token can be pinned to specific organizations. Leaving the
-list empty lets it follow the owner's memberships instead, which is usually
-what you want — the token keeps working as they join and leave organizations.
+On top of scopes, a credential can be pinned to specific organizations.
+Leaving the list empty lets it follow the owner's memberships instead, which is
+usually what you want — the credential keeps working as they join and leave
+organizations.
 
-A token restricted to exactly one organization acts inside it by default, so
-organization-bound routes resolve without an explicit id.
+A credential restricted to exactly one organization acts inside it by default,
+so organization-bound routes resolve without an explicit id.
 
 ## Protecting an endpoint
 
@@ -66,12 +66,12 @@ findAll() {}
 ```
 
 `ScopesGuard` is registered globally and **fails closed**: a route that
-declares no `@RequireScopes` cannot be called with a token at all. New
-endpoints are therefore invisible to tokens until someone decides what they
-should cost. Browser sessions are unaffected.
+declares no `@RequireScopes` cannot be called with a scoped credential at
+all. New endpoints are therefore invisible to them until someone decides what
+they should cost. Browser sessions are unaffected.
 
 For organization-bound routes, name the parameter carrying the organization id
-so the guard can enforce a token's restriction:
+so the guard can enforce a credential's restriction:
 
 ```ts
 @Get(':orgId/members')
@@ -82,40 +82,19 @@ list() {}
 
 ## Credentials
 
-### API tokens
-
-Personal access tokens, minted from `/settings/api-tokens` or
-`flama tokens create`. Format `flama_pat_…`; only a SHA-256 digest is stored, so
-the secret is shown once and is not recoverable. Tokens support an expiry, an
-IP allowlist and organization scoping, and are revoked (not deleted) so the
-audit trail survives.
-
-Present one as `Authorization: Bearer flama_pat_…` or in `x-api-key`.
-
-> **IP allowlists behind a proxy.** The allowlist matches the address Express
-> reports. Behind a load balancer that is the proxy's address unless you
-> configure `trust proxy`, so set that up before relying on the restriction.
-
-## Asking what a credential can do
-
-```
-GET /api/v1/me/credential
-```
-
-Returns the credential kind, its `grantedScopes`, and the `effectiveScopes`
-those amount to after the owner's roles are applied — what a client should
-offer, and where a granted scope that went inert when the owner's roles
-changed shows up.
+The starter ships the machinery and no scoped credential of its own: until one
+is bound to `SCOPED_CREDENTIAL` (`apps/api/src/auth`), a bearer credential is a
+session token or nothing. `pnpm plugin:add api-tokens` binds personal access
+tokens, and the `mcp` plugin adds OAuth grants for MCP clients.
 
 ## Error codes
 
+What any scoped credential can fail on (`CredentialErrors` in
+`apps/api/src/auth/domain/auth.errors.ts`):
+
 | Code        | Meaning                                                      |
 | ----------- | ------------------------------------------------------------ |
-| `TOKEN_002` | Requested scopes exceed what the creator holds               |
 | `TOKEN_003` | Invalid, revoked or expired credential (deliberately opaque) |
-| `TOKEN_004` | Used from an address outside the token's allowlist           |
 | `TOKEN_005` | Missing a scope the endpoint requires                        |
 | `TOKEN_006` | The endpoint is not reachable with a scoped credential       |
 | `TOKEN_007` | Outside the credential's organization restriction            |
-| `TOKEN_008` | Scoped to an organization the creator does not belong to     |
-| `TOKEN_009` | Active token limit reached                                   |

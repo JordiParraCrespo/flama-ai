@@ -20,7 +20,6 @@ export const namespaces = namespaceList as unknown as readonly [
   'control',
   'language',
   // flama:begin api-tokens
-  'apiTokens',
   // flama:end api-tokens
   'consent',
   'onboarding',

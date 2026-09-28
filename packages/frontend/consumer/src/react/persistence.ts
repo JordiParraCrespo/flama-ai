@@ -1,5 +1,4 @@
 // flama:begin api-tokens
-import { apiTokensKeys } from './api-tokens.queries';
 // flama:end api-tokens
 import { profileKeys } from './profile.queries';
 
@@ -10,7 +9,6 @@ import { profileKeys } from './profile.queries';
  */
 export const CONSUMER_NON_PERSISTED_FEATURES: readonly string[] = [
   // flama:begin api-tokens
-  apiTokensKeys.all[0],
   // flama:end api-tokens
   profileKeys.all[0],
 ];

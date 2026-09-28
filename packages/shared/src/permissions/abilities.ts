@@ -52,7 +52,6 @@ export const KNOWN_SUBJECTS = [
   'Member',
   'Invitation',
   // flama:begin api-tokens
-  'ApiToken',
   // flama:end api-tokens
   'AuditLog',
   'FeatureFlag',
@@ -256,13 +255,6 @@ export function defineAbilitiesFromPermissions(
 }
 
 // flama:begin api-tokens
-/**
- * Placeholder interpolated against the authenticated principal when the ability
- * is built (see {@link AbilityContext}) — it scopes a rule to the caller's own
- * resources.
- */
-// biome-ignore lint/suspicious/noTemplateCurlyInString: this is a condition placeholder, not a template literal
-const OWN_USER_ID = '${user.id}';
 // flama:end api-tokens
 
 /** Placeholder for the caller's active organization (see {@link AbilityContext}). */
@@ -330,23 +322,6 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
     // workspace besides an invitation.
     { action: 'create', subject: 'Organization' },
     // flama:begin api-tokens
-    // Every user manages their own API tokens; the condition keeps them off
-    // everyone else's.
-    {
-      action: 'read',
-      subject: 'ApiToken',
-      conditions: { userId: OWN_USER_ID },
-    },
-    {
-      action: 'create',
-      subject: 'ApiToken',
-      conditions: { userId: OWN_USER_ID },
-    },
-    {
-      action: 'delete',
-      subject: 'ApiToken',
-      conditions: { userId: OWN_USER_ID },
-    },
     // flama:end api-tokens
   ],
 };

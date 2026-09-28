@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { accept, add, addMember, assign, cancel, catalog, changePassword, check, checkSlug, create, create2, create3, create4, create5, createFlagSegment, current, deleteAvatar, deleteFlagSegment, deploymentCapabilities, evaluateFeatureFlag, findAll, findAll2, findAll3, findFeatureFlag, findFeatureFlags, findFlagChanges, findFlagSegments, findOne, findOne2, findSessions, findUserRoles, get, getClientFeatureFlags, getFull, getMembership, getProfile, getSettings, invite, leave, list, list2, list3, list4, list5, listMembers, listMine, listMine2, me, type Options, permissions, permissions2, readiness, reject, remove, remove2, remove3, remove4, remove5, removeMember, revoke, revoke2, revokeOtherSessions, revokeSession, setActive, setActive2, toggleFeatureFlag, update, update2, update3, update4, updateFeatureFlag, updateFlagSegment, updatePermissions, updateProfile, updateRole, updateSettings, uploadAvatar } from '../sdk.gen';
-import type { AcceptData, AcceptError, AcceptResponse, AddData, AddError, AddMemberData, AddMemberError, AddMemberResponse, AddResponse, AssignData, AssignError, AssignResponse, CancelData, CancelError, CancelResponse, CatalogData, CatalogError, CatalogResponse, ChangePasswordData, ChangePasswordError, ChangePasswordResponse, CheckData, CheckError, CheckResponse, CheckSlugData, CheckSlugError, CheckSlugResponse, Create2Data, Create2Error, Create2Response, Create3Data, Create3Error, Create3Response, Create4Data, Create4Error, Create4Response, Create5Data, Create5Error, Create5Response, CreateData, CreateError, CreateFlagSegmentData, CreateFlagSegmentError, CreateFlagSegmentResponse, CreateResponse, CurrentData, CurrentError, CurrentResponse, DeleteAvatarData, DeleteAvatarError, DeleteAvatarResponse, DeleteFlagSegmentData, DeleteFlagSegmentError, DeleteFlagSegmentResponse, DeploymentCapabilitiesData, DeploymentCapabilitiesResponse, EvaluateFeatureFlagData, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, FindAll2Data, FindAll2Error, FindAll2Response, FindAll3Data, FindAll3Error, FindAll3Response, FindAllData, FindAllError, FindAllResponse, FindFeatureFlagData, FindFeatureFlagError, FindFeatureFlagResponse, FindFeatureFlagsData, FindFeatureFlagsError, FindFeatureFlagsResponse, FindFlagChangesData, FindFlagChangesError, FindFlagChangesResponse, FindFlagSegmentsData, FindFlagSegmentsError, FindFlagSegmentsResponse, FindOne2Data, FindOne2Error, FindOne2Response, FindOneData, FindOneError, FindOneResponse, FindSessionsData, FindSessionsError, FindSessionsResponse, FindUserRolesData, FindUserRolesError, FindUserRolesResponse, GetClientFeatureFlagsData, GetClientFeatureFlagsResponse, GetData, GetError, GetFullData, GetFullError, GetFullResponse, GetMembershipData, GetMembershipError, GetMembershipResponse, GetProfileData, GetProfileError, GetProfileResponse, GetResponse, GetSettingsData, GetSettingsError, GetSettingsResponse, InviteData, InviteError, InviteResponse, LeaveData, LeaveError, LeaveResponse, List2Data, List2Error, List2Response, List3Data, List3Error, List3Response, List4Data, List4Error, List4Response, List5Data, List5Error, List5Response, ListData, ListError, ListMembersData, ListMembersError, ListMembersResponse, ListMine2Data, ListMine2Error, ListMine2Response, ListMineData, ListMineError, ListMineResponse, ListResponse, MeData, MeError, MeResponse, Permissions2Data, Permissions2Error, Permissions2Response, PermissionsData, PermissionsError, PermissionsResponse, ReadinessData, ReadinessError, ReadinessResponse, RejectData, RejectError, RejectResponse, Remove2Data, Remove2Error, Remove3Data, Remove3Error, Remove3Response, Remove4Data, Remove4Error, Remove4Response, Remove5Data, Remove5Error, Remove5Response, RemoveData, RemoveError, RemoveMemberData, RemoveMemberError, RemoveMemberResponse, Revoke2Data, Revoke2Error, Revoke2Response, RevokeData, RevokeError, RevokeOtherSessionsData, RevokeOtherSessionsError, RevokeOtherSessionsResponse, RevokeResponse, RevokeSessionData, RevokeSessionError, RevokeSessionResponse, SetActive2Data, SetActive2Error, SetActive2Response, SetActiveData, SetActiveError, SetActiveResponse, ToggleFeatureFlagData, ToggleFeatureFlagError, ToggleFeatureFlagResponse, Update2Data, Update2Error, Update2Response, Update3Data, Update3Error, Update3Response, Update4Data, Update4Error, Update4Response, UpdateData, UpdateError, UpdateFeatureFlagData, UpdateFeatureFlagError, UpdateFeatureFlagResponse, UpdateFlagSegmentData, UpdateFlagSegmentError, UpdateFlagSegmentResponse, UpdatePermissionsData, UpdatePermissionsError, UpdatePermissionsResponse, UpdateProfileData, UpdateProfileError, UpdateProfileResponse, UpdateResponse, UpdateRoleData, UpdateRoleError, UpdateRoleResponse, UpdateSettingsData, UpdateSettingsError, UpdateSettingsResponse, UploadAvatarData, UploadAvatarError, UploadAvatarResponse } from '../types.gen';
+import { accept, add, addMember, assign, cancel, catalog, changePassword, check, checkSlug, create, create2, create3, create4, createFlagSegment, deleteAvatar, deleteFlagSegment, deploymentCapabilities, evaluateFeatureFlag, findAll, findAll2, findFeatureFlag, findFeatureFlags, findFlagChanges, findFlagSegments, findOne, findOne2, findSessions, findUserRoles, get, getClientFeatureFlags, getFull, getMembership, getProfile, getSettings, invite, leave, list, list2, list3, list4, list5, listMembers, listMine, listMine2, me, type Options, permissions, readiness, reject, remove, remove2, remove3, remove4, remove5, removeMember, revoke, revokeOtherSessions, revokeSession, setActive, setActive2, toggleFeatureFlag, update, update2, update3, update4, updateFeatureFlag, updateFlagSegment, updatePermissions, updateProfile, updateRole, updateSettings, uploadAvatar } from '../sdk.gen';
+import type { AcceptData, AcceptError, AcceptResponse, AddData, AddError, AddMemberData, AddMemberError, AddMemberResponse, AddResponse, AssignData, AssignError, AssignResponse, CancelData, CancelError, CancelResponse, CatalogData, CatalogError, CatalogResponse, ChangePasswordData, ChangePasswordError, ChangePasswordResponse, CheckData, CheckError, CheckResponse, CheckSlugData, CheckSlugError, CheckSlugResponse, Create2Data, Create2Error, Create2Response, Create3Data, Create3Error, Create3Response, Create4Data, Create4Error, Create4Response, CreateData, CreateError, CreateFlagSegmentData, CreateFlagSegmentError, CreateFlagSegmentResponse, CreateResponse, DeleteAvatarData, DeleteAvatarError, DeleteAvatarResponse, DeleteFlagSegmentData, DeleteFlagSegmentError, DeleteFlagSegmentResponse, DeploymentCapabilitiesData, DeploymentCapabilitiesResponse, EvaluateFeatureFlagData, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, FindAll2Data, FindAll2Error, FindAll2Response, FindAllData, FindAllError, FindAllResponse, FindFeatureFlagData, FindFeatureFlagError, FindFeatureFlagResponse, FindFeatureFlagsData, FindFeatureFlagsError, FindFeatureFlagsResponse, FindFlagChangesData, FindFlagChangesError, FindFlagChangesResponse, FindFlagSegmentsData, FindFlagSegmentsError, FindFlagSegmentsResponse, FindOne2Data, FindOne2Error, FindOne2Response, FindOneData, FindOneError, FindOneResponse, FindSessionsData, FindSessionsError, FindSessionsResponse, FindUserRolesData, FindUserRolesError, FindUserRolesResponse, GetClientFeatureFlagsData, GetClientFeatureFlagsResponse, GetData, GetError, GetFullData, GetFullError, GetFullResponse, GetMembershipData, GetMembershipError, GetMembershipResponse, GetProfileData, GetProfileError, GetProfileResponse, GetResponse, GetSettingsData, GetSettingsError, GetSettingsResponse, InviteData, InviteError, InviteResponse, LeaveData, LeaveError, LeaveResponse, List2Data, List2Error, List2Response, List3Data, List3Error, List3Response, List4Data, List4Error, List4Response, List5Data, List5Error, List5Response, ListData, ListError, ListMembersData, ListMembersError, ListMembersResponse, ListMine2Data, ListMine2Error, ListMine2Response, ListMineData, ListMineError, ListMineResponse, ListResponse, MeData, MeError, MeResponse, PermissionsData, PermissionsError, PermissionsResponse, ReadinessData, ReadinessError, ReadinessResponse, RejectData, RejectError, RejectResponse, Remove2Data, Remove2Error, Remove3Data, Remove3Error, Remove3Response, Remove4Data, Remove4Error, Remove4Response, Remove5Data, Remove5Error, Remove5Response, RemoveData, RemoveError, RemoveMemberData, RemoveMemberError, RemoveMemberResponse, RevokeData, RevokeError, RevokeOtherSessionsData, RevokeOtherSessionsError, RevokeOtherSessionsResponse, RevokeResponse, RevokeSessionData, RevokeSessionError, RevokeSessionResponse, SetActive2Data, SetActive2Error, SetActive2Response, SetActiveData, SetActiveError, SetActiveResponse, ToggleFeatureFlagData, ToggleFeatureFlagError, ToggleFeatureFlagResponse, Update2Data, Update2Error, Update2Response, Update3Data, Update3Error, Update3Response, Update4Data, Update4Error, Update4Response, UpdateData, UpdateError, UpdateFeatureFlagData, UpdateFeatureFlagError, UpdateFeatureFlagResponse, UpdateFlagSegmentData, UpdateFlagSegmentError, UpdateFlagSegmentResponse, UpdatePermissionsData, UpdatePermissionsError, UpdatePermissionsResponse, UpdateProfileData, UpdateProfileError, UpdateProfileResponse, UpdateResponse, UpdateRoleData, UpdateRoleError, UpdateRoleResponse, UpdateSettingsData, UpdateSettingsError, UpdateSettingsResponse, UploadAvatarData, UploadAvatarError, UploadAvatarResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -465,32 +465,10 @@ export const revokeMutation = (options?: Partial<Options<RevokeData>>): UseMutat
     return mutationOptions;
 };
 
-export const currentQueryKey = (options?: Options<CurrentData>) => createQueryKey('current', options);
-
-/**
- * Describe the calling credential and its effective permissions
- *
- * Returns the credential kind, its granted scopes and what those scopes actually amount to once the owner’s roles are applied. The MCP server filters its tool list by `effectiveScopes`.
- */
-export const currentOptions = (options?: Options<CurrentData>) => queryOptions<CurrentResponse, CurrentError, CurrentResponse, ReturnType<typeof currentQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await current({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: currentQueryKey(options)
-});
-
 export const findAll2QueryKey = (options?: Options<FindAll2Data>) => createQueryKey('findAll2', options);
 
 /**
- * List the caller’s API tokens
- *
- * Secrets are never returned — only the display prefix and metadata.
+ * List all roles
  */
 export const findAll2Options = (options?: Options<FindAll2Data>) => queryOptions<FindAll2Response, FindAll2Error, FindAll2Response, ReturnType<typeof findAll2QueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -505,100 +483,24 @@ export const findAll2Options = (options?: Options<FindAll2Data>) => queryOptions
     queryKey: findAll2QueryKey(options)
 });
 
-/**
- * Mint an API token
- *
- * Creates a scoped API token for the caller. The secret is returned once and cannot be retrieved again. Scopes may not exceed what the caller is themselves permitted to do.
- */
-export const create2Mutation = (options?: Partial<Options<Create2Data>>): UseMutationOptions<Create2Response, Create2Error, Options<Create2Data>> => {
-    const mutationOptions: UseMutationOptions<Create2Response, Create2Error, Options<Create2Data>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await create2({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const permissions2QueryKey = (options?: Options<Permissions2Data>) => createQueryKey('permissions2', options);
-
-/**
- * List the permission catalog and what the caller may grant
- *
- * Drives the permission picker on the token-creation screen and the CLI’s --permissions validation.
- */
-export const permissions2Options = (options?: Options<Permissions2Data>) => queryOptions<Permissions2Response, Permissions2Error, Permissions2Response, ReturnType<typeof permissions2QueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await permissions2({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: permissions2QueryKey(options)
-});
-
-/**
- * Revoke an API token
- *
- * Takes effect immediately. The record is kept so the audit trail survives; the secret stops working.
- */
-export const revoke2Mutation = (options?: Partial<Options<Revoke2Data>>): UseMutationOptions<Revoke2Response, Revoke2Error, Options<Revoke2Data>> => {
-    const mutationOptions: UseMutationOptions<Revoke2Response, Revoke2Error, Options<Revoke2Data>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await revoke2({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const findAll3QueryKey = (options?: Options<FindAll3Data>) => createQueryKey('findAll3', options);
+export const findAll2InfiniteQueryKey = (options?: Options<FindAll2Data>): QueryKey<Options<FindAll2Data>> => createQueryKey('findAll2', options, true);
 
 /**
  * List all roles
  */
-export const findAll3Options = (options?: Options<FindAll3Data>) => queryOptions<FindAll3Response, FindAll3Error, FindAll3Response, ReturnType<typeof findAll3QueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await findAll3({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: findAll3QueryKey(options)
-});
-
-export const findAll3InfiniteQueryKey = (options?: Options<FindAll3Data>): QueryKey<Options<FindAll3Data>> => createQueryKey('findAll3', options, true);
-
-/**
- * List all roles
- */
-export const findAll3InfiniteOptions = (options?: Options<FindAll3Data>) => {
-    const opts = infiniteQueryOptions<FindAll3Response, FindAll3Error, InfiniteData<FindAll3Response>, QueryKey<Options<FindAll3Data>>, number | Pick<QueryKey<Options<FindAll3Data>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+export const findAll2InfiniteOptions = (options?: Options<FindAll2Data>) => {
+    const opts = infiniteQueryOptions<FindAll2Response, FindAll2Error, InfiniteData<FindAll2Response>, QueryKey<Options<FindAll2Data>>, number | Pick<QueryKey<Options<FindAll2Data>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
     {
         queryFn: async ({ pageParam, queryKey, signal }) => {
             // @ts-ignore
-            const page: Pick<QueryKey<Options<FindAll3Data>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            const page: Pick<QueryKey<Options<FindAll2Data>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
                     page: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
-            const { data } = await findAll3({
+            const { data } = await findAll2({
                 ...options,
                 ...params,
                 signal,
@@ -606,7 +508,7 @@ export const findAll3InfiniteOptions = (options?: Options<FindAll3Data>) => {
             });
             return data;
         },
-        queryKey: findAll3InfiniteQueryKey(options)
+        queryKey: findAll2InfiniteQueryKey(options)
     });
     return opts as Omit<typeof opts, 'initialData'>;
 };
@@ -614,10 +516,10 @@ export const findAll3InfiniteOptions = (options?: Options<FindAll3Data>) => {
 /**
  * Create role
  */
-export const create3Mutation = (options?: Partial<Options<Create3Data>>): UseMutationOptions<Create3Response, Create3Error, Options<Create3Data>> => {
-    const mutationOptions: UseMutationOptions<Create3Response, Create3Error, Options<Create3Data>> = {
+export const create2Mutation = (options?: Partial<Options<Create2Data>>): UseMutationOptions<Create2Response, Create2Error, Options<Create2Data>> => {
+    const mutationOptions: UseMutationOptions<Create2Response, Create2Error, Options<Create2Data>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await create3({
+            const { data } = await create2({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -732,6 +634,299 @@ export const assignMutation = (options?: Partial<Options<AssignData>>): UseMutat
     return mutationOptions;
 };
 
+export const getClientFeatureFlagsQueryKey = (options?: Options<GetClientFeatureFlagsData>) => createQueryKey('getClientFeatureFlags', options);
+
+/**
+ * The caller’s feature flags
+ *
+ * Every client-visible flag, evaluated for the caller: their user, their active organization, and the platform and build the client reports. Values only — targeting rules never leave the server. Works signed out.
+ */
+export const getClientFeatureFlagsOptions = (options?: Options<GetClientFeatureFlagsData>) => queryOptions<GetClientFeatureFlagsResponse, DefaultError, GetClientFeatureFlagsResponse, ReturnType<typeof getClientFeatureFlagsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getClientFeatureFlags({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getClientFeatureFlagsQueryKey(options)
+});
+
+export const findFlagChangesQueryKey = (options?: Options<FindFlagChangesData>) => createQueryKey('findFlagChanges', options);
+
+/**
+ * Feature flag audit trail
+ *
+ * Who changed which flag or segment, when, why, and what it was before and after.
+ */
+export const findFlagChangesOptions = (options?: Options<FindFlagChangesData>) => queryOptions<FindFlagChangesResponse, FindFlagChangesError, FindFlagChangesResponse, ReturnType<typeof findFlagChangesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFlagChanges({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFlagChangesQueryKey(options)
+});
+
+export const findFlagChangesInfiniteQueryKey = (options?: Options<FindFlagChangesData>): QueryKey<Options<FindFlagChangesData>> => createQueryKey('findFlagChanges', options, true);
+
+/**
+ * Feature flag audit trail
+ *
+ * Who changed which flag or segment, when, why, and what it was before and after.
+ */
+export const findFlagChangesInfiniteOptions = (options?: Options<FindFlagChangesData>) => {
+    const opts = infiniteQueryOptions<FindFlagChangesResponse, FindFlagChangesError, InfiniteData<FindFlagChangesResponse>, QueryKey<Options<FindFlagChangesData>>, number | Pick<QueryKey<Options<FindFlagChangesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<FindFlagChangesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await findFlagChanges({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: findFlagChangesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const findFlagSegmentsQueryKey = (options?: Options<FindFlagSegmentsData>) => createQueryKey('findFlagSegments', options);
+
+/**
+ * List flag segments and the flags that target them
+ */
+export const findFlagSegmentsOptions = (options?: Options<FindFlagSegmentsData>) => queryOptions<FindFlagSegmentsResponse, FindFlagSegmentsError, FindFlagSegmentsResponse, ReturnType<typeof findFlagSegmentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFlagSegments({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFlagSegmentsQueryKey(options)
+});
+
+/**
+ * Create a flag segment
+ */
+export const createFlagSegmentMutation = (options?: Partial<Options<CreateFlagSegmentData>>): UseMutationOptions<CreateFlagSegmentResponse, CreateFlagSegmentError, Options<CreateFlagSegmentData>> => {
+    const mutationOptions: UseMutationOptions<CreateFlagSegmentResponse, CreateFlagSegmentError, Options<CreateFlagSegmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createFlagSegment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a flag segment no flag targets
+ */
+export const deleteFlagSegmentMutation = (options?: Partial<Options<DeleteFlagSegmentData>>): UseMutationOptions<DeleteFlagSegmentResponse, DeleteFlagSegmentError, Options<DeleteFlagSegmentData>> => {
+    const mutationOptions: UseMutationOptions<DeleteFlagSegmentResponse, DeleteFlagSegmentError, Options<DeleteFlagSegmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteFlagSegment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update a flag segment
+ *
+ * Every flag that targets the segment follows the change.
+ */
+export const updateFlagSegmentMutation = (options?: Partial<Options<UpdateFlagSegmentData>>): UseMutationOptions<UpdateFlagSegmentResponse, UpdateFlagSegmentError, Options<UpdateFlagSegmentData>> => {
+    const mutationOptions: UseMutationOptions<UpdateFlagSegmentResponse, UpdateFlagSegmentError, Options<UpdateFlagSegmentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateFlagSegment({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const findFeatureFlagsQueryKey = (options?: Options<FindFeatureFlagsData>) => createQueryKey('findFeatureFlags', options);
+
+/**
+ * List feature flags with their targeting
+ *
+ * Every flag the code declares, with its catalog definition and — once saved — its targeting on this deployment.
+ */
+export const findFeatureFlagsOptions = (options?: Options<FindFeatureFlagsData>) => queryOptions<FindFeatureFlagsResponse, FindFeatureFlagsError, FindFeatureFlagsResponse, ReturnType<typeof findFeatureFlagsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFeatureFlags({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFeatureFlagsQueryKey(options)
+});
+
+export const evaluateFeatureFlagQueryKey = (options: Options<EvaluateFeatureFlagData>) => createQueryKey('evaluateFeatureFlag', options);
+
+/**
+ * Explain a flag for a given context
+ *
+ * Evaluates the flag for the user, organization, platform and build described in the query — what they would get, and why.
+ */
+export const evaluateFeatureFlagOptions = (options: Options<EvaluateFeatureFlagData>) => queryOptions<EvaluateFeatureFlagResponse, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, ReturnType<typeof evaluateFeatureFlagQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evaluateFeatureFlag({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evaluateFeatureFlagQueryKey(options)
+});
+
+export const findFeatureFlagQueryKey = (options: Options<FindFeatureFlagData>) => createQueryKey('findFeatureFlag', options);
+
+/**
+ * Get a feature flag with its targeting
+ */
+export const findFeatureFlagOptions = (options: Options<FindFeatureFlagData>) => queryOptions<FindFeatureFlagResponse, FindFeatureFlagError, FindFeatureFlagResponse, ReturnType<typeof findFeatureFlagQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await findFeatureFlag({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: findFeatureFlagQueryKey(options)
+});
+
+/**
+ * Switch a feature flag on or off
+ *
+ * Flips the master switch only. Off serves `false` (or the default variant) to everyone — the kill switch. Takes effect on this replica immediately and on every other within the snapshot poll interval.
+ */
+export const toggleFeatureFlagMutation = (options?: Partial<Options<ToggleFeatureFlagData>>): UseMutationOptions<ToggleFeatureFlagResponse, ToggleFeatureFlagError, Options<ToggleFeatureFlagData>> => {
+    const mutationOptions: UseMutationOptions<ToggleFeatureFlagResponse, ToggleFeatureFlagError, Options<ToggleFeatureFlagData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await toggleFeatureFlag({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Replace a feature flag’s targeting
+ *
+ * Sets the master switch, the ordered rules and the fallthrough in one write. Recorded on the audit trail with the optional comment.
+ */
+export const updateFeatureFlagMutation = (options?: Partial<Options<UpdateFeatureFlagData>>): UseMutationOptions<UpdateFeatureFlagResponse, UpdateFeatureFlagError, Options<UpdateFeatureFlagData>> => {
+    const mutationOptions: UseMutationOptions<UpdateFeatureFlagResponse, UpdateFeatureFlagError, Options<UpdateFeatureFlagData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateFeatureFlag({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const checkQueryKey = (options?: Options<CheckData>) => createQueryKey('check', options);
+
+/**
+ * Liveness check
+ */
+export const checkOptions = (options?: Options<CheckData>) => queryOptions<CheckResponse, CheckError, CheckResponse, ReturnType<typeof checkQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await check({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: checkQueryKey(options)
+});
+
+export const deploymentCapabilitiesQueryKey = (options?: Options<DeploymentCapabilitiesData>) => createQueryKey('deploymentCapabilities', options);
+
+/**
+ * Client-facing capabilities of this deployment
+ */
+export const deploymentCapabilitiesOptions = (options?: Options<DeploymentCapabilitiesData>) => queryOptions<DeploymentCapabilitiesResponse, DefaultError, DeploymentCapabilitiesResponse, ReturnType<typeof deploymentCapabilitiesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await deploymentCapabilities({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: deploymentCapabilitiesQueryKey(options)
+});
+
+export const readinessQueryKey = (options?: Options<ReadinessData>) => createQueryKey('readiness', options);
+
+/**
+ * Readiness check
+ */
+export const readinessOptions = (options?: Options<ReadinessData>) => queryOptions<ReadinessResponse, ReadinessError, ReadinessResponse, ReturnType<typeof readinessQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await readiness({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: readinessQueryKey(options)
+});
+
 export const list2QueryKey = (options?: Options<List2Data>) => createQueryKey('list2', options);
 
 /**
@@ -753,10 +948,10 @@ export const list2Options = (options?: Options<List2Data>) => queryOptions<List2
 /**
  * Create an organization
  */
-export const create4Mutation = (options?: Partial<Options<Create4Data>>): UseMutationOptions<Create4Response, Create4Error, Options<Create4Data>> => {
-    const mutationOptions: UseMutationOptions<Create4Response, Create4Error, Options<Create4Data>> = {
+export const create3Mutation = (options?: Partial<Options<Create3Data>>): UseMutationOptions<Create3Response, Create3Error, Options<Create3Data>> => {
+    const mutationOptions: UseMutationOptions<Create3Response, Create3Error, Options<Create3Data>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await create4({
+            const { data } = await create3({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1118,10 +1313,10 @@ export const list5Options = (options?: Options<List5Data>) => queryOptions<List5
 /**
  * Create a workspace
  */
-export const create5Mutation = (options?: Partial<Options<Create5Data>>): UseMutationOptions<Create5Response, Create5Error, Options<Create5Data>> => {
-    const mutationOptions: UseMutationOptions<Create5Response, Create5Error, Options<Create5Data>> = {
+export const create4Mutation = (options?: Partial<Options<Create4Data>>): UseMutationOptions<Create4Response, Create4Error, Options<Create4Data>> => {
+    const mutationOptions: UseMutationOptions<Create4Response, Create4Error, Options<Create4Data>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await create5({
+            const { data } = await create4({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1234,296 +1429,3 @@ export const removeMemberMutation = (options?: Partial<Options<RemoveMemberData>
     };
     return mutationOptions;
 };
-
-export const getClientFeatureFlagsQueryKey = (options?: Options<GetClientFeatureFlagsData>) => createQueryKey('getClientFeatureFlags', options);
-
-/**
- * The caller’s feature flags
- *
- * Every client-visible flag, evaluated for the caller: their user, their active organization, and the platform and build the client reports. Values only — targeting rules never leave the server. Works signed out.
- */
-export const getClientFeatureFlagsOptions = (options?: Options<GetClientFeatureFlagsData>) => queryOptions<GetClientFeatureFlagsResponse, DefaultError, GetClientFeatureFlagsResponse, ReturnType<typeof getClientFeatureFlagsQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getClientFeatureFlags({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getClientFeatureFlagsQueryKey(options)
-});
-
-export const findFlagChangesQueryKey = (options?: Options<FindFlagChangesData>) => createQueryKey('findFlagChanges', options);
-
-/**
- * Feature flag audit trail
- *
- * Who changed which flag or segment, when, why, and what it was before and after.
- */
-export const findFlagChangesOptions = (options?: Options<FindFlagChangesData>) => queryOptions<FindFlagChangesResponse, FindFlagChangesError, FindFlagChangesResponse, ReturnType<typeof findFlagChangesQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await findFlagChanges({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: findFlagChangesQueryKey(options)
-});
-
-export const findFlagChangesInfiniteQueryKey = (options?: Options<FindFlagChangesData>): QueryKey<Options<FindFlagChangesData>> => createQueryKey('findFlagChanges', options, true);
-
-/**
- * Feature flag audit trail
- *
- * Who changed which flag or segment, when, why, and what it was before and after.
- */
-export const findFlagChangesInfiniteOptions = (options?: Options<FindFlagChangesData>) => {
-    const opts = infiniteQueryOptions<FindFlagChangesResponse, FindFlagChangesError, InfiniteData<FindFlagChangesResponse>, QueryKey<Options<FindFlagChangesData>>, number | Pick<QueryKey<Options<FindFlagChangesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<FindFlagChangesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    page: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await findFlagChanges({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: findFlagChangesInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
-
-export const findFlagSegmentsQueryKey = (options?: Options<FindFlagSegmentsData>) => createQueryKey('findFlagSegments', options);
-
-/**
- * List flag segments and the flags that target them
- */
-export const findFlagSegmentsOptions = (options?: Options<FindFlagSegmentsData>) => queryOptions<FindFlagSegmentsResponse, FindFlagSegmentsError, FindFlagSegmentsResponse, ReturnType<typeof findFlagSegmentsQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await findFlagSegments({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: findFlagSegmentsQueryKey(options)
-});
-
-/**
- * Create a flag segment
- */
-export const createFlagSegmentMutation = (options?: Partial<Options<CreateFlagSegmentData>>): UseMutationOptions<CreateFlagSegmentResponse, CreateFlagSegmentError, Options<CreateFlagSegmentData>> => {
-    const mutationOptions: UseMutationOptions<CreateFlagSegmentResponse, CreateFlagSegmentError, Options<CreateFlagSegmentData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await createFlagSegment({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Delete a flag segment no flag targets
- */
-export const deleteFlagSegmentMutation = (options?: Partial<Options<DeleteFlagSegmentData>>): UseMutationOptions<DeleteFlagSegmentResponse, DeleteFlagSegmentError, Options<DeleteFlagSegmentData>> => {
-    const mutationOptions: UseMutationOptions<DeleteFlagSegmentResponse, DeleteFlagSegmentError, Options<DeleteFlagSegmentData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteFlagSegment({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Update a flag segment
- *
- * Every flag that targets the segment follows the change.
- */
-export const updateFlagSegmentMutation = (options?: Partial<Options<UpdateFlagSegmentData>>): UseMutationOptions<UpdateFlagSegmentResponse, UpdateFlagSegmentError, Options<UpdateFlagSegmentData>> => {
-    const mutationOptions: UseMutationOptions<UpdateFlagSegmentResponse, UpdateFlagSegmentError, Options<UpdateFlagSegmentData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await updateFlagSegment({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const findFeatureFlagsQueryKey = (options?: Options<FindFeatureFlagsData>) => createQueryKey('findFeatureFlags', options);
-
-/**
- * List feature flags with their targeting
- *
- * Every flag the code declares, with its catalog definition and — once saved — its targeting on this deployment.
- */
-export const findFeatureFlagsOptions = (options?: Options<FindFeatureFlagsData>) => queryOptions<FindFeatureFlagsResponse, FindFeatureFlagsError, FindFeatureFlagsResponse, ReturnType<typeof findFeatureFlagsQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await findFeatureFlags({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: findFeatureFlagsQueryKey(options)
-});
-
-export const evaluateFeatureFlagQueryKey = (options: Options<EvaluateFeatureFlagData>) => createQueryKey('evaluateFeatureFlag', options);
-
-/**
- * Explain a flag for a given context
- *
- * Evaluates the flag for the user, organization, platform and build described in the query — what they would get, and why.
- */
-export const evaluateFeatureFlagOptions = (options: Options<EvaluateFeatureFlagData>) => queryOptions<EvaluateFeatureFlagResponse, EvaluateFeatureFlagError, EvaluateFeatureFlagResponse, ReturnType<typeof evaluateFeatureFlagQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await evaluateFeatureFlag({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: evaluateFeatureFlagQueryKey(options)
-});
-
-export const findFeatureFlagQueryKey = (options: Options<FindFeatureFlagData>) => createQueryKey('findFeatureFlag', options);
-
-/**
- * Get a feature flag with its targeting
- */
-export const findFeatureFlagOptions = (options: Options<FindFeatureFlagData>) => queryOptions<FindFeatureFlagResponse, FindFeatureFlagError, FindFeatureFlagResponse, ReturnType<typeof findFeatureFlagQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await findFeatureFlag({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: findFeatureFlagQueryKey(options)
-});
-
-/**
- * Switch a feature flag on or off
- *
- * Flips the master switch only. Off serves `false` (or the default variant) to everyone — the kill switch. Takes effect on this replica immediately and on every other within the snapshot poll interval.
- */
-export const toggleFeatureFlagMutation = (options?: Partial<Options<ToggleFeatureFlagData>>): UseMutationOptions<ToggleFeatureFlagResponse, ToggleFeatureFlagError, Options<ToggleFeatureFlagData>> => {
-    const mutationOptions: UseMutationOptions<ToggleFeatureFlagResponse, ToggleFeatureFlagError, Options<ToggleFeatureFlagData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await toggleFeatureFlag({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Replace a feature flag’s targeting
- *
- * Sets the master switch, the ordered rules and the fallthrough in one write. Recorded on the audit trail with the optional comment.
- */
-export const updateFeatureFlagMutation = (options?: Partial<Options<UpdateFeatureFlagData>>): UseMutationOptions<UpdateFeatureFlagResponse, UpdateFeatureFlagError, Options<UpdateFeatureFlagData>> => {
-    const mutationOptions: UseMutationOptions<UpdateFeatureFlagResponse, UpdateFeatureFlagError, Options<UpdateFeatureFlagData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await updateFeatureFlag({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const checkQueryKey = (options?: Options<CheckData>) => createQueryKey('check', options);
-
-/**
- * Liveness check
- */
-export const checkOptions = (options?: Options<CheckData>) => queryOptions<CheckResponse, CheckError, CheckResponse, ReturnType<typeof checkQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await check({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: checkQueryKey(options)
-});
-
-export const deploymentCapabilitiesQueryKey = (options?: Options<DeploymentCapabilitiesData>) => createQueryKey('deploymentCapabilities', options);
-
-/**
- * Client-facing capabilities of this deployment
- */
-export const deploymentCapabilitiesOptions = (options?: Options<DeploymentCapabilitiesData>) => queryOptions<DeploymentCapabilitiesResponse, DefaultError, DeploymentCapabilitiesResponse, ReturnType<typeof deploymentCapabilitiesQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await deploymentCapabilities({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: deploymentCapabilitiesQueryKey(options)
-});
-
-export const readinessQueryKey = (options?: Options<ReadinessData>) => createQueryKey('readiness', options);
-
-/**
- * Readiness check
- */
-export const readinessOptions = (options?: Options<ReadinessData>) => queryOptions<ReadinessResponse, ReadinessError, ReadinessResponse, ReturnType<typeof readinessQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await readiness({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: readinessQueryKey(options)
-});

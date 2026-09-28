@@ -6,7 +6,7 @@
       "id": 1,
       "name": "members-pane",
       "prompt": "In the web app, add a Members pane to the workspace settings page: list the organization's members with their name, email and role, let the reader search them, invite someone by email, cancel a pending invitation, and remove a member. The consumer package already has the hooks for all of this.",
-      "expected_output": "A members section in the organizations feature mounted as a settings pane (URL-keyed, beside general/security/api), calling useOrganizationMembers itself with the search in the key through useTableQuery, a DataTable with row actions, invite as a form in a dialog over the shared schema, cancel and remove behind ConfirmDialog with table-owned state, all strings translated in en and es, and the checks run.",
+      "expected_output": "A members section in the organizations feature mounted as a settings pane (URL-keyed, beside general/security), calling useOrganizationMembers itself with the search in the key through useTableQuery, a DataTable with row actions, invite as a form in a dialog over the shared schema, cancel and remove behind ConfirmDialog with table-owned state, all strings translated in en and es, and the checks run.",
       "files": [],
       "expectations": [
         "The members list is rendered by a sections/ (or dialogs/) file in apps/web/src/features/organizations that calls useOrganizationMembers itself; no route or screen subscribes to members only to pass them down",

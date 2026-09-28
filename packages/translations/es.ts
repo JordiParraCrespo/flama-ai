@@ -1,5 +1,4 @@
 // flama:begin api-tokens
-import apiTokens from './es/apiTokens.json';
 // flama:end api-tokens
 import auth from './es/auth.json';
 import common from './es/common.json';
@@ -32,7 +31,6 @@ const es = {
   control,
   language,
   // flama:begin api-tokens
-  apiTokens,
   // flama:end api-tokens
   consent,
   onboarding,

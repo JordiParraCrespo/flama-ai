@@ -95,7 +95,7 @@ forms/thing-form.tsx      useForm({ values: toFormValues(thing), resolver: useZo
 ## 4. A settings pane inside a cross-module page
 
 `/settings` composes panes from several modules (`general` from
-organizations, `security` from profile, `api` from api-tokens). The route or
+organizations, `security` from profile). The route or
 its screen renders the sub-nav and picks the pane from `?section=`.
 
 - Each pane is a `sections/` file in **its own module's** feature and calls
@@ -189,6 +189,6 @@ short list known at build time.
 
 ## 11. A pane that links elsewhere instead of duplicating a screen
 
-When one screen owns a resource (API tokens) and another page wants a pane
+When one screen owns a resource (the profile's sessions) and another page wants a pane
 for it (settings), the pane is a card with a link. It isn't a second
 implementation. Two copies drift, and a fix only ever lands in one of them.

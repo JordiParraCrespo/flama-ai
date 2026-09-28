@@ -242,132 +242,6 @@ export type CreateAccessGrantRequest = {
     expiresAt?: string | null;
 };
 
-export type CurrentCredentialResponseDto = {
-    /**
-     * How the caller authenticated.
-     */
-    kind: 'session' | 'api-token' | 'oauth';
-    userId: string;
-    email: string;
-    /**
-     * Scopes the credential carries. Null for a browser session, which is not scope-restricted.
-     */
-    grantedScopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'flags:read' | 'flags:write'> | null;
-    /**
-     * What the credential can actually do: its scopes intersected with the owner’s current roles.
-     */
-    effectiveScopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'flags:read' | 'flags:write'>;
-    /**
-     * Organizations the credential is restricted to, or null when unrestricted.
-     */
-    organizationIds: Array<string> | null;
-    expiresAt: string | null;
-};
-
-export type ApiTokenResponseDto = {
-    id: string;
-    name: string;
-    /**
-     * Non-secret display prefix. The secret itself is shown only once, at creation.
-     */
-    prefix: string;
-    /**
-     * Granted permissions.
-     */
-    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'flags:read' | 'flags:write'>;
-    /**
-     * Organizations this token is restricted to. Null means it follows the owner’s memberships.
-     */
-    organizationIds: Array<string> | null;
-    /**
-     * Source addresses or CIDR blocks the token may be used from.
-     */
-    ipAllowlist: Array<string> | null;
-    expiresAt: string | null;
-    lastUsedAt: string | null;
-    revokedAt: string | null;
-    createdAt: string;
-};
-
-export type ScopePolicyDto = {
-    action: string;
-    subject: string;
-};
-
-export type ScopeLevelDto = {
-    scope: 'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'flags:read' | 'flags:write';
-    label: string;
-    description: string;
-    /**
-     * Empty when the level governs the caller’s own account only.
-     */
-    policies: Array<ScopePolicyDto>;
-};
-
-export type ScopeLevelsDto = {
-    read: ScopeLevelDto;
-    write: ScopeLevelDto;
-};
-
-export type PermissionGroupDto = {
-    resource: 'profile' | 'users' | 'roles' | 'organizations' | 'members' | 'invitations' | 'workspaces' | 'tokens' | 'flags';
-    label: string;
-    description: string;
-    /**
-     * Grants account-takeover-adjacent powers. Consent and token screens call these out; enforcement treats them like any other group.
-     */
-    sensitive?: boolean;
-    levels: ScopeLevelsDto;
-};
-
-export type PermissionCatalogResponseDto = {
-    /**
-     * Every permission group, each with a Read and an Edit level. Render these as the permission picker.
-     */
-    groups: Array<PermissionGroupDto>;
-    /**
-     * Scopes the caller may put on a token. Anything outside this list is refused at creation.
-     */
-    grantable: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'flags:read' | 'flags:write'>;
-};
-
-export type CreateApiTokenRequest = {
-    name: string;
-    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'flags:read' | 'flags:write'>;
-    organizationIds?: Array<string>;
-    expiresInDays?: number | null;
-    ipAllowlist?: Array<string>;
-};
-
-export type CreatedApiTokenResponseDto = {
-    id: string;
-    name: string;
-    /**
-     * Non-secret display prefix. The secret itself is shown only once, at creation.
-     */
-    prefix: string;
-    /**
-     * Granted permissions.
-     */
-    scopes: Array<'profile:read' | 'profile:write' | 'users:read' | 'users:write' | 'roles:read' | 'roles:write' | 'organizations:read' | 'organizations:write' | 'members:read' | 'members:write' | 'invitations:read' | 'invitations:write' | 'workspaces:read' | 'workspaces:write' | 'tokens:read' | 'tokens:write' | 'flags:read' | 'flags:write'>;
-    /**
-     * Organizations this token is restricted to. Null means it follows the owner’s memberships.
-     */
-    organizationIds: Array<string> | null;
-    /**
-     * Source addresses or CIDR blocks the token may be used from.
-     */
-    ipAllowlist: Array<string> | null;
-    expiresAt: string | null;
-    lastUsedAt: string | null;
-    revokedAt: string | null;
-    createdAt: string;
-    /**
-     * The token secret. Shown once — store it now, it cannot be retrieved again.
-     */
-    token: string;
-};
-
 export type RoleResponseDto = {
     id: string;
     name: string;
@@ -446,147 +320,6 @@ export type UpdateRolePermissionsRequest = {
 
 export type AssignUserRolesRequest = {
     roleIds: Array<string>;
-};
-
-export type CreateOrganizationRequest = {
-    name: string;
-    slug?: string;
-    logo?: string;
-};
-
-export type OrganizationResponseDto = {
-    id: string;
-    name: string;
-    slug: string;
-    logo: string | null;
-    /**
-     * Free-form JSON metadata.
-     */
-    metadata: {
-        [key: string]: unknown;
-    } | null;
-    createdAt: string;
-};
-
-export type CheckSlugRequest = {
-    slug: string;
-};
-
-export type SlugAvailabilityResponseDto = {
-    /**
-     * True when the slug is available.
-     */
-    available: boolean;
-};
-
-export type MemberUserResponseDto = {
-    id: string;
-    name: string;
-    email: string;
-    image: string | null;
-    firstName: string;
-    lastName: string;
-    isActive: boolean;
-    emailVerified: boolean;
-};
-
-export type MemberResponseDto = {
-    id: string;
-    organizationId: string;
-    userId: string;
-    /**
-     * Organization role (owner | admin | member | custom).
-     */
-    role: string;
-    createdAt: string;
-    user: MemberUserResponseDto | null;
-};
-
-export type InvitationResponseDto = {
-    id: string;
-    organizationId: string;
-    email: string;
-    role: string | null;
-    /**
-     * pending | accepted | rejected | canceled.
-     */
-    status: string;
-    teamId: string | null;
-    inviterId: string;
-    expiresAt: string;
-    createdAt: string;
-};
-
-export type FullOrganizationResponseDto = {
-    id: string;
-    name: string;
-    slug: string;
-    logo: string | null;
-    /**
-     * Free-form JSON metadata.
-     */
-    metadata: {
-        [key: string]: unknown;
-    } | null;
-    createdAt: string;
-    members: Array<MemberResponseDto>;
-    invitations: Array<InvitationResponseDto>;
-    /**
-     * Workspaces (Better Auth teams) in this organization.
-     */
-    teams: Array<{
-        [key: string]: unknown;
-    }>;
-};
-
-export type UpdateOrganizationRequest = {
-    name?: string;
-    slug?: string;
-    logo?: string | null;
-};
-
-export type AddMemberRequest = {
-    userId: string;
-    role?: 'owner' | 'admin' | 'member';
-    teamId?: string;
-};
-
-export type UpdateMemberRoleRequest = {
-    role: 'owner' | 'admin' | 'member';
-};
-
-export type InviteMemberRequest = {
-    email: string;
-    role?: 'owner' | 'admin' | 'member';
-    teamId?: string;
-};
-
-export type WorkspaceResponseDto = {
-    id: string;
-    name: string;
-    organizationId: string;
-    createdAt: string;
-    updatedAt: string | null;
-};
-
-export type CreateWorkspaceRequest = {
-    name: string;
-    organizationId?: string;
-};
-
-export type UpdateWorkspaceRequest = {
-    name: string;
-};
-
-export type WorkspaceMemberResponseDto = {
-    id: string;
-    teamId: string;
-    userId: string;
-    createdAt: string;
-};
-
-export type AddWorkspaceMemberRequest = {
-    userId: string;
 };
 
 export type ClientFeatureFlagsResponseDto = {
@@ -811,6 +544,147 @@ export type CapabilitiesResponseDto = {
      * Sign-in with GitHub is configured.
      */
     github_oauth: boolean;
+};
+
+export type CreateOrganizationRequest = {
+    name: string;
+    slug?: string;
+    logo?: string;
+};
+
+export type OrganizationResponseDto = {
+    id: string;
+    name: string;
+    slug: string;
+    logo: string | null;
+    /**
+     * Free-form JSON metadata.
+     */
+    metadata: {
+        [key: string]: unknown;
+    } | null;
+    createdAt: string;
+};
+
+export type CheckSlugRequest = {
+    slug: string;
+};
+
+export type SlugAvailabilityResponseDto = {
+    /**
+     * True when the slug is available.
+     */
+    available: boolean;
+};
+
+export type MemberUserResponseDto = {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    firstName: string;
+    lastName: string;
+    isActive: boolean;
+    emailVerified: boolean;
+};
+
+export type MemberResponseDto = {
+    id: string;
+    organizationId: string;
+    userId: string;
+    /**
+     * Organization role (owner | admin | member | custom).
+     */
+    role: string;
+    createdAt: string;
+    user: MemberUserResponseDto | null;
+};
+
+export type InvitationResponseDto = {
+    id: string;
+    organizationId: string;
+    email: string;
+    role: string | null;
+    /**
+     * pending | accepted | rejected | canceled.
+     */
+    status: string;
+    teamId: string | null;
+    inviterId: string;
+    expiresAt: string;
+    createdAt: string;
+};
+
+export type FullOrganizationResponseDto = {
+    id: string;
+    name: string;
+    slug: string;
+    logo: string | null;
+    /**
+     * Free-form JSON metadata.
+     */
+    metadata: {
+        [key: string]: unknown;
+    } | null;
+    createdAt: string;
+    members: Array<MemberResponseDto>;
+    invitations: Array<InvitationResponseDto>;
+    /**
+     * Workspaces (Better Auth teams) in this organization.
+     */
+    teams: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+export type UpdateOrganizationRequest = {
+    name?: string;
+    slug?: string;
+    logo?: string | null;
+};
+
+export type AddMemberRequest = {
+    userId: string;
+    role?: 'owner' | 'admin' | 'member';
+    teamId?: string;
+};
+
+export type UpdateMemberRoleRequest = {
+    role: 'owner' | 'admin' | 'member';
+};
+
+export type InviteMemberRequest = {
+    email: string;
+    role?: 'owner' | 'admin' | 'member';
+    teamId?: string;
+};
+
+export type WorkspaceResponseDto = {
+    id: string;
+    name: string;
+    organizationId: string;
+    createdAt: string;
+    updatedAt: string | null;
+};
+
+export type CreateWorkspaceRequest = {
+    name: string;
+    organizationId?: string;
+};
+
+export type UpdateWorkspaceRequest = {
+    name: string;
+};
+
+export type WorkspaceMemberResponseDto = {
+    id: string;
+    teamId: string;
+    userId: string;
+    createdAt: string;
+};
+
+export type AddWorkspaceMemberRequest = {
+    userId: string;
 };
 
 export type GetSettingsData = {
@@ -1434,156 +1308,7 @@ export type RevokeResponses = {
 
 export type RevokeResponse = RevokeResponses[keyof RevokeResponses];
 
-export type CurrentData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/me/credential';
-};
-
-export type CurrentErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type CurrentError = CurrentErrors[keyof CurrentErrors];
-
-export type CurrentResponses = {
-    200: CurrentCredentialResponseDto;
-};
-
-export type CurrentResponse = CurrentResponses[keyof CurrentResponses];
-
 export type FindAll2Data = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/tokens';
-};
-
-export type FindAll2Errors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type FindAll2Error = FindAll2Errors[keyof FindAll2Errors];
-
-export type FindAll2Responses = {
-    200: Array<ApiTokenResponseDto>;
-};
-
-export type FindAll2Response = FindAll2Responses[keyof FindAll2Responses];
-
-export type Create2Data = {
-    body: CreateApiTokenRequest;
-    path?: never;
-    query?: never;
-    url: '/api/v1/tokens';
-};
-
-export type Create2Errors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * TOKEN_002 / TOKEN_008 — Requested scopes exceed the caller’s own permissions, or the caller is not a member of a requested organization
-     *
-     * FLAG_003 — The "api_token_creation" feature is switched off for the caller
-     */
-    403: ProblemDetailsDto;
-    /**
-     * TOKEN_009 — Active token limit reached
-     */
-    409: ProblemDetailsDto;
-    /**
-     * RATE_001 — Rate limit reached
-     */
-    429: ProblemDetailsDto;
-};
-
-export type Create2Error = Create2Errors[keyof Create2Errors];
-
-export type Create2Responses = {
-    201: CreatedApiTokenResponseDto;
-};
-
-export type Create2Response = Create2Responses[keyof Create2Responses];
-
-export type Permissions2Data = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/tokens/permissions';
-};
-
-export type Permissions2Errors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type Permissions2Error = Permissions2Errors[keyof Permissions2Errors];
-
-export type Permissions2Responses = {
-    200: PermissionCatalogResponseDto;
-};
-
-export type Permissions2Response = Permissions2Responses[keyof Permissions2Responses];
-
-export type Revoke2Data = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/tokens/{id}';
-};
-
-export type Revoke2Errors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * TOKEN_001 — Token not found
-     */
-    404: ProblemDetailsDto;
-};
-
-export type Revoke2Error = Revoke2Errors[keyof Revoke2Errors];
-
-export type Revoke2Responses = {
-    /**
-     * Token revoked
-     */
-    204: void;
-};
-
-export type Revoke2Response = Revoke2Responses[keyof Revoke2Responses];
-
-export type FindAll3Data = {
     body?: never;
     path?: never;
     query?: {
@@ -1603,7 +1328,7 @@ export type FindAll3Data = {
     url: '/api/v1/roles';
 };
 
-export type FindAll3Errors = {
+export type FindAll2Errors = {
     /**
      * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
      */
@@ -1614,22 +1339,22 @@ export type FindAll3Errors = {
     403: ProblemDetailsDto;
 };
 
-export type FindAll3Error = FindAll3Errors[keyof FindAll3Errors];
+export type FindAll2Error = FindAll2Errors[keyof FindAll2Errors];
 
-export type FindAll3Responses = {
+export type FindAll2Responses = {
     200: PaginatedRolesResponseDto;
 };
 
-export type FindAll3Response = FindAll3Responses[keyof FindAll3Responses];
+export type FindAll2Response = FindAll2Responses[keyof FindAll2Responses];
 
-export type Create3Data = {
+export type Create2Data = {
     body: CreateRoleRequest;
     path?: never;
     query?: never;
     url: '/api/v1/roles';
 };
 
-export type Create3Errors = {
+export type Create2Errors = {
     /**
      * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
      */
@@ -1644,13 +1369,13 @@ export type Create3Errors = {
     409: ProblemDetailsDto;
 };
 
-export type Create3Error = Create3Errors[keyof Create3Errors];
+export type Create2Error = Create2Errors[keyof Create2Errors];
 
-export type Create3Responses = {
+export type Create2Responses = {
     201: RoleResponseDto;
 };
 
-export type Create3Response = Create3Responses[keyof Create3Responses];
+export type Create2Response = Create2Responses[keyof Create2Responses];
 
 export type Remove2Data = {
     body?: never;
@@ -1838,6 +1563,504 @@ export type AssignResponses = {
 
 export type AssignResponse = AssignResponses[keyof AssignResponses];
 
+export type GetClientFeatureFlagsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Client build, semver
+         */
+        appVersion?: string;
+        platform?: 'web' | 'ios' | 'android';
+    };
+    url: '/api/v1/feature-flags';
+};
+
+export type GetClientFeatureFlagsResponses = {
+    200: ClientFeatureFlagsResponseDto;
+};
+
+export type GetClientFeatureFlagsResponse = GetClientFeatureFlagsResponses[keyof GetClientFeatureFlagsResponses];
+
+export type FindFlagChangesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        page?: number;
+        subjectKey?: string;
+        subjectType?: 'flag' | 'segment';
+    };
+    url: '/api/v1/feature-flags/changes';
+};
+
+export type FindFlagChangesErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+};
+
+export type FindFlagChangesError = FindFlagChangesErrors[keyof FindFlagChangesErrors];
+
+export type FindFlagChangesResponses = {
+    200: PaginatedFlagChangesResponseDto;
+};
+
+export type FindFlagChangesResponse = FindFlagChangesResponses[keyof FindFlagChangesResponses];
+
+export type FindFlagSegmentsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/feature-flags/segments';
+};
+
+export type FindFlagSegmentsErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+};
+
+export type FindFlagSegmentsError = FindFlagSegmentsErrors[keyof FindFlagSegmentsErrors];
+
+export type FindFlagSegmentsResponses = {
+    200: Array<FlagSegmentResponseDto>;
+};
+
+export type FindFlagSegmentsResponse = FindFlagSegmentsResponses[keyof FindFlagSegmentsResponses];
+
+export type CreateFlagSegmentData = {
+    body: CreateFlagSegmentRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/feature-flags/segments';
+};
+
+export type CreateFlagSegmentErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+    /**
+     * FLAG_005 — Segment key taken
+     */
+    409: ProblemDetailsDto;
+    /**
+     * FLAG_007 — Invalid segment conditions
+     */
+    422: ProblemDetailsDto;
+};
+
+export type CreateFlagSegmentError = CreateFlagSegmentErrors[keyof CreateFlagSegmentErrors];
+
+export type CreateFlagSegmentResponses = {
+    201: FlagSegmentResponseDto;
+};
+
+export type CreateFlagSegmentResponse = CreateFlagSegmentResponses[keyof CreateFlagSegmentResponses];
+
+export type DeleteFlagSegmentData = {
+    body?: never;
+    path: {
+        key: string;
+    };
+    query?: {
+        /**
+         * Why, for the audit trail
+         */
+        comment?: string;
+    };
+    url: '/api/v1/feature-flags/segments/{key}';
+};
+
+export type DeleteFlagSegmentErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+    /**
+     * FLAG_004 — Segment not found
+     */
+    404: ProblemDetailsDto;
+    /**
+     * FLAG_006 — Still targeted by a flag
+     */
+    409: ProblemDetailsDto;
+};
+
+export type DeleteFlagSegmentError = DeleteFlagSegmentErrors[keyof DeleteFlagSegmentErrors];
+
+export type DeleteFlagSegmentResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteFlagSegmentResponse = DeleteFlagSegmentResponses[keyof DeleteFlagSegmentResponses];
+
+export type UpdateFlagSegmentData = {
+    body: UpdateFlagSegmentRequest;
+    path: {
+        key: string;
+    };
+    query?: never;
+    url: '/api/v1/feature-flags/segments/{key}';
+};
+
+export type UpdateFlagSegmentErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+    /**
+     * FLAG_004 — Segment not found
+     */
+    404: ProblemDetailsDto;
+    /**
+     * FLAG_007 — Invalid segment conditions
+     */
+    422: ProblemDetailsDto;
+};
+
+export type UpdateFlagSegmentError = UpdateFlagSegmentErrors[keyof UpdateFlagSegmentErrors];
+
+export type UpdateFlagSegmentResponses = {
+    200: FlagSegmentResponseDto;
+};
+
+export type UpdateFlagSegmentResponse = UpdateFlagSegmentResponses[keyof UpdateFlagSegmentResponses];
+
+export type FindFeatureFlagsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/feature-flags/admin';
+};
+
+export type FindFeatureFlagsErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+};
+
+export type FindFeatureFlagsError = FindFeatureFlagsErrors[keyof FindFeatureFlagsErrors];
+
+export type FindFeatureFlagsResponses = {
+    200: Array<FeatureFlagResponseDto>;
+};
+
+export type FindFeatureFlagsResponse = FindFeatureFlagsResponses[keyof FindFeatureFlagsResponses];
+
+export type EvaluateFeatureFlagData = {
+    body?: never;
+    path: {
+        key: string;
+    };
+    query?: never;
+    url: '/api/v1/feature-flags/admin/{key}/evaluate';
+};
+
+export type EvaluateFeatureFlagErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+    /**
+     * FLAG_001 — No such flag in the catalog
+     */
+    404: ProblemDetailsDto;
+};
+
+export type EvaluateFeatureFlagError = EvaluateFeatureFlagErrors[keyof EvaluateFeatureFlagErrors];
+
+export type EvaluateFeatureFlagResponses = {
+    200: FlagEvaluationResponseDto;
+};
+
+export type EvaluateFeatureFlagResponse = EvaluateFeatureFlagResponses[keyof EvaluateFeatureFlagResponses];
+
+export type FindFeatureFlagData = {
+    body?: never;
+    path: {
+        key: string;
+    };
+    query?: never;
+    url: '/api/v1/feature-flags/admin/{key}';
+};
+
+export type FindFeatureFlagErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+    /**
+     * FLAG_001 — No such flag in the catalog
+     */
+    404: ProblemDetailsDto;
+};
+
+export type FindFeatureFlagError = FindFeatureFlagErrors[keyof FindFeatureFlagErrors];
+
+export type FindFeatureFlagResponses = {
+    200: FeatureFlagResponseDto;
+};
+
+export type FindFeatureFlagResponse = FindFeatureFlagResponses[keyof FindFeatureFlagResponses];
+
+export type ToggleFeatureFlagData = {
+    body: ToggleFeatureFlagRequest;
+    path: {
+        key: string;
+    };
+    query?: never;
+    url: '/api/v1/feature-flags/admin/{key}';
+};
+
+export type ToggleFeatureFlagErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+    /**
+     * FLAG_001 — No such flag in the catalog
+     */
+    404: ProblemDetailsDto;
+};
+
+export type ToggleFeatureFlagError = ToggleFeatureFlagErrors[keyof ToggleFeatureFlagErrors];
+
+export type ToggleFeatureFlagResponses = {
+    200: FeatureFlagResponseDto;
+};
+
+export type ToggleFeatureFlagResponse = ToggleFeatureFlagResponses[keyof ToggleFeatureFlagResponses];
+
+export type UpdateFeatureFlagData = {
+    body: UpdateFeatureFlagRequest;
+    path: {
+        key: string;
+    };
+    query?: never;
+    url: '/api/v1/feature-flags/admin/{key}';
+};
+
+export type UpdateFeatureFlagErrors = {
+    /**
+     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
+     */
+    401: ProblemDetailsDto;
+    /**
+     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
+     */
+    403: ProblemDetailsDto;
+    /**
+     * FLAG_001 — No such flag in the catalog
+     */
+    404: ProblemDetailsDto;
+    /**
+     * FLAG_002 — Targeting serves a value the flag does not take, or targets a missing segment
+     */
+    422: ProblemDetailsDto;
+};
+
+export type UpdateFeatureFlagError = UpdateFeatureFlagErrors[keyof UpdateFeatureFlagErrors];
+
+export type UpdateFeatureFlagResponses = {
+    200: FeatureFlagResponseDto;
+};
+
+export type UpdateFeatureFlagResponse = UpdateFeatureFlagResponses[keyof UpdateFeatureFlagResponses];
+
+export type CheckData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/health';
+};
+
+export type CheckErrors = {
+    /**
+     * The Health Check is not successful
+     */
+    503: {
+        status?: string;
+        info?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        error?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        details?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        };
+    };
+};
+
+export type CheckError = CheckErrors[keyof CheckErrors];
+
+export type CheckResponses = {
+    /**
+     * App is alive
+     *
+     * The Health Check is successful
+     */
+    200: {
+        status?: string;
+        info?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        error?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        details?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        };
+    };
+};
+
+export type CheckResponse = CheckResponses[keyof CheckResponses];
+
+export type DeploymentCapabilitiesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/health/capabilities';
+};
+
+export type DeploymentCapabilitiesResponses = {
+    /**
+     * Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
+     */
+    200: CapabilitiesResponseDto;
+};
+
+export type DeploymentCapabilitiesResponse = DeploymentCapabilitiesResponses[keyof DeploymentCapabilitiesResponses];
+
+export type ReadinessData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/ready';
+};
+
+export type ReadinessErrors = {
+    /**
+     * The Health Check is not successful
+     */
+    503: {
+        status?: string;
+        info?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        error?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        details?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        };
+    };
+};
+
+export type ReadinessError = ReadinessErrors[keyof ReadinessErrors];
+
+export type ReadinessResponses = {
+    /**
+     * App is ready to receive traffic
+     *
+     * The Health Check is successful
+     */
+    200: {
+        status?: string;
+        info?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        error?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        } | null;
+        details?: {
+            [key: string]: {
+                status: string;
+                [key: string]: unknown;
+            };
+        };
+    };
+};
+
+export type ReadinessResponse = ReadinessResponses[keyof ReadinessResponses];
+
 export type List2Data = {
     body?: never;
     path?: never;
@@ -1878,14 +2101,14 @@ export type List2Responses = {
 
 export type List2Response = List2Responses[keyof List2Responses];
 
-export type Create4Data = {
+export type Create3Data = {
     body: CreateOrganizationRequest;
     path?: never;
     query?: never;
     url: '/api/v1/organizations';
 };
 
-export type Create4Errors = {
+export type Create3Errors = {
     /**
      * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
      */
@@ -1910,13 +2133,13 @@ export type Create4Errors = {
     502: ProblemDetailsDto;
 };
 
-export type Create4Error = Create4Errors[keyof Create4Errors];
+export type Create3Error = Create3Errors[keyof Create3Errors];
 
-export type Create4Responses = {
+export type Create3Responses = {
     201: OrganizationResponseDto;
 };
 
-export type Create4Response = Create4Responses[keyof Create4Responses];
+export type Create3Response = Create3Responses[keyof Create3Responses];
 
 export type CheckSlugData = {
     body: CheckSlugRequest;
@@ -2763,14 +2986,14 @@ export type List5Responses = {
 
 export type List5Response = List5Responses[keyof List5Responses];
 
-export type Create5Data = {
+export type Create4Data = {
     body: CreateWorkspaceRequest;
     path?: never;
     query?: never;
     url: '/api/v1/workspaces';
 };
 
-export type Create5Errors = {
+export type Create4Errors = {
     /**
      * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
      */
@@ -2795,13 +3018,13 @@ export type Create5Errors = {
     502: ProblemDetailsDto;
 };
 
-export type Create5Error = Create5Errors[keyof Create5Errors];
+export type Create4Error = Create4Errors[keyof Create4Errors];
 
-export type Create5Responses = {
+export type Create4Responses = {
     201: WorkspaceResponseDto;
 };
 
-export type Create5Response = Create5Responses[keyof Create5Responses];
+export type Create4Response = Create4Responses[keyof Create4Responses];
 
 export type Remove5Data = {
     body?: never;
@@ -3055,501 +3278,3 @@ export type RemoveMemberResponses = {
 };
 
 export type RemoveMemberResponse = RemoveMemberResponses[keyof RemoveMemberResponses];
-
-export type GetClientFeatureFlagsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Client build, semver
-         */
-        appVersion?: string;
-        platform?: 'web' | 'ios' | 'android';
-    };
-    url: '/api/v1/feature-flags';
-};
-
-export type GetClientFeatureFlagsResponses = {
-    200: ClientFeatureFlagsResponseDto;
-};
-
-export type GetClientFeatureFlagsResponse = GetClientFeatureFlagsResponses[keyof GetClientFeatureFlagsResponses];
-
-export type FindFlagChangesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        page?: number;
-        subjectKey?: string;
-        subjectType?: 'flag' | 'segment';
-    };
-    url: '/api/v1/feature-flags/changes';
-};
-
-export type FindFlagChangesErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type FindFlagChangesError = FindFlagChangesErrors[keyof FindFlagChangesErrors];
-
-export type FindFlagChangesResponses = {
-    200: PaginatedFlagChangesResponseDto;
-};
-
-export type FindFlagChangesResponse = FindFlagChangesResponses[keyof FindFlagChangesResponses];
-
-export type FindFlagSegmentsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/feature-flags/segments';
-};
-
-export type FindFlagSegmentsErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type FindFlagSegmentsError = FindFlagSegmentsErrors[keyof FindFlagSegmentsErrors];
-
-export type FindFlagSegmentsResponses = {
-    200: Array<FlagSegmentResponseDto>;
-};
-
-export type FindFlagSegmentsResponse = FindFlagSegmentsResponses[keyof FindFlagSegmentsResponses];
-
-export type CreateFlagSegmentData = {
-    body: CreateFlagSegmentRequest;
-    path?: never;
-    query?: never;
-    url: '/api/v1/feature-flags/segments';
-};
-
-export type CreateFlagSegmentErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * FLAG_005 — Segment key taken
-     */
-    409: ProblemDetailsDto;
-    /**
-     * FLAG_007 — Invalid segment conditions
-     */
-    422: ProblemDetailsDto;
-};
-
-export type CreateFlagSegmentError = CreateFlagSegmentErrors[keyof CreateFlagSegmentErrors];
-
-export type CreateFlagSegmentResponses = {
-    201: FlagSegmentResponseDto;
-};
-
-export type CreateFlagSegmentResponse = CreateFlagSegmentResponses[keyof CreateFlagSegmentResponses];
-
-export type DeleteFlagSegmentData = {
-    body?: never;
-    path: {
-        key: string;
-    };
-    query?: {
-        /**
-         * Why, for the audit trail
-         */
-        comment?: string;
-    };
-    url: '/api/v1/feature-flags/segments/{key}';
-};
-
-export type DeleteFlagSegmentErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * FLAG_004 — Segment not found
-     */
-    404: ProblemDetailsDto;
-    /**
-     * FLAG_006 — Still targeted by a flag
-     */
-    409: ProblemDetailsDto;
-};
-
-export type DeleteFlagSegmentError = DeleteFlagSegmentErrors[keyof DeleteFlagSegmentErrors];
-
-export type DeleteFlagSegmentResponses = {
-    /**
-     * Deleted
-     */
-    204: void;
-};
-
-export type DeleteFlagSegmentResponse = DeleteFlagSegmentResponses[keyof DeleteFlagSegmentResponses];
-
-export type UpdateFlagSegmentData = {
-    body: UpdateFlagSegmentRequest;
-    path: {
-        key: string;
-    };
-    query?: never;
-    url: '/api/v1/feature-flags/segments/{key}';
-};
-
-export type UpdateFlagSegmentErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * FLAG_004 — Segment not found
-     */
-    404: ProblemDetailsDto;
-    /**
-     * FLAG_007 — Invalid segment conditions
-     */
-    422: ProblemDetailsDto;
-};
-
-export type UpdateFlagSegmentError = UpdateFlagSegmentErrors[keyof UpdateFlagSegmentErrors];
-
-export type UpdateFlagSegmentResponses = {
-    200: FlagSegmentResponseDto;
-};
-
-export type UpdateFlagSegmentResponse = UpdateFlagSegmentResponses[keyof UpdateFlagSegmentResponses];
-
-export type FindFeatureFlagsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/feature-flags/admin';
-};
-
-export type FindFeatureFlagsErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-};
-
-export type FindFeatureFlagsError = FindFeatureFlagsErrors[keyof FindFeatureFlagsErrors];
-
-export type FindFeatureFlagsResponses = {
-    200: Array<FeatureFlagResponseDto>;
-};
-
-export type FindFeatureFlagsResponse = FindFeatureFlagsResponses[keyof FindFeatureFlagsResponses];
-
-export type EvaluateFeatureFlagData = {
-    body?: never;
-    path: {
-        key: string;
-    };
-    query?: never;
-    url: '/api/v1/feature-flags/admin/{key}/evaluate';
-};
-
-export type EvaluateFeatureFlagErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * FLAG_001 — No such flag in the catalog
-     */
-    404: ProblemDetailsDto;
-};
-
-export type EvaluateFeatureFlagError = EvaluateFeatureFlagErrors[keyof EvaluateFeatureFlagErrors];
-
-export type EvaluateFeatureFlagResponses = {
-    200: FlagEvaluationResponseDto;
-};
-
-export type EvaluateFeatureFlagResponse = EvaluateFeatureFlagResponses[keyof EvaluateFeatureFlagResponses];
-
-export type FindFeatureFlagData = {
-    body?: never;
-    path: {
-        key: string;
-    };
-    query?: never;
-    url: '/api/v1/feature-flags/admin/{key}';
-};
-
-export type FindFeatureFlagErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * FLAG_001 — No such flag in the catalog
-     */
-    404: ProblemDetailsDto;
-};
-
-export type FindFeatureFlagError = FindFeatureFlagErrors[keyof FindFeatureFlagErrors];
-
-export type FindFeatureFlagResponses = {
-    200: FeatureFlagResponseDto;
-};
-
-export type FindFeatureFlagResponse = FindFeatureFlagResponses[keyof FindFeatureFlagResponses];
-
-export type ToggleFeatureFlagData = {
-    body: ToggleFeatureFlagRequest;
-    path: {
-        key: string;
-    };
-    query?: never;
-    url: '/api/v1/feature-flags/admin/{key}';
-};
-
-export type ToggleFeatureFlagErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * FLAG_001 — No such flag in the catalog
-     */
-    404: ProblemDetailsDto;
-};
-
-export type ToggleFeatureFlagError = ToggleFeatureFlagErrors[keyof ToggleFeatureFlagErrors];
-
-export type ToggleFeatureFlagResponses = {
-    200: FeatureFlagResponseDto;
-};
-
-export type ToggleFeatureFlagResponse = ToggleFeatureFlagResponses[keyof ToggleFeatureFlagResponses];
-
-export type UpdateFeatureFlagData = {
-    body: UpdateFeatureFlagRequest;
-    path: {
-        key: string;
-    };
-    query?: never;
-    url: '/api/v1/feature-flags/admin/{key}';
-};
-
-export type UpdateFeatureFlagErrors = {
-    /**
-     * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
-     */
-    401: ProblemDetailsDto;
-    /**
-     * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
-     */
-    403: ProblemDetailsDto;
-    /**
-     * FLAG_001 — No such flag in the catalog
-     */
-    404: ProblemDetailsDto;
-    /**
-     * FLAG_002 — Targeting serves a value the flag does not take, or targets a missing segment
-     */
-    422: ProblemDetailsDto;
-};
-
-export type UpdateFeatureFlagError = UpdateFeatureFlagErrors[keyof UpdateFeatureFlagErrors];
-
-export type UpdateFeatureFlagResponses = {
-    200: FeatureFlagResponseDto;
-};
-
-export type UpdateFeatureFlagResponse = UpdateFeatureFlagResponses[keyof UpdateFeatureFlagResponses];
-
-export type CheckData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/health';
-};
-
-export type CheckErrors = {
-    /**
-     * The Health Check is not successful
-     */
-    503: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
-};
-
-export type CheckError = CheckErrors[keyof CheckErrors];
-
-export type CheckResponses = {
-    /**
-     * App is alive
-     *
-     * The Health Check is successful
-     */
-    200: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
-};
-
-export type CheckResponse = CheckResponses[keyof CheckResponses];
-
-export type DeploymentCapabilitiesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/health/capabilities';
-};
-
-export type DeploymentCapabilitiesResponses = {
-    /**
-     * Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
-     */
-    200: CapabilitiesResponseDto;
-};
-
-export type DeploymentCapabilitiesResponse = DeploymentCapabilitiesResponses[keyof DeploymentCapabilitiesResponses];
-
-export type ReadinessData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/v1/ready';
-};
-
-export type ReadinessErrors = {
-    /**
-     * The Health Check is not successful
-     */
-    503: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
-};
-
-export type ReadinessError = ReadinessErrors[keyof ReadinessErrors];
-
-export type ReadinessResponses = {
-    /**
-     * App is ready to receive traffic
-     *
-     * The Health Check is successful
-     */
-    200: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
-};
-
-export type ReadinessResponse = ReadinessResponses[keyof ReadinessResponses];

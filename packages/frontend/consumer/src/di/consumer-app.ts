@@ -1,7 +1,5 @@
 import type { FlamaApp } from '@flama/frontend-core';
 // flama:begin api-tokens
-import type { ApiTokensService } from '../modules/api-tokens';
-import { ApiTokensModule } from '../modules/api-tokens';
 // flama:end api-tokens
 // flama:begin organizations
 import type { OrganizationsService } from '../modules/organizations';
@@ -18,7 +16,6 @@ import { TOKENS } from './tokens';
  */
 export const consumerModules = [
   // flama:begin api-tokens
-  ApiTokensModule,
   // flama:end api-tokens
   // flama:begin organizations
   OrganizationsModule,
@@ -56,9 +53,6 @@ export class ConsumerApp {
   }
 
   // flama:begin api-tokens
-  get apiTokens(): ApiTokensService {
-    return this.kernel.container.get(TOKENS.ApiTokensService);
-  }
   // flama:end api-tokens
 
   // flama:begin organizations

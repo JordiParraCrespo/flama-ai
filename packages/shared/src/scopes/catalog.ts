@@ -23,7 +23,6 @@ export const SCOPE_RESOURCES = [
   'invitations',
   'workspaces',
   // flama:begin api-tokens
-  'tokens',
   // flama:end api-tokens
   'flags',
   // flama:plugins scope-resources
@@ -235,29 +234,6 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
     },
   },
   // flama:begin api-tokens
-  {
-    resource: 'tokens',
-    label: 'API tokens',
-    description: "The credential owner's own API tokens.",
-    sensitive: true,
-    levels: {
-      read: {
-        scope: 'tokens:read',
-        label: 'Read',
-        description: 'List the owner’s API tokens (never their secrets).',
-        policies: [{ action: 'read', subject: 'ApiToken' }],
-      },
-      write: {
-        scope: 'tokens:write',
-        label: 'Edit',
-        description: 'Mint and revoke API tokens on the owner’s behalf.',
-        policies: [
-          { action: 'create', subject: 'ApiToken' },
-          { action: 'delete', subject: 'ApiToken' },
-        ],
-      },
-    },
-  },
   // flama:end api-tokens
   {
     resource: 'flags',

@@ -16,7 +16,7 @@ import { DataTableHeader } from './data-table-header';
  * one piece of state it owns is the selection, which is a property of the
  * viewport and not of the query.
  *
- * Every list in `apps/web` is built from this — team, roles and API tokens
+ * Every list in the web apps is built from this — members and roles
  * included, which each had their own card-plus-`Table` before, at their own
  * header height and with their own idea of what an empty one looks like.
  *

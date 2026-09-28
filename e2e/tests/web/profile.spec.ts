@@ -357,48 +357,6 @@ test.describe('the sessions pane', () => {
   });
 
   // flama:begin api-tokens
-  test('leaves an API key’s own session off the device list', async ({ page }) => {
-    // A credential reaching the API mints a Better Auth session for itself, and
-    // those rows used to be drawn here as devices — each with a Sign out
-    // button that revoked nothing the key could not re-mint.
-    const { user, api } = await provisionedUser('sessionskey');
-    await signInAs(page, user);
-    await openProfile(page);
-    await openPane(page, 'Sessions', 'Sessions');
-    const before = await sessionRows(page).count();
-
-    const credential = await page.evaluate(async () => {
-      const response = await fetch('/api/v1/tokens', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name: `e2e-sessions-${Date.now()}`, scopes: ['profile:read'] }),
-      });
-      return {
-        status: response.status,
-        ...((await response.json()) as { id: string; token: string }),
-      };
-    });
-    expect(credential.status).toBe(201);
-
-    const statuses = await page.evaluate(async (secret) => {
-      const codes: number[] = [];
-      for (let call = 0; call < 3; call++) {
-        const response = await fetch('/api/v1/profile', {
-          headers: { authorization: `Bearer ${secret}` },
-        });
-        codes.push(response.status);
-      }
-      return codes;
-    }, credential.token);
-    expect(statuses).toEqual([200, 200, 200]);
-
-    await reloadFromServer(page);
-    await openPane(page, 'Sessions', 'Sessions');
-    await expect(sessionRows(page)).toHaveCount(before);
-
-    await api.dispose();
-  });
   // flama:end api-tokens
 
   test('signs every other device out at once', async ({ page, browser }) => {

@@ -1,11 +1,4 @@
 {
-  "api": {
-    "description": "Crea claves con permisos acotados para que tus herramientas llamen a la API en tu nombre.",
-    "keys": "Claves de API",
-    "manage": "Abrir tokens de API",
-    "manageDescription": "Crea claves, elige qué pueden hacer y revócalas.",
-    "title": "API y webhooks"
-  },
   "general": {
     "description": "Cómo se llama tu espacio de trabajo y cómo lo ve todo el equipo.",
     "logo": "Logotipo",
@@ -19,7 +12,6 @@
     "title": "General"
   },
   "nav": {
-    "api": "API y webhooks",
     "general": "General",
     "integrations": "Integraciones",
     "label": "Secciones de configuración",
@@ -31,6 +23,6 @@
     "sessions": "Sesiones activas",
     "title": "Seguridad"
   },
-  "subtitle": "Tu cuenta, su seguridad y su acceso a la API.",
+  "subtitle": "Tu cuenta y su seguridad.",
   "title": "Configuración"
 }
