@@ -4,6 +4,13 @@
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "feature-flags/testing": [
+        "./dist/feature-flags/testing.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -70,6 +77,12 @@
       "import": "./dist/feature-flags/catalog.js",
       "require": "./dist/feature-flags/catalog.js",
       "default": "./dist/feature-flags/catalog.js"
+    },
+    "./feature-flags/testing": {
+      "types": "./dist/feature-flags/testing.d.ts",
+      "import": "./dist/feature-flags/testing.js",
+      "require": "./dist/feature-flags/testing.js",
+      "default": "./dist/feature-flags/testing.js"
     },
     "./scopes": {
       "types": "./dist/scopes/index.d.ts",

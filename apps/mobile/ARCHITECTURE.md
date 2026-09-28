@@ -27,7 +27,7 @@ they disagree, fix the code or update both together. The tier-wide model is
       │                       ▼
       │                @flama/design-system-mobile  NativeWind + rn-primitives
       │
-      ├──────────────► @flama/frontend-consumer   api-tokens, organizations, profile
+      ├──────────────► @flama/frontend-consumer   organizations, profile
       │                       │
       └──────────────► @flama/frontend-core       auth, users, user-settings,
                               │                   capabilities, analytics, FlamaApp
@@ -125,7 +125,7 @@ the translation keys. `/scaffold-feature` walks the whole process, from the
 render plan to the checks.
 
 Module names this app may use: the kernel's `analytics`, `auth`,
-`capabilities`, `user-settings`, `users`; the consumer product's `api-tokens`,
+`capabilities`, `user-settings`, `users`; the consumer product's
 `organizations`, `profile`; and the app's allowlist entry, `dashboard`.
 Anything else has to become a module of `@flama/frontend-consumer` first.
 
@@ -175,7 +175,6 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
   there is no browser to do it.
 - **`query.ts`** — `createQueryPersistence({ nonPersistedFeatures:
   CONSUMER_NON_PERSISTED_FEATURES })`. That list is the consumer product's:
-  credentials (`apiTokens`) and the profile never reach the on-device MMKV
-  cache, on top of the kernel's `auth` and `userSettings`.
+  the profile never reaches the on-device MMKV cache, on top of the kernel's `auth` and `userSettings`.
   `apps/admin-mobile` calls the same factory with no argument, because the
   admin product names none.

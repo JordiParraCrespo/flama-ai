@@ -177,11 +177,12 @@ describe('defineAbilitiesFor (legacy single-role helper)', () => {
   });
 
   it('forwards the context so scoped fallback permissions still interpolate', () => {
-    // The own-token rules interpolate the caller id; the legacy fallback must
-    // keep that ownership boundary when no database role is available.
-    const ability = defineAbilitiesFor('user', { user: { id: 'user-1' } });
-    expect(ability.can('read', subject('ApiToken', { userId: 'user-1' }))).toBe(true);
-    expect(ability.can('read', subject('ApiToken', { userId: 'user-2' }))).toBe(false);
+    // The owner's rules interpolate the active organization; the legacy
+    // fallback must keep that tenant boundary when no database role is
+    // available.
+    const ability = defineAbilitiesFor('owner', { activeOrganizationId: 'org-1' });
+    expect(ability.can('update', subject('Organization', { id: 'org-1' }))).toBe(true);
+    expect(ability.can('update', subject('Organization', { id: 'org-2' }))).toBe(false);
   });
 });
 

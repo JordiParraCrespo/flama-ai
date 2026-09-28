@@ -14,7 +14,6 @@ export { OpenAPI } from './data-access/api/openapi/core/OpenAPI';
 
 // Services
 export { AccessGrantsApi } from './data-access/api/openapi/services/AccessGrantsApi';
-export { ApiTokensApi } from './data-access/api/openapi/services/ApiTokensApi';
 export { AuthorizationApi } from './data-access/api/openapi/services/AuthorizationApi';
 export { FeatureFlagsApi } from './data-access/api/openapi/services/FeatureFlagsApi';
 export { HealthApi } from './data-access/api/openapi/services/HealthApi';
@@ -32,7 +31,6 @@ export type {
   AccessGrantResponseDto,
   AddMemberRequest,
   AddWorkspaceMemberRequest,
-  ApiTokenResponseDto,
   AssignUserRolesRequest,
   AuthzCatalogResponseDto,
   AuthzResourceDto,
@@ -43,13 +41,10 @@ export type {
   CheckSlugRequest,
   ClientFeatureFlagsResponseDto,
   CreateAccessGrantRequest,
-  CreateApiTokenRequest,
-  CreatedApiTokenResponseDto,
   CreateFlagSegmentRequest,
   CreateOrganizationRequest,
   CreateRoleRequest,
   CreateWorkspaceRequest,
-  CurrentCredentialResponseDto,
   FeatureFlagConfigResponseDto,
   FeatureFlagResponseDto,
   FlagChangePaginationMetaDto,
@@ -72,16 +67,11 @@ export type {
   PaginatedRolesResponseDto,
   PaginatedUsersResponseDto,
   PaginationMetaDto,
-  PermissionCatalogResponseDto,
-  PermissionGroupDto,
   ProblemDetailsDto,
   ProfileResponseDto,
   ResourceActionDto,
   RolePaginationMetaDto,
   RoleResponseDto,
-  ScopeLevelDto,
-  ScopeLevelsDto,
-  ScopePolicyDto,
   SlugAvailabilityResponseDto,
   ToggleFeatureFlagRequest,
   UpdateFeatureFlagRequest,

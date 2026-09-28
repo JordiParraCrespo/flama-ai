@@ -2,7 +2,7 @@
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) first.
 
-The consumer product's domain (`organizations`, `profile`, `api-tokens`) on
+The consumer product's domain (`organizations`, `profile`) on
 top of `@flama/frontend-core`. Platform-free logic only; the UI that renders
 it lives in `apps/web`, `apps/mobile` or the platform kits. The layer model
 and the full "add a module" cookbook are

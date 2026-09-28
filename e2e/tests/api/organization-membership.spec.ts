@@ -1,5 +1,4 @@
-import { expect, request, test } from '@playwright/test';
-import { API_URL } from '../../playwright.config';
+import { expect, test } from '@playwright/test';
 import { expectProblemDocument, signedUpContext } from '../../support/auth';
 import { createOrganization } from '../../support/organizations';
 
@@ -20,29 +19,6 @@ test.describe("the caller's own membership", () => {
       role: 'owner',
     });
 
-    await api.dispose();
-  });
-
-  test('is answered for a token pinned to no organization', async () => {
-    const { api, userId } = await signedUpContext('membershiptoken');
-    await createOrganization(api, 'First workspace');
-    const second = await createOrganization(api, 'Second workspace');
-
-    const minted = await api.post('/api/v1/tokens', {
-      data: { name: 'membership e2e', scopes: ['members:read'] },
-    });
-    expect(minted.status(), 'minting an unrestricted token should succeed').toBe(201);
-    const { token } = (await minted.json()) as { token: string };
-
-    const bearer = await request.newContext({
-      baseURL: API_URL,
-      extraHTTPHeaders: { Authorization: `Bearer ${token}` },
-    });
-    const response = await bearer.get(`/api/v1/organizations/${second}/members/me`);
-    expect(response.status()).toBe(200);
-    expect(await response.json()).toMatchObject({ organizationId: second, userId });
-
-    await bearer.dispose();
     await api.dispose();
   });
 

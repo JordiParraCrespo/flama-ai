@@ -2,7 +2,6 @@
   "menu": "Menú",
   "dashboard": "Panel",
   "logOut": "Cerrar sesión",
-  "apiTokens": "Tokens de API",
   "commandEmpty": "Sin resultados.",
   "commandPlaceholder": "Busca páginas y acciones…",
   "goTo": "Ir a",

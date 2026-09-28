@@ -9,7 +9,6 @@ import { TeamMemberOrmEntity } from '../organizations/database/team-member.orm-e
 // flama:end organizations
 import { UsersModule } from '../users/user.module';
 import { CredentialScopeResolver } from './application/credential-scope.resolver';
-import { ApiTokenRevokedDomainEventHandler } from './application/event-handlers/api-token-revoked.domain-event-handler';
 import { CREDENTIAL_SCOPE, CREDENTIAL_VERIFIER, DELEGATED_SESSION } from './auth.di-tokens';
 import { Account } from './database/account.orm-entity';
 // flama:plugins auth-entity-imports
@@ -28,7 +27,7 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
  * migrated alongside the rest of the app) and exposes the guards that
  * authenticate and authorize requests:
  *
- * - {@link ApiAuthGuard} — authenticates a session or an API token, and
+ * - {@link ApiAuthGuard} — authenticates a session or a scoped credential, and
  *   populates `request.user` / `request.scopeContext`.
  * - {@link PoliciesGuard} — CASL check against the caller's roles.
  * - {@link ScopesGuard} — registered globally in `AppModule`; narrows scoped
@@ -64,7 +63,6 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
     ]),
   ],
   providers: [
-    ApiTokenRevokedDomainEventHandler,
     PoliciesGuard,
     ApiAuthGuard,
     OptionalApiAuthGuard,

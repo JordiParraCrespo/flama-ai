@@ -239,6 +239,8 @@ const BETA = {
     shared: [{ path: 'kit', identifiers: ['the-kit'] }],
     json: [
       { file: 'data.json', path: ['list'], remove: ['b'], at: [1] },
+      // A key of the file itself, as a translation namespace is.
+      { file: 'data.json', path: [], set: { beta: { on: true } }, setAt: [1] },
       { file: 'package.json', path: ['scripts'], set: { beta: 'run beta' }, setAt: [0] },
     ],
   },
@@ -298,11 +300,9 @@ test('an install joins neededBy, edits JSON both ways, and widens the shared blo
 
   // The JSON edits ran backwards, each at its own recorded position — `at` for
   // the array value, `setAt` for the object key, so neither reads the other's.
-  assert.deepEqual(JSON.parse(readFileSync(join(project, 'data.json'), 'utf8')).list, [
-    'a',
-    'b',
-    'c',
-  ]);
+  const data = JSON.parse(readFileSync(join(project, 'data.json'), 'utf8'));
+  assert.deepEqual(data.list, ['a', 'b', 'c']);
+  assert.deepEqual(Object.keys(data), ['list', 'beta', 'map']);
   assert.deepEqual(
     Object.keys(JSON.parse(readFileSync(join(project, 'package.json'), 'utf8')).scripts),
     ['beta'],

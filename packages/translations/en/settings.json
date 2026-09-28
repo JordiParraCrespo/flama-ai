@@ -1,11 +1,4 @@
 {
-  "api": {
-    "description": "Mint scoped keys so your own tools can call the API as you.",
-    "keys": "API keys",
-    "manage": "Open API tokens",
-    "manageDescription": "Create keys, choose what they may do, and revoke them.",
-    "title": "API & webhooks"
-  },
   "general": {
     "description": "How your workspace is named and shown to everyone on the team.",
     "logo": "Logo",
@@ -19,7 +12,6 @@
     "title": "General"
   },
   "nav": {
-    "api": "API & webhooks",
     "general": "General",
     "integrations": "Integrations",
     "label": "Settings sections",
@@ -31,6 +23,6 @@
     "sessions": "Active sessions",
     "title": "Security"
   },
-  "subtitle": "Your account, its security and its API access.",
+  "subtitle": "Your account and its security.",
   "title": "Settings"
 }

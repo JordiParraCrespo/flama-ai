@@ -6,15 +6,15 @@ that file: the templates follow it, not the other way round.
 
 ## Contents
 
-1. Entity and errors (`consumer/src/modules/api-tokens/`)
+1. Entity and errors (`consumer/src/modules/profile/`)
 2. Repository, service, module, tokens, `ConsumerApp`
 3. Query hooks and the key ladder (`consumer/src/react/organizations.queries.ts`)
-4. Route file (`apps/web/src/routes/_authenticated/settings/api-tokens.tsx`)
-5. Screen and section (`features/api-tokens/screens/`, `sections/token-table.tsx`)
-6. Confirm dialog opened from a row (`features/api-tokens/dialogs/revoke-token.tsx`)
+4. Route file (`apps/web/src/routes/_authenticated/profile.tsx`)
+5. Screen and section (`features/profile/screens/`, `sections/session-list.tsx`; the table is the kit's `DataTable`)
+6. Confirm dialog opened from a row (`features/profile/dialogs/revoke-session.tsx`)
 7. Form, web and mobile (`features/organizations/forms/`, `apps/mobile/features/auth/forms/`)
-8. Leaf subscription (`features/api-tokens/components/permission-group-row.tsx`)
-9. E2E spec (`e2e/tests/web/api-tokens.spec.ts`)
+8. Leaf subscription (`packages/frontend/web/src/auth/components/password-checklist.tsx`)
+9. E2E spec (`e2e/tests/web/profile.spec.ts`)
 10. Render-budget spec (`packages/frontend/web/src/table/components/data-table-render.spec.tsx`)
 
 ---

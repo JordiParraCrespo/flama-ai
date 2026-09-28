@@ -41,21 +41,24 @@ every reader the compiler then names.
 ## Reading a flag
 
 ```ts
+// The keys are `TEST_FLAGS`' (`@flama/shared/feature-flags/testing`); a
+// project reads its own from `FEATURE_FLAGS`, which the starter ships empty.
+
 // Client — typed by the catalog; the default until flags load.
-const enabled = useFeatureFlag('api_token_creation');
+const enabled = useFeatureFlag('kill_switch');
 const arm = useFeatureFlagValue('checkout_copy'); // 'control' | 'bold'
 
 // A flow that must not flip mid-way (checkout, transfer, multi-step form)
-const enabled = useFeatureFlag('new_checkout', { sticky: true });
+const enabled = useFeatureFlag('kill_switch', { sticky: true });
 
 // Server — gate the capability, not just the button
 @Post()
-@RequireFlag('api_token_creation')
+@RequireFlag('server_rollout')
 create() {}
 
 // Server — anywhere else
 constructor(@Inject(FLAG_EVALUATOR) private readonly flags: FlagEvaluatorPort) {}
-this.flags.isEnabled('api_token_creation', flagContextOf(request));
+this.flags.isEnabled('server_rollout', flagContextOf(request));
 ```
 
 **A flag that gates a capability gates it on the server too.** Hiding a button

@@ -26,7 +26,7 @@ they disagree, fix the code or update both together. The tier-wide model is
       │                       ▼
       │                @flama/design-system-web   Base UI + Tailwind v4
       │
-      ├──────────────► @flama/frontend-consumer   api-tokens, organizations, profile
+      ├──────────────► @flama/frontend-consumer   organizations, profile
       │                       │
       └──────────────► @flama/frontend-core       auth, users, user-settings,
                               │                   capabilities, analytics, FlamaApp
@@ -47,12 +47,12 @@ loads `@flama/frontend-consumer` and would fail `pnpm arch` for touching
 | Kind | What goes there | Fetch? | Router? | Example in this app |
 | --- | --- | --- | --- | --- |
 | `screens/` | the page body a route mounts | yes | yes | `profile/screens/profile.tsx` |
-| `sections/` | a pane, a card group, a table | yes | yes | `api-tokens/sections/token-table.tsx` |
-| `dialogs/` | one dialog per file, owning its mutation | yes | yes | `api-tokens/dialogs/revoke-token.tsx` |
+| `sections/` | a pane, a card group, a table | yes | yes | `profile/sections/session-list.tsx` |
+| `dialogs/` | one dialog per file, owning its mutation | yes | yes | `profile/dialogs/revoke-session.tsx` |
 | `forms/` | React Hook Form over a shared Zod schema; props in, `onSubmit` out | no | no | `auth/forms/login-form.tsx` |
 | `components/` | entity UI: a row, a badge, a hero, a preview | no | no | `profile/components/session-row.tsx` |
 | `hooks/` | `use-*.ts` over queries and UI state; the only home of an effect | yes | yes | — none yet in this app |
-| `lib/` | types, mappers, constants; no JSX | no | no | `api-tokens/lib/token-status.ts` |
+| `lib/` | types, mappers, constants; no JSX | no | no | `profile/lib/panes.ts` |
 | `__tests__/` | Vitest + Testing Library specs | — | — | — |
 
 `forms-and-components-stay-pure` is the cruiser rule behind the two "no"
@@ -147,7 +147,7 @@ fall out of step with its path.
 ## Add a feature
 
 ```bash
-node scripts/scaffold-feature.mjs --app web --module api-tokens [--screen api-tokens]
+node scripts/scaffold-feature.mjs --app web --module profile [--screen profile]
 ```
 
 It creates the eight kind directories with a note in each and a first screen.
@@ -158,7 +158,7 @@ by the endpoint it reads), add the translation keys, and
 add a spec in `e2e/tests/web/`.
 
 Module names this app may use: the kernel's `analytics`, `auth`,
-`capabilities`, `user-settings`, `users`; the consumer product's `api-tokens`,
+`capabilities`, `user-settings`, `users`; the consumer product's
 `organizations`, `profile`; and the app's allowlist, `dashboard` and `public`.
 Anything else has to become a module of `@flama/frontend-consumer` first — the
 domain leads.

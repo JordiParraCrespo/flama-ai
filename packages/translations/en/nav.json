@@ -2,7 +2,6 @@
   "menu": "Menu",
   "dashboard": "Dashboard",
   "logOut": "Log out",
-  "apiTokens": "API tokens",
   "commandEmpty": "No matches.",
   "commandPlaceholder": "Search pages and actions…",
   "goTo": "Go to",

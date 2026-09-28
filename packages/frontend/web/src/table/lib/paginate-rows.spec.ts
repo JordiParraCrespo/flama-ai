@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { paginateRows } from './paginate-rows';
 
 /**
- * The slice for lists the server hands over whole — members, roles, API tokens.
+ * The slice for lists the server hands over whole — members, roles.
  * The clamping is the part worth pinning: a search that shrinks the list must
  * move the reader to the last page that exists rather than stranding them on an
  * empty table that reads as "your filter matched nothing".

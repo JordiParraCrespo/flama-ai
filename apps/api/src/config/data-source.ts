@@ -1,7 +1,8 @@
 import '@flama/env/load';
 import { OutboxMessageSchema } from '@flama/backend-ddd';
 import { DataSource } from 'typeorm';
-import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
+// flama:begin api-tokens
+// flama:end api-tokens
 import { Account } from '../auth/database/account.orm-entity';
 // flama:plugins entity-imports
 import { Session } from '../auth/database/session.orm-entity';
@@ -44,7 +45,6 @@ export default new DataSource({
     Session,
     Account,
     Verification,
-    ApiTokenOrmEntity,
     // flama:plugins entities
     RoleOrmEntity,
     // flama:begin organizations

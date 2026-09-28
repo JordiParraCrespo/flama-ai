@@ -1,12 +1,19 @@
 import { CLIENT_FEATURE_FLAG_KEYS } from '@flama/shared';
+import { KILL_SWITCH } from '@flama/shared/feature-flags/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FlagSnapshotResolver } from '../application/flag-snapshot.resolver';
 import type { FeatureFlagRepositoryPort } from '../database/feature-flag.repository.port';
 import type { FlagSegmentRepositoryPort } from '../database/flag-segment.repository.port';
 import { FeatureFlagEntity } from '../domain/feature-flag.entity';
 
+// The starter declares no flags; the machinery is tested on a catalog of its own.
+vi.mock('@flama/shared', async (importOriginal) => {
+  const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
+  return withTestFlags(await importOriginal<typeof import('@flama/shared')>());
+});
+
 function killSwitchPulled(): FeatureFlagEntity {
-  const flag = FeatureFlagEntity.createFor('api_token_creation', true);
+  const flag = FeatureFlagEntity.createFor(KILL_SWITCH, true);
   flag.setEnabled(false, { actorId: 'admin' });
   return flag;
 }
@@ -33,16 +40,16 @@ describe('FlagSnapshotResolver', () => {
   });
 
   it('serves every catalog default before anything has loaded', () => {
-    expect(resolver.isEnabled('api_token_creation', {})).toBe(true);
-    expect(resolver.evaluate('api_token_creation', {}).reason).toBe('DEFAULT');
+    expect(resolver.isEnabled(KILL_SWITCH, {})).toBe(true);
+    expect(resolver.evaluate(KILL_SWITCH, {}).reason).toBe('DEFAULT');
   });
 
   it('serves what the database says once loaded', async () => {
     vi.mocked(flags.findAll).mockResolvedValue([killSwitchPulled()]);
     await resolver.refresh();
 
-    expect(resolver.isEnabled('api_token_creation', { userId: 'u1' })).toBe(false);
-    expect(resolver.evaluate('api_token_creation', {}).reason).toBe('DISABLED');
+    expect(resolver.isEnabled(KILL_SWITCH, { userId: 'u1' })).toBe(false);
+    expect(resolver.evaluate(KILL_SWITCH, {}).reason).toBe('DISABLED');
   });
 
   it('keeps the last good snapshot when a reload fails', async () => {
@@ -53,7 +60,7 @@ describe('FlagSnapshotResolver', () => {
     await expect(resolver.refresh()).resolves.toBeUndefined();
 
     // A kill switch must stay pulled through a database blip.
-    expect(resolver.isEnabled('api_token_creation', {})).toBe(false);
+    expect(resolver.isEnabled(KILL_SWITCH, {})).toBe(false);
   });
 
   it('rejects a reload that fails, so the change handler is retried', async () => {
@@ -64,7 +71,7 @@ describe('FlagSnapshotResolver', () => {
   it('is enabled only while a boolean flag serves true', async () => {
     vi.mocked(flags.findAll).mockResolvedValue([killSwitchPulled()]);
     await resolver.refresh();
-    expect(resolver.isEnabled('api_token_creation', {})).toBe(false);
+    expect(resolver.isEnabled(KILL_SWITCH, {})).toBe(false);
   });
 
   it('ignores a row whose key has left the catalog', async () => {
@@ -84,7 +91,7 @@ describe('FlagSnapshotResolver', () => {
 
     const after = resolver.evaluateClientFlags({});
     expect(after.version).not.toBe(before.version);
-    expect(after.flags.api_token_creation).toBe(false);
+    expect(after.flags[KILL_SWITCH]).toBe(false);
   });
 
   it('reports every outage, even when nothing changed during the last one', async () => {

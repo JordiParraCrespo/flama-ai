@@ -2,7 +2,7 @@
 
 The consumer product's browser app: sign-up and sign-in, onboarding into a
 first organization, the dashboard, the profile, and the workspace settings
-(general, security, API tokens). Platform administration is a different app,
+(general, security). Platform administration is a different app,
 [`apps/admin-web`](../admin-web).
 
 ## Stack
@@ -57,8 +57,8 @@ public/
   `@flama/frontend-web` (`packages/frontend/web`).
 - Primitives are in `@flama/design-system-web`.
 - Domain logic is in `@flama/frontend-core` (session, users, user settings,
-  capabilities, analytics) and `@flama/frontend-consumer` (api-tokens,
-  organizations, profile). This app loads the consumer product and never the
+  capabilities, analytics) and `@flama/frontend-consumer`
+  (organizations, profile). This app loads the consumer product and never the
   admin one.
 
 ## More

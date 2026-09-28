@@ -13,7 +13,7 @@ import { FeatureFlagGuard, REQUIRE_FLAG_KEY } from '../guards/feature-flag.guard
  *
  * ```ts
  * @Post()
- * @RequireFlag('api_token_creation')
+ * @RequireFlag('server_rollout')
  * create() {}
  * ```
  *

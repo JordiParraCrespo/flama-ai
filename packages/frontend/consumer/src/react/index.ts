@@ -1,11 +1,5 @@
-export {
-  apiTokensKeys,
-  useApiTokens,
-  useCreateApiToken,
-  useCurrentCredential,
-  usePermissionCatalog,
-  useRevokeApiToken,
-} from './api-tokens.queries';
+// flama:begin api-tokens
+// flama:end api-tokens
 export { useRegister } from './auth.queries';
 export { useConsumerApp } from './context';
 export { CONSUMER_NON_PERSISTED_FEATURES } from './persistence';

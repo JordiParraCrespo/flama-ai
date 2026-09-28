@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptData, AcceptErrors, AcceptResponses, AddData, AddErrors, AddMemberData, AddMemberErrors, AddMemberResponses, AddResponses, AssignData, AssignErrors, AssignResponses, CancelData, CancelErrors, CancelResponses, CatalogData, CatalogErrors, CatalogResponses, ChangePasswordData, ChangePasswordErrors, ChangePasswordResponses, CheckData, CheckErrors, CheckResponses, CheckSlugData, CheckSlugErrors, CheckSlugResponses, Create2Data, Create2Errors, Create2Responses, Create3Data, Create3Errors, Create3Responses, Create4Data, Create4Errors, Create4Responses, Create5Data, Create5Errors, Create5Responses, CreateData, CreateErrors, CreateFlagSegmentData, CreateFlagSegmentErrors, CreateFlagSegmentResponses, CreateResponses, CurrentData, CurrentErrors, CurrentResponses, DeleteAvatarData, DeleteAvatarErrors, DeleteAvatarResponses, DeleteFlagSegmentData, DeleteFlagSegmentErrors, DeleteFlagSegmentResponses, DeploymentCapabilitiesData, DeploymentCapabilitiesResponses, EvaluateFeatureFlagData, EvaluateFeatureFlagErrors, EvaluateFeatureFlagResponses, FindAll2Data, FindAll2Errors, FindAll2Responses, FindAll3Data, FindAll3Errors, FindAll3Responses, FindAllData, FindAllErrors, FindAllResponses, FindFeatureFlagData, FindFeatureFlagErrors, FindFeatureFlagResponses, FindFeatureFlagsData, FindFeatureFlagsErrors, FindFeatureFlagsResponses, FindFlagChangesData, FindFlagChangesErrors, FindFlagChangesResponses, FindFlagSegmentsData, FindFlagSegmentsErrors, FindFlagSegmentsResponses, FindOne2Data, FindOne2Errors, FindOne2Responses, FindOneData, FindOneErrors, FindOneResponses, FindSessionsData, FindSessionsErrors, FindSessionsResponses, FindUserRolesData, FindUserRolesErrors, FindUserRolesResponses, GetClientFeatureFlagsData, GetClientFeatureFlagsResponses, GetData, GetErrors, GetFullData, GetFullErrors, GetFullResponses, GetMembershipData, GetMembershipErrors, GetMembershipResponses, GetProfileData, GetProfileErrors, GetProfileResponses, GetResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, InviteData, InviteErrors, InviteResponses, LeaveData, LeaveErrors, LeaveResponses, List2Data, List2Errors, List2Responses, List3Data, List3Errors, List3Responses, List4Data, List4Errors, List4Responses, List5Data, List5Errors, List5Responses, ListData, ListErrors, ListMembersData, ListMembersErrors, ListMembersResponses, ListMine2Data, ListMine2Errors, ListMine2Responses, ListMineData, ListMineErrors, ListMineResponses, ListResponses, MeData, MeErrors, MeResponses, Permissions2Data, Permissions2Errors, Permissions2Responses, PermissionsData, PermissionsErrors, PermissionsResponses, ReadinessData, ReadinessErrors, ReadinessResponses, RejectData, RejectErrors, RejectResponses, Remove2Data, Remove2Errors, Remove2Responses, Remove3Data, Remove3Errors, Remove3Responses, Remove4Data, Remove4Errors, Remove4Responses, Remove5Data, Remove5Errors, Remove5Responses, RemoveData, RemoveErrors, RemoveMemberData, RemoveMemberErrors, RemoveMemberResponses, RemoveResponses, Revoke2Data, Revoke2Errors, Revoke2Responses, RevokeData, RevokeErrors, RevokeOtherSessionsData, RevokeOtherSessionsErrors, RevokeOtherSessionsResponses, RevokeResponses, RevokeSessionData, RevokeSessionErrors, RevokeSessionResponses, SetActive2Data, SetActive2Errors, SetActive2Responses, SetActiveData, SetActiveErrors, SetActiveResponses, ToggleFeatureFlagData, ToggleFeatureFlagErrors, ToggleFeatureFlagResponses, Update2Data, Update2Errors, Update2Responses, Update3Data, Update3Errors, Update3Responses, Update4Data, Update4Errors, Update4Responses, UpdateData, UpdateErrors, UpdateFeatureFlagData, UpdateFeatureFlagErrors, UpdateFeatureFlagResponses, UpdateFlagSegmentData, UpdateFlagSegmentErrors, UpdateFlagSegmentResponses, UpdatePermissionsData, UpdatePermissionsErrors, UpdatePermissionsResponses, UpdateProfileData, UpdateProfileErrors, UpdateProfileResponses, UpdateResponses, UpdateRoleData, UpdateRoleErrors, UpdateRoleResponses, UpdateSettingsData, UpdateSettingsErrors, UpdateSettingsResponses, UploadAvatarData, UploadAvatarErrors, UploadAvatarResponses } from './types.gen';
+import type { AcceptData, AcceptErrors, AcceptResponses, AddData, AddErrors, AddMemberData, AddMemberErrors, AddMemberResponses, AddResponses, AssignData, AssignErrors, AssignResponses, CancelData, CancelErrors, CancelResponses, CatalogData, CatalogErrors, CatalogResponses, ChangePasswordData, ChangePasswordErrors, ChangePasswordResponses, CheckData, CheckErrors, CheckResponses, CheckSlugData, CheckSlugErrors, CheckSlugResponses, Create2Data, Create2Errors, Create2Responses, Create3Data, Create3Errors, Create3Responses, Create4Data, Create4Errors, Create4Responses, CreateData, CreateErrors, CreateFlagSegmentData, CreateFlagSegmentErrors, CreateFlagSegmentResponses, CreateResponses, DeleteAvatarData, DeleteAvatarErrors, DeleteAvatarResponses, DeleteFlagSegmentData, DeleteFlagSegmentErrors, DeleteFlagSegmentResponses, DeploymentCapabilitiesData, DeploymentCapabilitiesResponses, EvaluateFeatureFlagData, EvaluateFeatureFlagErrors, EvaluateFeatureFlagResponses, FindAll2Data, FindAll2Errors, FindAll2Responses, FindAllData, FindAllErrors, FindAllResponses, FindFeatureFlagData, FindFeatureFlagErrors, FindFeatureFlagResponses, FindFeatureFlagsData, FindFeatureFlagsErrors, FindFeatureFlagsResponses, FindFlagChangesData, FindFlagChangesErrors, FindFlagChangesResponses, FindFlagSegmentsData, FindFlagSegmentsErrors, FindFlagSegmentsResponses, FindOne2Data, FindOne2Errors, FindOne2Responses, FindOneData, FindOneErrors, FindOneResponses, FindSessionsData, FindSessionsErrors, FindSessionsResponses, FindUserRolesData, FindUserRolesErrors, FindUserRolesResponses, GetClientFeatureFlagsData, GetClientFeatureFlagsResponses, GetData, GetErrors, GetFullData, GetFullErrors, GetFullResponses, GetMembershipData, GetMembershipErrors, GetMembershipResponses, GetProfileData, GetProfileErrors, GetProfileResponses, GetResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, InviteData, InviteErrors, InviteResponses, LeaveData, LeaveErrors, LeaveResponses, List2Data, List2Errors, List2Responses, List3Data, List3Errors, List3Responses, List4Data, List4Errors, List4Responses, List5Data, List5Errors, List5Responses, ListData, ListErrors, ListMembersData, ListMembersErrors, ListMembersResponses, ListMine2Data, ListMine2Errors, ListMine2Responses, ListMineData, ListMineErrors, ListMineResponses, ListResponses, MeData, MeErrors, MeResponses, PermissionsData, PermissionsErrors, PermissionsResponses, ReadinessData, ReadinessErrors, ReadinessResponses, RejectData, RejectErrors, RejectResponses, Remove2Data, Remove2Errors, Remove2Responses, Remove3Data, Remove3Errors, Remove3Responses, Remove4Data, Remove4Errors, Remove4Responses, Remove5Data, Remove5Errors, Remove5Responses, RemoveData, RemoveErrors, RemoveMemberData, RemoveMemberErrors, RemoveMemberResponses, RemoveResponses, RevokeData, RevokeErrors, RevokeOtherSessionsData, RevokeOtherSessionsErrors, RevokeOtherSessionsResponses, RevokeResponses, RevokeSessionData, RevokeSessionErrors, RevokeSessionResponses, SetActive2Data, SetActive2Errors, SetActive2Responses, SetActiveData, SetActiveErrors, SetActiveResponses, ToggleFeatureFlagData, ToggleFeatureFlagErrors, ToggleFeatureFlagResponses, Update2Data, Update2Errors, Update2Responses, Update3Data, Update3Errors, Update3Responses, Update4Data, Update4Errors, Update4Responses, UpdateData, UpdateErrors, UpdateFeatureFlagData, UpdateFeatureFlagErrors, UpdateFeatureFlagResponses, UpdateFlagSegmentData, UpdateFlagSegmentErrors, UpdateFlagSegmentResponses, UpdatePermissionsData, UpdatePermissionsErrors, UpdatePermissionsResponses, UpdateProfileData, UpdateProfileErrors, UpdateProfileResponses, UpdateResponses, UpdateRoleData, UpdateRoleErrors, UpdateRoleResponses, UpdateSettingsData, UpdateSettingsErrors, UpdateSettingsResponses, UploadAvatarData, UploadAvatarErrors, UploadAvatarResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -242,68 +242,9 @@ export const revoke = <ThrowOnError extends boolean = false>(options: Options<Re
 });
 
 /**
- * Describe the calling credential and its effective permissions
- *
- * Returns the credential kind, its granted scopes and what those scopes actually amount to once the owner’s roles are applied. The MCP server filters its tool list by `effectiveScopes`.
- */
-export const current = <ThrowOnError extends boolean = false>(options?: Options<CurrentData, ThrowOnError>): RequestResult<CurrentResponses, CurrentErrors, ThrowOnError> => (options?.client ?? client).get<CurrentResponses, CurrentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/me/credential',
-    ...options
-});
-
-/**
- * List the caller’s API tokens
- *
- * Secrets are never returned — only the display prefix and metadata.
- */
-export const findAll2 = <ThrowOnError extends boolean = false>(options?: Options<FindAll2Data, ThrowOnError>): RequestResult<FindAll2Responses, FindAll2Errors, ThrowOnError> => (options?.client ?? client).get<FindAll2Responses, FindAll2Errors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/tokens',
-    ...options
-});
-
-/**
- * Mint an API token
- *
- * Creates a scoped API token for the caller. The secret is returned once and cannot be retrieved again. Scopes may not exceed what the caller is themselves permitted to do.
- */
-export const create2 = <ThrowOnError extends boolean = false>(options: Options<Create2Data, ThrowOnError>): RequestResult<Create2Responses, Create2Errors, ThrowOnError> => (options.client ?? client).post<Create2Responses, Create2Errors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/tokens',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List the permission catalog and what the caller may grant
- *
- * Drives the permission picker on the token-creation screen and the CLI’s --permissions validation.
- */
-export const permissions2 = <ThrowOnError extends boolean = false>(options?: Options<Permissions2Data, ThrowOnError>): RequestResult<Permissions2Responses, Permissions2Errors, ThrowOnError> => (options?.client ?? client).get<Permissions2Responses, Permissions2Errors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/tokens/permissions',
-    ...options
-});
-
-/**
- * Revoke an API token
- *
- * Takes effect immediately. The record is kept so the audit trail survives; the secret stops working.
- */
-export const revoke2 = <ThrowOnError extends boolean = false>(options: Options<Revoke2Data, ThrowOnError>): RequestResult<Revoke2Responses, Revoke2Errors, ThrowOnError> => (options.client ?? client).delete<Revoke2Responses, Revoke2Errors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/tokens/{id}',
-    ...options
-});
-
-/**
  * List all roles
  */
-export const findAll3 = <ThrowOnError extends boolean = false>(options?: Options<FindAll3Data, ThrowOnError>): RequestResult<FindAll3Responses, FindAll3Errors, ThrowOnError> => (options?.client ?? client).get<FindAll3Responses, FindAll3Errors, ThrowOnError>({
+export const findAll2 = <ThrowOnError extends boolean = false>(options?: Options<FindAll2Data, ThrowOnError>): RequestResult<FindAll2Responses, FindAll2Errors, ThrowOnError> => (options?.client ?? client).get<FindAll2Responses, FindAll2Errors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/roles',
     ...options
@@ -312,7 +253,7 @@ export const findAll3 = <ThrowOnError extends boolean = false>(options?: Options
 /**
  * Create role
  */
-export const create3 = <ThrowOnError extends boolean = false>(options: Options<Create3Data, ThrowOnError>): RequestResult<Create3Responses, Create3Errors, ThrowOnError> => (options.client ?? client).post<Create3Responses, Create3Errors, ThrowOnError>({
+export const create2 = <ThrowOnError extends boolean = false>(options: Options<Create2Data, ThrowOnError>): RequestResult<Create2Responses, Create2Errors, ThrowOnError> => (options.client ?? client).post<Create2Responses, Create2Errors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/roles',
     ...options,
@@ -389,6 +330,146 @@ export const assign = <ThrowOnError extends boolean = false>(options: Options<As
 });
 
 /**
+ * The caller’s feature flags
+ *
+ * Every client-visible flag, evaluated for the caller: their user, their active organization, and the platform and build the client reports. Values only — targeting rules never leave the server. Works signed out.
+ */
+export const getClientFeatureFlags = <ThrowOnError extends boolean = false>(options?: Options<GetClientFeatureFlagsData, ThrowOnError>): RequestResult<GetClientFeatureFlagsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetClientFeatureFlagsResponses, unknown, ThrowOnError>({ url: '/api/v1/feature-flags', ...options });
+
+/**
+ * Feature flag audit trail
+ *
+ * Who changed which flag or segment, when, why, and what it was before and after.
+ */
+export const findFlagChanges = <ThrowOnError extends boolean = false>(options?: Options<FindFlagChangesData, ThrowOnError>): RequestResult<FindFlagChangesResponses, FindFlagChangesErrors, ThrowOnError> => (options?.client ?? client).get<FindFlagChangesResponses, FindFlagChangesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/changes',
+    ...options
+});
+
+/**
+ * List flag segments and the flags that target them
+ */
+export const findFlagSegments = <ThrowOnError extends boolean = false>(options?: Options<FindFlagSegmentsData, ThrowOnError>): RequestResult<FindFlagSegmentsResponses, FindFlagSegmentsErrors, ThrowOnError> => (options?.client ?? client).get<FindFlagSegmentsResponses, FindFlagSegmentsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/segments',
+    ...options
+});
+
+/**
+ * Create a flag segment
+ */
+export const createFlagSegment = <ThrowOnError extends boolean = false>(options: Options<CreateFlagSegmentData, ThrowOnError>): RequestResult<CreateFlagSegmentResponses, CreateFlagSegmentErrors, ThrowOnError> => (options.client ?? client).post<CreateFlagSegmentResponses, CreateFlagSegmentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/segments',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a flag segment no flag targets
+ */
+export const deleteFlagSegment = <ThrowOnError extends boolean = false>(options: Options<DeleteFlagSegmentData, ThrowOnError>): RequestResult<DeleteFlagSegmentResponses, DeleteFlagSegmentErrors, ThrowOnError> => (options.client ?? client).delete<DeleteFlagSegmentResponses, DeleteFlagSegmentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/segments/{key}',
+    ...options
+});
+
+/**
+ * Update a flag segment
+ *
+ * Every flag that targets the segment follows the change.
+ */
+export const updateFlagSegment = <ThrowOnError extends boolean = false>(options: Options<UpdateFlagSegmentData, ThrowOnError>): RequestResult<UpdateFlagSegmentResponses, UpdateFlagSegmentErrors, ThrowOnError> => (options.client ?? client).patch<UpdateFlagSegmentResponses, UpdateFlagSegmentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/segments/{key}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List feature flags with their targeting
+ *
+ * Every flag the code declares, with its catalog definition and — once saved — its targeting on this deployment.
+ */
+export const findFeatureFlags = <ThrowOnError extends boolean = false>(options?: Options<FindFeatureFlagsData, ThrowOnError>): RequestResult<FindFeatureFlagsResponses, FindFeatureFlagsErrors, ThrowOnError> => (options?.client ?? client).get<FindFeatureFlagsResponses, FindFeatureFlagsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/admin',
+    ...options
+});
+
+/**
+ * Explain a flag for a given context
+ *
+ * Evaluates the flag for the user, organization, platform and build described in the query — what they would get, and why.
+ */
+export const evaluateFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<EvaluateFeatureFlagData, ThrowOnError>): RequestResult<EvaluateFeatureFlagResponses, EvaluateFeatureFlagErrors, ThrowOnError> => (options.client ?? client).get<EvaluateFeatureFlagResponses, EvaluateFeatureFlagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/admin/{key}/evaluate',
+    ...options
+});
+
+/**
+ * Get a feature flag with its targeting
+ */
+export const findFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<FindFeatureFlagData, ThrowOnError>): RequestResult<FindFeatureFlagResponses, FindFeatureFlagErrors, ThrowOnError> => (options.client ?? client).get<FindFeatureFlagResponses, FindFeatureFlagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/admin/{key}',
+    ...options
+});
+
+/**
+ * Switch a feature flag on or off
+ *
+ * Flips the master switch only. Off serves `false` (or the default variant) to everyone — the kill switch. Takes effect on this replica immediately and on every other within the snapshot poll interval.
+ */
+export const toggleFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<ToggleFeatureFlagData, ThrowOnError>): RequestResult<ToggleFeatureFlagResponses, ToggleFeatureFlagErrors, ThrowOnError> => (options.client ?? client).patch<ToggleFeatureFlagResponses, ToggleFeatureFlagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/admin/{key}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Replace a feature flag’s targeting
+ *
+ * Sets the master switch, the ordered rules and the fallthrough in one write. Recorded on the audit trail with the optional comment.
+ */
+export const updateFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<UpdateFeatureFlagData, ThrowOnError>): RequestResult<UpdateFeatureFlagResponses, UpdateFeatureFlagErrors, ThrowOnError> => (options.client ?? client).put<UpdateFeatureFlagResponses, UpdateFeatureFlagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/feature-flags/admin/{key}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Liveness check
+ */
+export const check = <ThrowOnError extends boolean = false>(options?: Options<CheckData, ThrowOnError>): RequestResult<CheckResponses, CheckErrors, ThrowOnError> => (options?.client ?? client).get<CheckResponses, CheckErrors, ThrowOnError>({ url: '/api/v1/health', ...options });
+
+/**
+ * Client-facing capabilities of this deployment
+ */
+export const deploymentCapabilities = <ThrowOnError extends boolean = false>(options?: Options<DeploymentCapabilitiesData, ThrowOnError>): RequestResult<DeploymentCapabilitiesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DeploymentCapabilitiesResponses, unknown, ThrowOnError>({ url: '/api/v1/health/capabilities', ...options });
+
+/**
+ * Readiness check
+ */
+export const readiness = <ThrowOnError extends boolean = false>(options?: Options<ReadinessData, ThrowOnError>): RequestResult<ReadinessResponses, ReadinessErrors, ThrowOnError> => (options?.client ?? client).get<ReadinessResponses, ReadinessErrors, ThrowOnError>({ url: '/api/v1/ready', ...options });
+
+/**
  * List the caller's organizations
  */
 export const list2 = <ThrowOnError extends boolean = false>(options?: Options<List2Data, ThrowOnError>): RequestResult<List2Responses, List2Errors, ThrowOnError> => (options?.client ?? client).get<List2Responses, List2Errors, ThrowOnError>({
@@ -400,7 +481,7 @@ export const list2 = <ThrowOnError extends boolean = false>(options?: Options<Li
 /**
  * Create an organization
  */
-export const create4 = <ThrowOnError extends boolean = false>(options: Options<Create4Data, ThrowOnError>): RequestResult<Create4Responses, Create4Errors, ThrowOnError> => (options.client ?? client).post<Create4Responses, Create4Errors, ThrowOnError>({
+export const create3 = <ThrowOnError extends boolean = false>(options: Options<Create3Data, ThrowOnError>): RequestResult<Create3Responses, Create3Errors, ThrowOnError> => (options.client ?? client).post<Create3Responses, Create3Errors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/organizations',
     ...options,
@@ -613,7 +694,7 @@ export const list5 = <ThrowOnError extends boolean = false>(options?: Options<Li
 /**
  * Create a workspace
  */
-export const create5 = <ThrowOnError extends boolean = false>(options: Options<Create5Data, ThrowOnError>): RequestResult<Create5Responses, Create5Errors, ThrowOnError> => (options.client ?? client).post<Create5Responses, Create5Errors, ThrowOnError>({
+export const create4 = <ThrowOnError extends boolean = false>(options: Options<Create4Data, ThrowOnError>): RequestResult<Create4Responses, Create4Errors, ThrowOnError> => (options.client ?? client).post<Create4Responses, Create4Errors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/workspaces',
     ...options,
@@ -684,143 +765,3 @@ export const removeMember = <ThrowOnError extends boolean = false>(options: Opti
     url: '/api/v1/workspaces/{id}/members/{userId}',
     ...options
 });
-
-/**
- * The caller’s feature flags
- *
- * Every client-visible flag, evaluated for the caller: their user, their active organization, and the platform and build the client reports. Values only — targeting rules never leave the server. Works signed out.
- */
-export const getClientFeatureFlags = <ThrowOnError extends boolean = false>(options?: Options<GetClientFeatureFlagsData, ThrowOnError>): RequestResult<GetClientFeatureFlagsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetClientFeatureFlagsResponses, unknown, ThrowOnError>({ url: '/api/v1/feature-flags', ...options });
-
-/**
- * Feature flag audit trail
- *
- * Who changed which flag or segment, when, why, and what it was before and after.
- */
-export const findFlagChanges = <ThrowOnError extends boolean = false>(options?: Options<FindFlagChangesData, ThrowOnError>): RequestResult<FindFlagChangesResponses, FindFlagChangesErrors, ThrowOnError> => (options?.client ?? client).get<FindFlagChangesResponses, FindFlagChangesErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/changes',
-    ...options
-});
-
-/**
- * List flag segments and the flags that target them
- */
-export const findFlagSegments = <ThrowOnError extends boolean = false>(options?: Options<FindFlagSegmentsData, ThrowOnError>): RequestResult<FindFlagSegmentsResponses, FindFlagSegmentsErrors, ThrowOnError> => (options?.client ?? client).get<FindFlagSegmentsResponses, FindFlagSegmentsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/segments',
-    ...options
-});
-
-/**
- * Create a flag segment
- */
-export const createFlagSegment = <ThrowOnError extends boolean = false>(options: Options<CreateFlagSegmentData, ThrowOnError>): RequestResult<CreateFlagSegmentResponses, CreateFlagSegmentErrors, ThrowOnError> => (options.client ?? client).post<CreateFlagSegmentResponses, CreateFlagSegmentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/segments',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Delete a flag segment no flag targets
- */
-export const deleteFlagSegment = <ThrowOnError extends boolean = false>(options: Options<DeleteFlagSegmentData, ThrowOnError>): RequestResult<DeleteFlagSegmentResponses, DeleteFlagSegmentErrors, ThrowOnError> => (options.client ?? client).delete<DeleteFlagSegmentResponses, DeleteFlagSegmentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/segments/{key}',
-    ...options
-});
-
-/**
- * Update a flag segment
- *
- * Every flag that targets the segment follows the change.
- */
-export const updateFlagSegment = <ThrowOnError extends boolean = false>(options: Options<UpdateFlagSegmentData, ThrowOnError>): RequestResult<UpdateFlagSegmentResponses, UpdateFlagSegmentErrors, ThrowOnError> => (options.client ?? client).patch<UpdateFlagSegmentResponses, UpdateFlagSegmentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/segments/{key}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List feature flags with their targeting
- *
- * Every flag the code declares, with its catalog definition and — once saved — its targeting on this deployment.
- */
-export const findFeatureFlags = <ThrowOnError extends boolean = false>(options?: Options<FindFeatureFlagsData, ThrowOnError>): RequestResult<FindFeatureFlagsResponses, FindFeatureFlagsErrors, ThrowOnError> => (options?.client ?? client).get<FindFeatureFlagsResponses, FindFeatureFlagsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/admin',
-    ...options
-});
-
-/**
- * Explain a flag for a given context
- *
- * Evaluates the flag for the user, organization, platform and build described in the query — what they would get, and why.
- */
-export const evaluateFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<EvaluateFeatureFlagData, ThrowOnError>): RequestResult<EvaluateFeatureFlagResponses, EvaluateFeatureFlagErrors, ThrowOnError> => (options.client ?? client).get<EvaluateFeatureFlagResponses, EvaluateFeatureFlagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/admin/{key}/evaluate',
-    ...options
-});
-
-/**
- * Get a feature flag with its targeting
- */
-export const findFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<FindFeatureFlagData, ThrowOnError>): RequestResult<FindFeatureFlagResponses, FindFeatureFlagErrors, ThrowOnError> => (options.client ?? client).get<FindFeatureFlagResponses, FindFeatureFlagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/admin/{key}',
-    ...options
-});
-
-/**
- * Switch a feature flag on or off
- *
- * Flips the master switch only. Off serves `false` (or the default variant) to everyone — the kill switch. Takes effect on this replica immediately and on every other within the snapshot poll interval.
- */
-export const toggleFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<ToggleFeatureFlagData, ThrowOnError>): RequestResult<ToggleFeatureFlagResponses, ToggleFeatureFlagErrors, ThrowOnError> => (options.client ?? client).patch<ToggleFeatureFlagResponses, ToggleFeatureFlagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/admin/{key}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Replace a feature flag’s targeting
- *
- * Sets the master switch, the ordered rules and the fallthrough in one write. Recorded on the audit trail with the optional comment.
- */
-export const updateFeatureFlag = <ThrowOnError extends boolean = false>(options: Options<UpdateFeatureFlagData, ThrowOnError>): RequestResult<UpdateFeatureFlagResponses, UpdateFeatureFlagErrors, ThrowOnError> => (options.client ?? client).put<UpdateFeatureFlagResponses, UpdateFeatureFlagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }],
-    url: '/api/v1/feature-flags/admin/{key}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Liveness check
- */
-export const check = <ThrowOnError extends boolean = false>(options?: Options<CheckData, ThrowOnError>): RequestResult<CheckResponses, CheckErrors, ThrowOnError> => (options?.client ?? client).get<CheckResponses, CheckErrors, ThrowOnError>({ url: '/api/v1/health', ...options });
-
-/**
- * Client-facing capabilities of this deployment
- */
-export const deploymentCapabilities = <ThrowOnError extends boolean = false>(options?: Options<DeploymentCapabilitiesData, ThrowOnError>): RequestResult<DeploymentCapabilitiesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DeploymentCapabilitiesResponses, unknown, ThrowOnError>({ url: '/api/v1/health/capabilities', ...options });
-
-/**
- * Readiness check
- */
-export const readiness = <ThrowOnError extends boolean = false>(options?: Options<ReadinessData, ThrowOnError>): RequestResult<ReadinessResponses, ReadinessErrors, ThrowOnError> => (options?.client ?? client).get<ReadinessResponses, ReadinessErrors, ThrowOnError>({ url: '/api/v1/ready', ...options });

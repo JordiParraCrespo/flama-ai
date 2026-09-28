@@ -24,7 +24,7 @@ rule does not hold: the table and the check.
 |---|---|---|
 | `__root.tsx` | — | Always matched, wraps the tree. |
 | `about.tsx` | `/about` | Plain segment. |
-| `settings.api-tokens.tsx` | `/settings/api-tokens` | `.` is a flat spelling of `settings/api-tokens.tsx`. |
+| `settings.security.tsx` | `/settings/security` | `.` is a flat spelling of `settings/security.tsx`. |
 | `settings/index.tsx` | `/settings` | Matches the parent exactly; its id ends in `/`. |
 | `settings/route.tsx` | `/settings` | Directory spelling of the route at that path (its layout). |
 | `tokens/$tokenId.tsx` | `/tokens/$tokenId` | `$param`: `Link to="/tokens/$tokenId" params={{ tokenId }}`. |

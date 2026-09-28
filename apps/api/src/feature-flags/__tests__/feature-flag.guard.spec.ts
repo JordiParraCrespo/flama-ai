@@ -23,7 +23,7 @@ function guardWith(enabled: boolean) {
 
 describe('FeatureFlagGuard', () => {
   const gated = () => {};
-  Reflect.defineMetadata(REQUIRE_FLAG_KEY, 'api_token_creation', gated);
+  Reflect.defineMetadata(REQUIRE_FLAG_KEY, 'kill_switch', gated);
 
   it('lets an ungated route through without evaluating anything', () => {
     const { guard, evaluator } = guardWith(false);
@@ -40,7 +40,7 @@ describe('FeatureFlagGuard', () => {
 
     expect(guard.canActivate(contextFor(gated, request))).toBe(true);
     expect(evaluator.isEnabled).toHaveBeenCalledWith(
-      'api_token_creation',
+      'kill_switch',
       expect.objectContaining({ userId: 'u1', organizationId: 'org-1', email: 'ada@acme.com' }),
     );
   });

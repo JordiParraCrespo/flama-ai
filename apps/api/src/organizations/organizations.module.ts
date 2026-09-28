@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ORGANIZATION_MEMBERSHIP_READER } from '../api-tokens/api-tokens.di-tokens';
+import { ORGANIZATION_MEMBERSHIP } from '../auth/auth.di-tokens';
 import { Session } from '../auth/database/session.orm-entity';
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
@@ -24,8 +24,9 @@ import { WorkspacesService } from './workspaces.service';
  * surface (so the operations appear in the generated `@flama/api-client`). No
  * TypeORM repositories here: the org tables are registered in `AuthModule`.
  */
-// Global for one export: API tokens restricted to an organization check the
-// creator's memberships through it, and without organizations there is none.
+// Global for one export: `ORGANIZATION_MEMBERSHIP`, the kernel's question of
+// which organizations a user is in. A credential restricted to an organization
+// is held to it, and without organizations nothing answers.
 @Global()
 @Module({
   // The user repository enriches member rows with the account behind them;
@@ -53,8 +54,8 @@ import { WorkspacesService } from './workspaces.service';
     OrganizationsService,
     InvitationsService,
     WorkspacesService,
-    { provide: ORGANIZATION_MEMBERSHIP_READER, useClass: OrganizationMembershipRepository },
+    { provide: ORGANIZATION_MEMBERSHIP, useClass: OrganizationMembershipRepository },
   ],
-  exports: [ORGANIZATION_MEMBERSHIP_READER],
+  exports: [ORGANIZATION_MEMBERSHIP],
 })
 export class OrganizationsModule {}

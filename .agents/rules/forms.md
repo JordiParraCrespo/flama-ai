@@ -145,10 +145,10 @@ the note in the repo-root `AGENTS.md`. For forms this means:
 
 - Auth forms import from `@flama/shared/schemas/auth`, which pulls in nothing
   but Zod.
-- `createApiTokenSchema` imports the scope catalog, so the API-token form
-  declares its value type locally and validates with React Hook Form's built-in
-  rules instead. Reach for the same escape hatch for any schema whose
-  transitive imports do not belong in a browser bundle.
+- A schema whose transitive imports do not belong in a browser bundle — one
+  that reads the scope catalog, say — stays out of the form: the form declares
+  its value type locally and validates with React Hook Form's built-in rules
+  instead.
 - A new narrow subpath needs an `exports` entry in `packages/shared/package.json`
   **and** an entry in `optimizeDeps.include` in `apps/web/vite.config.ts`;
   workspace `dist` folders sit outside `node_modules`, so Vite will not

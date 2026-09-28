@@ -1,6 +1,6 @@
 import type { FlamaApp } from '@flama/frontend-core';
-import type { ApiTokensService } from '../modules/api-tokens';
-import { ApiTokensModule } from '../modules/api-tokens';
+// flama:begin api-tokens
+// flama:end api-tokens
 // flama:begin organizations
 import type { OrganizationsService } from '../modules/organizations';
 import { OrganizationsModule } from '../modules/organizations';
@@ -15,7 +15,8 @@ import { TOKENS } from './tokens';
  * `adminModules` instead, and no app loads both.
  */
 export const consumerModules = [
-  ApiTokensModule,
+  // flama:begin api-tokens
+  // flama:end api-tokens
   // flama:begin organizations
   OrganizationsModule,
   // flama:end organizations
@@ -51,9 +52,8 @@ export class ConsumerApp {
     return this.kernel.users;
   }
 
-  get apiTokens(): ApiTokensService {
-    return this.kernel.container.get(TOKENS.ApiTokensService);
-  }
+  // flama:begin api-tokens
+  // flama:end api-tokens
 
   // flama:begin organizations
   get organizations(): OrganizationsService {

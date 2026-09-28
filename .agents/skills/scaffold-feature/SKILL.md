@@ -18,8 +18,8 @@ and you should read them first:
 This skill is the process that gets you there. The rules are applied because
 of the reads and writes the feature makes, not recited from memory.
 
-The reference features: `apps/web/src/features/api-tokens` (a create card, a
-table with a row menu, a confirm dialog) and `packages/frontend/consumer/src/modules/organizations`
+The reference features: `apps/web/src/features/profile` (forms, a list that
+fetches its own rows, a confirm dialog opened from a row) and `packages/frontend/consumer/src/modules/organizations`
 with `react/organizations.queries.ts` (the domain module and its key ladder).
 Read the one closest to your task before writing.
 
@@ -35,7 +35,7 @@ new feature. Before creating anything, answer these:
 - **Which module does the UI render?** A feature is named after a module of
   `packages/frontend/core` (`auth`, `users`, `user-settings`, `capabilities`,
   `analytics`, `feature-flags`) or of the app's product package
-  (`packages/frontend/consumer`: `organizations`, `profile`, `api-tokens`), or
+  (`packages/frontend/consumer`: `organizations`, `profile`), or
   is on the app's allowlist (`dashboard`, `public`). Never name it after a
   page (`settings`, `team`, `home`). `ls packages/frontend/*/src/modules`
   shows what exists.

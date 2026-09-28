@@ -46,15 +46,10 @@
       "AUTH_001": "Inicia sesión para continuar.",
       "AUTH_002": "No tienes permiso para hacer eso.",
       "USER_001": "No se ha encontrado ese usuario.",
-      "TOKEN_001": "No se ha encontrado ese token de API.",
-      "TOKEN_002": "No puedes conceder a un token más acceso del que tienes tú.",
-      "TOKEN_003": "Ese token de API no es válido o ha caducado.",
-      "TOKEN_004": "Ese token de API no puede usarse desde esta red.",
+      "TOKEN_003": "Esa credencial no es válida o ha caducado.",
       "TOKEN_005": "A este token le falta un permiso necesario para esa acción.",
       "TOKEN_006": "Esa acción no puede realizarse con un token de API.",
       "TOKEN_007": "Ese token no tiene alcance sobre esta organización.",
-      "TOKEN_008": "Un token solo puede limitarse a organizaciones a las que perteneces.",
-      "TOKEN_009": "Has alcanzado el número máximo de tokens de API activos.",
       "ROLE_001": "No se ha encontrado ese rol.",
       "ROLE_002": "Ya existe un rol con ese nombre.",
       "ROLE_003": "Los roles del sistema no se pueden eliminar ni renombrar.",
@@ -269,7 +264,6 @@
     "menu": "Menú",
     "dashboard": "Panel",
     "logOut": "Cerrar sesión",
-    "apiTokens": "Tokens de API",
     "commandEmpty": "Sin resultados.",
     "commandPlaceholder": "Busca páginas y acciones…",
     "goTo": "Ir a",
@@ -539,46 +533,6 @@
     "label": "Idioma",
     "en": "English",
     "es": "Español"
-  },
-  "apiTokens": {
-    "title": "Tokens de API",
-    "description": "Los tokens permiten que scripts, CI y agentes de IA actúen en tu nombre solo con los permisos que elijas.",
-    "create": "Crear un token",
-    "createDescription": "Un token nunca puede hacer más que tú. Lo que no tienes permitido aparece desactivado.",
-    "creationPaused": "La creación de tokens está en pausa en este momento. Los tokens que ya tienes siguen funcionando.",
-    "createButton": "Crear token",
-    "name": "Nombre",
-    "namePlaceholder": "Despliegue de CI, Claude, portátil…",
-    "permissions": "Permisos",
-    "permissionsHint": "Editar incluye Leer. Concede lo mínimo necesario.",
-    "organizations": "Organizaciones",
-    "organizationsHint": "Déjalas sin marcar para que el token siga tus membresías.",
-    "expiry": "Caduca",
-    "never": "Nunca",
-    "days": "{{count}} días",
-    "sensitive": "Sensible",
-    "levels": {
-      "none": "Sin acceso"
-    },
-    "yourTokens": "Tus tokens",
-    "yourTokensDescription": "Revocar un token tiene efecto inmediato.",
-    "empty": "Todavía no tienes tokens de API.",
-    "prefix": "Prefijo",
-    "status": "Estado",
-    "lastUsed": "Último uso",
-    "neverUsed": "Nunca",
-    "active": "Activo",
-    "expired": "Caducado",
-    "revoked": "Revocado",
-    "revoke": "Revocar",
-    "revokeTitle": "¿Revocar «{{name}}»?",
-    "revokeDescription": "Todo lo que use este token dejará de funcionar de inmediato. No se puede deshacer.",
-    "created": "Token creado",
-    "shownOnce": "Cópialo ahora: es la única vez que se muestra.",
-    "copy": "Copiar",
-    "copied": "Copiado",
-    "dismiss": "Descartar",
-    "permissionsRequired": "Selecciona al menos un permiso"
   },
   "consent": {
     "title": "{{client}} quiere acceder a tu cuenta",
@@ -978,13 +932,6 @@
     }
   },
   "settings": {
-    "api": {
-      "description": "Crea claves con permisos acotados para que tus herramientas llamen a la API en tu nombre.",
-      "keys": "Claves de API",
-      "manage": "Abrir tokens de API",
-      "manageDescription": "Crea claves, elige qué pueden hacer y revócalas.",
-      "title": "API y webhooks"
-    },
     "general": {
       "description": "Cómo se llama tu espacio de trabajo y cómo lo ve todo el equipo.",
       "logo": "Logotipo",
@@ -998,7 +945,6 @@
       "title": "General"
     },
     "nav": {
-      "api": "API y webhooks",
       "general": "General",
       "integrations": "Integraciones",
       "label": "Secciones de configuración",
@@ -1010,7 +956,7 @@
       "sessions": "Sesiones activas",
       "title": "Seguridad"
     },
-    "subtitle": "Tu cuenta, su seguridad y su acceso a la API.",
+    "subtitle": "Tu cuenta y su seguridad.",
     "title": "Configuración"
   },
   "table": {

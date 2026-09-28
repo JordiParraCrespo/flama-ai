@@ -2,8 +2,8 @@
 
 The consumer product's domain, on top of the kernel. It holds what
 `apps/web` and `apps/mobile` need and the control plane does not:
-organizations (workspaces, members, invitations), the signed-in person's
-profile and sessions, and API tokens. Each module is an entity, an error
+organizations (workspaces, members, invitations) and the signed-in person's
+profile and sessions. Each module is an entity, an error
 catalog, a repository over `@flama/api-client`, a service and an InversifyJS
 `ContainerModule`; `src/react/` turns those services into TanStack Query
 hooks. Like the kernel it is platform-free — the same code runs in the Vite
@@ -18,17 +18,13 @@ An app becomes the consumer product by loading `consumerModules` into
 
 - **di** — `ConsumerApp`, `consumerModules`, `TOKENS` (the kernel's `TOKENS`
   spread, plus `OrganizationsRepository`, `OrganizationsService`,
-  `ProfileRepository`, `ProfileService`, `ApiTokensRepository`,
-  `ApiTokensService`).
+  `ProfileRepository`, `ProfileService`).
 - **modules/organizations** — `OrganizationEntity`,
   `OrganizationMemberEntity`, `OrganizationInvitationEntity`,
   `OrganizationsService`, `OrganizationsRepository`, `OrganizationsModule`,
   `OrganizationsErrors`, `MemberFilters`.
 - **modules/profile** — `ProfileEntity`, `UserSessionEntity`,
   `ProfileService`, `ProfileRepository`, `ProfileModule`, `ProfileErrors`.
-- **modules/api-tokens** — `ApiTokenEntity`, `CreatedApiToken`,
-  `CurrentCredential`, `PermissionCatalog`, `ApiTokensService`,
-  `ApiTokensRepository`, `ApiTokensModule`, `ApiTokensErrors`.
 
 `@flama/frontend-consumer/react` (`src/react/index.ts`):
 
@@ -36,8 +32,6 @@ An app becomes the consumer product by loading `consumerModules` into
 - Profile: `useMyProfile`, `useUpdateMyProfile`, `useChangeOwnPassword`,
   `useUploadAvatar`, `useDeleteAvatar`, `useProfileSessions`,
   `useRevokeProfileSession`, `useRevokeOtherProfileSessions`, `profileKeys`.
-- API tokens: `useApiTokens`, `useCreateApiToken`, `useRevokeApiToken`,
-  `useCurrentCredential`, `usePermissionCatalog`, `apiTokensKeys`.
 - Sign-up: `useRegister` (only this product has a registration flow).
 - `CONSUMER_NON_PERSISTED_FEATURES` — the feature prefixes an app keeps out
   of the persisted query cache.

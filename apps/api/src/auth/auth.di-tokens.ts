@@ -12,6 +12,12 @@ export const DELEGATED_SESSION = Symbol('DELEGATED_SESSION');
 /** Turns the credential on a request into a scope context. */
 export const CREDENTIAL_SCOPE = Symbol('CREDENTIAL_SCOPE');
 
+/** The scoped credential the API accepts beside sessions, when it has one. */
+export const SCOPED_CREDENTIAL = Symbol('SCOPED_CREDENTIAL');
+
+/** The organizations a user belongs to, when the API has organizations. */
+export const ORGANIZATION_MEMBERSHIP = Symbol('ORGANIZATION_MEMBERSHIP');
+
 /** Verifies a presented credential against the identity provider. */
 export const CREDENTIAL_VERIFIER = Symbol('CREDENTIAL_VERIFIER');
 

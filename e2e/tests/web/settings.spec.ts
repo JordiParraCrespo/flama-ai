@@ -33,9 +33,9 @@ test('lists every section', async ({ page }) => {
   // flama:begin organizations
   await expect(nav.getByRole('button', { name: 'General', exact: true })).toBeVisible();
   // flama:end organizations
-  for (const label of ['Security', 'API & webhooks']) {
-    await expect(nav.getByRole('button', { name: label, exact: true })).toBeVisible();
-  }
+  await expect(nav.getByRole('button', { name: 'Security', exact: true })).toBeVisible();
+  // flama:begin api-tokens
+  // flama:end api-tokens
 
   await api.dispose();
 });
@@ -84,17 +84,5 @@ test('Security shows this device among the account’s sessions', async ({ page 
   await api.dispose();
 });
 
-test('the API pane sends the reader to the tokens screen', async ({ page }) => {
-  const { user, api } = await provisionedUser('settingsapi');
-  await signInAs(page, user);
-  await openSettings(page);
-  await openSection(page, 'API & webhooks');
-
-  await expect(page.getByRole('heading', { name: 'API keys', level: 3 })).toBeVisible();
-  await page.getByRole('link', { name: 'Open API tokens' }).click();
-
-  await expect(page).toHaveURL(/\/settings\/api-tokens/);
-  await expect(page.getByRole('heading', { name: 'API tokens', level: 1 })).toBeVisible();
-
-  await api.dispose();
-});
+// flama:begin api-tokens
+// flama:end api-tokens

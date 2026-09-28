@@ -44,7 +44,7 @@ describe('DeleteFlagSegmentCommandHandler', () => {
   });
 
   it('refuses while a flag still targets it, naming the flag', async () => {
-    const flag = FeatureFlagEntity.createFor('api_token_creation', true);
+    const flag = FeatureFlagEntity.createFor('kill_switch', true);
     flag.replaceTargeting(
       {
         enabled: true,
@@ -65,7 +65,7 @@ describe('DeleteFlagSegmentCommandHandler', () => {
       handler.execute(new DeleteFlagSegmentCommand({ key: 'staff', actorId: 'admin-1' })),
     ).rejects.toMatchObject({
       code: FeatureFlagErrors.SEGMENT_IN_USE.code,
-      extensions: { usedBy: ['api_token_creation'] },
+      extensions: { usedBy: ['kill_switch'] },
     });
     expect(segments.delete).not.toHaveBeenCalled();
   });

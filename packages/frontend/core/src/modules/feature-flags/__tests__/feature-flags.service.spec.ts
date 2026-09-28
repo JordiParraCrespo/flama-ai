@@ -1,3 +1,4 @@
+import { CHECKOUT_COPY, KILL_SWITCH } from '@flama/shared/feature-flags/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ANALYTICS_EVENTS } from '../../analytics/analytics.events';
 import type { AnalyticsService } from '../../analytics/analytics.service';
@@ -5,26 +6,12 @@ import { type AuthStore, createAuthStore } from '../../auth/auth.state';
 import type { FeatureFlagsRepository } from '../feature-flags.repository';
 import { FeatureFlagsService } from '../feature-flags.service';
 
-// The shipped catalog holds one ops flag; exposure is only recorded for
-// experiments, so the test gives the catalog one.
+// The starter declares no flags; the machinery is tested on a catalog of its own.
 vi.mock('@flama/shared/feature-flags/catalog', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@flama/shared/feature-flags/catalog')>();
-  return {
-    ...actual,
-    getFlagDefinition: (key: string) =>
-      key === 'checkout_copy'
-        ? {
-            description: 'x',
-            kind: 'experiment',
-            owner: 'x',
-            expiresAt: '2099-01-01',
-            client: true,
-            type: 'variant',
-            variants: ['control', 'bold'],
-            defaultValue: 'control',
-          }
-        : actual.getFlagDefinition(key as never),
-  };
+  const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
+  return withTestFlags(
+    await importOriginal<typeof import('@flama/shared/feature-flags/catalog')>(),
+  );
 });
 
 describe('FeatureFlagsService', () => {
@@ -58,9 +45,9 @@ describe('FeatureFlagsService', () => {
   });
 
   it('records an experiment exposure once per variant', () => {
-    service.recordExposure('checkout_copy' as never, 'bold');
-    service.recordExposure('checkout_copy' as never, 'bold');
-    service.recordExposure('checkout_copy' as never, 'control');
+    service.recordExposure(CHECKOUT_COPY, 'bold');
+    service.recordExposure(CHECKOUT_COPY, 'bold');
+    service.recordExposure(CHECKOUT_COPY, 'control');
 
     expect(analytics.capture).toHaveBeenCalledTimes(2);
     expect(analytics.capture).toHaveBeenCalledWith(ANALYTICS_EVENTS.FEATURE_FLAG_EXPOSED, {
@@ -71,15 +58,15 @@ describe('FeatureFlagsService', () => {
 
   it('records the same variant again for the next person to sign in', () => {
     auth.setState({ isAuthenticated: true });
-    service.recordExposure('checkout_copy' as never, 'bold');
+    service.recordExposure(CHECKOUT_COPY, 'bold');
     auth.setState({ isAuthenticated: false });
     auth.setState({ isAuthenticated: true });
-    service.recordExposure('checkout_copy' as never, 'bold');
+    service.recordExposure(CHECKOUT_COPY, 'bold');
     expect(analytics.capture).toHaveBeenCalledTimes(2);
   });
 
   it('records nothing for a flag that is not an experiment', () => {
-    service.recordExposure('api_token_creation', true);
+    service.recordExposure(KILL_SWITCH, true);
     expect(analytics.capture).not.toHaveBeenCalled();
   });
 });
