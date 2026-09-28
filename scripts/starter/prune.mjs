@@ -624,13 +624,15 @@ function prune(manifest, removedIds, options) {
         // these edits address are file paths, and a dot there is data.
         const parent = edit.path.slice(0, -1).reduce((node, key) => node?.[key], json);
         const key = edit.path.at(-1);
-        const target = parent?.[key];
+        // An empty path is the file itself: a namespace's keys, a list of names.
+        const target = edit.path.length ? parent?.[key] : json;
         if (target === undefined) return [];
         if (Array.isArray(target) && edit.remove) {
-          const kept = target.filter((value) => !edit.remove.includes(value));
-          if (kept.length === target.length) return [];
-          parent[key] = kept;
-          return target.filter((value) => !kept.includes(value));
+          const removed = target.filter((value) => edit.remove.includes(value));
+          if (!removed.length) return [];
+          // In place: the array may be the file itself, with no parent key.
+          target.splice(0, target.length, ...target.filter((value) => !removed.includes(value)));
+          return removed;
         }
         // `set` declares the keys *and* their values, so an install can put
         // them back; here only the names matter. One declaration, read in

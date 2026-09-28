@@ -356,6 +356,7 @@ test.describe('the sessions pane', () => {
     await api.dispose();
   });
 
+  // flama:begin api-tokens
   test('leaves an API key’s own session off the device list', async ({ page }) => {
     // A credential reaching the API mints a Better Auth session for itself, and
     // those rows used to be drawn here as devices — each with a Sign out
@@ -398,6 +399,7 @@ test.describe('the sessions pane', () => {
 
     await api.dispose();
   });
+  // flama:end api-tokens
 
   test('signs every other device out at once', async ({ page, browser }) => {
     const { user, api } = await provisionedUser('sessionsall');

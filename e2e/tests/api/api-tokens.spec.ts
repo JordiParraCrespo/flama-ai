@@ -1,6 +1,10 @@
 import { type APIRequestContext, expect, test } from '@playwright/test';
 import { API_URL } from '../../playwright.config';
 import { newContext, signedUpContext } from '../../support/auth';
+// flama:begin organizations
+import { createOrganization } from '../../support/organizations';
+
+// flama:end organizations
 
 /**
  * Mints a token for the signed-in caller and returns the one-time secret.
@@ -141,3 +145,24 @@ test.describe('API token scope ceiling', () => {
     expect(minted.status).toBe(403);
   });
 });
+
+// flama:begin organizations
+test.describe('API tokens and organizations', () => {
+  test('a token pinned to no organization reads the caller’s membership of any', async () => {
+    const { api, userId } = await signedUpContext('membershiptoken');
+    await createOrganization(api, 'First workspace');
+    const second = await createOrganization(api, 'Second workspace');
+
+    const minted = await mintToken(api, ['members:read'], 'membership e2e');
+    expect(minted.status, 'minting an unrestricted token should succeed').toBe(201);
+
+    const bearer = await tokenContext(minted.secret ?? '');
+    const response = await bearer.get(`/api/v1/organizations/${second}/members/me`);
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toMatchObject({ organizationId: second, userId });
+
+    await bearer.dispose();
+    await api.dispose();
+  });
+});
+// flama:end organizations

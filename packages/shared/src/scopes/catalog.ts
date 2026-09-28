@@ -22,7 +22,9 @@ export const SCOPE_RESOURCES = [
   'members',
   'invitations',
   'workspaces',
+  // flama:begin api-tokens
   'tokens',
+  // flama:end api-tokens
   'flags',
   // flama:plugins scope-resources
 ] as const;
@@ -232,6 +234,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       },
     },
   },
+  // flama:begin api-tokens
   {
     resource: 'tokens',
     label: 'API tokens',
@@ -255,6 +258,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       },
     },
   },
+  // flama:end api-tokens
   {
     resource: 'flags',
     label: 'Feature flags',

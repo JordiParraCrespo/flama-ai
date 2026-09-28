@@ -89,6 +89,318 @@
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]
+    },
+    "api-tokens": {
+      "title": "API tokens",
+      "summary": "apps/api/src/api-tokens — /v1/tokens, the personal access tokens a script, the CLI or the MCP server acts with, and the settings screen that mints and revokes them",
+      "identifiers": [
+        "apps/api/src/api-tokens",
+        "ApiTokensModule",
+        "features/api-tokens",
+        "modules/api-tokens",
+        "api-tokens.queries",
+        "api-token.schema",
+        "api_token_creation",
+        "/v1/tokens"
+      ],
+      "paths": [
+        "apps/api/src/api-tokens",
+        "apps/api/test/api-tokens.integration.spec.ts",
+        "apps/web/src/features/api-tokens",
+        "apps/web/src/features/organizations/sections/token-organizations-field.tsx",
+        "apps/web/src/routes/_authenticated/settings/api-tokens.tsx",
+        "e2e/tests/api/api-tokens.spec.ts",
+        "e2e/tests/web/api-tokens.spec.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$ApiTokenResponseDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$CreateApiTokenRequest.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$CreatedApiTokenResponseDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$CurrentCredentialResponseDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$PermissionCatalogResponseDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$PermissionGroupDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$ScopeLevelDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$ScopeLevelsDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/schemas/$ScopePolicyDto.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/services/ApiTokensApi.ts",
+        "packages/frontend/consumer/src/modules/api-tokens",
+        "packages/frontend/consumer/src/react/api-tokens.queries.ts",
+        "packages/shared/src/schemas/api-token.schema.ts",
+        "packages/translations/en/apiTokens.json",
+        "packages/translations/es/apiTokens.json"
+      ],
+      "keeps": {
+        "apps/api/src/migrations": "the schema history is one line: later migrations build on the token table, so a project without API tokens keeps it, empty"
+      },
+      "json": [
+        {
+          "file": "packages/translations/en/errors.json",
+          "path": ["byCode"],
+          "set": {
+            "TOKEN_001": "That API token could not be found.",
+            "TOKEN_002": "You cannot grant a token more access than you have yourself.",
+            "TOKEN_004": "That API token cannot be used from this network.",
+            "TOKEN_008": "A token can only be scoped to organizations you belong to.",
+            "TOKEN_009": "You have reached the maximum number of active API tokens."
+          },
+          "setAt": [4, 5, 7, 11, 12]
+        },
+        {
+          "file": "packages/translations/en/index.json",
+          "path": [],
+          "set": {
+            "apiTokens": {
+              "title": "API tokens",
+              "description": "Tokens let scripts, CI and AI agents act on your behalf with only the permissions you choose.",
+              "create": "Create a token",
+              "createDescription": "A token can never do more than you can. Anything you are not permitted to do is greyed out.",
+              "creationPaused": "Creating new tokens is paused right now. The tokens you already have keep working.",
+              "createButton": "Create token",
+              "name": "Name",
+              "namePlaceholder": "CI deploy, Claude, laptop…",
+              "permissions": "Permissions",
+              "permissionsHint": "Edit includes Read. Grant the least that will do the job.",
+              "organizations": "Organizations",
+              "organizationsHint": "Leave all unticked to let the token follow your memberships.",
+              "expiry": "Expires",
+              "never": "Never",
+              "days": "{{count}} days",
+              "sensitive": "Sensitive",
+              "levels": {
+                "none": "No access"
+              },
+              "yourTokens": "Your tokens",
+              "yourTokensDescription": "Revoking a token takes effect immediately.",
+              "empty": "You have no API tokens yet.",
+              "prefix": "Prefix",
+              "status": "Status",
+              "lastUsed": "Last used",
+              "neverUsed": "Never",
+              "active": "Active",
+              "expired": "Expired",
+              "revoked": "Revoked",
+              "revoke": "Revoke",
+              "revokeTitle": "Revoke “{{name}}”?",
+              "revokeDescription": "Anything using this token stops working immediately. This cannot be undone.",
+              "created": "Token created",
+              "shownOnce": "Copy it now — this is the only time it is shown.",
+              "copy": "Copy",
+              "copied": "Copied",
+              "dismiss": "Dismiss",
+              "permissionsRequired": "Select at least one permission"
+            }
+          },
+          "setAt": [9]
+        },
+        {
+          "file": "packages/translations/en/index.json",
+          "path": ["nav"],
+          "set": {
+            "apiTokens": "API tokens"
+          },
+          "setAt": [3]
+        },
+        {
+          "file": "packages/translations/en/index.json",
+          "path": ["settings"],
+          "set": {
+            "api": {
+              "description": "Mint scoped keys so your own tools can call the API as you.",
+              "keys": "API keys",
+              "manage": "Open API tokens",
+              "manageDescription": "Create keys, choose what they may do, and revoke them.",
+              "title": "API & webhooks"
+            }
+          },
+          "setAt": [0]
+        },
+        {
+          "file": "packages/translations/en/index.json",
+          "path": ["errors", "byCode"],
+          "set": {
+            "TOKEN_001": "That API token could not be found.",
+            "TOKEN_002": "You cannot grant a token more access than you have yourself.",
+            "TOKEN_004": "That API token cannot be used from this network.",
+            "TOKEN_008": "A token can only be scoped to organizations you belong to.",
+            "TOKEN_009": "You have reached the maximum number of active API tokens."
+          },
+          "setAt": [4, 5, 7, 11, 12]
+        },
+        {
+          "file": "packages/translations/en/index.json",
+          "path": ["settings", "nav"],
+          "set": {
+            "api": "API & webhooks"
+          },
+          "setAt": [0]
+        },
+        {
+          "file": "packages/translations/en/nav.json",
+          "path": [],
+          "set": {
+            "apiTokens": "API tokens"
+          },
+          "setAt": [3]
+        },
+        {
+          "file": "packages/translations/en/settings.json",
+          "path": [],
+          "set": {
+            "api": {
+              "description": "Mint scoped keys so your own tools can call the API as you.",
+              "keys": "API keys",
+              "manage": "Open API tokens",
+              "manageDescription": "Create keys, choose what they may do, and revoke them.",
+              "title": "API & webhooks"
+            }
+          },
+          "setAt": [0]
+        },
+        {
+          "file": "packages/translations/en/settings.json",
+          "path": ["nav"],
+          "set": {
+            "api": "API & webhooks"
+          },
+          "setAt": [0]
+        },
+        {
+          "file": "packages/translations/namespaces.json",
+          "path": [],
+          "remove": ["apiTokens"],
+          "at": [9]
+        },
+        {
+          "file": "packages/translations/es/errors.json",
+          "path": ["byCode"],
+          "set": {
+            "TOKEN_001": "No se ha encontrado ese token de API.",
+            "TOKEN_002": "No puedes conceder a un token más acceso del que tienes tú.",
+            "TOKEN_004": "Ese token de API no puede usarse desde esta red.",
+            "TOKEN_008": "Un token solo puede limitarse a organizaciones a las que perteneces.",
+            "TOKEN_009": "Has alcanzado el número máximo de tokens de API activos."
+          },
+          "setAt": [4, 5, 7, 11, 12]
+        },
+        {
+          "file": "packages/translations/es/index.json",
+          "path": [],
+          "set": {
+            "apiTokens": {
+              "title": "Tokens de API",
+              "description": "Los tokens permiten que scripts, CI y agentes de IA actúen en tu nombre solo con los permisos que elijas.",
+              "create": "Crear un token",
+              "createDescription": "Un token nunca puede hacer más que tú. Lo que no tienes permitido aparece desactivado.",
+              "creationPaused": "La creación de tokens está en pausa en este momento. Los tokens que ya tienes siguen funcionando.",
+              "createButton": "Crear token",
+              "name": "Nombre",
+              "namePlaceholder": "Despliegue de CI, Claude, portátil…",
+              "permissions": "Permisos",
+              "permissionsHint": "Editar incluye Leer. Concede lo mínimo necesario.",
+              "organizations": "Organizaciones",
+              "organizationsHint": "Déjalas sin marcar para que el token siga tus membresías.",
+              "expiry": "Caduca",
+              "never": "Nunca",
+              "days": "{{count}} días",
+              "sensitive": "Sensible",
+              "levels": {
+                "none": "Sin acceso"
+              },
+              "yourTokens": "Tus tokens",
+              "yourTokensDescription": "Revocar un token tiene efecto inmediato.",
+              "empty": "Todavía no tienes tokens de API.",
+              "prefix": "Prefijo",
+              "status": "Estado",
+              "lastUsed": "Último uso",
+              "neverUsed": "Nunca",
+              "active": "Activo",
+              "expired": "Caducado",
+              "revoked": "Revocado",
+              "revoke": "Revocar",
+              "revokeTitle": "¿Revocar «{{name}}»?",
+              "revokeDescription": "Todo lo que use este token dejará de funcionar de inmediato. No se puede deshacer.",
+              "created": "Token creado",
+              "shownOnce": "Cópialo ahora: es la única vez que se muestra.",
+              "copy": "Copiar",
+              "copied": "Copiado",
+              "dismiss": "Descartar",
+              "permissionsRequired": "Selecciona al menos un permiso"
+            }
+          },
+          "setAt": [9]
+        },
+        {
+          "file": "packages/translations/es/index.json",
+          "path": ["nav"],
+          "set": {
+            "apiTokens": "Tokens de API"
+          },
+          "setAt": [3]
+        },
+        {
+          "file": "packages/translations/es/index.json",
+          "path": ["settings"],
+          "set": {
+            "api": {
+              "description": "Crea claves con permisos acotados para que tus herramientas llamen a la API en tu nombre.",
+              "keys": "Claves de API",
+              "manage": "Abrir tokens de API",
+              "manageDescription": "Crea claves, elige qué pueden hacer y revócalas.",
+              "title": "API y webhooks"
+            }
+          },
+          "setAt": [0]
+        },
+        {
+          "file": "packages/translations/es/index.json",
+          "path": ["errors", "byCode"],
+          "set": {
+            "TOKEN_001": "No se ha encontrado ese token de API.",
+            "TOKEN_002": "No puedes conceder a un token más acceso del que tienes tú.",
+            "TOKEN_004": "Ese token de API no puede usarse desde esta red.",
+            "TOKEN_008": "Un token solo puede limitarse a organizaciones a las que perteneces.",
+            "TOKEN_009": "Has alcanzado el número máximo de tokens de API activos."
+          },
+          "setAt": [4, 5, 7, 11, 12]
+        },
+        {
+          "file": "packages/translations/es/index.json",
+          "path": ["settings", "nav"],
+          "set": {
+            "api": "API y webhooks"
+          },
+          "setAt": [0]
+        },
+        {
+          "file": "packages/translations/es/nav.json",
+          "path": [],
+          "set": {
+            "apiTokens": "Tokens de API"
+          },
+          "setAt": [3]
+        },
+        {
+          "file": "packages/translations/es/settings.json",
+          "path": [],
+          "set": {
+            "api": {
+              "description": "Crea claves con permisos acotados para que tus herramientas llamen a la API en tu nombre.",
+              "keys": "Claves de API",
+              "manage": "Abrir tokens de API",
+              "manageDescription": "Crea claves, elige qué pueden hacer y revócalas.",
+              "title": "API y webhooks"
+            }
+          },
+          "setAt": [0]
+        },
+        {
+          "file": "packages/translations/es/settings.json",
+          "path": ["nav"],
+          "set": {
+            "api": "API y webhooks"
+          },
+          "setAt": [0]
+        }
+      ],
+      "regenerate": ["generate:api-client", "generate:openapi"]
     }
   },
   "shared": {

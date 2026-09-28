@@ -162,19 +162,35 @@ function splitMembers(body) {
  * caller validates the result parses to what it intended.
  */
 function findArray(lines, path) {
-  const segments = path;
-  let from = 0;
-  let to = lines.length;
-  for (const [depth, key] of segments.entries()) {
-    const match = new RegExp(`^\\s*${quote(key)}\\s*:`);
-    const index = lines.findIndex((line, i) => i >= from && i < to && match.test(line));
+  const index = locate(lines, path);
+  return index !== null && lines[index].includes('[') ? index : null;
+}
+
+/**
+ * The line holding the value at `path`: the file's opening bracket for an
+ * empty path, else the line whose key is the last segment. Each segment is matched
+ * only among the members of the one before it, at their indentation — a
+ * search at any depth takes the first key of that name anywhere below, and a
+ * translation catalog holds `nav.settings` above the `settings` namespace.
+ */
+function locate(lines, path) {
+  let opening = lines.findIndex((line) => /^\s*[{[]/.test(line));
+  if (opening === -1) return null;
+  for (const key of path) {
+    const close = closingOf(lines, opening);
+    if (close === -1) return null;
+    const match = memberMatcher(lines[opening], key);
+    const index = lines.findIndex((line, i) => i > opening && i < close && match.test(line));
     if (index === -1) return null;
-    if (depth === segments.length - 1) return lines[index].includes('[') ? index : null;
-    from = index + 1;
-    to = closingOf(lines, index);
-    if (to === -1) return null;
+    opening = index;
   }
-  return null;
+  return opening;
+}
+
+/** A member `key` of the object or array that `openingLine` opens, at its indentation. */
+function memberMatcher(openingLine, key) {
+  const indent = /^\s*/.exec(openingLine)?.[0] ?? '';
+  return new RegExp(`^${indent}  ${quote(key)}\\s*:`);
 }
 
 /**
@@ -328,7 +344,7 @@ function findEntry(lines, path, key) {
   if (opening === null) return null;
   const close = closingOf(lines, opening);
   if (close === -1) return null;
-  const match = new RegExp(`^\\s*${quote(key)}\\s*:`);
+  const match = memberMatcher(lines[opening], key);
   const start = lines.findIndex((line, i) => i > opening && i < close && match.test(line));
   if (start === -1) return null;
   // A one-line entry — a string, a number, a short array or object — closes on
@@ -340,21 +356,8 @@ function findEntry(lines, path, key) {
 
 /** The line index where the object at `path` opens. */
 function findObject(lines, path) {
-  // The root object: the file's opening brace.
-  if (!path.length) return lines.findIndex((line) => line.trim().startsWith('{'));
-  const segments = path;
-  let from = 0;
-  let to = lines.length;
-  for (const [depth, key] of segments.entries()) {
-    const match = new RegExp(`^\\s*${quote(key)}\\s*:`);
-    const index = lines.findIndex((line, i) => i >= from && i < to && match.test(line));
-    if (index === -1) return null;
-    if (depth === segments.length - 1) return lines[index].includes('{') ? index : null;
-    from = index + 1;
-    to = closingOf(lines, index);
-    if (to === -1) return null;
-  }
-  return null;
+  const index = locate(lines, path);
+  return index !== null && lines[index].includes('{') ? index : null;
 }
 
 // ---------------------------------------------------------------------------

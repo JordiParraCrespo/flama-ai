@@ -33,9 +33,10 @@ test('lists every section', async ({ page }) => {
   // flama:begin organizations
   await expect(nav.getByRole('button', { name: 'General', exact: true })).toBeVisible();
   // flama:end organizations
-  for (const label of ['Security', 'API & webhooks']) {
-    await expect(nav.getByRole('button', { name: label, exact: true })).toBeVisible();
-  }
+  await expect(nav.getByRole('button', { name: 'Security', exact: true })).toBeVisible();
+  // flama:begin api-tokens
+  await expect(nav.getByRole('button', { name: 'API & webhooks', exact: true })).toBeVisible();
+  // flama:end api-tokens
 
   await api.dispose();
 });
@@ -84,6 +85,7 @@ test('Security shows this device among the account’s sessions', async ({ page 
   await api.dispose();
 });
 
+// flama:begin api-tokens
 test('the API pane sends the reader to the tokens screen', async ({ page }) => {
   const { user, api } = await provisionedUser('settingsapi');
   await signInAs(page, user);
@@ -98,3 +100,4 @@ test('the API pane sends the reader to the tokens screen', async ({ page }) => {
 
   await api.dispose();
 });
+// flama:end api-tokens

@@ -1,8 +1,11 @@
-import { Cpu, ShieldCheck } from '@flama/design-system-web/icons';
+import { ShieldCheck } from '@flama/design-system-web/icons';
 import { PageHead, SectionNav } from '@flama/frontend-web';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+// flama:begin api-tokens
+import { API_SETTINGS_SECTION } from '@/features/api-tokens/lib/settings-section';
 import { ApiKeysSection } from '@/features/api-tokens/sections/api-keys';
+// flama:end api-tokens
 // flama:begin organizations
 import { GENERAL_SETTINGS_SECTION } from '@/features/organizations/lib/settings-section';
 import { GeneralSettingsSection } from '@/features/organizations/sections/general-settings';
@@ -15,7 +18,9 @@ const SECTIONS = [
   GENERAL_SETTINGS_SECTION,
   // flama:end organizations
   { key: 'security', icon: ShieldCheck },
-  { key: 'api', icon: Cpu },
+  // flama:begin api-tokens
+  API_SETTINGS_SECTION,
+  // flama:end api-tokens
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]['key'];
@@ -69,7 +74,9 @@ function SettingsPage() {
         {section === 'general' && <GeneralSettingsSection />}
         {/* flama:end organizations */}
         {section === 'security' && <SecuritySection />}
+        {/* flama:begin api-tokens */}
         {section === 'api' && <ApiKeysSection />}
+        {/* flama:end api-tokens */}
       </SectionNav>
     </>
   );

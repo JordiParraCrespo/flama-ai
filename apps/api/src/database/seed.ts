@@ -2,7 +2,9 @@ import '@flama/env/load';
 import { OutboxMessageSchema } from '@flama/backend-ddd';
 import type { Role } from '@flama/shared';
 import { DataSource, IsNull } from 'typeorm';
+// flama:begin api-tokens
 import { ApiTokenOrmEntity } from '../api-tokens/database/api-token.orm-entity';
+// flama:end api-tokens
 import { Account } from '../auth/database/account.orm-entity';
 // flama:plugins entity-imports
 import { Session } from '../auth/database/session.orm-entity';
@@ -44,7 +46,9 @@ const dataSource = new DataSource({
     Session,
     Account,
     Verification,
+    // flama:begin api-tokens
     ApiTokenOrmEntity,
+    // flama:end api-tokens
     // flama:plugins entities
     RoleOrmEntity,
     // flama:begin organizations

@@ -23,7 +23,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 // flama:begin admin-api
 // flama:end admin-api
+// flama:begin api-tokens
 import { ApiTokensModule } from './api-tokens/api-tokens.module';
+// flama:end api-tokens
 import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
 import { auth } from './auth/infrastructure/better-auth.config';
@@ -173,7 +175,9 @@ import { UsersModule } from './users/user.module';
     AuthzKernelModule.forRoot(),
     AuthModule,
     AuthzModule,
+    // flama:begin api-tokens
     ApiTokensModule,
+    // flama:end api-tokens
     UsersModule,
     ProfileModule,
     RolesModule,

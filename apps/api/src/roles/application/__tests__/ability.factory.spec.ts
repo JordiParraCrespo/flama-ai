@@ -113,11 +113,10 @@ describe('AbilityFactory', () => {
 
     const ability = await factory.createForUser({ id: 'user-1', role: 'user' });
 
-    // The seeded `user` set grants its own API tokens and nothing else, so
-    // that rule is what proves the fallback was taken rather than an empty
-    // ability being returned. (`Article` used to serve as this marker, until
-    // it turned out to be boilerplate with nothing behind it.)
-    expect(ability.can('read', 'ApiToken')).toBe(true);
+    // The seeded `user` set lets an account read its own organizations and
+    // grants nothing about other accounts, so that rule is what proves the
+    // fallback was taken rather than an empty ability being returned.
+    expect(ability.can('read', 'Organization')).toBe(true);
     expect(ability.can('read', 'User')).toBe(false);
     expect(ability.can('delete', 'User')).toBe(false);
     expect(ability.can('manage', 'all')).toBe(false);

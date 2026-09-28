@@ -277,3 +277,37 @@ test('renderJsonEntry breaks an array whose line, key and comma included, would 
   );
   assert.equal(renderJsonEntry('at', [16, 17], 5), '          "at": [16, 17]');
 });
+
+test('a key is found among its own object’s members, never deeper', () => {
+  // A translation catalog: `nav` holds a `profile` label and a `settings`
+  // one, above the namespaces of those names.
+  const catalog = {
+    nav: { profile: 'Profile', settings: 'Settings' },
+    profile: { title: 'Profile' },
+    settings: { api: { title: 'API' }, title: 'Settings' },
+  };
+  const text = `${JSON.stringify(catalog, null, 2)}\n`;
+
+  const withoutNamespace = deleteJsonEntry(text, [], 'profile');
+  const { profile: _namespace, ...rest } = catalog;
+  assert.deepEqual(JSON.parse(withoutNamespace), rest);
+
+  const withoutPane = deleteJsonEntry(text, ['settings'], 'api');
+  assert.deepEqual(JSON.parse(withoutPane).settings, { title: 'Settings' });
+  assert.deepEqual(JSON.parse(withoutPane).nav, catalog.nav);
+
+  const back = insertJsonEntry(
+    withoutPane,
+    ['settings'],
+    readJsonEntry(text, ['settings'], 'api'),
+    0,
+  );
+  assert.equal(back, text);
+});
+
+test('an empty path is the file itself, whether an object or an array', () => {
+  const list = '[\n  "common",\n  "profile",\n  "settings"\n]\n';
+  const without = deleteJsonValueAt(list, [], 'profile').text;
+  assert.deepEqual(JSON.parse(without), ['common', 'settings']);
+  assert.equal(insertJsonValue(without, [], 'profile', 1), list);
+});
