@@ -4,7 +4,7 @@ import { defineAbilitiesFromPermissions } from '@flama/shared';
 import type { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AbilityFactory } from '../../../roles/application/ability.factory';
+import { ABILITY_MEMO, type AbilityPort } from '../../application/ability.port';
 import { CHECK_POLICIES_KEY } from '../../decorators/check-policies.decorator';
 import { ORGANIZATION_PARAM_KEY } from '../../decorators/organization-scoped.decorator';
 import { AuthErrors } from '../../domain/auth.errors';
@@ -31,14 +31,14 @@ function reflectorFor(metadata: Metadata): Reflector {
 }
 
 describe('PoliciesGuard', () => {
-  let abilityFactory: AbilityFactory;
+  let abilityFactory: AbilityPort;
 
   beforeEach(() => {
     abilityFactory = {
       forRequest: vi
         .fn()
         .mockResolvedValue(defineAbilitiesFromPermissions([{ action: 'read', subject: 'Lead' }])),
-    } as unknown as AbilityFactory;
+    } as unknown as AbilityPort;
   });
 
   it('allows a route whose policy the caller satisfies', async () => {
@@ -103,18 +103,41 @@ describe('PoliciesGuard', () => {
     expect((error as AppError).code).toBe(AuthErrors.UNAUTHENTICATED.code);
   });
 
-  it('builds the ability once per request', async () => {
+  it('builds the ability once per request and attaches it for handlers', async () => {
     const guard = new PoliciesGuard(
       reflectorFor({
         [CHECK_POLICIES_KEY]: [{ action: 'read', subject: 'Lead' }],
       }),
       abilityFactory,
     );
-    const request = { user: { id: 'u1' } };
+    const request: Record<string, unknown> = { user: { id: 'u1' } };
 
     await guard.canActivate(contextWith(request));
 
     expect(abilityFactory.forRequest).toHaveBeenCalledTimes(1);
+    expect(request.ability).toBe(await vi.mocked(abilityFactory.forRequest).mock.results[0].value);
+  });
+
+  it('hands the port { user, session } and the request memo, not the request', async () => {
+    const guard = new PoliciesGuard(
+      reflectorFor({ [CHECK_POLICIES_KEY]: [{ action: 'read', subject: 'Lead' }] }),
+      abilityFactory,
+    );
+    const request = {
+      user: { id: 'u1' },
+      session: { activeOrganizationId: 'org-a' },
+      headers: { authorization: 'Bearer secret' },
+    };
+
+    await guard.canActivate(contextWith(request));
+
+    const [subject] = vi.mocked(abilityFactory.forRequest).mock.calls[0];
+    expect(subject).not.toBe(request);
+    expect(Object.keys(subject)).toEqual(['user', 'session']);
+    expect(subject.user).toBe(request.user);
+    // The memo lives on the request so every caller in it shares one.
+    expect(subject[ABILITY_MEMO]).toBe((request as Record<symbol, unknown>)[ABILITY_MEMO]);
+    expect(subject[ABILITY_MEMO]).toBeInstanceOf(Map);
   });
 
   it("judges an organization-scoped route by the caller's roles in the path's organization", async () => {
@@ -133,7 +156,10 @@ describe('PoliciesGuard', () => {
 
     await guard.canActivate(contextWith(request));
 
-    expect(abilityFactory.forRequest).toHaveBeenCalledWith(request, 'org-b');
+    expect(abilityFactory.forRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ user: request.user, session: request.session }),
+      'org-b',
+    );
   });
 
   it("falls back to the session's active organization on a route that names none", async () => {
@@ -145,6 +171,9 @@ describe('PoliciesGuard', () => {
 
     await guard.canActivate(contextWith(request));
 
-    expect(abilityFactory.forRequest).toHaveBeenCalledWith(request, null);
+    expect(abilityFactory.forRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ user: request.user, session: request.session }),
+      null,
+    );
   });
 });

@@ -33,6 +33,7 @@ flama/
 │   │   ├── api-client/   # Auto-generated typed client from Swagger (@flama/api-client)
 │   │   ├── web/          # What both Vite apps share: shell, auth chrome, table, i18n… (@flama/frontend-web)
 │   │   ├── mobile/       # What both Expo apps share: config, storage, analytics… (@flama/frontend-mobile)
+│   │   ├── react-hooks/  # Generic React hooks below both design systems: useControlled, useNow… (@flama/react-hooks)
 │   │   └── design-system/
 │   │       ├── web/      # shadcn/ui + Base UI + Tailwind v4 (@flama/design-system-web)
 │   │       └── mobile/   # NativeWind + rn-primitives (@flama/design-system-mobile)
@@ -307,6 +308,7 @@ packages/backend/cache    → used by api
 packages/backend/storage  → used by api
 packages/backend/queue    → used by api
 packages/translations        → used by web, mobile, api (email copy via backend/i18n)
+packages/frontend/react-hooks          → used by both design systems, frontend/web, web (React only)
 packages/frontend/design-system/web    → used by web, frontend/web
 packages/frontend/design-system/mobile → used by mobile, frontend/mobile
 packages/frontend/api-client  → used by frontend/core, frontend/consumer
@@ -328,6 +330,7 @@ pnpm ci:local           # The CI suite, locally, over what this branch affects �
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
 pnpm check:flags        # Feature flags: none past expiry, none declared but unread
+pnpm check:compiler     # React Compiler bailouts per app; fails on a file outside its baseline
 pnpm docker:dev         # Start Postgres + Redis
 pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
@@ -357,6 +360,10 @@ pnpm changeset          # Create a changeset for versioning
   `/scaffold-feature` builds the shape and `pnpm check:structure` checks it
 - UI in the web apps and the web design system:
   `.agents/rules/frontend-ui.md`
+- Routes in `apps/web` — a new URL, a guard, a layout route, search params,
+  or anything that regenerates `routeTree.gen.ts` — are the
+  `/tanstack-routing` skill (`.agents/skills/tanstack-routing/`). A route
+  file's name is its URL, so a rename is a URL change
 - Porting a design export onto the design system is the
   `/design-export-port` skill (`.agents/skills/design-export-port/`): the
   export's values go onto the token vocabulary in `globals.css` and the

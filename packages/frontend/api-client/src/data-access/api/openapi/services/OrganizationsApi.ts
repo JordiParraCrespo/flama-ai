@@ -2,12 +2,14 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CheckSlugRequest } from '../../../../common/models/CheckSlugRequest';
-import type { CreateOrganizationRequest } from '../../../../common/models/CreateOrganizationRequest';
-import type { FullOrganizationResponseDto } from '../../../../common/models/FullOrganizationResponseDto';
-import type { OrganizationResponseDto } from '../../../../common/models/OrganizationResponseDto';
-import type { SlugAvailabilityResponseDto } from '../../../../common/models/SlugAvailabilityResponseDto';
-import type { UpdateOrganizationRequest } from '../../../../common/models/UpdateOrganizationRequest';
+import type {
+    CheckSlugRequest,
+    CreateOrganizationRequest,
+    FullOrganizationResponseDto,
+    OrganizationResponseDto,
+    SlugAvailabilityResponseDto,
+    UpdateOrganizationRequest,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

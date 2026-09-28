@@ -2,8 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { InvitationResponseDto } from '../../../../common/models/InvitationResponseDto';
-import type { InviteMemberRequest } from '../../../../common/models/InviteMemberRequest';
+import type {
+    InvitationResponseDto,
+    InviteMemberRequest,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

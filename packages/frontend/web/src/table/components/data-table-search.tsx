@@ -1,6 +1,6 @@
 import { SearchInput } from '@flama/design-system-web';
+import { useDebouncedCallback } from '@flama/react-hooks';
 import { useState } from 'react';
-import { useDebouncedCallback } from '../hooks/use-debounced-callback';
 import {
   type DataTableSearch as DataTableSearchProps,
   TABLE_HEADER_CONTROL_SIZE,

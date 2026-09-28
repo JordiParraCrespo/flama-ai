@@ -1,9 +1,14 @@
 import { NO_POLICY_KEY } from '@flama/backend-authz';
 import { AppError } from '@flama/backend-core';
-import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
+import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthzErrors } from '../../authz/domain/authz.errors';
-import { AbilityFactory } from '../../roles/application/ability.factory';
+import {
+  type AbilityHttpRequest,
+  type AbilityPort,
+  abilityRequestOf,
+} from '../application/ability.port';
+import { ABILITY } from '../auth.di-tokens';
 import { CHECK_POLICIES_KEY, type PolicyRule } from '../decorators/check-policies.decorator';
 import { ORGANIZATION_PARAM_KEY } from '../decorators/organization-scoped.decorator';
 import { AuthErrors } from '../domain/auth.errors';
@@ -25,7 +30,8 @@ import { AuthErrors } from '../domain/auth.errors';
 export class PoliciesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly abilityFactory: AbilityFactory,
+    @Inject(ABILITY)
+    private readonly abilities: AbilityPort,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -46,24 +52,29 @@ export class PoliciesGuard implements CanActivate {
       throw new AppError(AuthzErrors.ROUTE_HAS_NO_POLICY);
     }
 
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    const request = context
+      .switchToHttp()
+      .getRequest<AbilityHttpRequest & { params?: Record<string, unknown> }>();
+    const subject = abilityRequestOf(request);
 
     // No principal at all is an *authentication* failure, not a permission
     // one — 401 tells a client to re-authenticate, where a 403 would have it
     // give up on a request that a fresh session would satisfy.
-    if (!user) {
+    if (!subject) {
       throw new AppError(AuthErrors.UNAUTHENTICATED, {
         detail: 'This endpoint requires an authenticated caller.',
       });
     }
 
-    // Memoized on the request: four call sites resolve the ability during a
-    // single request, and `forRequest` also attaches it to `request.ability`.
-    const ability = await this.abilityFactory.forRequest(
-      request,
+    // The port gets `{ user, session }` and the request's memo, never the
+    // request itself; the memo is keyed by the organization resolved here, so
+    // a later caller asking about another organization builds its own.
+    const ability = await this.abilities.forRequest(
+      subject,
       this.routeOrganizationId(context, request),
     );
+    // Handlers that load a row check it against this ability (`assertCanAccessUser`).
+    request.ability = ability;
 
     // Returning `false` would hand back Nest's own codeless 403; throw the
     // catalog error instead so the response carries `AUTH_002` like every other

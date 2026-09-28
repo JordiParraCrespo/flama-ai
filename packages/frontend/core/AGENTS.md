@@ -18,7 +18,9 @@ The layer model is [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
   goes to `../consumer` or `../admin`.
 - A new query hook → `src/react/<module>.queries.ts` next to its key factory
   (every key derived from `all`), then exported by name from
-  `src/react/index.ts`. `src/modules/` never imports `src/react/`. A
+  `src/react/index.ts`. `src/modules/` never imports `src/react/`. A query
+  that returns entities calls `useEntityQuery` (`src/react/entity-query.ts`)
+  instead of `useQuery`, which applies `shareEntities`. A
   mutation's cache update goes through `withCacheOnSuccess(options, update)`
   (`src/react/mutations.ts`), never a hand-written `onSuccess` beside
   `...options`: spread in the wrong order, a caller's `onSuccess` replaces it.

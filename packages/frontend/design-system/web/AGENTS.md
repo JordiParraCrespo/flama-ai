@@ -11,7 +11,7 @@ Consumed by `apps/web` and `packages/frontend/web`.
 ```
 src/
 ├── components/   # shadcn-based components
-├── hooks/        # UI hooks
+├── hooks/        # web-only hooks (useIsMobile), exported from index.ts
 ├── lib/          # utils (cn, variants, etc.)
 ├── styles/       # shared styles
 └── index.ts      # public exports
@@ -21,6 +21,10 @@ tsup.config.ts    # build config
 
 ## Conventions
 
+- `src/hooks/` holds only what is about the web (the viewport, the DOM). A
+  hook with nothing in it but React — `useControlled`, `useDebounced*`,
+  `useNow` — lives once in `@flama/react-hooks`, which this package imports
+  and does not re-export.
 - Components follow **shadcn** conventions. Keep the component API (props,
   variants) mirrored with `@flama/design-system-mobile` so both platforms stay
   consistent.

@@ -19,6 +19,7 @@
   "dependencies": {
     "@flama/design-system-web": "workspace:*",
     "@flama/frontend-core": "workspace:*",
+    "@flama/react-hooks": "workspace:*",
     "@flama/shared": "workspace:*",
     "@flama/translations": "workspace:*",
     "@hookform/resolvers": "^5.9.1",

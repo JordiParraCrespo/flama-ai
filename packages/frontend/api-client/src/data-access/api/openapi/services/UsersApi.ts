@@ -2,10 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { MyPermissionsResponseDto } from '../../../../common/models/MyPermissionsResponseDto';
-import type { PaginatedUsersResponseDto } from '../../../../common/models/PaginatedUsersResponseDto';
-import type { UpdateUserRequest } from '../../../../common/models/UpdateUserRequest';
-import type { UserResponseDto } from '../../../../common/models/UserResponseDto';
+import type {
+    MyPermissionsResponseDto,
+    PaginatedUsersResponseDto,
+    UpdateUserRequest,
+    UserResponseDto,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

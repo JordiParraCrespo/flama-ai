@@ -19,19 +19,18 @@ Query `queryOptions` / `queryKeys`). Screens still go through
 and entity mapping stay in one place.
 
 Regenerate after any change to an API endpoint or its Swagger decorators. The
-legacy class client under `src/data-access/` (models in `src/common/models/`)
-remains until call sites finish moving to the SDK. Nothing regenerates it any
-more — the post-processing step only rebuilds its index files — so its scope
-and capability types are imported from `@flama/shared` rather than spelled
-out: a plugin that adds a scope or a capability reaches them without anyone
-editing this package.
+legacy class client under `src/data-access/` remains until call sites finish
+moving to the SDK; nothing regenerates its services, and they import their
+DTOs from `src/generated/types.gen.ts`. The post-processing step
+(`scripts/openapi-postprocess.mjs`) writes `src/index.ts`, which exports every
+DTO the API describes by name, so a plugin that adds an endpoint reaches
+consumers through its `regenerate` step without anyone editing this package.
 
 ## What's inside
 
 | Export path                  | Contents                                   |
 | ---------------------------- | ------------------------------------------ |
-| `@flama/api-client`          | Client entry point                         |
-| `@flama/api-client/models`   | Generated request/response models          |
+| `@flama/api-client`          | Client entry point and every generated DTO |
 | `@flama/api-client/services` | Generated per-tag service classes (`*Api`) |
 
 ## One runtime dependency — by design

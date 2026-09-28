@@ -1117,6 +1117,10 @@ export type ChangePasswordErrors = {
      * AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this
      */
     403: ProblemDetailsDto;
+    /**
+     * RATE_001 — Rate limit reached
+     */
+    429: ProblemDetailsDto;
 };
 
 export type ChangePasswordError = ChangePasswordErrors[keyof ChangePasswordErrors];
@@ -1570,6 +1574,10 @@ export type Create2Errors = {
      * TOKEN_009 — Active token limit reached
      */
     409: ProblemDetailsDto;
+    /**
+     * RATE_001 — Rate limit reached
+     */
+    429: ProblemDetailsDto;
 };
 
 export type Create2Error = Create2Errors[keyof Create2Errors];

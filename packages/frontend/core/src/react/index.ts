@@ -25,6 +25,7 @@ export {
   useDeploymentCapabilities,
 } from './capabilities.queries';
 export { FlamaProvider, useFlamaApp } from './context';
+export { type EntityQueryOptions, useEntityQuery } from './entity-query';
 export { type ResolvedErrorMessage, useErrorMessage } from './error-message';
 export {
   type FeatureFlagReadOptions,
@@ -49,6 +50,7 @@ export {
   shouldDehydrateQuery,
 } from './persistence';
 export { MEMBER_LISTS_KEY, withFeaturePrefix } from './query-keys';
+export { shareEntities } from './share-entities';
 export { userSettingsKeys, useUpdateUserSettings, useUserSettings } from './user-settings.queries';
 export {
   useDeleteUser,

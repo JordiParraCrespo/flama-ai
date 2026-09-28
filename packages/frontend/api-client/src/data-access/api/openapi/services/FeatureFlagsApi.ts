@@ -11,11 +11,13 @@ import type {
   UpdateFeatureFlagInput,
   UpdateFlagSegmentInput,
 } from '@flama/shared';
-import type { ClientFeatureFlagsResponseDto } from '../../../../common/models/ClientFeatureFlagsResponseDto';
-import type { FeatureFlagResponseDto } from '../../../../common/models/FeatureFlagResponseDto';
-import type { FlagEvaluationResponseDto } from '../../../../common/models/FlagEvaluationResponseDto';
-import type { FlagSegmentResponseDto } from '../../../../common/models/FlagSegmentResponseDto';
-import type { PaginatedFlagChangesResponseDto } from '../../../../common/models/PaginatedFlagChangesResponseDto';
+import type {
+    ClientFeatureFlagsResponseDto,
+    FeatureFlagResponseDto,
+    FlagEvaluationResponseDto,
+    FlagSegmentResponseDto,
+    PaginatedFlagChangesResponseDto,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

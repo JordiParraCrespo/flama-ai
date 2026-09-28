@@ -20,7 +20,7 @@ importing it configures i18next; everything else is pure and may be dropped.
 | `i18n` | the i18next instance and `i18nReady`, `useApplyUserSettings`, `LanguageSwitcher`, the person-name formatters, and — re-exported from `@flama/frontend-core` — `useLocale` and the date formatters. It reads `theme` to apply a saved theme | middle |
 | `analytics` | `createWebAnalyticsClient` (PostHog), `PageViewTracker` | leaf |
 | `forms` | `useZodResolver` | leaf |
-| `table` | `DataTable` (a shell over a header, a body and a footer, so a keystroke in the search field does not re-render the rows), its column/facet/sort types, `useTableQuery`, `useClampedPage`, `useDebouncedCallback`, `paginateRows`, `downloadCsv` | middle |
+| `table` | `DataTable` (a shell over a header, a body and a footer, so a keystroke in the search field does not re-render the rows), its column/facet/sort types, `useTableQuery`, `useClampedPage`, `paginateRows`, `downloadCsv` | middle |
 | `layout` | `PageHead`, `SectionNav` (the side nav of a paned page), the section primitives (`SectionCard`, `SectionRow`, `FieldRow`, …), `ConfirmDialog` | middle |
 | `roles` | `RolePill` | middle |
 | `shell` | `AppShell`, `AppSidebar`, `TopBar`, `UserMenu`, `CommandPalette`, `ShellProvider`/`useShell`, `useAuthorizedNav`, `useLandingRoute`, the nav types, and `useAbility` re-exported from the kernel | top |

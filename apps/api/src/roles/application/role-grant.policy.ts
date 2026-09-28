@@ -1,10 +1,11 @@
 import { canAccessRow, describePermission, ungrantablePermissions } from '@flama/backend-authz';
 import { AppError } from '@flama/backend-core';
 import type { PermissionDefinition } from '@flama/shared';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import type { AbilityPort } from '../../auth/application/ability.port';
+import { ABILITY } from '../../auth/auth.di-tokens';
 import type { RoleEntity } from '../domain/role.entity';
 import { RoleErrors } from '../domain/role.errors';
-import { AbilityFactory } from './ability.factory';
 
 /** Who is performing a role write, and in which organization. */
 export interface RoleActor {
@@ -23,7 +24,7 @@ export interface RoleActor {
  */
 @Injectable()
 export class RoleGrantPolicy {
-  constructor(private readonly abilityFactory: AbilityFactory) {}
+  constructor(@Inject(ABILITY) private readonly abilities: AbilityPort) {}
 
   async assertGrantable(
     actor: RoleActor | undefined,
@@ -36,7 +37,7 @@ export class RoleGrantPolicy {
     // that defines the system roles in the first place.
     if (!actor) return;
 
-    const ability = await this.abilityFactory.createForUser(
+    const ability = await this.abilities.createForUser(
       { id: actor.id, role: actor.role },
       { activeOrganizationId: actor.activeOrganizationId ?? null },
     );
@@ -64,7 +65,7 @@ export class RoleGrantPolicy {
   async assertCanModify(actor: RoleActor | undefined, role: RoleEntity): Promise<void> {
     if (!actor) return;
 
-    const ability = await this.abilityFactory.createForUser(
+    const ability = await this.abilities.createForUser(
       { id: actor.id, role: actor.role },
       { activeOrganizationId: actor.activeOrganizationId ?? null },
     );

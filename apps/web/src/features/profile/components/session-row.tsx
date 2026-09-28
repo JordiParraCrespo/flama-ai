@@ -14,12 +14,19 @@ import { useTranslation } from 'react-i18next';
 /**
  * One signed-in device. Signing it out only asks: the confirm dialog owns the
  * revoke, so one row's request in flight leaves the others usable.
+ *
+ * `now` is a prop, not a `new Date()` read in render: the compiler caches the
+ * age on `lastSeenAt` and the locale, so it would stop moving. The list above
+ * owns the one clock every row reads, and the row stays pure.
  */
 export function SessionRow({
   session,
+  now,
   onSignOut,
 }: {
   session: UserSessionEntity;
+  /** The time the age is measured to, from the list's `useNow`. */
+  now: number;
   onSignOut: () => void;
 }) {
   const { t } = useTranslation();
@@ -27,7 +34,8 @@ export function SessionRow({
 
   const DeviceIcon = session.deviceKind === 'mobile' ? Smartphone : Monitor;
   const lastSeen =
-    formatRelativeTime(session.lastSeenAt, locale) ?? t('profile.sessions.activeNow');
+    formatRelativeTime(session.lastSeenAt, locale, new Date(now)) ??
+    t('profile.sessions.activeNow');
 
   return (
     <SectionRow className="py-3.5">

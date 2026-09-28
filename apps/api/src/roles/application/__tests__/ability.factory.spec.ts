@@ -1,5 +1,6 @@
 import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ABILITY_MEMO, type AbilityRequest } from '../../../auth/application/ability.port';
 import type { RoleRepositoryPort } from '../../database/role.repository.port';
 import type { UserRoleRepositoryPort } from '../../database/user-role.repository.port';
 import { RoleEntity } from '../../domain/role.entity';
@@ -120,5 +121,74 @@ describe('AbilityFactory', () => {
     expect(ability.can('read', 'User')).toBe(false);
     expect(ability.can('delete', 'User')).toBe(false);
     expect(ability.can('manage', 'all')).toBe(false);
+  });
+
+  describe('forRequest', () => {
+    function requestIn(activeOrganizationId: string | null): AbilityRequest {
+      return {
+        user: { id: 'user-1' },
+        session: { activeOrganizationId },
+        [ABILITY_MEMO]: new Map(),
+      };
+    }
+
+    beforeEach(() => {
+      // One role per organization, so the built ability says which it was built for.
+      vi.mocked(userRoleRepo.findRolesForUser).mockImplementation(async (_userId, orgId) => [
+        makeRole(`in-${orgId}`, [
+          Permission.fromDefinition({ action: 'read', subject: `Org-${orgId}` }),
+        ]),
+      ]);
+    });
+
+    it('builds once per organization within a request', async () => {
+      const request = requestIn('org-a');
+
+      const first = await factory.forRequest(request);
+      const second = await factory.forRequest(request, 'org-a');
+
+      expect(second).toBe(first);
+      expect(userRoleRepo.findRolesForUser).toHaveBeenCalledTimes(1);
+    });
+
+    it("never hands a caller another organization's ability", async () => {
+      const request = requestIn('org-a');
+
+      // The guard resolves the route's organization first…
+      const routeAbility = await factory.forRequest(request, 'org-b');
+      // …and a later caller asking about the session's gets its own.
+      const sessionAbility = await factory.forRequest(request);
+
+      expect(routeAbility.can('read', 'Org-org-b')).toBe(true);
+      expect(sessionAbility).not.toBe(routeAbility);
+      expect(sessionAbility.can('read', 'Org-org-a')).toBe(true);
+      expect(sessionAbility.can('read', 'Org-org-b')).toBe(false);
+      expect(userRoleRepo.findRolesForUser).toHaveBeenNthCalledWith(1, 'user-1', 'org-b');
+      expect(userRoleRepo.findRolesForUser).toHaveBeenNthCalledWith(2, 'user-1', 'org-a');
+    });
+
+    it('does not share a memo across requests', async () => {
+      await factory.forRequest(requestIn('org-a'));
+      await factory.forRequest(requestIn('org-a'));
+
+      expect(userRoleRepo.findRolesForUser).toHaveBeenCalledTimes(2);
+    });
+
+    it('interpolates the user-id placeholder from the principal', async () => {
+      vi.mocked(userRoleRepo.findRolesForUser).mockResolvedValue([
+        makeRole('self', [
+          Permission.fromDefinition({
+            action: 'read',
+            subject: 'User',
+            // biome-ignore lint/suspicious/noTemplateCurlyInString: a condition placeholder
+            conditions: { id: '${user.id}' },
+          }),
+        ]),
+      ]);
+
+      const ability = await factory.forRequest(requestIn(null));
+
+      expect(ability.rulesFor('read', 'User')[0].conditions).toEqual({ id: 'user-1' });
+    });
   });
 });

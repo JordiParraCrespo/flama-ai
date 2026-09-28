@@ -42,7 +42,7 @@ convenience — application authorization goes through the database.
 | Permission/ability building (CASL)  | `packages/shared/src/permissions` (`defineAbilitiesFromPermissions`)                        |
 | Role Zod schemas                    | `packages/shared/src/schemas/role.schema.ts`                                                |
 | Roles module (aggregate, use cases) | `apps/api/src/roles/`                                                                       |
-| Effective-ability resolution        | `apps/api/src/roles/application/ability.factory.ts`                                            |
+| Effective-ability resolution        | `apps/api/src/auth/application/ability.port.ts` (port), `roles/application/ability.factory.ts` |
 | Route guard + policy decorator      | `apps/api/src/auth/guards/policies.guard.ts`, `auth/decorators/check-policies.decorator.ts` |
 
 ## Data model
@@ -82,7 +82,7 @@ Add the guards and a policy. The guard resolves the caller's ability from their
 roles and checks the rule:
 
 ```ts
-@UseGuards(AuthGuard, PoliciesGuard)
+@UseGuards(ApiAuthGuard, PoliciesGuard)
 @Controller("articles")
 export class PublishArticleHttpController {
   @Post(":id/publish")
@@ -92,12 +92,25 @@ export class PublishArticleHttpController {
 }
 ```
 
-- `AuthGuard` (Better Auth) authenticates and populates `request.user`.
-- `PoliciesGuard` builds the ability via `AbilityFactory.createForUser(user)`
-  (union of the user's roles' permissions, falling back to the legacy
-  `user.role`), checks every `@CheckPolicies` rule, and attaches the built
-  ability to `request.ability`.
-- No `@CheckPolicies` ⇒ any authenticated user passes (e.g. `GET /users/me`).
+- `ApiAuthGuard` authenticates a session cookie, an API token or an OAuth
+  token and populates `request.user` / `request.session`.
+- `PoliciesGuard` asks for the ability through the `AbilityPort` (the `ABILITY`
+  token in `auth.di-tokens.ts`, bound by `RolesModule` to `AbilityFactory`),
+  handing it `{ user, session }` — never the request — for the organization the
+  route names (`@OrganizationScoped`) or else the session's active one. It
+  checks every `@CheckPolicies` rule and attaches the ability to
+  `request.ability`. The ability is memoized per request **per organization**:
+  a later caller in the same request (`AccessScopeInterceptor`) that resolves
+  the same organization reuses it, one that resolves another builds its own.
+- **No `@CheckPolicies` ⇒ rejected.** A route that declares neither
+  `@CheckPolicies` nor `@NoPolicy('reason')` fails closed with
+  `AUTHZ_002` (`ROUTE_HAS_NO_POLICY`, a 500: a programming error), and `route-policy-coverage.spec.ts` fails the build.
+  A route any authenticated caller may reach (e.g. `GET /users/me`) says so
+  with `@NoPolicy('reason')`.
+- Anything else that needs an ability — a handler checking what a caller may
+  grant, a query serving effective permissions — injects `ABILITY` too
+  (`createForUser` / `permissionsForUser`). `RolesModule` exports the token,
+  not `AbilityFactory`.
 
 ### An endpoint a client gates a destination on declares its rules once
 
@@ -139,8 +152,9 @@ if (!request.ability.can('update', subject('Article', article))) {
 }
 ```
 
-`${user.id}` (any `user.*` path) is interpolated from the authenticated principal
-when the ability is built.
+`${user.id}` is interpolated from the authenticated principal when the ability
+is built. The principal is only `{ id, role }` (`AbilityPrincipal`), so no other
+`user.*` path resolves.
 
 ## Adding a new protected resource
 
@@ -170,9 +184,11 @@ from the legacy `user.role` column.
 
 ## Wiring notes
 
-- `RolesModule` is `@Global` so the `AbilityFactory` (needed by `PoliciesGuard`
-  in every feature module) and the repository ports are available app-wide
-  without circular module imports.
+- `RolesModule` is `@Global` so its `ABILITY` binding (needed by
+  `PoliciesGuard` in every feature module) and the repository ports are
+  available app-wide without circular module imports. It exports the token
+  only; no other module imports `roles/application/ability.factory.ts`, and
+  `pnpm arch` (`no-cross-module-internals`) fails one that does.
 - The roles module follows the standard DDD-Hexagon layout
   (`nestjs-architecture.md`); permission editing goes through domain methods
   (`RoleEntity.replacePermissions`), never by mutating ORM records directly.
@@ -243,8 +259,9 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   Impersonation forwards Better Auth's `Set-Cookie` to the client.
 - **Workspaces = teams** — modelled on the org plugin's teams feature
   (`team` / `teamMember`).
-- **Org-scoped CASL** — `PoliciesGuard` reads `session.activeOrganizationId` and
-  passes it to `AbilityFactory.createForUser(user, scope)`. Scope tenant
+- **Org-scoped CASL** — `PoliciesGuard` builds the ability for the route's
+  organization or else `session.activeOrganizationId`, through
+  `AbilityPort.forRequest`. Scope tenant
   resources with a condition placeholder:
   `{ action: 'read', subject: 'Article', conditions: { organizationId: '${activeOrganizationId}' } }`,
   then enforce per-row in the handler via `request.ability.can('read', subject('Article', row))`.

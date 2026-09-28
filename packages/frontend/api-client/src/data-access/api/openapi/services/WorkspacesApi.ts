@@ -2,11 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { AddWorkspaceMemberRequest } from '../../../../common/models/AddWorkspaceMemberRequest';
-import type { CreateWorkspaceRequest } from '../../../../common/models/CreateWorkspaceRequest';
-import type { UpdateWorkspaceRequest } from '../../../../common/models/UpdateWorkspaceRequest';
-import type { WorkspaceMemberResponseDto } from '../../../../common/models/WorkspaceMemberResponseDto';
-import type { WorkspaceResponseDto } from '../../../../common/models/WorkspaceResponseDto';
+import type {
+    AddWorkspaceMemberRequest,
+    CreateWorkspaceRequest,
+    UpdateWorkspaceRequest,
+    WorkspaceMemberResponseDto,
+    WorkspaceResponseDto,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

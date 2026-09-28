@@ -12,11 +12,11 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { AbilityHttpRequest } from '../../../auth/application/ability.port';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
-import type { AbilityRequest } from '../../../roles/application/ability.factory';
 import { assertCanAccessUser } from '../../application/user-access.policy';
 import type { UserEntity } from '../../domain/user.entity';
 import { UserResponseDto } from '../../dtos/user.response.dto';
@@ -49,7 +49,7 @@ export class UpdateUserHttpController {
     code: 'USER_001',
   })
   async update(
-    @Req() request: AbilityRequest,
+    @Req() request: AbilityHttpRequest,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateUserRequest,
   ): Promise<UserResponseDto> {
