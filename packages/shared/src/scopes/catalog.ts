@@ -15,7 +15,8 @@ export type ScopeAccessLevel = (typeof SCOPE_ACCESS_LEVELS)[number];
 export const SCOPE_RESOURCES = [
   'profile',
   'users',
-  'admin',
+  // flama:begin admin-api
+  // flama:end admin-api
   'roles',
   'organizations',
   'members',
@@ -114,28 +115,8 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       },
     },
   },
-  {
-    resource: 'admin',
-    label: 'User administration',
-    description:
-      'Privileged account operations: bans, impersonation, password resets and session revocation.',
-    sensitive: true,
-    levels: {
-      read: {
-        scope: 'admin:read',
-        label: 'Read',
-        description: 'List users through the admin API and inspect their sessions.',
-        policies: [{ action: 'manage', subject: 'User' }],
-      },
-      write: {
-        scope: 'admin:write',
-        label: 'Edit',
-        description:
-          'Ban, unban, impersonate, set passwords, assign global roles and revoke sessions.',
-        policies: [{ action: 'manage', subject: 'User' }],
-      },
-    },
-  },
+  // flama:begin admin-api
+  // flama:end admin-api
   {
     resource: 'roles',
     label: 'Roles & permissions',

@@ -24,7 +24,13 @@
  * offline path, and how the plugins repo tests itself), --dry-run (print the
  * plan, touch nothing), --force (overwrite paths that already exist),
  * --no-check (skip the closing `starter:check`, for a caller that installs
- * several and checks once).
+ * several and checks once), --no-install (skip `pnpm install` and the
+ * regeneration of the client that follows it, for the same caller).
+ *
+ * A plugin with endpoints changes the OpenAPI document and the client
+ * generated from it. Adding or removing one ends by installing and running its
+ * `regenerate` step, so the project is never left with a client that
+ * disagrees with its API.
  *
  * ## What a plugin carries
  *
@@ -50,7 +56,7 @@
  *       //   The root scripts that rebuild the generated files this feature
  *       //   shapes — the OpenAPI document and the client — most complete
  *       //   first; the step is the first one the project has. They carry no
- *       //   markers, so neither direction edits them; both name the step.
+ *       //   markers, so neither direction edits them; both run the step.
  *     },
  *
  *     // Whole trees, copied. `filesNeed` marks one that belongs inside
@@ -98,7 +104,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { regenerateSteps } from '../starter/prune.mjs';
+import { regenerateSteps, runRegenerate } from '../starter/prune.mjs';
 import {
   applyJsonEdits,
   insertBlocks,
@@ -243,13 +249,27 @@ function add(manifest, options) {
     console.log('\nChecking the manifest still describes the repo…');
     runPrune(['--check']);
   }
-  console.log(`\nInstalled ${manifest.id}. Next: pnpm install${followUps(manifest)}`);
+  finish(`Installed ${manifest.id}`, manifest.feature, options);
 }
 
-function followUps(manifest) {
-  return regenerateSteps([manifest.feature])
-    .map((step) => `, ${step}`)
-    .join('');
+/**
+ * Install, then rebuild what the feature's endpoints shape — or, for a caller
+ * that does both once for several plugins, say what is left to run.
+ */
+function finish(what, feature, { install }) {
+  const steps = regenerateSteps([feature]);
+  if (!install) {
+    console.log(`\n${what}. Next: ${['pnpm install', ...steps].join(', ')}`);
+    return;
+  }
+  console.log('\npnpm install (the lockfile follows the tree)...');
+  try {
+    execFileSync('pnpm', ['install'], { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    fail(`${what}, but pnpm install failed; run it again once the cause is fixed.`);
+  }
+  runRegenerate(steps);
+  console.log(`\n${what}.`);
 }
 
 // ---------------------------------------------------------------------------
@@ -298,7 +318,7 @@ function remove(id, options) {
     return;
   }
   runPrune(['--check']);
-  console.log(`\nRemoved ${id}. Next: pnpm install${followUps({ feature: features[id] })}`);
+  finish(`Removed ${id}`, features[id], options);
 }
 
 // ---------------------------------------------------------------------------
@@ -340,12 +360,14 @@ export function parseArgs(argv) {
     dryRun: false,
     force: false,
     check: true,
+    install: true,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--force') options.force = true;
     else if (arg === '--no-check') options.check = false;
+    else if (arg === '--no-install') options.install = false;
     else if (VALUE_FLAGS[arg]) {
       const next = argv[i + 1];
       if (!next || next.startsWith('--')) fail(`${arg} needs a value`);

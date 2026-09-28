@@ -115,7 +115,7 @@ export class PublishArticleHttpController {
 ### An endpoint a client gates a destination on declares its rules once
 
 Some endpoints are the thing a client hides a link behind — members, roles, API
-tokens, admin. Their `@CheckPolicies` is declared once, in
+tokens, feature flags. Their `@CheckPolicies` is declared once, in
 `ENDPOINT_POLICIES` (`packages/shared/src/permissions/endpoint-policies.ts`),
 and asserted by `apps/api/src/auth/__tests__/endpoint-policies.spec.ts`: it
 checks the handler exists, that it is mounted at the path the catalog names,
@@ -236,27 +236,26 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   `${activeOrganizationId}`) and never `manage all` or `User`: assigned
   org-scoped, a `manage all` role is unioned into the ability whenever that
   organization is active, and every non-tenant route that checks only
-  action + subject (`DELETE /users/:id`, the admin façade) would open to
+  action + subject (`DELETE /users/:id`) would open to
   whoever created a workspace. `RoleGrantPolicy.assertCanModify` is the
   row-level half for roles — a global role never matches the owner's
   conditioned `manage Role`, so tenants cannot edit the platform's roles. Provisioning behind the account's back is
   what made a self-service sign-up the owner of an organization it had no
   permission to read. Invitation emails go through the BullMQ email queue
   (`EmailService.sendInvitation`).
-- **First-class REST façade** — `apps/api/src/organizations/` and
-  `apps/api/src/admin/` expose the plugin operations as typed, Swagger-documented,
-  CASL-guarded endpoints (`/v1/organizations`, `/v1/organizations/:id/members`,
-  `/v1/organizations/:id/invitations` + `/v1/invitations`, `/v1/workspaces`,
-  `/v1/admin/users`) so they land in the generated `@flama/api-client`. These are
-  **delegating façades**: the controllers/services call `auth.api.*` (via
-  `auth/infrastructure/better-auth.util.ts` — `betterAuthHeaders` + `invokeBetterAuth`) rather
-  than writing the tables, so Better Auth stays the single source of truth.
-  There is no app-owned aggregate, but the module contract still applies: the
-  target is a port plus a gateway in `infrastructure/` and one use-case slice
-  per operation. Both modules still carry the pre-contract
-  controller → service → `auth.api` layout and are being migrated — add a new
-  operation as a slice, never to the old service (see `apps/api/AGENTS.md`).
-  Impersonation forwards Better Auth's `Set-Cookie` to the client.
+- **First-class REST façade** — `apps/api/src/organizations/` exposes the
+  plugin's operations as typed, Swagger-documented, CASL-guarded endpoints
+  (`/v1/organizations`, `/v1/organizations/:id/members`,
+  `/v1/organizations/:id/invitations` + `/v1/invitations`, `/v1/workspaces`) so
+  they land in the generated `@flama/api-client`. It is a **delegating
+  façade**: it calls `auth.api.*` (via `auth/infrastructure/better-auth.util.ts`
+  — `betterAuthHeaders` + `invokeBetterAuth`) rather than writing the tables,
+  so Better Auth stays the single source of truth. There is no app-owned
+  aggregate, but the module contract still applies: a port plus a gateway in
+  `infrastructure/` and one use-case slice per operation. The module still
+  carries the pre-contract controller → service → `auth.api` layout and is
+  being migrated — add a new operation as a slice, never to the old service
+  (see `apps/api/AGENTS.md`).
 - **Workspaces = teams** — modelled on the org plugin's teams feature
   (`team` / `teamMember`).
 - **Org-scoped CASL** — `PoliciesGuard` builds the ability for the route's

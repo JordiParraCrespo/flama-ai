@@ -5,6 +5,7 @@ import {
   blockAbove,
   dropBlocks,
   identifierRegex,
+  isEmptyBlock,
   MARKER_RE,
   MarkerError,
   markerIds,
@@ -110,7 +111,7 @@ test('widenMarker is narrowMarker backwards', () => {
   );
 });
 
-test('dropBlocks takes out what only the removed own, and narrows what they share', () => {
+test('dropBlocks empties what only the removed own, and narrows what they share', () => {
   const text = [
     'keep',
     '# flama:begin gone',
@@ -125,10 +126,65 @@ test('dropBlocks takes out what only the removed own, and narrows what they shar
   ].join('\n');
   assert.equal(
     dropBlocks('f', text, new Set(['gone'])),
-    ['keep', '', '# flama:begin stays', 'shared', '# flama:end stays', ''].join('\n'),
+    [
+      'keep',
+      // The fences stay where the feature stood, for a plugin to fill again.
+      '# flama:begin gone',
+      '# flama:end gone',
+      '',
+      '# flama:begin stays',
+      'shared',
+      '# flama:end stays',
+      '',
+    ].join('\n'),
   );
   // A file with no blocks is not a rewrite; the caller skips it.
   assert.equal(dropBlocks('f', 'plain\n', new Set(['gone'])), null);
+});
+
+test('dropBlocks takes a block a slot put in place out whole', () => {
+  const text = [
+    'keep',
+    '# flama:begin gone',
+    'slotted',
+    '# flama:end gone',
+    '# flama:begin other',
+    'stacked on the same slot',
+    '# flama:end other',
+    '',
+    '# flama:plugins slot',
+    'tail',
+  ].join('\n');
+  assert.equal(
+    dropBlocks('f', text, new Set(['gone', 'other'])),
+    ['keep', '', '# flama:plugins slot', 'tail'].join('\n'),
+  );
+  // Its neighbour on the slot goes whole too, not only the block nearest it.
+  assert.equal(
+    dropBlocks('f', text, new Set(['gone'])),
+    [
+      'keep',
+      '# flama:begin other',
+      'stacked on the same slot',
+      '# flama:end other',
+      '',
+      '# flama:plugins slot',
+      'tail',
+    ].join('\n'),
+  );
+});
+
+test('isEmptyBlock knows the hole a prune leaves from a block with lines', () => {
+  const text = [
+    '# flama:begin gone',
+    '# flama:end gone',
+    '# flama:begin here',
+    'x',
+    '# flama:end here',
+  ].join('\n');
+  assert.equal(isEmptyBlock('f', text, 0), true);
+  assert.equal(isEmptyBlock('f', text, 2), false);
+  assert.equal(isEmptyBlock('f', text, 3), false);
 });
 
 test('blockAbove finds the block a slot marks, and only that one', () => {

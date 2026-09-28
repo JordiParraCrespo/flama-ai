@@ -105,11 +105,13 @@ A plugin is that entry plus three ops that put it in place: its own block of
 text at a `flama:plugins <slot>` anchor; this plugin joining a block several
 features share — widening its fence, or, where every other owner was pruned
 and the block with them, op 1 again with the body the plugin carries; and the
-entry's own `json` edits run backwards. Copied files arrive trimmed by the
+entry's own `json` edits run backwards. A prune empties a feature's fences and
+keeps them, so a plugin bringing it back merges into its own place; only a
+block a slot put in place goes whole. Copied files arrive trimmed by the
 prune's own edit. Generated files — `apps/api/openapi.json` and the
 API client — carry no markers and neither direction edits them: a feature
 with endpoints declares `regenerate`, and the prune, the installer and
-`starter:init` print it as the next step. The shape of all of it is the header of
+`starter:init` run it after their install. The shape of all of it is the header of
 `scripts/plugins/plugin.mjs`, which is the only document. `plugin.mjs` is the
 command, `ops.mjs` the three ops, `source.mjs` where plugins come from and the
 one rule for whether a project can take one — which `pnpm starter:init` plans

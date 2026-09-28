@@ -25,8 +25,9 @@
  *   node scripts/starter/prune.mjs --list
  *
  * Flags: --dry-run (print the plan, touch nothing), --no-install (skip the
- * `pnpm install` that refreshes the lockfile), --no-report (skip the list of
- * prose lines that still name what went).
+ * `pnpm install` that refreshes the lockfile, and the regeneration of the
+ * client that needs it), --no-report (skip the list of prose lines that still
+ * name what went).
  *
  * To start a project, `pnpm starter:init` is the front door: it asks what to
  * keep and what to add, then runs this and the plugin installer in order.
@@ -53,6 +54,7 @@ import { deleteJsonEntry, deleteJsonValueAt } from '../lib/json-text.mjs';
 import {
   dropBlocks,
   identifierRegex,
+  isEmptyBlock,
   MarkerError,
   annotate as parseMarkers,
 } from '../lib/markers.mjs';
@@ -322,7 +324,11 @@ function check(manifest) {
     const lines = annotate(file, content);
     for (const entry of lines) {
       if (!entry.marker) continue;
-      for (const id of entry.stack.at(-1).ids) {
+      const block = entry.stack.at(-1);
+      // An empty block is the hole a pruned feature leaves for a plugin to
+      // fill; naming a feature the project does not have is its whole point.
+      if (isEmptyBlock(file, content, block.begin - 1)) continue;
+      for (const id of block.ids) {
         if (!knownIds.has(id))
           problems.push(
             `${file}:${lines.indexOf(entry) + 1}: marker names unknown feature "${id}"`,
@@ -701,11 +707,12 @@ function prune(manifest, removedIds, options) {
     }
   }
 
-  console.log('\nDone.');
   // Generated files follow the code, not the markers (see SCAN_SKIP), so a
   // feature that shaped them says how to rebuild them without it.
   const regenerate = regenerateSteps(features.map((id) => manifest.features[id]));
-  if (regenerate.length) console.log(`Next: ${regenerate.join(', ')}`);
+  if (install) runRegenerate(regenerate);
+  console.log('\nDone.');
+  if (!install && regenerate.length) console.log(`Next: ${regenerate.join(', ')}`);
   if (options.report) {
     const identifiers = [
       ...features.flatMap((id) => manifest.features[id].identifiers),
@@ -737,6 +744,31 @@ export function regenerateSteps(features) {
     (feature.regenerate ?? []).find((script) => scripts[script]),
   );
   return [...new Set(steps.filter(Boolean))].map((script) => `pnpm ${script}`);
+}
+
+/**
+ * Run the steps `regenerateSteps` names, after an install: a feature that came
+ * or went with endpoints leaves the OpenAPI document and the client stale, and
+ * the command that changed the tree is the one that knows it.
+ *
+ * Generating builds a schema from the API's modules; it never serves a
+ * request. A project that has not set `BETTER_AUTH_SECRET` yet would have the
+ * API refuse to boot for it, so the step borrows a throwaway one.
+ */
+export function runRegenerate(steps) {
+  for (const step of steps) {
+    console.log(`\n${step} (the generated client follows the code)...`);
+    try {
+      execFileSync('pnpm', step.split(' ').slice(1), {
+        cwd: ROOT,
+        stdio: 'inherit',
+        // A secret the caller's environment carries wins over this one.
+        env: { BETTER_AUTH_SECRET: 'generating-the-openapi-schema-only', ...process.env },
+      });
+    } catch {
+      fail(`${step} failed. Everything else is done; run it again once the cause is fixed.`);
+    }
+  }
 }
 
 export function mentions(identifiers) {

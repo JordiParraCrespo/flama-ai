@@ -152,12 +152,9 @@ module.exports = {
           // The seed is a composition root of its own: a standalone script
           // that boots the same providers to write the first admin user.
           '^src/database/seed\\.ts$',
-          // Ledger: the delegating façades that still call Better Auth from a
-          // service or a mapper instead of a gateway. Cleared when admin/ and
-          // organizations/ are cut into use-case slices over gateway ports.
-          '^src/admin/admin\\.service\\.ts$',
-          '^src/admin/admin\\.mappers\\.ts$',
-          '^src/admin/admin-error\\.mapper\\.ts$',
+          // Ledger: the delegating façade that still calls Better Auth from a
+          // service or a mapper instead of a gateway. Cleared when
+          // organizations/ is cut into use-case slices over a gateway port.
           '^src/organizations/organizations\\.service\\.ts$',
           '^src/organizations/invitations\\.service\\.ts$',
           '^src/organizations/workspaces\\.service\\.ts$',

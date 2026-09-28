@@ -14,7 +14,6 @@ export { OpenAPI } from './data-access/api/openapi/core/OpenAPI';
 
 // Services
 export { AccessGrantsApi } from './data-access/api/openapi/services/AccessGrantsApi';
-export { AdminApi } from './data-access/api/openapi/services/AdminApi';
 export { ApiTokensApi } from './data-access/api/openapi/services/ApiTokensApi';
 export { AuthorizationApi } from './data-access/api/openapi/services/AuthorizationApi';
 export { FeatureFlagsApi } from './data-access/api/openapi/services/FeatureFlagsApi';
@@ -33,19 +32,12 @@ export type {
   AccessGrantResponseDto,
   AddMemberRequest,
   AddWorkspaceMemberRequest,
-  AdminCreateUserRequest,
-  AdminSessionResponseDto,
-  AdminSuccessResponseDto,
-  AdminUpdateUserRequest,
-  AdminUserListResponseDto,
-  AdminUserResponseDto,
   ApiTokenResponseDto,
   AssignUserRolesRequest,
   AuthzCatalogResponseDto,
   AuthzResourceDto,
   AuthzResourceGroupDto,
   AuthzRuleDto,
-  BanUserRequest,
   CapabilitiesResponseDto,
   ChangePasswordRequest,
   CheckSlugRequest,
@@ -85,14 +77,11 @@ export type {
   ProblemDetailsDto,
   ProfileResponseDto,
   ResourceActionDto,
-  RevokeSessionRequest,
   RolePaginationMetaDto,
   RoleResponseDto,
   ScopeLevelDto,
   ScopeLevelsDto,
   ScopePolicyDto,
-  SetUserPasswordRequest,
-  SetUserRoleRequest,
   SlugAvailabilityResponseDto,
   ToggleFeatureFlagRequest,
   UpdateFeatureFlagRequest,

@@ -30,6 +30,15 @@ describe('toAppError', () => {
     expect(error.correlationId).toBe('req-7');
   });
 
+  it('reads a problem document thrown bare, as the hey-api SDK throws it', () => {
+    const error = toAppError(problem, FETCH_FAILED);
+
+    expect(error.message).toBe('No user with id 42');
+    expect(error.code).toBe('USER_001');
+    expect(error.status).toBe(404);
+    expect(error.problem).toEqual(problem);
+  });
+
   it('falls back to the catalog message when the API said nothing useful', () => {
     const error = toAppError(new Error('Network request failed'), FETCH_FAILED);
 

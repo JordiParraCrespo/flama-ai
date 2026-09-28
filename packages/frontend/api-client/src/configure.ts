@@ -23,12 +23,27 @@ export function rememberHeaders(headers: () => AuthHeaders): void {
   headersFn = headers;
 }
 
-/** Apply base URL + auth headers to both the legacy OpenAPI client and hey-api. */
+let interceptorAdded = false;
+
+/**
+ * Apply the base URL and the auth headers to the hey-api client. The headers
+ * are read per request, so a session that refreshes its token is picked up
+ * without reconfiguring; a bearer-token app (mobile) depends on them, a cookie
+ * session (web) passes through with them empty.
+ */
 export async function applyApiClientConfig(config: ApiClientConfig): Promise<void> {
   rememberHeaders(config.headers ?? (() => ({})));
   const { client } = await import('./generated/client.gen');
   client.setConfig({
     baseUrl: config.baseUrl,
     credentials: config.credentials ?? 'include',
+  });
+  if (interceptorAdded) return;
+  interceptorAdded = true;
+  client.interceptors.request.use(async (request) => {
+    for (const [name, value] of Object.entries(await getAuthHeaders())) {
+      request.headers.set(name, value);
+    }
+    return request;
   });
 }

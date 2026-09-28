@@ -176,13 +176,6 @@ describe('scopesForPolicy', () => {
     expect(scopesForPolicy({ action: 'delete', subject: 'Role' })).toEqual(['roles:write']);
   });
 
-  it('maps privileged user management to the admin group, not the directory', () => {
-    expect(scopesForPolicy({ action: 'manage', subject: 'User' })).toEqual([
-      'admin:read',
-      'admin:write',
-    ]);
-  });
-
   it('returns nothing for a rule no scope backs', () => {
     expect(scopesForPolicy({ action: 'read', subject: 'Article' })).toEqual([]);
   });
@@ -207,11 +200,6 @@ describe('grantableScopes', () => {
   it('grants a write level when the ability satisfies any one of its rules', () => {
     const ability = defineAbilitiesFromPermissions([{ action: 'update', subject: 'User' }]);
     expect(grantableScopes(ability)).toContain('users:write');
-  });
-
-  it('does not let a directory reader reach the admin group', () => {
-    const ability = defineAbilitiesFromPermissions([{ action: 'read', subject: 'User' }]);
-    expect(grantableScopes(ability)).not.toContain('admin:read');
   });
 
   it('reports which requested scopes exceed the granter', () => {

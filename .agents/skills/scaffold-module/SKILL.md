@@ -15,8 +15,8 @@ pnpm --filter @flama/api arch     # what it is then allowed to import
 ```
 
 `users/` is the reference module — read it when a shape is unclear. Do **not**
-copy `organizations/` or `admin/`, which are mid-migration to this contract and
-are ledgered as such.
+copy `organizations/`, which is mid-migration to this contract and is ledgered as
+such.
 
 ## Before generating
 

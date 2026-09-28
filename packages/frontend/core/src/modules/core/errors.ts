@@ -64,8 +64,9 @@ export class AppError extends Error {
 /**
  * Normalises anything thrown by a repository call into an {@link AppError}.
  *
- * The generated api-client throws its own `ApiError` with the parsed response
- * on `body`; when that body is a problem document the server's own explanation
+ * The legacy client throws its own `ApiError` with the parsed response on
+ * `body`, and the hey-api SDK called with `throwOnError` throws the parsed body
+ * itself; when that body is a problem document the server's own explanation
  * wins over the caller's generic fallback.
  *
  * Not every failure arrives that way. Better Auth's client rejects through
@@ -88,7 +89,8 @@ export function toAppError(error: unknown, fallback: ErrorDefinition): AppError 
     candidate?.body ??
     candidate?.error ??
     candidate?.response?.data ??
-    (typeof candidate?.error === 'object' ? candidate.error : undefined);
+    (typeof candidate?.error === 'object' ? candidate.error : undefined) ??
+    (isProblemDetails(error) ? error : undefined);
 
   if (isProblemDetails(body)) {
     return new AppError(fallback, {

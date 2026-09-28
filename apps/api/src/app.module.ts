@@ -21,7 +21,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
-import { AdminModule } from './admin/admin.module';
+// flama:begin admin-api
+// flama:end admin-api
 import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
@@ -176,7 +177,8 @@ import { UsersModule } from './users/user.module';
     UsersModule,
     ProfileModule,
     RolesModule,
-    AdminModule,
+    // flama:begin admin-api
+    // flama:end admin-api
     FeatureFlagsModule,
     HealthModule,
     QueueModule,

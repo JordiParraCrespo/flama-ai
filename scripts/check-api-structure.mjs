@@ -179,17 +179,12 @@ const HTTP_METHOD = /^\s*@(Get|Post|Put|Patch|Delete|All|Head|Options)\s*\(/m;
  * fails, and an entry that stops matching is itself an error: the list cannot
  * outlive the debt it describes.
  *
- * `admin/` and `organizations/` are the pre-contract Better Auth façades — a
- * root-level service behind multi-route controllers, from before a module that
- * owns no aggregate was expected to have a port and a slice per operation. See
- * `apps/api/AGENTS.md` for what to do when you touch them.
+ * `organizations/` is the pre-contract Better Auth façade — root-level services
+ * behind multi-route controllers, from before a module that owns no aggregate
+ * was expected to have a port and a slice per operation. See
+ * `apps/api/AGENTS.md` for what to do when you touch it.
  */
 const LEDGER = [
-  { path: 'apps/api/src/admin/admin.controller.ts', kind: 'controller-at-module-root' },
-  { path: 'apps/api/src/admin/admin.controller.ts', kind: 'route-outside-slice' },
-  { path: 'apps/api/src/admin/admin.service.ts', kind: 'service-at-module-root' },
-  { path: 'apps/api/src/admin/admin.mappers.ts', kind: 'plural-mappers-file' },
-  { path: 'apps/api/src/admin/dtos/admin.request.dto.ts', kind: 'file-name-not-admitted' },
   // flama:begin organizations
   {
     path: 'apps/api/src/organizations/organizations.controller.ts',

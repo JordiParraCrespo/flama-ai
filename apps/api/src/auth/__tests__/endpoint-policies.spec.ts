@@ -2,7 +2,8 @@ import { CHECK_POLICIES_KEY, type PolicyRule } from '@flama/backend-authz';
 import { ENDPOINT_POLICIES, type GuardedEndpoint } from '@flama/shared';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { describe, expect, it } from 'vitest';
-import { AdminController } from '../../admin/admin.controller';
+// flama:begin admin-api
+// flama:end admin-api
 import { FindApiTokensHttpController } from '../../api-tokens/queries/find-api-tokens/find-api-tokens.http.controller';
 import { FindFeatureFlagsHttpController } from '../../feature-flags/queries/find-feature-flags/find-feature-flags.http.controller';
 // flama:plugins handler-imports
@@ -35,7 +36,8 @@ const HANDLERS: Record<GuardedEndpoint, { controller: object; handler: string }>
   // flama:end organizations
   '/roles': { controller: FindRolesHttpController, handler: 'findAll' },
   '/tokens': { controller: FindApiTokensHttpController, handler: 'findAll' },
-  '/admin/users': { controller: AdminController, handler: 'listUsers' },
+  // flama:begin admin-api
+  // flama:end admin-api
   '/feature-flags/admin': {
     controller: FindFeatureFlagsHttpController,
     handler: 'findFeatureFlags',

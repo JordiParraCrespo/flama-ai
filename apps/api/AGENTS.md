@@ -52,44 +52,31 @@ Shared shaping helpers (`asRecord`, `asArray`, `unwrap`, `unwrapArray`) live in
 
 **One mapper per aggregate, named for it** — `subscription.mapper.ts`, not a
 `*.mappers.ts` bag of loose functions. `pnpm check:api-structure` rejects the
-plural name; `admin.mappers.ts` and `organization.mappers.ts` are on its ledger
-precisely because they are that bag. Array and envelope mappers belong on the
-aggregate's mapper beside the scalar ones, as methods.
+plural name. Array and envelope mappers belong on the aggregate's mapper beside
+the scalar ones, as methods.
 
-## Delegating façades (organizations, admin)
+## Better Auth façades
 
-`src/organizations/` and `src/admin/` expose the Better Auth organization/admin
-plugin operations as typed, Swagger-documented, CASL-guarded REST endpoints that
-**delegate to `auth.api.*`**. Better Auth owns the tables, so there is no
-aggregate to write — but not owning the data is a reason to have a **port**,
-not a reason to skip the module contract. The target shape, like every other
-module (see [`ARCHITECTURE.md`](./ARCHITECTURE.md)), is: a port in
-`infrastructure/` describing what the application needs, a gateway beside it
-that speaks to `auth.api.*`, and one use-case slice per operation.
+A module that exposes Better Auth plugin operations as REST endpoints
+**delegates to `auth.api.*`**: Better Auth owns the tables, so there is no
+aggregate to write. Not owning the data is a reason to have a **port**, not a
+reason to skip the module contract (see [`ARCHITECTURE.md`](./ARCHITECTURE.md)):
 
-> **Both modules are mid-migration.** They still carry a root-level
-> `*.service.ts` and multi-route `*.controller.ts` — the pre-contract layout.
-> `pnpm check:api-structure` reports each of those files, and
-> `.dependency-cruiser.cjs` carries a ledger entry for
-> `organizations.service.ts`. **Do not add a route to either module in the old
-> shape.** A new operation goes in as a slice; a route you touch is a chance to
-> move it. Neither module is an example to copy — `users/` and `profile/` are.
+- a port in `infrastructure/` describing what the use cases need, and a
+  gateway beside it that speaks to `auth.api.*` through `betterAuthHeaders`;
+- the module's invoker beside that gateway, built with `betterAuthInvoker`,
+  wrapping every call so Better Auth's `APIError` becomes a catalog problem
+  document keeping the upstream code as `upstreamCode` — a bare
+  `HttpException` loses the code (see "Structured errors" in
+  `.agents/rules/nestjs-architecture.md`);
+- every result normalized through the module's mapper;
+- one use-case slice per operation.
 
-Use `betterAuthHeaders` from `src/auth/infrastructure/better-auth.util.ts`,
-and normalize every `auth.api` result through a mapper (see above). See
-`.agents/rules/rbac-roles.md` for the full RBAC + org/admin guide.
-
-**Wrap every `auth.api.*` call in the module's own invoker** —
-`invokeOrganizationApi` (`organizations/organization-error.mapper.ts`) or
-`invokeAdminApi` (`admin/admin-error.mapper.ts`), both built with
-`betterAuthInvoker`. Those two files sit at the module root today only because
-`*.mapper.ts` is on the root allowlist; once each module is cut into slices the
-error fold belongs beside its gateway in `infrastructure/`, not as a second
-mapper at the root. They fold Better Auth's `APIError` onto the module's error
-catalog so the response is a proper problem document with an `ORG_*`/`ADMIN_*`
-code, keeping the upstream code as an `upstreamCode` extension. Throwing a bare
-`HttpException` here loses the code entirely — see "Structured errors" in
-`.agents/rules/nestjs-architecture.md`.
+`profile/infrastructure/` is the port and gateway to copy. `organizations/` is
+mid-migration: its root-level services and multi-route controllers are on the
+ledgers of `pnpm check:api-structure` and `.dependency-cruiser.cjs`. Do not copy
+it, and do not add a route to it in the old shape — a new operation goes in as
+a slice.
 
 ## Config
 
