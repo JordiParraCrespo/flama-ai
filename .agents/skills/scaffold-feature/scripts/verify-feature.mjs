@@ -21,6 +21,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const args = Object.fromEntries(
   process.argv
@@ -46,7 +47,11 @@ if (!app) {
   process.exit(2);
 }
 
-const root = new URL('../../../../', import.meta.url).pathname.replace(/\/$/, '');
+// `fileURLToPath`, not `new URL(...).pathname`: a pathname is URL-encoded, so a
+// checkout under a directory with a space in it resolves to `/Macintosh%20SSD/...`
+// and every `readdirSync` below it fails — or, worse, still relativises, and the
+// paths silently match nothing they are compared against.
+const root = fileURLToPath(new URL('../../../../', import.meta.url)).replace(/\/$/, '');
 const results = [];
 
 function run(label, command, commandArgs, cwd = root) {

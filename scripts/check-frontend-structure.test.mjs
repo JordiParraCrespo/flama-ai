@@ -23,7 +23,9 @@ after(() => {
 
 /** A scratch repo holding `apps/web` with `files`, and the checker's report on it. */
 function check(files) {
-  const root = mkdtempSync(join(tmpdir(), 'flama-structure-'));
+  // The space is deliberate: a root taken from `URL.pathname` comes out
+  // percent-encoded under such a directory, and the checker then finds nothing.
+  const root = mkdtempSync(join(tmpdir(), 'flama structure-'));
   roots.push(root);
   mkdirSync(join(root, 'scripts'));
   copyFileSync(

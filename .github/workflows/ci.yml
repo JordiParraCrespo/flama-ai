@@ -78,6 +78,15 @@ jobs:
         run: pnpm check:structure
       # flama:end web|mobile
       # flama:plugins frontend-structure
+      # flama:begin web|mobile
+      # What the React Compiler leaves uncompiled, per app, run with the
+      # compiler that app's build runs. Every build ships a bailout as written
+      # and says nothing, so this is where one shows up. It fails on a file
+      # outside scripts/check-react-compiler.baseline.mjs, the bailouts already
+      # accepted, and names the listed ones that have gone so the list shrinks.
+      - name: React Compiler bailouts
+        run: pnpm check:compiler
+      # flama:end web|mobile
       # Every flag in the catalog is read somewhere, and no temporary flag is
       # past its expiry date — flags are debt with a due date, and this is
       # where it falls due.

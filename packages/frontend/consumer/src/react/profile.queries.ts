@@ -1,12 +1,14 @@
 'use client';
 
 import {
+  type EntityQueryOptions,
   type HookMutationOptions,
+  useEntityQuery,
   usersKeys,
   withCacheOnSuccess,
 } from '@flama/frontend-core/react';
 import type { ChangeOwnPasswordDto, UpdateProfileDto } from '@flama/shared/schemas/profile';
-import { type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ProfileEntity, UserSessionEntity } from '../modules/profile/profile.entity';
 import { useConsumerApp } from './context';
 
@@ -24,12 +26,10 @@ export const profileKeys = {
   sessions: () => [...profileKeys.all, 'sessions'] as const,
 };
 
-export function useMyProfile(
-  options?: Omit<UseQueryOptions<ProfileEntity, Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useMyProfile(options?: EntityQueryOptions<ProfileEntity>) {
   const app = useConsumerApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: profileKeys.me(),
     queryFn: () => app.profile.get(),
     ...options,
@@ -102,12 +102,10 @@ export function useChangeOwnPassword(
   });
 }
 
-export function useProfileSessions(
-  options?: Omit<UseQueryOptions<UserSessionEntity[], Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useProfileSessions(options?: EntityQueryOptions<UserSessionEntity[]>) {
   const app = useConsumerApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: profileKeys.sessions(),
     queryFn: () => app.profile.getSessions(),
     ...options,

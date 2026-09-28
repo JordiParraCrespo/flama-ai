@@ -70,6 +70,12 @@
         "e2e/tests/web/organization-settings.spec.ts",
         "packages/auth/src/organization-client.ts",
         "packages/auth/src/organization-options.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/services/AccessGrantsApi.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/services/InvitationsApi.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/services/OrganizationInvitationsApi.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/services/OrganizationMembersApi.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/services/OrganizationsApi.ts",
+        "packages/frontend/api-client/src/data-access/api/openapi/services/WorkspacesApi.ts",
         "packages/frontend/consumer/src/modules/organizations",
         "packages/frontend/consumer/src/organizations"
       ],
@@ -107,6 +113,10 @@
     },
     "packages/frontend/consumer": {
       "identifiers": ["packages/frontend/consumer", "@flama/frontend-consumer"],
+      "neededBy": ["web", "mobile"]
+    },
+    "packages/frontend/react-hooks": {
+      "identifiers": ["packages/frontend/react-hooks", "@flama/react-hooks"],
       "neededBy": ["web", "mobile"]
     },
     "packages/frontend/web": {
@@ -162,6 +172,23 @@
       "identifiers": ["check-frontend-structure", "check:structure"],
       "neededBy": ["web", "mobile"],
       "scripts": ["check:structure"]
+    },
+    "scripts/check-react-compiler.mjs": {
+      "identifiers": ["check-react-compiler", "check:compiler"],
+      "neededBy": ["web", "mobile"],
+      "scripts": ["check:compiler"]
+    },
+    "scripts/check-react-compiler.baseline.mjs": {
+      "identifiers": [],
+      "neededBy": ["web", "mobile"]
+    },
+    "scripts/check-react-compiler.test.mjs": {
+      "identifiers": [],
+      "neededBy": ["web", "mobile"]
+    },
+    ".agents/skills/tanstack-routing": {
+      "identifiers": [".agents/skills/tanstack-routing", "/tanstack-routing"],
+      "neededBy": ["web"]
     },
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],

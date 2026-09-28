@@ -14,11 +14,14 @@ checked: dependency-cruiser (`pnpm arch`) for imports, `pnpm check:structure`
 for names, shapes and where a query is subscribed to, Biome for effects and
 memo, Biome plugins in `biome-plugins/` for query keys, `skipToken` and
 mutation cache updates (each plugin's header says what it matches, and
-`biome-plugins/fixtures/` holds its cases), and a `*-render.spec.tsx` for
+`biome-plugins/fixtures/` holds its cases), `pnpm check:compiler` for what the
+React Compiler leaves uncompiled, and a `*-render.spec.tsx` for
 what a component costs. The Claude Code Stop hook
 runs all three. The layer model and the cookbooks are in
 [`packages/frontend/ARCHITECTURE.md`](../../packages/frontend/ARCHITECTURE.md)
 and each app's `ARCHITECTURE.md`; `/scaffold-feature` produces the shape.
+What no script can see — which clock re-renders what — is review's, against
+the render rules below.
 
 Each rule below was written after finding the thing it forbids in a project
 built from this starter.
@@ -187,6 +190,14 @@ name the jobs and split *those*.
   the page, because the setter that a tick calls lives in the shell above it.
   A split isolates an update only when the state that update writes moves with
   it.
+
+  The compiler also gives up silently. The web build runs its oxc port and
+  the Expo build its Babel plugin, both with the panic threshold at `none`, so
+  a component neither can compile (a ref read or written during render, a
+  default parameter that is an arrow function, a `throw` inside `try`,
+  react-hook-form's `watch()`) ships unmemoised and nothing says so.
+  `pnpm check:compiler` runs each app's own compiler over what that app
+  bundles and lists every one.
 - **A component whose cost is the point gets a render budget.** Name it
   `*-render.spec.tsx` and it runs in the `render-budget` vitest project, which
   does not enable the compiler. `data-table-render.spec.tsx` asserts that a
@@ -195,6 +206,78 @@ name the jobs and split *those*.
   caller feeds it, or the test passes on the shape it was meant to forbid.
 - **Contexts split by change rate.** A provider that holds a value and its
   setters exposes them so a toggle does not re-render the tree.
+- **A generic React hook has one implementation, in `@flama/react-hooks`.**
+  `useControlled` (the `value` / `defaultValue` / `onChange` triple),
+  `useDebouncedValue`, `useDebouncedCallback` and `useNow` live in
+  `packages/frontend/react-hooks` and nowhere else: both design systems, the
+  kits and the apps import that package by name, and the design systems do not
+  re-export it. It sits below the design systems because they do not depend
+  on the kernel, and it imports React alone (`pnpm arch`). A hook that touches
+  the DOM or React Native stays in its design system's `hooks/`; one that knows
+  the product or a query belongs in a product package or a feature's `hooks/`.
+  Before writing a timer, a controlled/uncontrolled pair or a latest-ref,
+  check `@flama/react-hooks`; never copy one of its hooks into a package.
+- **A clock is an input, never a read in render, and a list has one.**
+  `Date.now()` or `new Date()` inside render — including a helper's
+  `now = new Date()` default, like `formatRelativeTime`'s — is cached by the
+  compiler on the inputs it can see, so an age stops moving. Call
+  `useNow(interval)` once, in the component that maps over the rows, and hand
+  `now` to each row as a prop: `SessionList` owns the one clock for every
+  row's "last seen", and `SessionRow` takes `now` and stays pure. A timer per
+  row is fifty timers for fifty rows. A clock only one thing reads — a
+  one-second countdown — is a leaf of its own that calls `useNow` and renders
+  just that string.
+- **An entity query goes through `useEntityQuery`.** The entities are classes,
+  which TanStack Query's default structural sharing does not look into, and
+  every `Date` in one is a new object, so a plain `useQuery` hands every reader
+  a new object per row on every refetch. `useEntityQuery` (from
+  `@flama/frontend-core/react`, options typed `EntityQueryOptions<T>`) is
+  `useQuery` with `structuralSharing: shareEntities` fixed, so there is nothing
+  to remember per hook. A query whose data is not entities keeps `useQuery`. A
+  reader that needs one field of a list narrows it with `select`.
+
+## Routing
+
+`apps/web` routes with TanStack Router, where a file's name decides both its
+URL and the layout chain that renders it, so renaming a route file is a URL
+change. Before adding, moving or renaming one, read the `/tanstack-routing`
+skill (`.agents/skills/tanstack-routing/`): the file-name table and the diff
+that proves a restructure kept its URLs. `apps/mobile` routes with expo-router
+and none of this section applies to it.
+
+- **`routeTree.gen.ts` is generated.** Never edit it; commit it regenerated
+  with the routes that changed it (`pnpm --filter @flama/web routes`, or any
+  build or `dev`, all reading `tsr.config.json`).
+- **A guard sits on the narrowest route that owns the decision.** A layout
+  route renders chrome; when one layout serves subtrees with different
+  answers, the layout carries no guard and each subtree gets a pathless child
+  that carries its own (`_auth` → `_public`, `onboarding`). Opposite guards
+  stacked on a shared parent are a redirect loop.
+- **Redirects go through the kit.** `redirectSignedOut` / `redirectSignedIn`
+  from `@flama/frontend-web` are a pair (`location.href` into `?redirect=`,
+  then back out); any redirect target read from a URL goes through
+  `sanitizeRedirect`, or it is an open redirect.
+- **`validateSearch` returns the whole search.** A key it does not return is
+  gone by the next navigation, so a route that cares about one key spreads the
+  rest through (nuqs and a table's page key live there too). Keep it cheap: it
+  is critical-path code `autoCodeSplitting` does not split, and a Zod schema
+  comes from a narrow `@flama/shared` subpath or not at all.
+- **`to` is a pathname.** A query goes in `search`, never in the `to` string,
+  which would 404.
+- **A guard is chrome, not authorization.** The API authorizes every request;
+  whether a nav row shows is `policies` in `lib/nav.ts`. A precondition for
+  the whole console is another entry in `_authenticated.tsx`'s `GATES`, not a
+  second guard.
+- **No route has a `loader`.** Screens read through TanStack Query and
+  `defaultPreloadStaleTime: 0` leaves freshness to it, so there is one cache
+  and one staleness rule. The first `loader` is an architectural change, made
+  on purpose in its own diff.
+- **A layout varies by page through route `staticData`**, read once off the
+  innermost match with one `useMatches` select; the key's `declare module`
+  augmentation sits beside its only reader, not in a shared types file.
+- **A route an optional feature owns** is listed in that feature's `paths` in
+  `scripts/starter/features.json`, and every line other routes spend on it is
+  fenced (`flama:begin organizations`); `pnpm starter:check` holds it.
 
 ## Patterns agents get wrong
 
@@ -217,3 +300,10 @@ name the jobs and split *those*.
   every cell with it.
 - Reaching for `useEffect` to reset a form when a prop changes: React Hook
   Form's `values` option does it.
+- Hand-rolling a debounce timer or a `value ?? internal` pair in a component
+  when the design system's `hooks/` already has it.
+- Renaming a route file without checking the URL it produces. In file-based
+  routing a rename is a URL change; `/tanstack-routing` has the diff that
+  catches it.
+- Putting two opposite guards on one shared layout route instead of giving
+  each subtree a pathless child that carries its own.

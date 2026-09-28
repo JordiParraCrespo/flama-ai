@@ -14,3 +14,6 @@ export const CREDENTIAL_SCOPE = Symbol('CREDENTIAL_SCOPE');
 
 /** Verifies a presented credential against the identity provider. */
 export const CREDENTIAL_VERIFIER = Symbol('CREDENTIAL_VERIFIER');
+
+/** Builds the caller's effective CASL ability for a request. */
+export const ABILITY = Symbol('ABILITY');

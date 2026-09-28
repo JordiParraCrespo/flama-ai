@@ -2,12 +2,14 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChangePasswordRequest } from '../../../../common/models/ChangePasswordRequest';
-import type { ProfileResponseDto } from '../../../../common/models/ProfileResponseDto';
-import type { UpdateProfileRequest } from '../../../../common/models/UpdateProfileRequest';
-import type { UpdateUserSettingsRequest } from '../../../../common/models/UpdateUserSettingsRequest';
-import type { UserSessionResponseDto } from '../../../../common/models/UserSessionResponseDto';
-import type { UserSettingsResponseDto } from '../../../../common/models/UserSettingsResponseDto';
+import type {
+    ChangePasswordRequest,
+    ProfileResponseDto,
+    UpdateProfileRequest,
+    UpdateUserSettingsRequest,
+    UserSessionResponseDto,
+    UserSettingsResponseDto,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';

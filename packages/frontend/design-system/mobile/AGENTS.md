@@ -11,7 +11,7 @@ Mobile UI component library: React Native components styled with **NativeWind**
 ```
 src/
 ├── components/         # React Native components
-├── hooks/              # UI hooks
+├── hooks/              # React Native-only hooks (useHardwareBack), exported from index.ts
 ├── lib/               # utils (cn, variants, etc.)
 ├── nativewind-env.d.ts
 └── index.ts           # public exports
@@ -22,6 +22,9 @@ src/
 - Styling is **NativeWind** (Tailwind classes on RN primitives), not Tamagui.
 - **Mirror the shadcn component API** from `@flama/design-system-web`: matching
   prop/variant names so consumers get a consistent cross-platform API.
+- `src/hooks/` holds only what is about React Native. A hook with nothing in
+  it but React — `useControlled`, `useDebounced*`, `useNow` — lives once in
+  `@flama/react-hooks`, which this package imports and does not re-export.
 - Colors/spacing/typography come from the shared design tokens — don't hardcode.
 - Export new components from `index.ts`, and look at each one on a screen in
   `apps/mobile`, light and dark.

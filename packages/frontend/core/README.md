@@ -67,6 +67,11 @@ query-cache persistence policy, and the contracts the two products meet on.
   `shouldDehydrateQuery`, `KERNEL_NON_PERSISTED_FEATURES`, `cacheOwnerKey`,
   `reconcileCacheOwner`, `QUERY_PERSIST_*`.
 - Contracts both products use: `MEMBER_LISTS_KEY`, `withFeaturePrefix`.
+- Query helpers: `useEntityQuery` (options `EntityQueryOptions<T>`), the
+  `useQuery` every query hook that returns entities calls. It fixes
+  `structuralSharing` to `shareEntities`, so a refetch that changed nothing
+  hands every reader the same objects (the entities are classes, which
+  TanStack Query's default sharing does not look into).
 - Mutation helpers: `withCacheOnSuccess`, which runs a hook's cache update
   before the caller's `onSuccess`, and `HookMutationOptions`, the type every
   mutation hook's `options` takes (everything but `mutationFn`, which is the

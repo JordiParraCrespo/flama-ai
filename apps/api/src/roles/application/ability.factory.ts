@@ -5,39 +5,16 @@ import {
   SYSTEM_ROLE_PERMISSIONS,
 } from '@flama/shared';
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  ABILITY_MEMO,
+  type AbilityPort,
+  type AbilityPrincipal,
+  type AbilityRequest,
+  type AbilityScope,
+} from '../../auth/application/ability.port';
 import type { RoleRepositoryPort } from '../database/role.repository.port';
 import type { UserRoleRepositoryPort } from '../database/user-role.repository.port';
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from '../roles.di-tokens';
-
-/** Minimal shape of the authenticated principal the guard hands to the factory. */
-export interface AuthenticatedUser {
-  id?: string;
-  /** Legacy single-role column, used as a fallback before migration. */
-  role?: string;
-  [key: string]: unknown;
-}
-
-/** Where the per-request ability is memoized. */
-const ABILITY_CACHE = Symbol('authz.ability');
-
-/** The subset of the request object the factory reads and writes. */
-export interface AbilityRequest {
-  user?: AuthenticatedUser;
-  session?: {
-    activeOrganizationId?: string | null;
-    activeTeamId?: string | null;
-  } | null;
-  ability?: AppAbility;
-  [ABILITY_CACHE]?: AppAbility;
-}
-
-/** Request-scoped context used to interpolate resource-scoping conditions. */
-export interface AbilityScope {
-  /** The caller's active organization (from `session.activeOrganizationId`). */
-  activeOrganizationId?: string | null;
-  /** The caller's active workspace/team (from `session.activeTeamId`). */
-  activeTeamId?: string | null;
-}
 
 /**
  * Builds a CASL ability for an authenticated user from the union of every role
@@ -51,7 +28,7 @@ export interface AbilityScope {
  *      the join keep working.
  */
 @Injectable()
-export class AbilityFactory {
+export class AbilityFactory implements AbilityPort {
   constructor(
     @Inject(USER_ROLE_REPOSITORY)
     private readonly userRoleRepository: UserRoleRepositoryPort,
@@ -60,27 +37,28 @@ export class AbilityFactory {
   ) {}
 
   /**
-   * The caller's ability for this request, built once and memoized on the
-   * request object.
+   * The caller's ability for this request, memoized on the request per
+   * resolved organization.
    *
-   * Four call sites resolve the ability during a single request (the guard plus
-   * three api-token handlers). Without the memo each one re-reads the role
-   * tables, so the same answer is computed up to four times per request.
-   *
-   * `organizationId` is the organization the route acts on, when it names one
-   * (`@OrganizationScoped`); it wins over the session's active organization.
-   * The guard passes it, and runs first, so the memo holds that answer.
+   * Several call sites resolve the ability during one request (the guard, the
+   * access-scope interceptor). Without the memo each re-reads the role tables.
+   * It is keyed by the organization the ability was built for, so a caller
+   * resolving a different organization than the guard did builds its own
+   * rather than inheriting the first caller's.
    */
   async forRequest(request: AbilityRequest, organizationId?: string | null): Promise<AppAbility> {
-    if (request[ABILITY_CACHE]) return request[ABILITY_CACHE];
-
-    const ability = await this.createForUser(request.user ?? {}, {
+    const scope: AbilityScope = {
       activeOrganizationId: organizationId ?? request.session?.activeOrganizationId ?? null,
       activeTeamId: request.session?.activeTeamId ?? null,
-    });
+    };
+    const key = scope.activeOrganizationId ?? '';
 
-    request[ABILITY_CACHE] = ability;
-    request.ability = ability;
+    const memo = request[ABILITY_MEMO];
+    const cached = memo?.get(key);
+    if (cached) return cached;
+
+    const ability = await this.createForUser(request.user, scope);
+    memo?.set(key, ability);
     return ability;
   }
 
@@ -90,26 +68,26 @@ export class AbilityFactory {
    * can rebuild the ability itself (the web app gates its sidebar on this).
    */
   async permissionsForUser(
-    user: AuthenticatedUser,
+    user: AbilityPrincipal,
     scope: AbilityScope = {},
   ): Promise<PermissionDefinition[]> {
     return this.resolvePermissions(user, scope.activeOrganizationId ?? null);
   }
 
-  async createForUser(user: AuthenticatedUser, scope: AbilityScope = {}): Promise<AppAbility> {
+  async createForUser(user: AbilityPrincipal, scope: AbilityScope = {}): Promise<AppAbility> {
     const permissions = await this.resolvePermissions(user, scope.activeOrganizationId ?? null);
     // Pass the principal and active-org scope so resource-scoping conditions
     // (e.g. `${user.id}`, `${activeOrganizationId}`) can be interpolated when
     // the ability is built.
     return defineAbilitiesFromPermissions(permissions, {
-      user,
+      user: { id: user.id, role: user.role ?? null },
       activeOrganizationId: scope.activeOrganizationId ?? null,
       activeTeamId: scope.activeTeamId ?? null,
     });
   }
 
   private async resolvePermissions(
-    user: AuthenticatedUser,
+    user: AbilityPrincipal,
     activeOrganizationId: string | null,
   ): Promise<PermissionDefinition[]> {
     const permissions: PermissionDefinition[] = [];

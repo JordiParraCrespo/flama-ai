@@ -448,6 +448,16 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "RATE_001 — Rate limit reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1297,6 +1307,16 @@
           },
           "409": {
             "description": "TOKEN_009 — Active token limit reached",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetailsDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_001 — Rate limit reached",
             "content": {
               "application/problem+json": {
                 "schema": {

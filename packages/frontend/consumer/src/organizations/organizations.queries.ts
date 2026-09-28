@@ -2,19 +2,15 @@
 
 import type { UpdateOrganizationRequest } from '@flama/api-client';
 import {
+  type EntityQueryOptions,
   type HookMutationOptions,
   MEMBER_LISTS_KEY,
+  useEntityQuery,
   usersKeys,
   withCacheOnSuccess,
 } from '@flama/frontend-core/react';
 import type { CreateOrganizationDto, InviteMemberDto, OrganizationRole } from '@flama/shared';
-import {
-  skipToken,
-  type UseQueryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { skipToken, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   OrganizationEntity,
   OrganizationInvitationEntity,
@@ -79,12 +75,10 @@ export const organizationsKeys = {
 };
 
 /** The organizations the signed-in user belongs to. */
-export function useOrganizations(
-  options?: Omit<UseQueryOptions<OrganizationEntity[], Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useOrganizations(options?: EntityQueryOptions<OrganizationEntity[]>) {
   const app = useConsumerApp();
 
-  return useQuery({
+  return useEntityQuery({
     queryKey: organizationsKeys.list(),
     queryFn: () => app.organizations.findAll(),
     ...options,
@@ -101,10 +95,10 @@ export function useOrganizations(
 export function useOrganizationMembers(
   organizationId: string | undefined,
   filters?: MemberFilters,
-  options?: Omit<UseQueryOptions<OrganizationMemberEntity[], Error>, 'queryKey' | 'queryFn'>,
+  options?: EntityQueryOptions<OrganizationMemberEntity[]>,
 ) {
   const app = useConsumerApp();
-  return useQuery({
+  return useEntityQuery({
     queryKey: organizationsKeys.memberList(organizationId, filters),
     queryFn: organizationId
       ? () => app.organizations.findMembers(organizationId, filters)
@@ -115,10 +109,10 @@ export function useOrganizationMembers(
 
 export function useOrganizationInvitations(
   organizationId: string | undefined,
-  options?: Omit<UseQueryOptions<OrganizationInvitationEntity[], Error>, 'queryKey' | 'queryFn'>,
+  options?: EntityQueryOptions<OrganizationInvitationEntity[]>,
 ) {
   const app = useConsumerApp();
-  return useQuery({
+  return useEntityQuery({
     queryKey: organizationsKeys.invitationList(organizationId),
     queryFn: organizationId ? () => app.organizations.findInvitations(organizationId) : skipToken,
     ...options,
@@ -132,11 +126,9 @@ export function useOrganizationInvitations(
  * what an account that belongs to none can still ask, and the only thing it
  * can act on.
  */
-export function useMyInvitations(
-  options?: Omit<UseQueryOptions<OrganizationInvitationEntity[], Error>, 'queryKey' | 'queryFn'>,
-) {
+export function useMyInvitations(options?: EntityQueryOptions<OrganizationInvitationEntity[]>) {
   const app = useConsumerApp();
-  return useQuery({
+  return useEntityQuery({
     queryKey: organizationsKeys.myInvitations(),
     queryFn: () => app.organizations.findMyInvitations(),
     ...options,

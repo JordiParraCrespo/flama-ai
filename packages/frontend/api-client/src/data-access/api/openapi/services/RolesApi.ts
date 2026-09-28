@@ -2,12 +2,14 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { AssignUserRolesRequest } from '../../../../common/models/AssignUserRolesRequest';
-import type { CreateRoleRequest } from '../../../../common/models/CreateRoleRequest';
-import type { PaginatedRolesResponseDto } from '../../../../common/models/PaginatedRolesResponseDto';
-import type { RoleResponseDto } from '../../../../common/models/RoleResponseDto';
-import type { UpdateRolePermissionsRequest } from '../../../../common/models/UpdateRolePermissionsRequest';
-import type { UpdateRoleRequest } from '../../../../common/models/UpdateRoleRequest';
+import type {
+    AssignUserRolesRequest,
+    CreateRoleRequest,
+    PaginatedRolesResponseDto,
+    RoleResponseDto,
+    UpdateRolePermissionsRequest,
+    UpdateRoleRequest,
+} from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
