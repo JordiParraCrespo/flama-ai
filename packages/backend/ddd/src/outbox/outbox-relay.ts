@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
 import type { OutboxService } from './outbox.service';
 import type { OutboxMessageRecord } from './outbox-message';
 
@@ -34,20 +33,15 @@ const DEFAULT_BATCH_SIZE = 20;
  * `drainOnce()` calls routed through `OutboxService.wake()` right after a
  * commit, which keeps delivery latency at in-process levels in the happy path.
  * Drains are serialized through a promise chain so a wake landing mid-poll
- * queues a follow-up pass instead of racing it.
- *
- * A delivery can itself stage rows and wake the relay: an event handler that
- * dispatches a command whose repository stages the next job. That wake must
- * not wait for the chain, because the chain is waiting for the handler — the
- * two would hold each other forever, and every later wake behind them. So a
- * wake from inside a delivery queues its pass and returns at once; the rows
- * are durable, and the pass (or this drain's next batch) delivers them.
+ * queues a follow-up pass instead of racing it. A wake called from inside a
+ * delivery (see `drainOnce`) queues its pass and returns at once instead of
+ * joining that same chain.
  */
 export class OutboxRelay {
   private timer?: ReturnType<typeof setInterval>;
   private tail: Promise<number> = Promise.resolve(0);
-  /** Set while a publisher runs, so a wake from inside it is recognised. */
-  private readonly delivering = new AsyncLocalStorage<true>();
+  /** True only while `await this.publisher(message)` is pending. */
+  private delivering = false;
 
   constructor(
     private readonly outbox: OutboxService,
@@ -77,7 +71,8 @@ export class OutboxRelay {
   /**
    * Drain until no due rows remain. Returns the number of rows delivered.
    * Concurrent calls are chained, never interleaved. Called from inside a
-   * delivery, the pass is queued and the call resolves at once with 0.
+   * delivery, the pass is queued and the call resolves at once with 0 instead
+   * of joining the chain the delivery itself is blocking.
    */
   drainOnce(): Promise<number> {
     const run = this.tail.then(
@@ -85,7 +80,7 @@ export class OutboxRelay {
       () => this.drainBatches(),
     );
     this.tail = run.catch(() => 0);
-    return this.delivering.getStore() ? Promise.resolve(0) : run;
+    return this.delivering ? Promise.resolve(0) : run;
   }
 
   private async drainBatches(): Promise<number> {
@@ -105,7 +100,12 @@ export class OutboxRelay {
       if (batch.length === 0) return delivered;
       for (const message of batch) {
         try {
-          await this.delivering.run(true, () => this.publisher(message));
+          this.delivering = true;
+          try {
+            await this.publisher(message);
+          } finally {
+            this.delivering = false;
+          }
           await this.outbox.markProcessed([message.id]);
           delivered++;
         } catch (error) {

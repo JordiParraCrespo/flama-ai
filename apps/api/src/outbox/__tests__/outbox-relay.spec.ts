@@ -150,7 +150,9 @@ describe('OutboxRelay', () => {
 
     await relay.drainOnce();
     await expect(nested).resolves.toBe(0);
-    // The queued pass picks up the staged job; a later wake waits for it.
+    // The reentrant wake queued a pass onto the chain rather than running it;
+    // this second call is what actually waits for that pass (and the 'job'
+    // claim it makes) to settle, not a third, unrelated wake.
     await relay.drainOnce();
     expect(published).toEqual(['event', 'job']);
   });
