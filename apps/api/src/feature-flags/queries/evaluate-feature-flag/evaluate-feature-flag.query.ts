@@ -1,5 +1,5 @@
 import { QueryBase } from '@flama/backend-ddd';
-import type { FlagEvaluationContext } from '@flama/shared';
+import type { FlagEvaluationContext } from '@flama/shared/feature-flags';
 
 /**
  * "What would this flag say for this person?" — evaluated against a context the

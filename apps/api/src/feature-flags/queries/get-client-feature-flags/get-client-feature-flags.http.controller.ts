@@ -1,4 +1,4 @@
-import type { ClientFeatureFlags } from '@flama/shared';
+import type { ClientFeatureFlags } from '@flama/shared/feature-flags';
 import { Controller, Get, Header, Query, Req, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';

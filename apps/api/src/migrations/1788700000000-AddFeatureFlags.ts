@@ -3,8 +3,14 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
 /**
  * Feature-flag targeting, segments and the audit trail.
  *
- * Flags themselves are declared in code (`FEATURE_FLAGS` in `@flama/shared`);
- * these tables hold only what an operator changes at runtime. Nothing is
+ * The feature-flags module owns these tables, and it is optional; this
+ * migration is not. The schema history is one line — later migrations build
+ * on these tables, and a database that ran this cannot un-run it — so every
+ * project creates them, and one without the module leaves them empty. Adding
+ * the module later maps its entities onto tables that are already there.
+ *
+ * Flags themselves are declared in code, in the flag catalog; these tables
+ * hold only what an operator changes at runtime. Nothing is
  * seeded: a flag with no row serves its catalog default, so a fresh install
  * and an upgraded one behave identically until someone saves targeting.
  *

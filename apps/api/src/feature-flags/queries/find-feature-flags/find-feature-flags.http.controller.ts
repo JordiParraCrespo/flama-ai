@@ -1,5 +1,5 @@
 import { ApiAuthProblemResponses } from '@flama/backend-core';
-import { getFlagDefinition } from '@flama/shared';
+import { getFlagDefinition } from '@flama/shared/feature-flags';
 import { Controller, Get, UseGuards, Version } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';

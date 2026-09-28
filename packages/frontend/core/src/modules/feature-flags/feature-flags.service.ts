@@ -1,4 +1,8 @@
-import type { ClientFeatureFlagKey, ClientFeatureFlags, FlagValue } from '@flama/shared';
+import type {
+  ClientFeatureFlagKey,
+  ClientFeatureFlags,
+  FlagValue,
+} from '@flama/shared/feature-flags';
 import { getFlagDefinition } from '@flama/shared/feature-flags/catalog';
 import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
@@ -7,6 +11,7 @@ import type { AnalyticsService } from '../analytics/analytics.service';
 import type { AuthStore } from '../auth/auth.state';
 import type { FeatureFlagsClientContext } from './feature-flags.client';
 import type { FeatureFlagsRepository } from './feature-flags.repository';
+import { FEATURE_FLAGS_TOKENS } from './feature-flags.tokens';
 
 /**
  * The client side of feature flags: fetch the caller's evaluated flags, and
@@ -26,9 +31,9 @@ export class FeatureFlagsService {
   private readonly exposed = new Set<string>();
 
   constructor(
-    @inject(TOKENS.FeatureFlagsRepository)
+    @inject(FEATURE_FLAGS_TOKENS.Repository)
     private readonly repository: FeatureFlagsRepository,
-    @inject(TOKENS.FeatureFlagsClientContext)
+    @inject(FEATURE_FLAGS_TOKENS.ClientContext)
     private readonly context: FeatureFlagsClientContext,
     @inject(TOKENS.AnalyticsService)
     private readonly analytics: AnalyticsService,

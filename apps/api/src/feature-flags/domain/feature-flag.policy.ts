@@ -4,7 +4,7 @@ import {
   type FlagDefinition,
   type FlagServe,
   isValidFlagValue,
-} from '@flama/shared';
+} from '@flama/shared/feature-flags';
 import type { FlagTargeting } from './feature-flag.entity';
 
 /**

@@ -1,5 +1,5 @@
 import { AppError } from '@flama/backend-core';
-import type { BooleanFeatureFlagKey } from '@flama/shared';
+import type { BooleanFeatureFlagKey } from '@flama/shared/feature-flags';
 import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { ScopedRequest } from '../../auth/domain/scope-context.types';

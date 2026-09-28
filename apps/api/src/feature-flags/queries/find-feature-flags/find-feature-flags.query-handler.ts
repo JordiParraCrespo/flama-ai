@@ -1,4 +1,4 @@
-import { FEATURE_FLAG_KEYS } from '@flama/shared';
+import { FEATURE_FLAG_KEYS } from '@flama/shared/feature-flags';
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { FeatureFlagRepositoryPort } from '../../database/feature-flag.repository.port';

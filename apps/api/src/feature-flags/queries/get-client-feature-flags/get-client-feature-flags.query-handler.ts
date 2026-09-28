@@ -1,4 +1,4 @@
-import type { ClientFeatureFlags } from '@flama/shared';
+import type { ClientFeatureFlags } from '@flama/shared/feature-flags';
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { FlagEvaluatorPort } from '../../application/flag-evaluator.port';

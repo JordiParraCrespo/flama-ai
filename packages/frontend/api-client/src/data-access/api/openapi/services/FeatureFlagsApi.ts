@@ -10,7 +10,7 @@ import type {
   ToggleFeatureFlagInput,
   UpdateFeatureFlagInput,
   UpdateFlagSegmentInput,
-} from '@flama/shared';
+} from '@flama/shared/feature-flags';
 import type {
     ClientFeatureFlagsResponseDto,
     FeatureFlagResponseDto,

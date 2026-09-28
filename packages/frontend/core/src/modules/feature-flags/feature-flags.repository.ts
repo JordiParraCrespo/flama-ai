@@ -1,5 +1,5 @@
 import { FeatureFlagsApi } from '@flama/api-client';
-import type { ClientFeatureFlags } from '@flama/shared';
+import type { ClientFeatureFlags } from '@flama/shared/feature-flags';
 import { injectable } from 'inversify';
 import { AppError } from '../core/errors';
 import { MapApiError } from '../core/map-api-error.decorator';

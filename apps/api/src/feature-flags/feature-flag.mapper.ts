@@ -1,5 +1,5 @@
 import type { Mapper } from '@flama/backend-ddd';
-import type { FlagDefinition, FlagEvaluation } from '@flama/shared';
+import type { FlagDefinition, FlagEvaluation } from '@flama/shared/feature-flags';
 import { Injectable } from '@nestjs/common';
 import { FeatureFlagOrmEntity } from './database/feature-flag.orm-entity';
 import type { FlagChangeRecord } from './database/flag-change.repository.port';

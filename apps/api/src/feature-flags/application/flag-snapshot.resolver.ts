@@ -14,7 +14,7 @@ import {
   getFlagDefinition,
   isFeatureFlagKey,
   murmur3,
-} from '@flama/shared';
+} from '@flama/shared/feature-flags';
 import {
   Inject,
   Injectable,

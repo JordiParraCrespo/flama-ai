@@ -1,4 +1,4 @@
-import type { FlagRule, FlagServe } from '@flama/shared';
+import type { FlagRule, FlagServe } from '@flama/shared/feature-flags';
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**

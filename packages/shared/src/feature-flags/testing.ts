@@ -6,7 +6,7 @@ import type { FlagDefinition } from './types';
  * differently. The machinery reads whatever `FEATURE_FLAGS` declares — the
  * starter declares nothing — so its tests swap this in instead:
  *
- *   vi.mock('@flama/shared', async (importOriginal) => {
+ *   vi.mock('@flama/shared/feature-flags', async (importOriginal) => {
  *     const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
  *     return withTestFlags(await importOriginal());
  *   });

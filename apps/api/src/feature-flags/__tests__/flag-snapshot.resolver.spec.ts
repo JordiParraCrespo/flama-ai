@@ -1,4 +1,4 @@
-import { CLIENT_FEATURE_FLAG_KEYS } from '@flama/shared';
+import { CLIENT_FEATURE_FLAG_KEYS } from '@flama/shared/feature-flags';
 import { KILL_SWITCH } from '@flama/shared/feature-flags/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FlagSnapshotResolver } from '../application/flag-snapshot.resolver';
@@ -7,9 +7,9 @@ import type { FlagSegmentRepositoryPort } from '../database/flag-segment.reposit
 import { FeatureFlagEntity } from '../domain/feature-flag.entity';
 
 // The starter declares no flags; the machinery is tested on a catalog of its own.
-vi.mock('@flama/shared', async (importOriginal) => {
+vi.mock('@flama/shared/feature-flags', async (importOriginal) => {
   const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
-  return withTestFlags(await importOriginal<typeof import('@flama/shared')>());
+  return withTestFlags(await importOriginal<typeof import('@flama/shared/feature-flags')>());
 });
 
 function killSwitchPulled(): FeatureFlagEntity {

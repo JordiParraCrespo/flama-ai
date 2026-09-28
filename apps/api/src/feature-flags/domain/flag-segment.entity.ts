@@ -4,7 +4,7 @@ import {
   ArgumentNotProvidedException,
   type CreateEntityProps,
 } from '@flama/backend-ddd';
-import type { FlagCondition, FlagSegment } from '@flama/shared';
+import type { FlagCondition, FlagSegment } from '@flama/shared/feature-flags';
 import {
   type FlagChangeAction,
   FlagConfigurationChangedDomainEvent,

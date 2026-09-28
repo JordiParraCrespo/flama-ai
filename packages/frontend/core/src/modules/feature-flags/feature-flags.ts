@@ -3,7 +3,7 @@ import type {
   FeatureFlagValueOf,
   FlagDefinition,
   FlagValue,
-} from '@flama/shared';
+} from '@flama/shared/feature-flags';
 import { getFlagDefinition, isValidFlagValue } from '@flama/shared/feature-flags/catalog';
 
 /**

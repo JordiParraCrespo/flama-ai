@@ -1,5 +1,5 @@
 import { QueryBase } from '@flama/backend-ddd';
-import type { FeatureFlagKey } from '@flama/shared';
+import type { FeatureFlagKey } from '@flama/shared/feature-flags';
 import type { FeatureFlagEntity } from '../../domain/feature-flag.entity';
 
 /** A catalog flag and its saved targeting, if any. */

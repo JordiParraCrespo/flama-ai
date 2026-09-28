@@ -1,3 +1,4 @@
+import { AuthzModule as AuthzKernelModule } from '@flama/backend-authz';
 import { Global, Module, type Provider } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -27,6 +28,7 @@ import {
   FLAG_SEGMENT_REPOSITORY,
   FLAG_SNAPSHOT,
 } from './feature-flags.di-tokens';
+import { FeatureFlagResource } from './feature-flags.resource';
 import { FlagSegmentMapper } from './flag-segment.mapper';
 import { FeatureFlagGuard } from './guards/feature-flag.guard';
 import { EvaluateFeatureFlagHttpController } from './queries/evaluate-feature-flag/evaluate-feature-flag.http.controller';
@@ -98,6 +100,7 @@ const repositories: Provider[] = [
   imports: [
     CqrsModule,
     TypeOrmModule.forFeature([FeatureFlagOrmEntity, FlagSegmentOrmEntity, FlagChangeOrmEntity]),
+    AuthzKernelModule.forFeature([FeatureFlagResource]),
   ],
   controllers: [...httpControllers],
   providers: [

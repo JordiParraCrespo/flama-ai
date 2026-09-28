@@ -39,7 +39,16 @@ const KINDS = [
 ];
 const ROUTE_LINE_CAP = 120;
 /** What an app keeps beside its routes and features: configuration, nothing else. */
-const APP_CONFIG_FILES = ['flama.ts', 'auth-client.ts', 'nav.ts', 'query.ts'];
+const APP_CONFIG_FILES = [
+  'flama.ts',
+  'auth-client.ts',
+  'nav.ts',
+  'query.ts',
+  // flama:begin feature-flags
+  'feature-flags.ts',
+  // flama:end feature-flags
+  // flama:plugins app-config-files
+];
 
 const modulesOf = (pkg) => {
   const dir = join(root, 'packages/frontend', pkg, 'src/modules');

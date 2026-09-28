@@ -4,7 +4,7 @@ import {
   ArgumentNotProvidedException,
   type CreateEntityProps,
 } from '@flama/backend-ddd';
-import type { FlagConfig, FlagRule, FlagServe, FlagValue } from '@flama/shared';
+import type { FlagConfig, FlagRule, FlagServe, FlagValue } from '@flama/shared/feature-flags';
 import { FlagConfigurationChangedDomainEvent } from './events/flag-configuration-changed.domain-event';
 
 export interface FeatureFlagProps {

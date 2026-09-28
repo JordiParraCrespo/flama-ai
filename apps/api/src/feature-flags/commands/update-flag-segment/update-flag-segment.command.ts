@@ -1,5 +1,5 @@
 import { CommandBase, type CommandProps } from '@flama/backend-ddd';
-import type { FlagCondition } from '@flama/shared';
+import type { FlagCondition } from '@flama/shared/feature-flags';
 
 export class UpdateFlagSegmentCommand extends CommandBase {
   readonly key: string;

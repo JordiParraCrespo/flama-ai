@@ -6,6 +6,12 @@
   "types": "./dist/index.d.ts",
   "typesVersions": {
     "*": {
+      "feature-flags": [
+        "./dist/feature-flags/index.d.ts"
+      ],
+      "feature-flags/catalog": [
+        "./dist/feature-flags/catalog.d.ts"
+      ],
       "feature-flags/testing": [
         "./dist/feature-flags/testing.d.ts"
       ]

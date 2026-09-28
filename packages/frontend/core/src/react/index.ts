@@ -27,14 +27,6 @@ export {
 export { FlamaProvider, useFlamaApp } from './context';
 export { type EntityQueryOptions, useEntityQuery } from './entity-query';
 export { type ResolvedErrorMessage, useErrorMessage } from './error-message';
-export {
-  type FeatureFlagReadOptions,
-  featureFlagKeys,
-  featureFlagsQueryOptions,
-  useFeatureFlag,
-  useFeatureFlags,
-  useFeatureFlagValue,
-} from './feature-flags.queries';
 export { useAuthState } from './hooks';
 export { useLocale } from './locale';
 export { type HookMutationOptions, withCacheOnSuccess } from './mutations';

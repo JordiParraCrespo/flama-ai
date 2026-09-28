@@ -5,7 +5,7 @@ import type {
   FeatureFlagValueOf,
   FlagEvaluation,
   FlagEvaluationContext,
-} from '@flama/shared';
+} from '@flama/shared/feature-flags';
 
 /**
  * Answers "what does this flag say for this caller?" in process, without I/O.

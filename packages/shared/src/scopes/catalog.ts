@@ -23,7 +23,9 @@ export const SCOPE_RESOURCES = [
   'workspaces',
   // flama:begin api-tokens
   // flama:end api-tokens
+  // flama:begin feature-flags
   'flags',
+  // flama:end feature-flags
   // flama:plugins scope-resources
 ] as const;
 export type ScopeResource = (typeof SCOPE_RESOURCES)[number];
@@ -234,6 +236,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
   },
   // flama:begin api-tokens
   // flama:end api-tokens
+  // flama:begin feature-flags
   {
     resource: 'flags',
     label: 'Feature flags',
@@ -254,6 +257,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
       },
     },
   },
+  // flama:end feature-flags
   // flama:plugins permission-groups
 ];
 

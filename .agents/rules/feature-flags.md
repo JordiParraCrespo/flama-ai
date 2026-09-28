@@ -18,7 +18,8 @@ kill switch is a data change, not a deploy.
 | The catalog — every flag that exists | `packages/shared/src/feature-flags/catalog.ts` |
 | The evaluator (pure, shared) | `packages/shared/src/feature-flags/evaluate.ts` |
 | Targeting, segments, audit trail, `@RequireFlag` | `apps/api/src/feature-flags/` |
-| Client reads (`useFeatureFlag`) | `packages/frontend/core/src/react/feature-flags.queries.ts` |
+| Client module, loaded by each app's `lib/feature-flags.ts` | `@flama/frontend-core/feature-flags` |
+| Client reads (`useFeatureFlag`) | `@flama/frontend-core/feature-flags/react` |
 | Hygiene check (expired / unread flags) | `pnpm check:flags` (CI) |
 
 ## Adding a flag
@@ -44,7 +45,8 @@ every reader the compiler then names.
 // The keys are `TEST_FLAGS`' (`@flama/shared/feature-flags/testing`); a
 // project reads its own from `FEATURE_FLAGS`, which the starter ships empty.
 
-// Client — typed by the catalog; the default until flags load.
+// Client — `@flama/frontend-core/feature-flags/react`, typed by the catalog;
+// the default until flags load.
 const enabled = useFeatureFlag('kill_switch');
 const arm = useFeatureFlagValue('checkout_copy'); // 'control' | 'bold'
 

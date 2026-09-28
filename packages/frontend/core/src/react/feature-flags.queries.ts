@@ -5,13 +5,13 @@ import type {
   ClientFeatureFlagKey,
   ClientFeatureFlags,
   FeatureFlagValueOf,
-} from '@flama/shared';
+} from '@flama/shared/feature-flags';
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { FlamaApp } from '../di/flama-app';
-import { TOKENS } from '../di/tokens';
 import { isFlagEnabled, resolveFlagValue } from '../modules/feature-flags/feature-flags';
 import type { FeatureFlagsService } from '../modules/feature-flags/feature-flags.service';
+import { FEATURE_FLAGS_TOKENS } from '../modules/feature-flags/feature-flags.tokens';
 import { useFlamaApp } from './context';
 import { useAuthState } from './hooks';
 
@@ -19,7 +19,7 @@ type FlagAudience = 'signed-in' | 'anonymous';
 
 /** The flags service, which the app bound with `createFeatureFlagsModule`. */
 function featureFlagsOf(app: FlamaApp): FeatureFlagsService {
-  return app.container.get<FeatureFlagsService>(TOKENS.FeatureFlagsService);
+  return app.container.get<FeatureFlagsService>(FEATURE_FLAGS_TOKENS.Service);
 }
 
 /**

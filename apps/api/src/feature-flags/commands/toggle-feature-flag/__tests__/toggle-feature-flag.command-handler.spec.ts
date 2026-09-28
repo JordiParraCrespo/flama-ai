@@ -6,9 +6,9 @@ import { ToggleFeatureFlagCommand } from '../toggle-feature-flag.command';
 import { ToggleFeatureFlagCommandHandler } from '../toggle-feature-flag.command-handler';
 
 // The starter declares no flags; the machinery is tested on a catalog of its own.
-vi.mock('@flama/shared', async (importOriginal) => {
+vi.mock('@flama/shared/feature-flags', async (importOriginal) => {
   const { withTestFlags } = await import('@flama/shared/feature-flags/testing');
-  return withTestFlags(await importOriginal<typeof import('@flama/shared')>());
+  return withTestFlags(await importOriginal<typeof import('@flama/shared/feature-flags')>());
 });
 
 describe('ToggleFeatureFlagCommandHandler', () => {

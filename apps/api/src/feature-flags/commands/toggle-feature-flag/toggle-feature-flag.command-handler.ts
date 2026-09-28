@@ -1,6 +1,6 @@
 import { AppError } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
-import { getFlagDefinition, isFeatureFlagKey } from '@flama/shared';
+import { getFlagDefinition, isFeatureFlagKey } from '@flama/shared/feature-flags';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { FeatureFlagRepositoryPort } from '../../database/feature-flag.repository.port';

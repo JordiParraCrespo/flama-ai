@@ -1,5 +1,5 @@
 import { ApiProblemResponse } from '@flama/backend-core';
-import type { BooleanFeatureFlagKey } from '@flama/shared';
+import type { BooleanFeatureFlagKey } from '@flama/shared/feature-flags';
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { FeatureFlagGuard, REQUIRE_FLAG_KEY } from '../guards/feature-flag.guard';
 

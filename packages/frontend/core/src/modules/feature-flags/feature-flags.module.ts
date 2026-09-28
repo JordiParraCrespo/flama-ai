@@ -1,8 +1,8 @@
 import { ContainerModule } from 'inversify';
-import { TOKENS } from '../../di/tokens';
 import type { FeatureFlagsClientContext } from './feature-flags.client';
 import { FeatureFlagsRepository } from './feature-flags.repository';
 import { FeatureFlagsService } from './feature-flags.service';
+import { FEATURE_FLAGS_TOKENS } from './feature-flags.tokens';
 
 /**
  * Feature flags, loaded by the app through `FlamaApp.create({ modules })`:
@@ -11,8 +11,8 @@ import { FeatureFlagsService } from './feature-flags.service';
  */
 export function createFeatureFlagsModule(context: FeatureFlagsClientContext = {}): ContainerModule {
   return new ContainerModule(({ bind }) => {
-    bind<FeatureFlagsClientContext>(TOKENS.FeatureFlagsClientContext).toConstantValue(context);
-    bind(TOKENS.FeatureFlagsRepository).to(FeatureFlagsRepository).inSingletonScope();
-    bind(TOKENS.FeatureFlagsService).to(FeatureFlagsService).inSingletonScope();
+    bind<FeatureFlagsClientContext>(FEATURE_FLAGS_TOKENS.ClientContext).toConstantValue(context);
+    bind(FEATURE_FLAGS_TOKENS.Repository).to(FeatureFlagsRepository).inSingletonScope();
+    bind(FEATURE_FLAGS_TOKENS.Service).to(FeatureFlagsService).inSingletonScope();
   });
 }

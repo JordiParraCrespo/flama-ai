@@ -1,4 +1,4 @@
-import type { FlagDefinition } from '@flama/shared';
+import type { FlagDefinition } from '@flama/shared/feature-flags';
 import { describe, expect, it } from 'vitest';
 import { segmentProblems, targetingProblems } from '../domain/feature-flag.policy';
 

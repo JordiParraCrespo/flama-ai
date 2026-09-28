@@ -10,7 +10,7 @@ import {
   type FlagOperator,
   type FlagReason,
   type FlagValue,
-} from '@flama/shared';
+} from '@flama/shared/feature-flags';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /** A flag value: a boolean, or the name of a variant. */

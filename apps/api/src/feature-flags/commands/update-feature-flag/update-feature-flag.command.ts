@@ -1,5 +1,5 @@
 import { CommandBase, type CommandProps } from '@flama/backend-ddd';
-import type { FlagRule, FlagServe } from '@flama/shared';
+import type { FlagRule, FlagServe } from '@flama/shared/feature-flags';
 
 /** Replace a flag's whole targeting on this deployment. */
 export class UpdateFeatureFlagCommand extends CommandBase {

@@ -1,4 +1,4 @@
-import type { FlagEvaluationContext, FlagPlatform } from '@flama/shared';
+import type { FlagEvaluationContext, FlagPlatform } from '@flama/shared/feature-flags';
 import { activeOrganizationIdOf, type ScopedRequest } from '../../auth/domain/scope-context.types';
 
 /** What a client reported about itself (`?platform=&appVersion=`). */

@@ -1,4 +1,4 @@
-import type { FlagCondition } from '@flama/shared';
+import type { FlagCondition } from '@flama/shared/feature-flags';
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /** Persistence model for `feature_flag_segment`, the named audiences rules target. */

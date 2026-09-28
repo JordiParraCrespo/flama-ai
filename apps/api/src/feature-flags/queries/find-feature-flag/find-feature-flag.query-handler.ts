@@ -1,5 +1,5 @@
 import { AppError } from '@flama/backend-core';
-import { isFeatureFlagKey } from '@flama/shared';
+import { isFeatureFlagKey } from '@flama/shared/feature-flags';
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { FeatureFlagRepositoryPort } from '../../database/feature-flag.repository.port';

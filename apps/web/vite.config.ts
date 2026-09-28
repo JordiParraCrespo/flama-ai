@@ -41,7 +41,10 @@ export default defineConfig({
       '@flama/shared/schemas/profile',
       '@flama/shared/schemas/role',
       '@flama/shared/permissions',
+      // flama:begin feature-flags
       '@flama/shared/feature-flags/catalog',
+      // flama:end feature-flags
+      // flama:plugins optimize-deps
     ],
   },
   build: {

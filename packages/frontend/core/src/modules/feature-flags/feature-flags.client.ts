@@ -1,4 +1,4 @@
-import type { FlagPlatform } from '@flama/shared';
+import type { FlagPlatform } from '@flama/shared/feature-flags';
 
 /**
  * What an app says about itself when it asks for its flags: which platform it
