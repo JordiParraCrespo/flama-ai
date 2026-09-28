@@ -9,6 +9,7 @@ COPY packages/auth/package.json ./packages/auth/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/tsconfig/package.json ./packages/tsconfig/
 COPY packages/frontend/design-system/web/package.json ./packages/frontend/design-system/web/
+COPY packages/frontend/react-hooks/package.json ./packages/frontend/react-hooks/
 COPY packages/frontend/core/package.json ./packages/frontend/core/
 COPY packages/frontend/consumer/package.json ./packages/frontend/consumer/
 COPY packages/frontend/api-client/package.json ./packages/frontend/api-client/
