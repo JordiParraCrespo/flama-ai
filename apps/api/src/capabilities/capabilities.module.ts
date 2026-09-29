@@ -15,10 +15,12 @@ import { ConfigService } from '@nestjs/config';
  * boot loudly in their config schemas.
  */
 const CAPABILITIES = {
+  // flama:begin oauth
   google_oauth: (config: ConfigService) =>
     Boolean(config.get('oauth.google.clientId') && config.get('oauth.google.clientSecret')),
   github_oauth: (config: ConfigService) =>
     Boolean(config.get('oauth.github.clientId') && config.get('oauth.github.clientSecret')),
+  // flama:end oauth
   // flama:plugins capabilities
   // The `console` provider only prints to stdout — that is not delivery.
   email_delivery: (config: ConfigService) => {

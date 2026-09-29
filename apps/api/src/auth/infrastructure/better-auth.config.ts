@@ -12,7 +12,10 @@ import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
+// flama:begin oauth
+
 import { oauthProviders } from './oauth-providers.config';
+// flama:end oauth
 // flama:plugins auth-plugin-imports
 
 // flama:begin organizations
@@ -189,10 +192,13 @@ export const auth = betterAuth({
       });
     },
   },
-  // The social sign-in providers, each with its own settings: whichever this
-  // deployment has credentials for.
+  // The social sign-in providers, each with its own settings, and each run only
+  // once this deployment has its credentials.
   socialProviders: {
+    // flama:begin oauth
     ...oauthProviders(),
+    // flama:end oauth
+    // flama:plugins social-providers
   },
   account: {
     accountLinking: {

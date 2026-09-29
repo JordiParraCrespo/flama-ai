@@ -10,8 +10,10 @@
  * already reveals.
  */
 export const CLIENT_CAPABILITIES = [
+  // flama:begin oauth
   'google_oauth',
   'github_oauth',
+  // flama:end oauth
   // flama:plugins client-capabilities
 ] as const;
 

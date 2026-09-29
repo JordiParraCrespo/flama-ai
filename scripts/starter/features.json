@@ -127,6 +127,48 @@
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]
+    },
+    "oauth": {
+      "title": "Social sign-in with Google and GitHub",
+      "summary": "Google and GitHub sign-in: each app's `lib/social-providers.tsx` (the providers and their marks) passed to `FlamaApp.create({ socialProviders })`, their Better Auth settings in `apps/api/src/auth/infrastructure/oauth-providers.config.ts`, the `oauth` config section, the `google_oauth` and `github_oauth` capabilities and the `GOOGLE_*` / `GITHUB_*` settings. Each provider is a part of its own in every one of those: to keep one, delete the other's entry and mark in each `social-providers.tsx`, its line in `oauthProviders()`, its part of the `oauth` schema and env names, its capability row, `CLIENT_CAPABILITIES` entry and DTO property and its `.env.example` lines, then regenerate the API client",
+      "identifiers": [
+        "Google",
+        "google_oauth",
+        "github_oauth",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "oauthConfig",
+        "oauth.config",
+        "readOAuthConfig",
+        "oauthProviders",
+        "oauth-providers.config",
+        "social-providers.tsx"
+      ],
+      "paths": [
+        "apps/api/src/auth/infrastructure/oauth-providers.config.ts",
+        "apps/api/src/capabilities/__tests__/oauth.capability.spec.ts",
+        "apps/api/src/config/oauth.config.ts",
+        "apps/mobile/lib/social-providers.tsx",
+        "apps/web/src/lib/social-providers.tsx",
+        "e2e/tests/api/oauth.spec.ts"
+      ],
+      "slots": {
+        ".env.example": ["api-integrations-env"],
+        "apps/api/src/auth/infrastructure/better-auth.config.ts": [
+          "auth-plugin-imports",
+          "social-providers"
+        ],
+        "apps/api/src/capabilities/capabilities.module.ts": ["capabilities"],
+        "apps/api/src/config/index.ts": ["api-config", "api-config-imports"],
+        "apps/api/src/health/dtos/capabilities.response.dto.ts": ["client-capabilities"],
+        "apps/mobile/lib/flama.ts": ["app-config", "app-imports"],
+        "apps/web/src/lib/flama.ts": ["app-config", "app-imports"],
+        "packages/shared/src/types/deployment-capabilities.ts": ["client-capabilities"],
+        "scripts/check-frontend-structure.mjs": ["app-config-files"]
+      },
+      "regenerate": ["generate:api-client", "generate:openapi"]
     }
   },
   "shared": {
