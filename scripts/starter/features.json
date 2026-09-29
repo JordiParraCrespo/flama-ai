@@ -127,41 +127,6 @@
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]
-    },
-    "sentry": {
-      "title": "Sentry error reporting",
-      "summary": "Sentry in the mobile app: `apps/mobile/sentry.ts`, imported at launch, initialises the SDK when `EXPO_PUBLIC_SENTRY_DSN` is set and becomes the reporter the kit's error boundaries send what they catch to; the Expo config plugin uploads source maps from release builds when `SENTRY_ORG` and `SENTRY_PROJECT` are set, and Metro builds its config through Sentry's factory so each bundle carries the debug ID its source maps are uploaded under",
-      "identifiers": [
-        "Sentry",
-        "@sentry/",
-        "getSentryExpoConfig",
-        "EXPO_PUBLIC_SENTRY_DSN",
-        "SENTRY_ORG",
-        "SENTRY_PROJECT",
-        ".sentryclirc"
-      ],
-      "paths": [
-        "apps/mobile/.gitignore",
-        "apps/mobile/sentry.ts",
-        "apps/mobile/types/sentry-env.d.ts"
-      ],
-      "slots": {
-        ".env.example": ["mobile-env"],
-        "apps/mobile/app.config.ts": ["expo-plugins"],
-        "apps/mobile/index.ts": ["launch"],
-        "apps/mobile/metro.config.js": ["metro-factories"]
-      },
-      "requires": ["mobile"],
-      "json": [
-        {
-          "file": "apps/mobile/package.json",
-          "path": ["dependencies"],
-          "set": {
-            "@sentry/react-native": "~7.11.0"
-          },
-          "setAt": [18]
-        }
-      ]
     }
   },
   "shared": {

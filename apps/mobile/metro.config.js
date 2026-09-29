@@ -10,15 +10,6 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 // as Metro serialises it wraps that factory: a wrapper takes the factory before
 // it and returns one that builds on it, passing Expo's options through.
 const factoryWrappers = [
-  // flama:begin sentry
-  // Sentry's stamps each bundle with the debug ID its source maps are
-  // uploaded under.
-  (getConfig) => (root, options) =>
-    require('@sentry/react-native/metro').getSentryExpoConfig(root, {
-      ...options,
-      getDefaultConfig: getConfig,
-    }),
-  // flama:end sentry
   // flama:plugins metro-factories
 ];
 const createConfig = factoryWrappers.reduce((create, wrap) => wrap(create), getDefaultConfig);
