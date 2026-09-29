@@ -3,4 +3,4 @@
 "@flama/frontend-mobile": major
 ---
 
-Sentry leaves the starter, and the kit's error boundaries send what they catch to the reporter an app passes `setErrorReporter`, or to the console until one does.
+Sentry leaves the starter: the kit no longer exports `Sentry` or `sentryEnabled`, and its error boundaries log what they catch to the console.

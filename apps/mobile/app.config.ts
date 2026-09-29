@@ -19,9 +19,8 @@ const plugins: ExpoConfig['plugins'] = [
       iconSets: [{ inputDir: '../../packages/frontend/design-system/mobile/assets/icons/ui' }],
     },
   ],
+  // flama:plugins expo-plugins
 ];
-
-// flama:plugins expo-plugins
 
 const config: ExpoConfig = {
   name: 'Flama',

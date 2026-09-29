@@ -24,8 +24,7 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
 
 - **platform** — `createQueryPersistence` (a `QueryClient` plus MMKV-backed
   `persistOptions`), `ExpoSecureStoreService`, `storage`, `stateStorage`,
-  `queryStorage`, and `setErrorReporter`, where an app sends the errors the
-  boundaries catch (the console until it sets one).
+  `queryStorage`.
 - **config** — `configManager`, `ConfigManagerContext`, `useConfigManager`,
   `useConfig`, `AppConfig`, `staticConfig`.
 - **forms** — `useZodResolver` and `FormField`; translated API failures come
@@ -38,7 +37,9 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
   the `Auth*` primitives (title, subtitle, divider, note, form error, …),
   `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`,
   `SocialLoginButtons` and the provider marks.
-- **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`.
+- **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`. The
+  boundary logs what it catches to the console and reports it nowhere: neither
+  Expo app gets error reporting from this package.
 - **analytics** — `ScreenViewTracker`.
 - **tailwind-config** — the package-owned NativeWind content glob, exported
   separately for app Tailwind configs.

@@ -6,13 +6,11 @@ const path = require('node:path');
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, '../..');
 
-// Expo's factory builds the base config. A feature that has to see the bundle
-// as Metro serialises it wraps that factory: a wrapper takes the factory before
-// it and returns one that builds on it, passing Expo's options through.
-const factoryWrappers = [
-  // flama:plugins metro-factories
-];
-const createConfig = factoryWrappers.reduce((create, wrap) => wrap(create), getDefaultConfig);
+// The factory the base config comes from: Expo's, unless a feature has to
+// build the base itself rather than adjust the finished config.
+const createConfig =
+  // flama:plugins metro-config-factory
+  getDefaultConfig;
 
 const config = createConfig(projectRoot);
 
