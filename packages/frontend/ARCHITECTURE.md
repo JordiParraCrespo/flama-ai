@@ -17,8 +17,10 @@ described here. When they disagree, fix the code or update both together.
 **By product, for logic.** An entity, a repository, a service or a query hook
 belongs to a product or to both. `core` is the kernel every app loads:
 session (`auth`), `users`, `user-settings`, `capabilities`, `analytics`,
-the InversifyJS container (`FlamaApp`, `TOKENS`), `config/`,
-`validation/` and `format/` (dates through `Intl`, for both platforms).
+the InversifyJS container (`FlamaApp`, `TOKENS`), `validation/` and `format/`
+(dates through `Intl`, for both platforms). It also holds `config/`, which no
+app loads: `ConfigManager`, the layered document the `remote-config` plugin
+wires (a provider and a cache in, the merged document out).
 `consumer` (`organizations`, `profile`) and `admin`
 (`admin-users`, `roles`, with its plugin) are the two products. An app loads exactly one, and
 the products never import each other.

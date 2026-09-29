@@ -103,8 +103,7 @@ boundaries, the `AuthGate` section. The colours come from `global.css`
   watches the password field so a keystroke re-renders the checklist and the
   button it gates, not the form.
 - **An effect synchronises with something outside React, and says what.** Biome
-  forbids `useEffect` outside `hooks/`, the root layout included; a store
-  outside React is read with `useSyncExternalStore`.
+  forbids `useEffect` outside `hooks/`, the root layout included.
 - **The React Compiler is on** (`experiments: { reactCompiler: true }` in
   `app.config.ts`). No `useMemo`, `useCallback` or `memo` outside `hooks/`;
   Biome forbids the import.
