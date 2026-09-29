@@ -2,10 +2,6 @@ import { consumerModules } from '@flama/frontend-consumer';
 import { FlamaApp } from '@flama/frontend-core/di';
 import { LocalStorageService } from '@flama/frontend-web';
 import { webAuthClient } from './auth-client';
-// flama:begin oauth
-
-import { socialProviders } from './social-providers';
-// flama:end oauth
 // flama:plugins app-imports
 
 export const app = FlamaApp.create({
@@ -16,9 +12,6 @@ export const app = FlamaApp.create({
   apiBaseUrl: import.meta.env.VITE_API_URL ?? '',
   storage: new LocalStorageService(),
   authClient: webAuthClient,
-  // flama:begin oauth
-  socialProviders,
-  // flama:end oauth
   // flama:plugins app-config
   modules: [
     // Loading the consumer product's modules is what makes this app that product.

@@ -19,7 +19,7 @@
 - A form → `features/<module>/forms/` (props in, `onSubmit` out; no fetching).
 - A sheet → `features/<module>/dialogs/`, one per file, owns its mutation.
 - A helper two screens use → `@flama/frontend-mobile`, not a second copy and not
-  `lib/` (only `flama.ts`, `auth-client.ts`, `query.ts`, `social-providers.tsx`).
+  `lib/` (only `flama.ts`, `auth-client.ts`, `query.ts`).
 - Logic — entities, repositories, query hooks → `@flama/frontend-consumer` or
   `@flama/frontend-core`. Never `@flama/frontend-admin`.
 

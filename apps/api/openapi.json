@@ -5380,17 +5380,7 @@
       },
       "CapabilitiesResponseDto": {
         "type": "object",
-        "properties": {
-          "google_oauth": {
-            "type": "boolean",
-            "description": "Sign-in with Google is configured."
-          },
-          "github_oauth": {
-            "type": "boolean",
-            "description": "Sign-in with GitHub is configured."
-          }
-        },
-        "required": ["google_oauth", "github_oauth"]
+        "properties": {}
       },
       "CreateOrganizationRequest": {
         "type": "object",

@@ -20,12 +20,5 @@ export function CapabilityProperty(description: string): PropertyDecorator {
  * `CapabilitiesService`.
  */
 export class CapabilitiesResponseDto implements ClientCapabilities {
-  // flama:begin oauth
-  @CapabilityProperty('Sign-in with Google is configured.')
-  google_oauth!: boolean;
-
-  @CapabilityProperty('Sign-in with GitHub is configured.')
-  github_oauth!: boolean;
-  // flama:end oauth
   // flama:plugins client-capabilities
 }

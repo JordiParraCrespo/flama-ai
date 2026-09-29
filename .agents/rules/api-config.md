@@ -52,13 +52,12 @@ without it. Model absence honestly:
   (`src/capabilities/capabilities.module.ts`): its name and what turns it on.
   That table is the one list — the `DeploymentCapability` type, the set
   `resolveCapabilities()` computes once at boot and the startup log all read
-  it. Today it holds `google_oauth`, `github_oauth` and `email_delivery`, plus
-  any a plugin adds (`billing` brings `stripe_billing`), and the log is how a
-  self-hoster learns what the deployment can do. Only the
-  **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`:
-  the OAuth providers) is served by
-  `GET /health/capabilities`, so clients can hide UI for capabilities that are
-  off (the web login page only renders configured providers). Server-internal
+  it. Today it holds `email_delivery`, plus any a plugin adds (`billing`
+  brings `stripe_billing`), and the log is how a self-hoster learns what the
+  deployment can do. Only the **client-facing subset** (`CLIENT_CAPABILITIES`
+  in `@flama/shared`, each with its property on `CapabilitiesResponseDto`) is
+  served by `GET /health/capabilities`, so clients can hide UI for
+  capabilities that are off. Server-internal
   capabilities (`email_delivery`) never go over the wire — a
   public endpoint must not describe a deployment's infrastructure beyond what
   its UI already reveals. Add a capability to `CLIENT_CAPABILITIES` only when
@@ -70,13 +69,13 @@ without it. Model absence honestly:
 
 ```typescript
 // WRONG — crashes at boot if env var is empty
-clientID: configService.getOrThrow<string>('oauth.google.clientId'),
+apiKey: configService.getOrThrow<string>('integration.apiKey'),
 
 // WRONG — boots, but leaks a fake credential to every consumer
-clientId: z.string().default('not-set'),
+apiKey: z.string().default('not-set'),
 
 // CORRECT — absence is representable; consumers must handle undefined
-clientId: z.string().optional(),
+apiKey: z.string().optional(),
 ```
 
 ### Required vs optional — keep the boundary explicit

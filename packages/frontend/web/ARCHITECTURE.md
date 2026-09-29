@@ -24,7 +24,7 @@ importing it configures i18next; everything else is pure and may be dropped.
 | `layout` | `PageHead`, `SectionNav` (the side nav of a paned page), the section primitives (`SectionCard`, `SectionRow`, `FieldRow`, …), `ConfirmDialog` | middle |
 | `roles` | `RolePill` | middle |
 | `shell` | `AppShell`, `AppSidebar`, `TopBar`, `UserMenu`, `CommandPalette`, `ShellProvider`/`useShell`, `useAuthorizedNav`, `useLandingRoute`, the nav types, and `useAbility` re-exported from the kernel | top |
-| `auth` | `AuthLayout`, `AuthArtPanel`, `BrandLogo`, the auth primitives, `PasswordInput`, `PasswordChecklist` (subscribes to the password field itself), `SocialLoginButtons` (the app's providers, with their marks), `OAuthCallbackNotice`, `redirectSignedIn`, `redirectSignedOut` | top |
+| `auth` | `AuthLayout`, `AuthArtPanel`, `BrandLogo`, the auth primitives, `PasswordInput`, `PasswordChecklist` (subscribes to the password field itself), `SocialLoginButtons`, `OAuthCallbackNotice`, `redirectSignedIn`, `redirectSignedOut` | top |
 
 The lists live in [`.dependency-cruiser.cjs`](.dependency-cruiser.cjs), which
 passes them to `packages/tsconfig/depcruise/frontend-kit.cjs`.

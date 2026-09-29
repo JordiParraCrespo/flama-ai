@@ -1,7 +1,7 @@
 /**
  * The capabilities clients have a UI decision hanging on — served by
  * `GET /health/capabilities`. A capability is an optional feature a deployment
- * may or may not have configured (OAuth credentials, an integration's key);
+ * may or may not have configured (a sign-in provider, an integration's key);
  * the full list, with what turns each one on, is the API's
  * (`apps/api/src/capabilities`), and this is the subset of it that goes over
  * the wire. Server-internal capabilities (`email_delivery`) are deliberately
@@ -10,10 +10,6 @@
  * already reveals.
  */
 export const CLIENT_CAPABILITIES = [
-  // flama:begin oauth
-  'google_oauth',
-  'github_oauth',
-  // flama:end oauth
   // flama:plugins client-capabilities
 ] as const;
 

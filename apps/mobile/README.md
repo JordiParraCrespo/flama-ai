@@ -1,7 +1,7 @@
 # @flama/mobile
 
-The consumer product's native app: sign-up and sign-in (password or a social
-provider through a deep link), password reset, and the signed-in home screen.
+The consumer product's native app: sign-up and sign-in, password reset, and
+the signed-in home screen.
 Platform administration is a different app,
 [`apps/admin-mobile`](../admin-mobile).
 
@@ -44,7 +44,7 @@ app/                   # expo-router routes: a default export that mounts a scre
 ├── onboarding.tsx     # an account with no organization starts here
 └── (app)/             # the signed-in Stack and its screens
 features/              # <module>/{screens,sections,dialogs,forms,components,hooks,lib,__tests__}
-lib/                   # configuration only: flama.ts, auth-client.ts, query.ts, social-providers.tsx
+lib/                   # configuration only: flama.ts, auth-client.ts, query.ts
 app.config.ts          # Expo config — the source of truth for native
 metro.config.js, tailwind.config.js, global.css
 ```

@@ -6,7 +6,7 @@ const schema = z.object({
   port: z.coerce.number().default(3001),
   nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
   // **Required** — the app must fail fast and loud at boot without it. Only
-  // keys whose absence removes an optional feature (OAuth, SMTP)
+  // keys whose absence removes an optional feature (SMTP, an integration's key)
   // get the optional-capability treatment; see `capabilities.module.ts`.
   betterAuthSecret: z.string().min(8),
   betterAuthUrl: z.string().url().default('http://localhost:3001'),

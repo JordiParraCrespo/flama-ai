@@ -20,7 +20,7 @@
 - A form → `src/features/<module>/forms/` (props in, `onSubmit` out; never fetches).
 - A dialog → `src/features/<module>/dialogs/`, one per file, owning its mutation.
 - A helper or component a second screen wants → `@flama/frontend-web`, not a
-  second copy and not `src/lib/` (that holds only `flama.ts`, `auth-client.ts`, `nav.ts`, `social-providers.tsx`).
+  second copy and not `src/lib/` (that holds only `flama.ts`, `auth-client.ts`, `nav.ts`).
 - Logic — entities, repositories, query hooks → `@flama/frontend-consumer` or
   `@flama/frontend-core`. Never `@flama/frontend-admin`.
 

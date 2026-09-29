@@ -126,7 +126,7 @@ second implementation of it.
 - **Backend**: NestJS (Domain-Driven Hexagon architecture), TypeORM, PostgreSQL, Redis, BullMQ
 - **Web**: Vite + TanStack Router, Tailwind v4, shadcn/ui
 - **Mobile**: Expo, NativeWind + rn-primitives
-- **Auth**: Better Auth (email/password + Google + GitHub), cookie sessions, Expo plugin for mobile
+- **Auth**: Better Auth (email/password), cookie sessions, Expo plugin for mobile
 - **Authorization**: Database-backed RBAC — roles and permissions managed through the API, enforced with CASL
 - **Scoped credentials**: one shared scope catalog — a credential's effective access is the intersection of its scopes and the user's roles
 - **Validation**: Zod

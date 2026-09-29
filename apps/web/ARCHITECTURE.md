@@ -190,13 +190,12 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
 ## What is deliberately per-app
 
 `src/lib/` holds configuration, never helpers: `flama.ts`, `auth-client.ts`,
-`nav.ts`, `social-providers.tsx`. Any other file fails `check:structure`.
+`nav.ts`. A fourth file fails `check:structure`.
 
 - **`flama.ts`** — `FlamaApp.create({ modules: consumerModules })` with the
   kit's `LocalStorageService`. It passes no `analytics` client, so events go
   to the kernel's no-op one. Loading the consumer modules is what makes this
   app that product; `apps/admin-web` runs the same file with `adminModules`.
-  It passes `socialProviders` too, the list below.
 - **`auth-client.ts`** — the Better Auth browser client. `signUp` actually
   creates an account here, and `signInSocial` passes
   `requestSignUp: intent === 'sign-up'` so only `/register` lifts the API's
@@ -209,10 +208,6 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
   a row that needs a permission takes it from `ENDPOINT_POLICIES` in
   `@flama/shared/permissions`, never a literal rule list. `apps/admin-web`
   lists `/users` and `/roles` instead.
-- **`social-providers.tsx`** — the social sign-in providers the app offers,
-  Google and GitHub: an id, a name, the capability that says the API has its
-  credentials, and the provider's mark. The kit's `SocialLoginButtons` draws a
-  button for each one the API reports configured.
 
 The query client is a provider, not a lib file: `src/providers/query-provider.tsx`
 applies the kernel's persistence policy with `CONSUMER_NON_PERSISTED_FEATURES`,

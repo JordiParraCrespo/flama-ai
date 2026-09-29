@@ -35,9 +35,8 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
 - **auth** — the sign-in chrome both apps wear, mirroring
   `@flama/frontend-web`'s concern of the same name: `AuthLayout`, `BrandLogo`,
   the `Auth*` primitives (title, subtitle, divider, note, form error, …),
-  `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`,
-  and `SocialLoginButtons`, a button per social provider the app passes
-  `FlamaApp.create`, drawn with its own name and mark.
+  `PasswordInput`, `PasswordRequirements`/`PasswordChecklist` and
+  `SocialLoginButtons`.
 - **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`.
 - **analytics** — `ScreenViewTracker`.
 - **tailwind-config** — the package-owned NativeWind content glob, exported

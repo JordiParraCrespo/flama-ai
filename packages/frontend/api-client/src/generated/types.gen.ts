@@ -323,14 +323,7 @@ export type AssignUserRolesRequest = {
 };
 
 export type CapabilitiesResponseDto = {
-    /**
-     * Sign-in with Google is configured.
-     */
-    google_oauth: boolean;
-    /**
-     * Sign-in with GitHub is configured.
-     */
-    github_oauth: boolean;
+    [key: string]: unknown;
 };
 
 export type CreateOrganizationRequest = {

@@ -16,8 +16,8 @@ export const capabilitiesKeys = {
 };
 
 /**
- * Which client-facing optional features the deployment has configured (OAuth
- * providers), from `GET /health/capabilities`.
+ * Which client-facing optional features the deployment has configured (a
+ * sign-in provider, an integration), from `GET /health/capabilities`.
  *
  * Use this to hide UI for features this install cannot serve — a social
  * sign-in button for a provider with no credentials is a dead button. The set
