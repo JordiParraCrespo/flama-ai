@@ -30,7 +30,7 @@ its documentation. Never add a per-package `.env` or `.env.example`.
 
 ## Optional capabilities: a missing key removes a feature, it never throws
 
-Anything a self-hoster might not have — OAuth credentials, S3, SMTP/Resend,
+Anything a self-hoster might not have — OAuth credentials, SMTP/Resend,
 an integration's API key — is **optional capability config**, and the code must work
 without it. Model absence honestly:
 
@@ -52,15 +52,14 @@ without it. Model absence honestly:
   (`src/capabilities/capabilities.module.ts`): its name and what turns it on.
   That table is the one list — the `DeploymentCapability` type, the set
   `resolveCapabilities()` computes once at boot and the startup log all read
-  it. Today it holds `google_oauth`, `github_oauth`, `s3_storage` and
-  `email_delivery`, plus any a plugin adds (`billing` brings
-  `stripe_billing`), and the log is how a self-hoster learns what the
-  deployment can do. Only the
+  it. Today it holds `google_oauth`, `github_oauth` and `email_delivery`, plus
+  any a plugin adds (`billing` brings `stripe_billing`), and the log is how a
+  self-hoster learns what the deployment can do. Only the
   **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`:
   the OAuth providers) is served by
   `GET /health/capabilities`, so clients can hide UI for capabilities that are
   off (the web login page only renders configured providers). Server-internal
-  capabilities (`s3_storage`, `email_delivery`) never go over the wire — a
+  capabilities (`email_delivery`) never go over the wire — a
   public endpoint must not describe a deployment's infrastructure beyond what
   its UI already reveals. Add a capability to `CLIENT_CAPABILITIES` only when
   a client has a UI decision hanging on it.

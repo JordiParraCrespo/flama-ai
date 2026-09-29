@@ -2,10 +2,6 @@ import { LocalStorageService, type StorageDrivers } from '@flama/backend-storage
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
 import { parseEnv } from './env';
-// flama:begin storage-s3
-
-import { S3StorageService } from './s3-storage.service';
-// flama:end storage-s3
 // flama:plugins storage-driver-imports
 
 /**
@@ -16,9 +12,6 @@ import { S3StorageService } from './s3-storage.service';
  */
 export const storageDrivers = {
   local: LocalStorageService,
-  // flama:begin storage-s3
-  s3: S3StorageService,
-  // flama:end storage-s3
   // flama:plugins storage-drivers
 } satisfies StorageDrivers;
 

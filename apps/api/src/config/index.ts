@@ -4,10 +4,6 @@ import { emailConfig } from './email.config';
 import { oauthConfig } from './oauth.config';
 import { redisConfig } from './redis.config';
 import { storageConfig } from './storage.config';
-// flama:begin storage-s3
-
-import { s3Config } from './s3.config';
-// flama:end storage-s3
 // flama:plugins api-config-imports
 
 /**
@@ -21,8 +17,5 @@ export const configs = [
   emailConfig,
   storageConfig,
   oauthConfig,
-  // flama:begin storage-s3
-  s3Config,
-  // flama:end storage-s3
   // flama:plugins api-config
 ];

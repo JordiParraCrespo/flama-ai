@@ -114,7 +114,6 @@ export const app = FlamaApp.create({
   apiBaseUrl,
   storage: new LocalStorageService(),      // from the kit
   authClient: webAuthClient,               // lib/auth-client.ts
-  analytics: createPostHogClient(),        // lib/posthog.ts
   modules: consumerModules,                // or adminModules
 });
 ```

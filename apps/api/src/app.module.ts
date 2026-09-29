@@ -45,10 +45,6 @@ import { CredentialThrottlerGuard } from './throttling/guards/credential-throttl
 import { RedisThrottlerStorage } from './throttling/infrastructure/redis-throttler.adapter';
 import { ThrottlingModule } from './throttling/throttling.module';
 import { UsersModule } from './users/user.module';
-// flama:begin bull-board
-
-import { BullBoardModule } from './bull-board/bull-board.module';
-// flama:end bull-board
 // flama:plugins api-module-imports
 
 @Module({
@@ -174,9 +170,6 @@ import { BullBoardModule } from './bull-board/bull-board.module';
     // flama:begin organizations
     OrganizationsModule,
     // flama:end organizations
-    // flama:begin bull-board
-    BullBoardModule,
-    // flama:end bull-board
     // flama:plugins api-modules
   ],
   providers: [

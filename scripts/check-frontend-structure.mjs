@@ -44,9 +44,6 @@ const APP_CONFIG_FILES = [
   'auth-client.ts',
   'nav.ts',
   'query.ts',
-  // flama:begin posthog
-  'posthog.ts',
-  // flama:end posthog
   // flama:plugins app-config-files
 ];
 

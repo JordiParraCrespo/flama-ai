@@ -53,7 +53,7 @@ export class HealthProbeController {
   })
   deploymentCapabilities(): CapabilitiesResponseDto {
     // Only the client-facing subset goes over the wire; the full registry
-    // (S3, email transport, …) stays in the startup log and in-process.
+    // (email transport, …) stays in the startup log and in-process.
     return this.capabilities.pick(CLIENT_CAPABILITIES);
   }
 

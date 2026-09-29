@@ -225,28 +225,6 @@ export class MaintenanceProcessor {
     }
   }
 }
-
-// Queue monitoring with Bull Board
-import { BullBoardModule } from '@bull-board/nestjs';
-import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
-
-@Module({
-  imports: [
-    BullBoardModule.forRoot({
-      route: '/admin/queues',
-      adapter: ExpressAdapter,
-    }),
-    BullBoardModule.forFeature({
-      name: 'email',
-      adapter: BullMQAdapter,
-    }),
-    BullBoardModule.forFeature({
-      name: 'reports',
-      adapter: BullMQAdapter,
-    }),
-  ],
-})
-export class AdminModule {}
 ```
 
 Reference: [NestJS Queues](https://docs.nestjs.com/techniques/queues)

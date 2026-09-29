@@ -36,7 +36,7 @@ services:
     # Every setting the API reads comes from the repo's one `.env`, which the
     # root `.env.example` documents variable by variable. The image does not
     # ship it, and this used to be a hand-kept list of the variables to forward
-    # — which drifts: anything missing from it (email delivery, S3, TRUST_PROXY,
+    # — which drifts: anything missing from it (email delivery, TRUST_PROXY,
     # a plugin's settings) could not be configured at all. Run with
     # `--env-file .env` from the repo root (`pnpm docker:prod`) so the `${…}`
     # values in this file are read from the same file. Required: a production

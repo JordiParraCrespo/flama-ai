@@ -6,7 +6,7 @@ const schema = z.object({
   port: z.coerce.number().default(3001),
   nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
   // **Required** — the app must fail fast and loud at boot without it. Only
-  // keys whose absence removes an optional feature (OAuth, S3, SMTP)
+  // keys whose absence removes an optional feature (OAuth, SMTP)
   // get the optional-capability treatment; see `capabilities.module.ts`.
   betterAuthSecret: z.string().min(8),
   betterAuthUrl: z.string().url().default('http://localhost:3001'),
@@ -14,15 +14,6 @@ const schema = z.object({
   // flama:begin mobile
   mobileScheme: z.string().default('flama'),
   // flama:end mobile
-  // flama:begin bull-board
-  // **Optional capability** — the Bull Board queue dashboard at `/admin/queues`
-  // is mounted only when BOTH credentials are set, and then behind HTTP Basic
-  // auth. Absent credentials mean the dashboard is not exposed at all: its job
-  // payloads carry tokenized password-reset/invitation URLs, so it must never
-  // be public.
-  bullBoardUsername: z.string().optional(),
-  bullBoardPassword: z.string().optional(),
-  // flama:end bull-board
   // flama:plugins config-schema
   // Base of the RFC 7807 `type` URIs in error responses. Point it at wherever
   // this deployment documents its error catalog.
@@ -45,10 +36,6 @@ export const appConfig = registerAs('app', () =>
     // flama:begin mobile
     mobileScheme: 'MOBILE_SCHEME',
     // flama:end mobile
-    // flama:begin bull-board
-    bullBoardUsername: 'BULL_BOARD_USERNAME',
-    bullBoardPassword: 'BULL_BOARD_PASSWORD',
-    // flama:end bull-board
     // flama:plugins config-env
     errorTypeBaseUrl: 'ERROR_TYPE_BASE_URL',
     trustProxy: 'TRUST_PROXY',

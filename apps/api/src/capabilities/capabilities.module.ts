@@ -19,11 +19,6 @@ const CAPABILITIES = {
     Boolean(config.get('oauth.google.clientId') && config.get('oauth.google.clientSecret')),
   github_oauth: (config: ConfigService) =>
     Boolean(config.get('oauth.github.clientId') && config.get('oauth.github.clientSecret')),
-  // flama:begin storage-s3
-  s3_storage: (config: ConfigService) =>
-    config.get('storage.provider') === 's3' &&
-    Boolean(config.get('s3.accessKeyId') && config.get('s3.secretAccessKey')),
-  // flama:end storage-s3
   // flama:plugins capabilities
   // The `console` provider only prints to stdout — that is not delivery.
   email_delivery: (config: ConfigService) => {
