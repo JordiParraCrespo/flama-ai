@@ -21,6 +21,9 @@ const plugins: ExpoConfig['plugins'] = [
   ],
 ];
 
+// flama:begin sentry
+// Sentry's config plugin uploads source maps from native release builds, to
+// the organization and project named here.
 if (process.env.SENTRY_ORG && process.env.SENTRY_PROJECT) {
   plugins.push([
     '@sentry/react-native/expo',
@@ -30,6 +33,8 @@ if (process.env.SENTRY_ORG && process.env.SENTRY_PROJECT) {
     },
   ]);
 }
+// flama:end sentry
+// flama:plugins expo-plugins
 
 const config: ExpoConfig = {
   name: 'Flama',
