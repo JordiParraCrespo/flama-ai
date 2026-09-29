@@ -38,7 +38,7 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
   `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`,
   `SocialLoginButtons` and the provider marks.
 - **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`.
-- **analytics** — `createMobileAnalyticsClient`, `ScreenViewTracker`.
+- **analytics** — `ScreenViewTracker`.
 - **tailwind-config** — the package-owned NativeWind content glob, exported
   separately for app Tailwind configs.
 

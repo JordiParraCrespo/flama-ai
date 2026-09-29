@@ -34,7 +34,7 @@ src/
   to it.
 - **Types**: `Role` (free-form role-name `string`), `PermissionDefinition`,
   `PaginationParams`, `PaginatedResponse<T>`, `ProblemDetails`,
-  `DeploymentCapabilities`, `ClientCapabilities`.
+  `ClientCapabilities`.
 - **Constants**: `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`,
   `SYSTEM_ROLE_PERMISSIONS`, `QUEUE_NAMES`.
 

@@ -33,11 +33,10 @@ RUN find /usr/share/nginx/html -type f \
          -o -name '*.html' -o -name '*.txt' \) \
       -exec sh -c 'gzip -9c "$1" > "$1.gz"' _ {} \;
 ENV API_UPSTREAM=api:3001
-# Origins the Content-Security-Policy in nginx.conf admits beyond 'self'.
-# Defaults to the PostHog EU endpoints, matching VITE_POSTHOG_HOST's default;
-# widen it when the analytics project is in another region or VITE_API_URL
-# points the app at a different origin.
-ENV CSP_EXTRA_ORIGINS="https://eu.i.posthog.com https://eu-assets.i.posthog.com"
+# Origins the Content-Security-Policy in nginx.conf admits beyond 'self'. None
+# by default: the container's environment sets them, for a third-party service
+# the app talks to or a VITE_API_URL on a different origin.
+ENV CSP_EXTRA_ORIGINS=""
 ENV NGINX_ENVSUBST_FILTER='(API_UPSTREAM|CSP_EXTRA_ORIGINS)'
 COPY apps/web/nginx.conf /etc/nginx/templates/default.conf.template
 EXPOSE 3000

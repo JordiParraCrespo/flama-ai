@@ -2,8 +2,6 @@ import '@flama/env/load';
 import type { ServerResponse } from 'node:http';
 import { resolve } from 'node:path';
 import { ProblemDetailsDto, SanitizePipe } from '@flama/backend-core';
-import { setupBullBoard } from '@flama/backend-queue';
-import { QUEUE_NAMES } from '@flama/shared';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -70,8 +68,8 @@ async function bootstrap() {
   // `<publicUrl>/uploads/<key>` pointing back here (see `LocalStorageService`),
   // so the browser loads it from the API regardless of where the SPA is hosted —
   // the documented Tier-1 serves the web app from a different origin. Mount it
-  // outside the `api` global prefix to match that URL. The S3 backend hands back
-  // absolute signed URLs and needs no route, so this is gated on the local
+  // outside the `api` global prefix to match that URL. A driver that hands back
+  // absolute URLs of its own needs no route, so this is gated on the local
   // provider.
   //
   // **Only the `avatars/` subtree is mounted, never the upload root.** This
@@ -103,24 +101,6 @@ async function bootstrap() {
     const document = createSwaggerDocument(app);
     SwaggerModule.setup('api/docs', app, document);
   }
-
-  // The Bull Board dashboard is only mounted when Basic-auth credentials are
-  // configured — its job payloads carry tokenized reset/invitation URLs, so it
-  // is never exposed unauthenticated. See `setupBullBoard`.
-  const bullBoardUsername = configService.get<string>('app.bullBoardUsername');
-  const bullBoardPassword = configService.get<string>('app.bullBoardPassword');
-  const bullBoardMounted = setupBullBoard(
-    app,
-    [QUEUE_NAMES.EMAIL, QUEUE_NAMES.FILE_PROCESSING],
-    bullBoardUsername && bullBoardPassword
-      ? { auth: { username: bullBoardUsername, password: bullBoardPassword } }
-      : {},
-  );
-  logger.log({
-    message: bullBoardMounted
-      ? 'Bull Board dashboard mounted at /admin/queues (Basic auth)'
-      : 'Bull Board dashboard disabled (set BULL_BOARD_USERNAME and BULL_BOARD_PASSWORD to enable)',
-  });
 
   const port = configService.get('app.port');
   await app.listen(port);

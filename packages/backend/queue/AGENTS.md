@@ -1,6 +1,6 @@
 # @flama/backend-queue — Agent Instructions
 
-BullMQ job queues plus a Bull Board dashboard for the NestJS API.
+BullMQ job queues for the NestJS API.
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) and
 > [`.agents/rules/backend-packages.md`](../../../.agents/rules/backend-packages.md).
@@ -10,7 +10,6 @@ BullMQ job queues plus a Bull Board dashboard for the NestJS API.
 ```
 src/
 ├── queue.module.ts       # NestJS module (register queues)
-├── bull-board.setup.ts   # Bull Board admin UI wiring
 ├── job-id.ts             # jobId(): custom job ids BullMQ accepts
 └── index.ts
 ```
@@ -26,7 +25,7 @@ src/
   included, which BullMQ's own check lets by). An id that is already a single
   safe value — a UUID row id — goes in as it is, without the helper.
 - Producers/consumers live in `apps/api` (`src/queue/`); this package provides
-  the module wiring and dashboard.
+  the module wiring.
 - Ships **CommonJS**.
 
 ## Commands

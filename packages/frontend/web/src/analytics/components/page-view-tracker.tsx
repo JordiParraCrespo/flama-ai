@@ -10,9 +10,9 @@ import { useRouterState } from '@tanstack/react-router';
  * mobile app.
  *
  * The pathname only — several routes carry secrets in the query string
- * (`/reset-password?token=…`). Query strings are also stripped from the URL
- * properties PostHog attaches to every event; see `stripUrlSecrets` in
- * `posthog-client.ts`, which is what actually closes that leak.
+ * (`/reset-password?token=…`). That alone does not close the leak: a provider
+ * attaches the full URL to every event on its own, so an adapter strips query
+ * strings there too, with `sanitizeUrlProperties` from the kernel.
  */
 export function PageViewTracker() {
   const pathname = useRouterState({

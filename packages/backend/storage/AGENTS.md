@@ -1,6 +1,7 @@
 # @flama/backend-storage — Agent Instructions
 
-Pluggable file storage (local filesystem or S3) for the NestJS API.
+Pluggable file storage for the NestJS API: the storage port, the module that
+binds it, and the local filesystem driver.
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) and
 > [`.agents/rules/backend-packages.md`](../../../.agents/rules/backend-packages.md).
@@ -9,18 +10,20 @@ Pluggable file storage (local filesystem or S3) for the NestJS API.
 
 ```
 src/
-├── storage.module.ts        # NestJS module + factory
+├── storage.module.ts        # NestJS module: binds the port to the configured driver
 ├── storage.service.ts       # abstract StorageService (the port)
 ├── local-storage.service.ts # local filesystem implementation
-├── s3-storage.service.ts    # S3-compatible implementation
 └── index.ts
 ```
 
 ## Conventions
 
 - **Pluggable service pattern**: abstract `StorageService` → concrete
-  implementations (local / S3) → chosen by the factory in `StorageModule`.
-  Add a backend as another concrete class; keep the abstract contract stable.
+  implementations (drivers) → chosen by the factory in `StorageModule`. The
+  package ships the port and the local driver, and names no other: the app
+  passes the drivers it runs on to `StorageModule.register({ local: … })`, and
+  its config accepts exactly those names. A driver is a class whose
+  constructor takes the `ConfigService`. Keep the abstract contract stable.
 - Ships **CommonJS**.
 
 ## Commands

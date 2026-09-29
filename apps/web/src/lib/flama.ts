@@ -1,6 +1,6 @@
 import { consumerModules } from '@flama/frontend-consumer';
 import { FlamaApp } from '@flama/frontend-core/di';
-import { createWebAnalyticsClient, LocalStorageService } from '@flama/frontend-web';
+import { LocalStorageService } from '@flama/frontend-web';
 import { webAuthClient } from './auth-client';
 // flama:plugins app-imports
 
@@ -12,7 +12,7 @@ export const app = FlamaApp.create({
   apiBaseUrl: import.meta.env.VITE_API_URL ?? '',
   storage: new LocalStorageService(),
   authClient: webAuthClient,
-  analytics: createWebAnalyticsClient(),
+  // flama:plugins app-config
   modules: [
     // Loading the consumer product's modules is what makes this app that product.
     ...consumerModules,

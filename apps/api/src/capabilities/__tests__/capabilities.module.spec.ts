@@ -8,13 +8,9 @@ function configWith(values: Record<string, unknown>): ConfigService {
 
 describe('resolveCapabilities', () => {
   it('reports everything off on a bare install', () => {
-    expect(resolveCapabilities(configWith({ 'email.provider': 'console' }))).toEqual({
-      google_oauth: false,
-      github_oauth: false,
-      // flama:plugins bare-capabilities
-      s3_storage: false,
-      email_delivery: false,
-    });
+    const bare = resolveCapabilities(configWith({ 'email.provider': 'console' }));
+    expect(Object.keys(bare)).toContain('email_delivery');
+    expect(Object.entries(bare).filter(([, on]) => on)).toEqual([]);
   });
 
   it('requires both halves of an OAuth credential pair', () => {
@@ -27,26 +23,6 @@ describe('resolveCapabilities', () => {
     });
     expect(resolveCapabilities(complete).google_oauth).toBe(true);
     expect(resolveCapabilities(complete).github_oauth).toBe(false);
-  });
-
-  // flama:plugins capability-tests
-  it('only counts s3_storage when the provider is s3 AND credentials exist', () => {
-    const credsButLocalProvider = configWith({
-      'storage.provider': 'local',
-      'storage.s3AccessKeyId': 'key',
-      'storage.s3SecretAccessKey': 'secret',
-    });
-    expect(resolveCapabilities(credsButLocalProvider).s3_storage).toBe(false);
-
-    const s3WithoutCreds = configWith({ 'storage.provider': 's3' });
-    expect(resolveCapabilities(s3WithoutCreds).s3_storage).toBe(false);
-
-    const s3Configured = configWith({
-      'storage.provider': 's3',
-      'storage.s3AccessKeyId': 'key',
-      'storage.s3SecretAccessKey': 'secret',
-    });
-    expect(resolveCapabilities(s3Configured).s3_storage).toBe(true);
   });
 
   it('does not count the console email provider as delivery', () => {

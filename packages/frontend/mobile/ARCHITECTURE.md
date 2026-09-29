@@ -21,7 +21,7 @@ compiles it with the app.
 | `theme` | `THEME` (the NativeWind variable sets), `NAV_THEME` for React Navigation, `BrandGlyph`, `ThemeToggle` | leaf |
 | `config` | `configManager` over the kernel's `ConfigManager`, `AppConfig`, `staticConfig`, `ConfigManagerContext`, `useConfig` — it reads `platform`'s storage | middle |
 | `forms` | `useZodResolver`, `FormField` (a `Controller` field with its label and error) | leaf |
-| `analytics` | `createMobileAnalyticsClient` (PostHog), `ScreenViewTracker` | leaf |
+| `analytics` | `ScreenViewTracker` | leaf |
 | `i18n` | the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`, `LanguageSwitcher`, and — re-exported from `@flama/frontend-core` — `useLocale` and the date formatters; it reads `platform`'s MMKV store for the saved locale | middle |
 | `layout` | `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback` (optional title, message and retrying state) | middle |
 | `auth` | the sign-in chrome: `AuthLayout`, `BrandLogo`, the `Auth*` primitives, `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`, `SocialLoginButtons`, the provider marks, `SignOutButton` (owns `useLogout`); `LoginForm`, `ForgotPasswordForm`, `ResetPasswordForm`; `ForgotPasswordScreen`, `ResetPasswordScreen` | top |

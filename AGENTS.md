@@ -23,8 +23,8 @@ flama/
 │   │   ├── ddd/          # DDD/hexagon building blocks (@flama/backend-ddd)
 │   │   ├── email/        # Pluggable email + React Email templates (@flama/backend-email)
 │   │   ├── i18n/         # Server-side translation + Intl formatting (@flama/backend-i18n)
-│   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
-│   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
+│   │   ├── queue/        # BullMQ job queues (@flama/backend-queue)
+│   │   └── storage/      # Pluggable file storage (@flama/backend-storage)
 │   ├── tsconfig/         # Shared TypeScript configs
 │   ├── env/              # Root .env loader (@flama/env)
 │   ├── frontend/         # The React tier: logic split by product, glue split by platform
@@ -205,7 +205,7 @@ effective access is the intersection — see
   (DB-driven, the source of truth) and the legacy `defineAbilitiesFor` fallback
 - Types: `Role` (a free-form role-name `string`), `PermissionDefinition`,
   `PaginationParams`, `PaginatedResponse<T>`, `ProblemDetails`,
-  `DeploymentCapabilities`, `ClientCapabilities`
+  `ClientCapabilities`
 - Constants: `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`,
   `QUEUE_NAMES`
 - Permissions (`src/permissions/`): `SYSTEM_ROLE_PERMISSIONS` and the CASL

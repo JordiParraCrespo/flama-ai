@@ -5,7 +5,7 @@ const ABSOLUTE_URL = /^https?:\/\//i;
  * Removes query strings and fragments from any URL-valued property.
  *
  * Analytics providers attach the current location to events automatically —
- * PostHog sends `$current_url`, `$referrer` and their `$initial_` variants on
+ * the current URL, the referrer and often their first-visit variants, on
  * *every* event, including autocapture ones the app never raises itself. Routes
  * that carry a secret in the query string (`/reset-password?token=…`) would
  * otherwise leak it to a third party no matter how carefully the app's own

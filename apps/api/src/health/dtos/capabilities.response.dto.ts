@@ -7,7 +7,7 @@ import { ApiProperty } from '@nestjs/swagger';
  *
  * Deliberately a subset of the full registry: only capabilities a client hides
  * or shows UI for belong on this public wire response. Server-internal ones
- * (`s3_storage`, `email_delivery`) stay in the startup log and the in-process
+ * (`email_delivery`) stay in the startup log and the in-process
  * `CapabilitiesService`.
  */
 export class CapabilitiesResponseDto implements ClientCapabilities {

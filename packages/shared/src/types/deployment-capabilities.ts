@@ -1,42 +1,21 @@
 /**
- * The optional capabilities a deployment may or may not have, resolved from
- * configuration once at boot. Each one maps to config a self-hoster might not
- * have (OAuth credentials, S3 credentials, SMTP/Resend settings, an integration's key);
- * a missing key removes the capability — it never prevents the app from
- * booting. Required settings (database, `BETTER_AUTH_SECRET`) are the
- * opposite: they fail fast at boot and are not capabilities.
- */
-export const DEPLOYMENT_CAPABILITIES = [
-  'google_oauth',
-  'github_oauth',
-  // flama:plugins deployment-capabilities
-  's3_storage',
-  'email_delivery',
-] as const;
-
-export type DeploymentCapability = (typeof DEPLOYMENT_CAPABILITIES)[number];
-
-/**
- * Which optional features a deployment can actually serve. `false` means "not
- * configured on this install", not an outage. The full set stays inside the
- * API (startup log, feature guards); only the client-facing subset below goes
- * over the wire.
- */
-export type DeploymentCapabilities = Record<DeploymentCapability, boolean>;
-
-/**
- * The subset of capabilities clients have a UI decision hanging on — served by
- * `GET /health/capabilities`. Server-internal capabilities (`s3_storage`,
- * `email_delivery`) are deliberately not on the wire: no client renders
- * anything differently for them, and a public endpoint should not describe a
- * deployment's infrastructure beyond what its UI already reveals.
+ * The capabilities clients have a UI decision hanging on — served by
+ * `GET /health/capabilities`. A capability is an optional feature a deployment
+ * may or may not have configured (OAuth credentials, an integration's key);
+ * the full list, with what turns each one on, is the API's
+ * (`apps/api/src/capabilities`), and this is the subset of it that goes over
+ * the wire. Server-internal capabilities (`email_delivery`) are deliberately
+ * not on it: no client renders anything differently for them, and a public
+ * endpoint should not describe a deployment's infrastructure beyond what its UI
+ * already reveals.
  */
 export const CLIENT_CAPABILITIES = [
   'google_oauth',
   'github_oauth',
   // flama:plugins client-capabilities
-] as const satisfies readonly DeploymentCapability[];
+] as const;
 
 export type ClientCapability = (typeof CLIENT_CAPABILITIES)[number];
 
+/** `false` means "not configured on this install", not an outage. */
 export type ClientCapabilities = Record<ClientCapability, boolean>;

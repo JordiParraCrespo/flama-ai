@@ -77,14 +77,13 @@ supplies `modules`:
 ```ts
 import { consumerModules } from '@flama/frontend-consumer';
 import { FlamaApp } from '@flama/frontend-core';
-import { createWebAnalyticsClient, LocalStorageService } from '@flama/frontend-web';
+import { LocalStorageService } from '@flama/frontend-web';
 import { webAuthClient } from './auth-client';
 
 export const app = FlamaApp.create({
   apiBaseUrl: import.meta.env.VITE_API_URL ?? '',
   storage: new LocalStorageService(),
   authClient: webAuthClient,
-  analytics: createWebAnalyticsClient(),
   modules: consumerModules,
 });
 ```
