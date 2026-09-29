@@ -1,29 +1,38 @@
+import { ConsoleEmailService, type EmailDrivers } from '@flama/backend-email';
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
 import { parseEnv } from './env';
+import { NodemailerEmailService } from './nodemailer-email.service';
+import { ResendEmailService } from './resend-email.service';
 
-// Optional-capability config: with no transport settings the console provider
-// prints emails to stdout. Transport keys are genuinely optional — a blank or
-// whitespace-only env var normalizes to undefined so the capability registry
-// never reports email delivery as configured on an unusable transport.
+/**
+ * The email drivers this API can run on, by the name `EMAIL_PROVIDER` selects
+ * one with. `app.module.ts` passes this map to `EmailModule`, and the schema
+ * below accepts exactly its names, so an unknown provider fails at boot. A
+ * driver with settings of its own reads them from a config section of its own.
+ */
+export const emailDrivers = {
+  console: ConsoleEmailService,
+  nodemailer: NodemailerEmailService,
+  resend: ResendEmailService,
+} satisfies EmailDrivers;
+
+const driverNames = Object.keys(emailDrivers) as [
+  keyof typeof emailDrivers,
+  ...(keyof typeof emailDrivers)[],
+];
+
+// Which driver sends mail. `console`, the default, prints every email to the
+// API log instead of delivering it.
 const schema = z.object({
-  provider: z.enum(['console', 'nodemailer', 'resend']).default('console'),
+  provider: z.enum(driverNames).default('console'),
+  // The sender address a delivering driver sends from.
   from: z.string().default('noreply@flama.dev'),
-  smtpHost: z.string().optional(),
-  smtpPort: z.coerce.number().optional(),
-  smtpUser: z.string().optional(),
-  smtpPass: z.string().optional(),
-  resendApiKey: z.string().optional(),
 });
 
 export const emailConfig = registerAs('email', () =>
   parseEnv('email', schema, {
     provider: 'EMAIL_PROVIDER',
     from: 'EMAIL_FROM',
-    smtpHost: 'SMTP_HOST',
-    smtpPort: 'SMTP_PORT',
-    smtpUser: 'SMTP_USER',
-    smtpPass: 'SMTP_PASS',
-    resendApiKey: 'RESEND_API_KEY',
   }),
 );

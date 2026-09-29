@@ -1,19 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { type CreateEmailOptions, Resend } from 'resend';
 import {
   EmailService,
   type EmailVerificationEmailParams,
   type InvitationEmailParams,
   type PasswordResetEmailParams,
-  type WelcomeEmailParams,
-} from './email.service';
-import {
   renderEmailVerificationEmail,
   renderInvitationEmail,
   renderPasswordResetEmail,
   renderWelcomeEmail,
-} from './render';
+  type WelcomeEmailParams,
+} from '@flama/backend-email';
+import { Injectable, Logger } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import { type CreateEmailOptions, Resend } from 'resend';
 
 @Injectable()
 export class ResendEmailService extends EmailService {
@@ -22,7 +20,7 @@ export class ResendEmailService extends EmailService {
 
   constructor(private readonly configService: ConfigService) {
     super();
-    this.resend = new Resend(this.configService.get('email.resendApiKey'));
+    this.resend = new Resend(this.configService.get('resend.apiKey'));
   }
 
   /**

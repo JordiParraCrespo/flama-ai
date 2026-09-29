@@ -24,8 +24,8 @@ const CAPABILITIES = {
   email_delivery: (config: ConfigService) => {
     const provider = config.get<string>('email.provider');
     return (
-      (provider === 'nodemailer' && Boolean(config.get('email.smtpHost'))) ||
-      (provider === 'resend' && Boolean(config.get('email.resendApiKey')))
+      (provider === 'nodemailer' && Boolean(config.get('smtp.host'))) ||
+      (provider === 'resend' && Boolean(config.get('resend.apiKey')))
     );
   },
 } satisfies Record<string, (config: ConfigService) => boolean>;

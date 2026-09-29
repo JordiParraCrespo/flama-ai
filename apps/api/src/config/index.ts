@@ -3,6 +3,8 @@ import { databaseConfig } from './database.config';
 import { emailConfig } from './email.config';
 import { oauthConfig } from './oauth.config';
 import { redisConfig } from './redis.config';
+import { resendConfig } from './resend.config';
+import { smtpConfig } from './smtp.config';
 import { storageConfig } from './storage.config';
 // flama:plugins api-config-imports
 
@@ -17,5 +19,7 @@ export const configs = [
   emailConfig,
   storageConfig,
   oauthConfig,
+  smtpConfig,
+  resendConfig,
   // flama:plugins api-config
 ];

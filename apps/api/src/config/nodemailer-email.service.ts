@@ -1,19 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
 import {
   EmailService,
   type EmailVerificationEmailParams,
   type InvitationEmailParams,
   type PasswordResetEmailParams,
-  type WelcomeEmailParams,
-} from './email.service';
-import {
   renderEmailVerificationEmail,
   renderInvitationEmail,
   renderPasswordResetEmail,
   renderWelcomeEmail,
-} from './render';
+  type WelcomeEmailParams,
+} from '@flama/backend-email';
+import { Injectable } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class NodemailerEmailService extends EmailService {
@@ -22,11 +20,11 @@ export class NodemailerEmailService extends EmailService {
   constructor(private readonly configService: ConfigService) {
     super();
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get('email.smtpHost'),
-      port: this.configService.get('email.smtpPort'),
+      host: this.configService.get('smtp.host'),
+      port: this.configService.get('smtp.port'),
       auth: {
-        user: this.configService.get('email.smtpUser'),
-        pass: this.configService.get('email.smtpPass'),
+        user: this.configService.get('smtp.user'),
+        pass: this.configService.get('smtp.pass'),
       },
     });
   }
