@@ -5,15 +5,9 @@ import { ConsoleEmailService } from './console-email.service';
 import { EmailModule } from './email.module';
 import { EmailService } from './email.service';
 
-/**
- * The factory that decides which driver a deployment gets. Its failure mode is
- * silent: pick the wrong driver and every email in production is written to a
- * log file instead of being delivered, with nothing in the response to say so.
- */
-
 /** The factory `EmailModule` binds to `EmailService`, called with `values` as config. */
 function build(values: Record<string, unknown>) {
-  const [provider] = EmailModule.register({ console: ConsoleEmailService })
+  const [{ useFactory: create }] = EmailModule.register({ console: ConsoleEmailService })
     .providers as FactoryProvider[];
   const config = {
     getOrThrow: (key: string) => {
@@ -22,16 +16,11 @@ function build(values: Record<string, unknown>) {
     },
     get: (key: string) => values[key],
   } as unknown as ConfigService;
-  // Destructured under another name: `useFactory(...)` reads as a React hook
-  // call to the linter, which is a rule this file has no business suppressing.
-  const { useFactory: factory } = provider;
-  return factory(config);
+  return create(config);
 }
 
 describe('EmailModule.register', () => {
   it('provides and exports the abstract service as the token', () => {
-    // Consumers inject `EmailService`. Binding the concrete class instead would
-    // make every injection site depend on the deployment's driver choice.
     const module = EmailModule.register({ console: ConsoleEmailService });
     const [provider] = module.providers as FactoryProvider[];
 

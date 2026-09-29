@@ -52,9 +52,8 @@ without it. Model absence honestly:
   (`src/capabilities/capabilities.module.ts`): its name and what turns it on.
   That table is the one list — the `DeploymentCapability` type, the set
   `resolveCapabilities()` computes once at boot and the startup log all read
-  it. Today it holds `google_oauth` and `github_oauth`, plus any a plugin
-  adds (`billing` brings `stripe_billing`), and the log is how a self-hoster
-  learns what the deployment can do. Only the
+  it, so what a deployment can have is that file, and the log is how a
+  self-hoster learns what this one can do. Only the
   **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`:
   the OAuth providers) is served by
   `GET /health/capabilities`, so clients can hide UI for capabilities that are

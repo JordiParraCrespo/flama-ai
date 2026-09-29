@@ -120,11 +120,16 @@ may add methods beyond the three interface ones for these cross-boundary shapes.
 ## Pluggable service pattern (backend packages)
 
 Pluggable backend packages (`@flama/backend-email`, `-storage`, `-cache`,
-`-queue`) follow this pattern:
+`-queue`) put an abstract class in front of what they do, and a service that
+can run on more than one driver (`email`, `storage`) follows this pattern:
 
-1. **Abstract class** defines the interface (e.g. `EmailService`)
-2. **Concrete implementations** provide behavior (e.g. `ConsoleEmailService`, `LocalStorageService`)
-3. **`@Global` DynamicModule** with a factory reads config to select the active implementation
+1. **Abstract class** is the port (`EmailService`, `StorageService`)
+2. **One driver ships in the package** (`ConsoleEmailService`,
+   `LocalStorageService`); any other driver is a file of the app's
+3. **`register(drivers)`** — the `@Global` DynamicModule takes the app's
+   driver map (`emailDrivers`, `storageDrivers` in `apps/api/src/config/`),
+   binds the port to the driver `<name>.provider` names and throws on a name
+   no driver answers to. The config schema accepts exactly the map's keys
 
 When adding a new pluggable service, follow this same pattern. Never hardcode a
 specific implementation in consumer code. (Library packages like
