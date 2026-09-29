@@ -2,8 +2,12 @@ import { ConsoleEmailService, type EmailDrivers } from '@flama/backend-email';
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
 import { parseEnv } from './env';
+// flama:begin email
+
 import { NodemailerEmailService } from './nodemailer-email.service';
 import { ResendEmailService } from './resend-email.service';
+// flama:end email
+// flama:plugins email-driver-imports
 
 /**
  * The email drivers this API can run on, by the name `EMAIL_PROVIDER` selects
@@ -13,8 +17,11 @@ import { ResendEmailService } from './resend-email.service';
  */
 export const emailDrivers = {
   console: ConsoleEmailService,
+  // flama:begin email
   nodemailer: NodemailerEmailService,
   resend: ResendEmailService,
+  // flama:end email
+  // flama:plugins email-drivers
 } satisfies EmailDrivers;
 
 const driverNames = Object.keys(emailDrivers) as [
