@@ -127,64 +127,6 @@
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]
-    },
-    "email": {
-      "title": "Email delivery (SMTP and Resend)",
-      "summary": "Two email drivers beside the kernel's `console` one, each cleanly separable: SMTP through nodemailer (`apps/api/src/config/nodemailer-email.service.ts`, `EMAIL_PROVIDER=nodemailer`, its `smtp` config section and `SMTP_*` settings) and Resend (`apps/api/src/config/resend-email.service.ts`, `EMAIL_PROVIDER=resend`, its `resend` config section and `RESEND_API_KEY`), in the API's email drivers, with the `email_delivery` capability. To keep only one, delete the other's two files, its import and row in `config/email.config.ts`, its section in `config/index.ts`, its line in the `email_delivery` capability and its case in that capability's spec, its `.env.example` lines and its dependency (`nodemailer` + `@types/nodemailer`, or `resend`)",
-      "identifiers": [
-        "SMTP",
-        "Nodemailer",
-        "nodemailer",
-        "NodemailerEmailService",
-        "nodemailer-email.service",
-        "@types/nodemailer",
-        "smtpConfig",
-        "smtp.config",
-        "Resend",
-        "resend",
-        "ResendEmailService",
-        "resend-email.service",
-        "resendConfig",
-        "resend.config",
-        "email_delivery",
-        "SMTP_HOST",
-        "SMTP_PORT",
-        "SMTP_USER",
-        "SMTP_PASS",
-        "RESEND_API_KEY"
-      ],
-      "paths": [
-        "apps/api/src/capabilities/__tests__/email-delivery.capability.spec.ts",
-        "apps/api/src/config/nodemailer-email.service.ts",
-        "apps/api/src/config/resend-email.service.ts",
-        "apps/api/src/config/resend.config.ts",
-        "apps/api/src/config/smtp.config.ts"
-      ],
-      "slots": {
-        ".env.example": ["api-integrations-env"],
-        "apps/api/src/capabilities/capabilities.module.ts": ["capabilities"],
-        "apps/api/src/config/email.config.ts": ["email-driver-imports", "email-drivers"],
-        "apps/api/src/config/index.ts": ["api-config", "api-config-imports"]
-      },
-      "json": [
-        {
-          "file": "apps/api/package.json",
-          "path": ["dependencies"],
-          "set": {
-            "nodemailer": "^9.0.3",
-            "resend": "^6.18.0"
-          },
-          "setAt": [33, 38]
-        },
-        {
-          "file": "apps/api/package.json",
-          "path": ["devDependencies"],
-          "set": {
-            "@types/nodemailer": "^8.0.1"
-          },
-          "setAt": [6]
-        }
-      ]
     }
   },
   "shared": {

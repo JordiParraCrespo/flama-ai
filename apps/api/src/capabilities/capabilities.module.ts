@@ -19,17 +19,6 @@ const CAPABILITIES = {
     Boolean(config.get('oauth.google.clientId') && config.get('oauth.google.clientSecret')),
   github_oauth: (config: ConfigService) =>
     Boolean(config.get('oauth.github.clientId') && config.get('oauth.github.clientSecret')),
-  // flama:begin email
-  // On when a delivering email driver is selected and has what it needs, one
-  // line per driver; the `console` driver only prints to the log.
-  email_delivery: (config: ConfigService) => {
-    const provider = config.get<string>('email.provider');
-    return (
-      (provider === 'nodemailer' && Boolean(config.get('smtp.host'))) ||
-      (provider === 'resend' && Boolean(config.get('resend.apiKey')))
-    );
-  },
-  // flama:end email
   // flama:plugins capabilities
 } satisfies Record<string, (config: ConfigService) => boolean>;
 

@@ -7,8 +7,7 @@ import { ApiProperty } from '@nestjs/swagger';
  *
  * Deliberately a subset of the full registry: only capabilities a client hides
  * or shows UI for belong on this public wire response. Server-internal ones
- * (`email_delivery`) stay in the startup log and the in-process
- * `CapabilitiesService`.
+ * stay in the startup log and the in-process `CapabilitiesService`.
  */
 export class CapabilitiesResponseDto implements ClientCapabilities {
   @ApiProperty({ description: 'Sign-in with Google is configured.' })

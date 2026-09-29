@@ -123,7 +123,7 @@ Pluggable backend packages (`@flama/backend-email`, `-storage`, `-cache`,
 `-queue`) follow this pattern:
 
 1. **Abstract class** defines the interface (e.g. `EmailService`)
-2. **Concrete implementations** provide behavior (e.g. `ConsoleEmailService`, `ResendEmailService`)
+2. **Concrete implementations** provide behavior (e.g. `ConsoleEmailService`, `LocalStorageService`)
 3. **`@Global` DynamicModule** with a factory reads config to select the active implementation
 
 When adding a new pluggable service, follow this same pattern. Never hardcode a
