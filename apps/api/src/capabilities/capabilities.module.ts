@@ -1,10 +1,12 @@
 import { CapabilitiesService } from '@flama/backend-core';
-import type { DeploymentCapabilities } from '@flama/shared';
 import { Global, Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 /**
- * Resolves this deployment's optional capabilities from config, once at boot.
+ * Every optional capability a deployment may have, and what turns it on — the
+ * one list. Its names are the `DeploymentCapability` type, the startup log and
+ * what `resolveCapabilities` returns; the client-facing subset is
+ * `CLIENT_CAPABILITIES` in `@flama/shared`, which must name entries of this.
  *
  * A capability is on only when everything it needs is actually present — a
  * missing optional key removes a feature, it never throws (see
@@ -12,28 +14,38 @@ import { ConfigService } from '@nestjs/config';
  * `BETTER_AUTH_SECRET`) are the opposite and are not listed here: they fail
  * boot loudly in their config schemas.
  */
-export function resolveCapabilities(configService: ConfigService): DeploymentCapabilities {
-  const emailProvider = configService.get<string>('email.provider');
+const CAPABILITIES = {
+  google_oauth: (config: ConfigService) =>
+    Boolean(config.get('oauth.google.clientId') && config.get('oauth.google.clientSecret')),
+  github_oauth: (config: ConfigService) =>
+    Boolean(config.get('oauth.github.clientId') && config.get('oauth.github.clientSecret')),
+  s3_storage: (config: ConfigService) =>
+    config.get('storage.provider') === 's3' &&
+    Boolean(config.get('storage.s3AccessKeyId') && config.get('storage.s3SecretAccessKey')),
+  // flama:plugins capabilities
+  // The `console` provider only prints to stdout — that is not delivery.
+  email_delivery: (config: ConfigService) => {
+    const provider = config.get<string>('email.provider');
+    return (
+      (provider === 'nodemailer' && Boolean(config.get('email.smtpHost'))) ||
+      (provider === 'resend' && Boolean(config.get('email.resendApiKey')))
+    );
+  },
+} satisfies Record<string, (config: ConfigService) => boolean>;
 
-  return {
-    google_oauth: Boolean(
-      configService.get('oauth.google.clientId') && configService.get('oauth.google.clientSecret'),
-    ),
-    github_oauth: Boolean(
-      configService.get('oauth.github.clientId') && configService.get('oauth.github.clientSecret'),
-    ),
-    // flama:plugins capabilities
-    s3_storage:
-      configService.get('storage.provider') === 's3' &&
-      Boolean(
-        configService.get('storage.s3AccessKeyId') &&
-          configService.get('storage.s3SecretAccessKey'),
-      ),
-    // The `console` provider only prints to stdout — that is not delivery.
-    email_delivery:
-      (emailProvider === 'nodemailer' && Boolean(configService.get('email.smtpHost'))) ||
-      (emailProvider === 'resend' && Boolean(configService.get('email.resendApiKey'))),
-  };
+export type DeploymentCapability = keyof typeof CAPABILITIES;
+
+/**
+ * Which optional features this deployment can actually serve. `false` means
+ * "not configured on this install", not an outage.
+ */
+export type DeploymentCapabilities = Record<DeploymentCapability, boolean>;
+
+/** Resolves every capability in the table from config, once at boot. */
+export function resolveCapabilities(configService: ConfigService): DeploymentCapabilities {
+  return Object.fromEntries(
+    Object.entries(CAPABILITIES).map(([name, resolve]) => [name, resolve(configService)]),
+  ) as DeploymentCapabilities;
 }
 
 /**

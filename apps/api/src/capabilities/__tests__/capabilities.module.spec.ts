@@ -8,13 +8,9 @@ function configWith(values: Record<string, unknown>): ConfigService {
 
 describe('resolveCapabilities', () => {
   it('reports everything off on a bare install', () => {
-    expect(resolveCapabilities(configWith({ 'email.provider': 'console' }))).toEqual({
-      google_oauth: false,
-      github_oauth: false,
-      // flama:plugins bare-capabilities
-      s3_storage: false,
-      email_delivery: false,
-    });
+    const bare = resolveCapabilities(configWith({ 'email.provider': 'console' }));
+    expect(Object.keys(bare)).toContain('email_delivery');
+    expect(Object.entries(bare).filter(([, on]) => on)).toEqual([]);
   });
 
   it('requires both halves of an OAuth credential pair', () => {
@@ -29,7 +25,6 @@ describe('resolveCapabilities', () => {
     expect(resolveCapabilities(complete).github_oauth).toBe(false);
   });
 
-  // flama:plugins capability-tests
   it('only counts s3_storage when the provider is s3 AND credentials exist', () => {
     const credsButLocalProvider = configWith({
       'storage.provider': 'local',

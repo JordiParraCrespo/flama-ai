@@ -205,7 +205,7 @@ effective access is the intersection — see
   (DB-driven, the source of truth) and the legacy `defineAbilitiesFor` fallback
 - Types: `Role` (a free-form role-name `string`), `PermissionDefinition`,
   `PaginationParams`, `PaginatedResponse<T>`, `ProblemDetails`,
-  `DeploymentCapabilities`, `ClientCapabilities`
+  `ClientCapabilities`
 - Constants: `PAGINATION`, `ROLES`, `SYSTEM_ROLES`, `ORGANIZATION_ROLES`,
   `QUEUE_NAMES`
 - Permissions (`src/permissions/`): `SYSTEM_ROLE_PERMISSIONS` and the CASL

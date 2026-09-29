@@ -1,5 +1,5 @@
 import { CapabilitiesService } from '@flama/backend-core';
-import { CLIENT_CAPABILITIES, type DeploymentCapability } from '@flama/shared';
+import { CLIENT_CAPABILITIES } from '@flama/shared';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -11,6 +11,7 @@ import {
 } from '@nestjs/terminus';
 import { NoPolicy } from '../../auth/decorators/check-policies.decorator';
 import { AllowAnyScope } from '../../auth/decorators/require-scopes.decorator';
+import type { DeploymentCapability } from '../../capabilities/capabilities.module';
 import { CapabilitiesResponseDto } from '../dtos/capabilities.response.dto';
 import { RedisHealthIndicator } from '../infrastructure/redis-health.adapter';
 

@@ -48,11 +48,14 @@ without it. Model absence honestly:
   the value it returns — a credential may legitimately be padded, and a config
   that quietly rewrote `DB_PASSWORD` would disagree with Better Auth's pool,
   which reads `process.env` directly. Do not add a trim here or at a call site.
-- Declare the feature in `resolveCapabilities()`
-  (`src/capabilities/capabilities.module.ts`). The resolved set — currently
-  `google_oauth`, `github_oauth`, `s3_storage`, `email_delivery`, plus any a
-  plugin adds (`billing` brings `stripe_billing`) — is computed once at boot and logged at startup, so a
-  self-hoster learns what the deployment can do from the log. Only the
+- Declare the feature as a row of the `CAPABILITIES` table
+  (`src/capabilities/capabilities.module.ts`): its name and what turns it on.
+  That table is the one list — the `DeploymentCapability` type, the set
+  `resolveCapabilities()` computes once at boot and the startup log all read
+  it. Today it holds `google_oauth`, `github_oauth`, `s3_storage` and
+  `email_delivery`, plus any a plugin adds (`billing` brings
+  `stripe_billing`), and the log is how a self-hoster learns what the
+  deployment can do. Only the
   **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`:
   the OAuth providers) is served by
   `GET /health/capabilities`, so clients can hide UI for capabilities that are
