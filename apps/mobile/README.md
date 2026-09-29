@@ -44,7 +44,7 @@ app/                   # expo-router routes: a default export that mounts a scre
 ├── onboarding.tsx     # an account with no organization starts here
 └── (app)/             # the signed-in Stack and its screens
 features/              # <module>/{screens,sections,dialogs,forms,components,hooks,lib,__tests__}
-lib/                   # configuration only: flama.ts, auth-client.ts, query.ts
+lib/                   # configuration only: flama.ts, auth-client.ts, query.ts, remote-config.ts
 app.config.ts          # Expo config — the source of truth for native
 metro.config.js, tailwind.config.js, global.css
 ```
@@ -52,7 +52,7 @@ metro.config.js, tailwind.config.js, global.css
 ## Where the shared code lives
 
 - UI and native glue both Expo apps share — `FormField`, `useZodResolver`,
-  `ErrorBoundary`, `ScreenViewTracker`, `NAV_THEME`, `configManager`,
+  `ErrorBoundary`, `ScreenViewTracker`, `NAV_THEME`,
   `createQueryPersistence`, `ExpoSecureStoreService` — are in
   `@flama/frontend-mobile` (`packages/frontend/mobile`).
 - Primitives are in `@flama/design-system-mobile`.

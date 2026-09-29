@@ -27,7 +27,7 @@ the products never import each other.
 i18n bootstrap belong to web or to mobile. `web` is what both Vite apps share
 (`shell`, `auth`, `table`, `layout`, `forms`, `theme`, `i18n`, `analytics`,
 `platform`, `roles`); `mobile` is what both Expo apps share (`analytics`,
-`auth`, `config`, `forms`, `i18n`, `layout`, `platform`, `theme`). A kit is
+`auth`, `forms`, `i18n`, `layout`, `platform`, `theme`). A kit is
 organised by concern, each concern with the kind directories a feature has.
 
 The split by product keeps `apps/web` from bundling the control plane's
