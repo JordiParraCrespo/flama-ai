@@ -17,7 +17,7 @@ described here. When they disagree, fix the code or update both together.
 **By product, for logic.** An entity, a repository, a service or a query hook
 belongs to a product or to both. `core` is the kernel every app loads:
 session (`auth`), `users`, `user-settings`, `capabilities`, `analytics`,
-`feature-flags`, the InversifyJS container (`FlamaApp`, `TOKENS`), `config/`,
+the InversifyJS container (`FlamaApp`, `TOKENS`), `config/`,
 `validation/` and `format/` (dates through `Intl`, for both platforms).
 `consumer` (`organizations`, `profile`) and `admin`
 (`admin-users`, `roles`, with its plugin) are the two products. An app loads exactly one, and
@@ -120,9 +120,9 @@ export const app = FlamaApp.create({
 ```
 
 `FlamaApp` binds the kernel (`createCoreModule`, `AnalyticsModule`,
-`AuthModule`, `CapabilitiesModule`, `FeatureFlagsModule`, `UsersModule`,
-`UserSettingsModule`) and
-then whatever `modules` the app passes. `FlamaProvider` puts the app in
+`AuthModule`, `CapabilitiesModule`, `UsersModule`, `UserSettingsModule`) and
+then whatever `modules` the app passes: the product's, and any optional
+kernel module it adds beside them. `FlamaProvider` puts the app in
 context; `useFlamaApp()` reads it. The kernel only knows kernel services, so a
 product resolves its own through a wrapper over the same container:
 `ConsumerApp.for(app)` behind `useConsumerApp()`, `AdminApp.for(app)` behind

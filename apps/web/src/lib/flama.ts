@@ -1,21 +1,21 @@
 import { consumerModules } from '@flama/frontend-consumer';
-import { FlamaApp } from '@flama/frontend-core';
+import { FlamaApp } from '@flama/frontend-core/di';
 import { createWebAnalyticsClient, LocalStorageService } from '@flama/frontend-web';
 import { webAuthClient } from './auth-client';
-
-// Same-origin by default: the Vite dev server proxies `/api` to the API so the
-// session cookie is sent with every request. Set VITE_API_URL only when the
-// API is served from a different origin behind a shared domain in production.
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? '';
+// flama:plugins app-imports
 
 export const app = FlamaApp.create({
-  apiBaseUrl,
+  // Same-origin by default: the Vite dev server proxies `/api` to the API so
+  // the session cookie is sent with every request. Set VITE_API_URL only when
+  // the API is served from a different origin behind a shared domain in
+  // production.
+  apiBaseUrl: import.meta.env.VITE_API_URL ?? '',
   storage: new LocalStorageService(),
   authClient: webAuthClient,
   analytics: createWebAnalyticsClient(),
-  // What the API can target a flag on besides the session: this is the web
-  // client, at this build.
-  featureFlags: { platform: 'web', appVersion: __APP_VERSION__ },
-  // Loading the consumer product's modules is what makes this app that product.
-  modules: consumerModules,
+  modules: [
+    // Loading the consumer product's modules is what makes this app that product.
+    ...consumerModules,
+    // flama:plugins app-modules
+  ],
 });

@@ -54,6 +54,7 @@ import { deleteJsonEntry, deleteJsonValueAt } from '../lib/json-text.mjs';
 import {
   dropBlocks,
   identifierRegex,
+  idsOnSlot,
   isEmptyBlock,
   MarkerError,
   annotate as parseMarkers,
@@ -205,10 +206,24 @@ function annotate(file, content) {
   }
 }
 
+/**
+ * What the removed features' entries say about `file`: each id that declares
+ * `slots`, with the anchors its blocks there sit on. `dropBlocks` takes those
+ * blocks out whole and empties the rest.
+ */
+function declaredSlots(manifest, removed, file) {
+  const slots = new Map();
+  for (const id of removed) {
+    const declared = manifest.features[id]?.slots;
+    if (declared) slots.set(id, new Set(declared[file] ?? []));
+  }
+  return slots;
+}
+
 /** `dropBlocks`, reporting a malformed marker the same way. */
-function dropBlocksReported(file, content, removed) {
+function dropBlocksReported(file, content, removed, slots) {
   try {
-    return dropBlocks(file, content, removed);
+    return dropBlocks(file, content, removed, { slots });
   } catch (error) {
     if (error instanceof MarkerError) fail(error.message);
     throw error;
@@ -231,6 +246,20 @@ function check(manifest) {
   for (const path of allPaths) {
     if (!existsSync(join(ROOT, path)))
       problems.push(`features.json lists "${path}", which does not exist`);
+  }
+
+  // A declared slot is what decides that a block goes whole rather than
+  // leaving its fences behind, so it has to name a block that is there.
+  for (const [id, feature] of Object.entries(manifest.features)) {
+    for (const [file, anchors] of Object.entries(feature.slots ?? {})) {
+      const content = existsSync(join(ROOT, file)) ? readFileSync(join(ROOT, file), 'utf8') : '';
+      for (const anchor of anchors) {
+        if (!idsOnSlot(file, content, anchor).has(id))
+          problems.push(
+            `features.json: "${id}" declares a block on ${file} → ${anchor}, and there is none`,
+          );
+      }
+    }
   }
 
   const owners = [
@@ -474,6 +503,13 @@ function dropFromManifest(features, shared, deleted, dryRun) {
       if (next === null) fail(`features.json: "${id}" has no path "${path}" to drop`);
       text = next.text;
     }
+    // And the slots it declares in a file that went with them.
+    for (const file of Object.keys(feature.slots ?? {})) {
+      if (!inside(file)) continue;
+      const next = deleteJsonEntry(text, ['features', id, 'slots'], file);
+      if (next === null) fail(`features.json: "${id}" declares no slots in "${file}" to drop`);
+      text = next;
+    }
   }
 
   // Whatever shared paths remain, the departed are no longer among their
@@ -525,7 +561,7 @@ function prune(manifest, removedIds, options) {
     if (!isText(buffer)) continue;
     const content = buffer.toString('utf8');
     if (!content.includes('flama:begin')) continue;
-    const text = dropBlocksReported(file, content, removed);
+    const text = dropBlocksReported(file, content, removed, declaredSlots(manifest, removed, file));
     if (text === null) continue;
     console.log(`  edit   ${file}`);
     edited.push(file);

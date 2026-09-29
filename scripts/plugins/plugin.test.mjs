@@ -40,6 +40,7 @@ test('featureEntry keeps the manifest key order and drops empty lists', () => {
     'plugin',
     'identifiers',
     'paths',
+    'slots',
     'scripts',
   ]);
   assert.equal(entry.plugin, true);
@@ -242,6 +243,8 @@ const BETA = {
       // A key of the file itself, as a translation namespace is.
       { file: 'data.json', path: [], set: { beta: { on: true } }, setAt: [1] },
       { file: 'package.json', path: ['scripts'], set: { beta: 'run beta' }, setAt: [0] },
+      // A file the formatter lays out with every array broken says so.
+      { file: 'package.json', path: [], set: { files: ['beta'] }, setAt: [1], expand: true },
     ],
   },
   files: { beta: 'files/beta' },
@@ -297,6 +300,12 @@ test('an install joins neededBy, edits JSON both ways, and widens the shared blo
   assert.equal(manifest.features.beta.plugin, true);
   // A shared path is joined, not owned: alpha keeps it too.
   assert.deepEqual(manifest.shared.kit.neededBy, ['alpha', 'beta']);
+  // The blocks it put on a slot are recorded, so its removal takes those out
+  // whole and knows every other fence of its is a hole to keep.
+  assert.deepEqual(manifest.features.beta.slots, {
+    'config.txt': ['the-slot'],
+    'slots.txt': ['own-slot'],
+  });
 
   // The JSON edits ran backwards, each at its own recorded position — `at` for
   // the array value, `setAt` for the object key, so neither reads the other's.
@@ -306,6 +315,10 @@ test('an install joins neededBy, edits JSON both ways, and widens the shared blo
   assert.deepEqual(
     Object.keys(JSON.parse(readFileSync(join(project, 'package.json'), 'utf8')).scripts),
     ['beta'],
+  );
+  assert.match(
+    readFileSync(join(project, 'package.json'), 'utf8'),
+    /"files": \[\n {4}"beta"\n {2}\]/,
   );
 
   // The co-owned block gained an owner; its body is untouched.
@@ -344,6 +357,43 @@ test('removing the plugin returns the project to its exact bytes', () => {
 
   const dirty = status();
   assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
+});
+
+test('pruning a feature takes the slots another declares in the files that went with it', () => {
+  const project = fixture();
+  // A slot inside alpha's tree, which beta fills.
+  writeFileSync(join(project, 'alpha', 'conf.txt'), '# flama:plugins alpha-slot\n');
+  execFileSync('git', ['-C', project, 'add', '-A']);
+  execFileSync('git', [
+    '-C',
+    project,
+    '-c',
+    'user.name=t',
+    '-c',
+    'user.email=t@t',
+    'commit',
+    '-qm',
+    'slot',
+  ]);
+  const manifest = {
+    ...BETA,
+    blocks: [
+      ...BETA.blocks,
+      { file: 'alpha/conf.txt', anchor: 'alpha-slot', source: 'blocks/own.txt' },
+    ],
+  };
+  assert.equal(install(project, [], manifest).result.code, 0);
+  const catalog = join(project, 'scripts/starter/features.json');
+  assert.deepEqual(
+    JSON.parse(readFileSync(catalog, 'utf8')).features.beta.slots['alpha/conf.txt'],
+    ['alpha-slot'],
+  );
+
+  const prune = join(project, 'scripts', 'starter', 'prune.mjs');
+  execFileSync('node', [prune, '--without', 'alpha', '--no-install'], { env: FIXTURE_ENV });
+  const slots = JSON.parse(readFileSync(catalog, 'utf8')).features.beta.slots;
+  assert.deepEqual(Object.keys(slots), ['config.txt', 'slots.txt']);
+  execFileSync('node', [prune, '--check'], { env: FIXTURE_ENV });
 });
 
 test('a feature that shapes generated files says how to rebuild them, both ways', () => {

@@ -20,7 +20,6 @@
     "check:structure": "node scripts/check-frontend-structure.mjs && node --test scripts/check-frontend-structure.test.mjs",
     "check:compiler": "node --test scripts/check-react-compiler.test.mjs && node scripts/check-react-compiler.mjs",
     "ci:local": "node scripts/ci/local.mjs",
-    "check:flags": "node --no-warnings scripts/check-feature-flags.mjs && node --no-warnings --test scripts/check-feature-flags.test.mjs",
     "test:scripts": "node --test scripts/lib/*.test.mjs scripts/plugins/*.test.mjs scripts/ci/*.test.mjs",
     "plugin:add": "node scripts/plugins/plugin.mjs add",
     "plugin:remove": "node scripts/plugins/plugin.mjs remove",

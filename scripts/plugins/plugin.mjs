@@ -46,12 +46,20 @@
  *     // cannot carry a marker, and is read backwards here (see below).
  *     "feature": {
  *       "title", "summary", "identifiers", "paths",
+ *       "slots":    { "<file>": ["<anchor>"] },
+ *       //   The anchors a block of this feature sits on. The install records
+ *       //   the ones it put a block on, and the removal takes those out whole
+ *       //   and leaves every other fence as the hole a prune leaves. A
+ *       //   feature the starter ships carries the starter's declaration,
+ *       //   which says what its prune took whole where a snapshot lands.
  *       "requires": ["<feature id>"],
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],
- *       "json":     [{ "file", "path", "remove", "at", "set", "setAt" }],
+ *       "json":     [{ "file", "path", "remove", "at", "set", "setAt", "expand" }],
  *       //   A key is always declared with its value (`set`), so every edit
  *       //   runs both ways; `starter:check` keeps the value true to the file.
+ *       //   `expand` writes the value back with every array broken, for a
+ *       //   file the formatter lays out that way.
  *       "regenerate": ["generate:api-client", "generate:openapi"]
  *       //   The root scripts that rebuild the generated files this feature
  *       //   shapes — the OpenAPI document and the client — most complete
@@ -109,8 +117,10 @@ import {
   applyJsonEdits,
   insertBlocks,
   joinShared,
+  placedSlots,
   projectFeatures,
   replaySnapshots,
+  slotsBefore,
   trimCopied,
   writeFeature,
 } from './ops.mjs';
@@ -231,11 +241,12 @@ function add(manifest, options) {
 
   // Shared blocks first: putting one back can bring back the anchor an owned
   // block goes at — the bundle budgets step holds the control plane's slot.
+  const before = slotsBefore(manifest);
   const joined = joinShared(manifest, features, dryRun);
   insertBlocks(manifest, joined, features, dryRun);
   replaySnapshots(manifest, features, dryRun);
   applyJsonEdits(manifest, dryRun);
-  writeFeature(manifest, paths, dryRun);
+  writeFeature(manifest, paths, placedSlots(manifest, before), dryRun);
 
   if (dryRun) {
     console.log('\nDry run: nothing was changed.');

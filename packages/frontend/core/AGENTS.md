@@ -16,6 +16,12 @@ The layer model is [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
   (`src/di/flama-app.ts`) and a `get things()` getter beside `get auth()`.
   A module belongs here only when **both** products need it; otherwise it
   goes to `../consumer` or `../admin`.
+- A kernel module a project can go without is not in the barrels, `TOKENS`
+  or `FlamaApp`: it is a subpath of its own (`./things`, and `./things/react`
+  for its hooks) with its tokens beside it, exporting
+  `createThingsModule(config)`. An app builds it in `lib/things.ts` and adds
+  it to `FlamaApp.create({ modules })`; its hooks take the service from
+  `app.container`.
 - A new query hook → `src/react/<module>.queries.ts` next to its key factory
   (every key derived from `all`), then exported by name from
   `src/react/index.ts`. `src/modules/` never imports `src/react/`. A query

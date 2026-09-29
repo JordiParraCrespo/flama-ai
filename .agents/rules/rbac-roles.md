@@ -114,8 +114,8 @@ export class PublishArticleHttpController {
 
 ### An endpoint a client gates a destination on declares its rules once
 
-Some endpoints are the thing a client hides a link behind — members, roles,
-feature flags. Their `@CheckPolicies` is declared once, in
+Some endpoints are the thing a client hides a link behind — members, roles.
+Their `@CheckPolicies` is declared once, in
 `ENDPOINT_POLICIES` (`packages/shared/src/permissions/endpoint-policies.ts`),
 and asserted by `apps/api/src/auth/__tests__/endpoint-policies.spec.ts`: it
 checks the handler exists, that it is mounted at the path the catalog names,

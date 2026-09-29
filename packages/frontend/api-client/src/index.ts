@@ -15,7 +15,6 @@ export { OpenAPI } from './data-access/api/openapi/core/OpenAPI';
 // Services
 export { AccessGrantsApi } from './data-access/api/openapi/services/AccessGrantsApi';
 export { AuthorizationApi } from './data-access/api/openapi/services/AuthorizationApi';
-export { FeatureFlagsApi } from './data-access/api/openapi/services/FeatureFlagsApi';
 export { HealthApi } from './data-access/api/openapi/services/HealthApi';
 export { InvitationsApi } from './data-access/api/openapi/services/InvitationsApi';
 export { OrganizationInvitationsApi } from './data-access/api/openapi/services/OrganizationInvitationsApi';
@@ -39,22 +38,10 @@ export type {
   CapabilitiesResponseDto,
   ChangePasswordRequest,
   CheckSlugRequest,
-  ClientFeatureFlagsResponseDto,
   CreateAccessGrantRequest,
-  CreateFlagSegmentRequest,
   CreateOrganizationRequest,
   CreateRoleRequest,
   CreateWorkspaceRequest,
-  FeatureFlagConfigResponseDto,
-  FeatureFlagResponseDto,
-  FlagChangePaginationMetaDto,
-  FlagChangeResponseDto,
-  FlagConditionDto,
-  FlagEvaluationResponseDto,
-  FlagRuleDto,
-  FlagSegmentResponseDto,
-  FlagServeDto,
-  FlagSplitArmDto,
   FullOrganizationResponseDto,
   InvalidParamDto,
   InvitationResponseDto,
@@ -63,7 +50,6 @@ export type {
   MemberUserResponseDto,
   MyPermissionsResponseDto,
   OrganizationResponseDto,
-  PaginatedFlagChangesResponseDto,
   PaginatedRolesResponseDto,
   PaginatedUsersResponseDto,
   PaginationMetaDto,
@@ -73,9 +59,6 @@ export type {
   RolePaginationMetaDto,
   RoleResponseDto,
   SlugAvailabilityResponseDto,
-  ToggleFeatureFlagRequest,
-  UpdateFeatureFlagRequest,
-  UpdateFlagSegmentRequest,
   UpdateMemberRoleRequest,
   UpdateOrganizationRequest,
   UpdateProfileRequest,
