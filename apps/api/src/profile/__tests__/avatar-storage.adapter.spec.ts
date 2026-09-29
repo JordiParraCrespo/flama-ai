@@ -23,8 +23,8 @@ describe('AvatarStorageAdapter', () => {
 
   describe('store', () => {
     it('returns the key, not whatever the back-end returned', async () => {
-      // Local storage answers with a path and S3 with a key; persisting the key
-      // is what keeps the two back-ends interchangeable.
+      // Local storage answers with a URL and an object store may answer with the
+      // key; persisting the key is what keeps the drivers interchangeable.
       await expect(avatars.store('user-uuid', Buffer.from('x'), 'image/png', 1)).resolves.toMatch(
         /^avatars\/user-uuid\/[0-9a-f-]{36}\.png$/,
       );

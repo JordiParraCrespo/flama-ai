@@ -2,7 +2,8 @@ import type { AnalyticsProperties, AnalyticsTraits, IAnalyticsClient } from '@fl
 import PostHog from 'posthog-react-native';
 
 /**
- * PostHog adapter for the mobile app.
+ * PostHog adapter for the mobile app: `flama.ts` passes it to
+ * `FlamaApp.create({ analytics })`.
  *
  * Unlike the web adapter this constructs the SDK eagerly — there is no bundle
  * to split in a native app, and the client needs to be live before the first
@@ -37,12 +38,13 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
  * Builds the analytics client from the environment, or returns `undefined`
  * when no key is set so the app falls back to the no-op client.
  */
-export function createMobileAnalyticsClient(): IAnalyticsClient | undefined {
+export function createPostHogClient(): IAnalyticsClient | undefined {
   const apiKey = process.env.EXPO_PUBLIC_POSTHOG_KEY;
   if (!apiKey) return undefined;
 
-  // Defaults to the EU cloud region — see the web adapter for the US/self-host
-  // alternatives.
+  // Defaults to the EU cloud region. Set EXPO_PUBLIC_POSTHOG_HOST to
+  // https://us.i.posthog.com for a US project, or to your own host if
+  // self-hosting.
   const host = process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com';
 
   return new PostHogAnalyticsClient(apiKey, host);

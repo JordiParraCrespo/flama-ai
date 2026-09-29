@@ -23,8 +23,8 @@ flama/
 │   │   ├── ddd/          # DDD/hexagon building blocks (@flama/backend-ddd)
 │   │   ├── email/        # Pluggable email + React Email templates (@flama/backend-email)
 │   │   ├── i18n/         # Server-side translation + Intl formatting (@flama/backend-i18n)
-│   │   ├── queue/        # BullMQ + Bull Board (@flama/backend-queue)
-│   │   └── storage/      # File storage Local/S3 (@flama/backend-storage)
+│   │   ├── queue/        # BullMQ job queues (@flama/backend-queue)
+│   │   └── storage/      # Pluggable file storage (@flama/backend-storage)
 │   ├── tsconfig/         # Shared TypeScript configs
 │   ├── env/              # Root .env loader (@flama/env)
 │   ├── frontend/         # The React tier: logic split by product, glue split by platform

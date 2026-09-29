@@ -161,8 +161,8 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
 `query.ts`. A fourth file fails `check:structure`.
 
 - **`flama.ts`** — `FlamaApp.create({ modules: consumerModules })` with the
-  kit's `ExpoSecureStoreService` and `createMobileAnalyticsClient()`. Loading
-  the consumer modules is what makes this app that product;
+  kit's `ExpoSecureStoreService` and the PostHog client from `posthog.ts`.
+  Loading the consumer modules is what makes this app that product;
   `apps/admin-mobile` runs the same file with `adminModules`.
 - **`auth-client.ts`** — Better Auth with `expoClient({ scheme, storagePrefix:
   'flama', storage: SecureStore })`. `signUp` creates an account, and

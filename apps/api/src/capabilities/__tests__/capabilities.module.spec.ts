@@ -25,25 +25,6 @@ describe('resolveCapabilities', () => {
     expect(resolveCapabilities(complete).github_oauth).toBe(false);
   });
 
-  it('only counts s3_storage when the provider is s3 AND credentials exist', () => {
-    const credsButLocalProvider = configWith({
-      'storage.provider': 'local',
-      'storage.s3AccessKeyId': 'key',
-      'storage.s3SecretAccessKey': 'secret',
-    });
-    expect(resolveCapabilities(credsButLocalProvider).s3_storage).toBe(false);
-
-    const s3WithoutCreds = configWith({ 'storage.provider': 's3' });
-    expect(resolveCapabilities(s3WithoutCreds).s3_storage).toBe(false);
-
-    const s3Configured = configWith({
-      'storage.provider': 's3',
-      'storage.s3AccessKeyId': 'key',
-      'storage.s3SecretAccessKey': 'secret',
-    });
-    expect(resolveCapabilities(s3Configured).s3_storage).toBe(true);
-  });
-
   it('does not count the console email provider as delivery', () => {
     expect(resolveCapabilities(configWith({ 'email.provider': 'console' })).email_delivery).toBe(
       false,

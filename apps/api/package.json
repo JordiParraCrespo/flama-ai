@@ -22,7 +22,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "@aws-sdk/s3-request-presigner": "^3.1095.0",
     "@better-auth/expo": "^1.6.25",
+    "@bull-board/api": "^8.3.0",
+    "@bull-board/express": "^8.3.0",
     "@flama/auth": "workspace:*",
     "@flama/backend-authz": "workspace:*",
     "@flama/backend-cache": "workspace:*",

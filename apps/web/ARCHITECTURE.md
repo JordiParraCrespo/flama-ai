@@ -193,9 +193,9 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
 `nav.ts`. A fourth file fails `check:structure`.
 
 - **`flama.ts`** — `FlamaApp.create({ modules: consumerModules })` with the
-  kit's `LocalStorageService` and `createWebAnalyticsClient()`. Loading the
-  consumer modules is what makes this app that product; `apps/admin-web` runs
-  the same file with `adminModules`.
+  kit's `LocalStorageService` and the PostHog client from `posthog.ts`.
+  Loading the consumer modules is what makes this app that product;
+  `apps/admin-web` runs the same file with `adminModules`.
 - **`auth-client.ts`** — the Better Auth browser client. `signUp` actually
   creates an account here, and `signInSocial` passes
   `requestSignUp: intent === 'sign-up'` so only `/register` lifts the API's

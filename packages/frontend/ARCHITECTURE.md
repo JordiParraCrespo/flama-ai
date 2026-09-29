@@ -114,12 +114,13 @@ export const app = FlamaApp.create({
   apiBaseUrl,
   storage: new LocalStorageService(),      // from the kit
   authClient: webAuthClient,               // lib/auth-client.ts
-  analytics: createWebAnalyticsClient(),   // from the kit
+  analytics: createPostHogClient(),        // lib/posthog.ts
   modules: consumerModules,                // or adminModules
 });
 ```
 
-`FlamaApp` binds the kernel (`createCoreModule`, `AnalyticsModule`,
+An `analytics` client is optional: without one, events go to
+`NoopAnalyticsClient`. `FlamaApp` binds the kernel (`createCoreModule`, `AnalyticsModule`,
 `AuthModule`, `CapabilitiesModule`, `UsersModule`, `UserSettingsModule`) and
 then whatever `modules` the app passes: the product's, and any optional
 kernel module it adds beside them. `FlamaProvider` puts the app in

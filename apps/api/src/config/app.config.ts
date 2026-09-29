@@ -14,6 +14,15 @@ const schema = z.object({
   // flama:begin mobile
   mobileScheme: z.string().default('flama'),
   // flama:end mobile
+  // flama:begin bull-board
+  // **Optional capability** — the Bull Board queue dashboard at `/admin/queues`
+  // is mounted only when BOTH credentials are set, and then behind HTTP Basic
+  // auth. Absent credentials mean the dashboard is not exposed at all: its job
+  // payloads carry tokenized password-reset/invitation URLs, so it must never
+  // be public.
+  bullBoardUsername: z.string().optional(),
+  bullBoardPassword: z.string().optional(),
+  // flama:end bull-board
   // flama:plugins config-schema
   // Base of the RFC 7807 `type` URIs in error responses. Point it at wherever
   // this deployment documents its error catalog.
@@ -24,13 +33,6 @@ const schema = z.object({
   // API-token IP allowlists and audit logs record it. Never blindly trust all
   // proxies (`true`), which lets a client spoof `X-Forwarded-For`.
   trustProxy: z.coerce.number().int().min(0).default(0),
-  // **Optional capability** — the Bull Board queue dashboard at `/admin/queues`
-  // is mounted only when BOTH credentials are set, and then behind HTTP Basic
-  // auth. Absent credentials mean the dashboard is not exposed at all: its job
-  // payloads carry tokenized password-reset/invitation URLs, so it must never
-  // be public.
-  bullBoardUsername: z.string().optional(),
-  bullBoardPassword: z.string().optional(),
 });
 
 export const appConfig = registerAs('app', () =>
@@ -43,10 +45,12 @@ export const appConfig = registerAs('app', () =>
     // flama:begin mobile
     mobileScheme: 'MOBILE_SCHEME',
     // flama:end mobile
+    // flama:begin bull-board
+    bullBoardUsername: 'BULL_BOARD_USERNAME',
+    bullBoardPassword: 'BULL_BOARD_PASSWORD',
+    // flama:end bull-board
     // flama:plugins config-env
     errorTypeBaseUrl: 'ERROR_TYPE_BASE_URL',
     trustProxy: 'TRUST_PROXY',
-    bullBoardUsername: 'BULL_BOARD_USERNAME',
-    bullBoardPassword: 'BULL_BOARD_PASSWORD',
   }),
 );

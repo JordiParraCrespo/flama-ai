@@ -86,13 +86,13 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    # No runtime environment: the web image is a static Vite build served by
-    # nginx — VITE_* values are baked in at image build time. The one runtime
-    # knob is CSP_EXTRA_ORIGINS, the origins nginx's Content-Security-Policy
-    # admits beyond 'self'. The image defaults it to the PostHog EU endpoints;
-    # add it here only to widen that (another analytics region, or a
-    # VITE_API_URL that is not this origin). Setting it replaces the default
-    # rather than adding to it — see apps/web/nginx.conf.
+    # The web image is a static Vite build served by nginx — VITE_* values are
+    # baked in at image build time. The one runtime knob is CSP_EXTRA_ORIGINS,
+    # the origins nginx's Content-Security-Policy admits beyond 'self' (see
+    # apps/web/nginx.conf), read from the root `.env` like the API's settings.
+    # Unset admits none.
+    environment:
+      CSP_EXTRA_ORIGINS: ${CSP_EXTRA_ORIGINS:-}
     ports:
       - "3000:3000"
   # flama:end web

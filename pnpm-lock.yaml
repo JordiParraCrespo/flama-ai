@@ -165,9 +165,21 @@ importers:
 
   apps/api:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.1095.0
+        version: 3.1095.0
+      '@aws-sdk/s3-request-presigner':
+        specifier: ^3.1095.0
+        version: 3.1095.0
       '@better-auth/expo':
         specifier: ^1.6.25
         version: 1.6.25(@better-auth/core@1.7.4(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@3.25.76))(jose@6.2.4)(kysely@0.29.4)(nanostores@1.4.1))(better-auth@1.6.25(@opentelemetry/api@1.9.1)(next@16.3.5(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.5.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.22.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(jsdom@30.0.1(@noble/hashes@2.2.0))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))))(expo-constants@57.0.18)(expo-linking@57.0.10)(expo-network@57.0.2(expo@57.0.22)(react@19.2.3))(expo-web-browser@57.0.3(expo@57.0.22)(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3)))
+      '@bull-board/api':
+        specifier: ^8.3.0
+        version: 8.3.0(@bull-board/ui@8.3.0(bullmq@5.81.2))(bullmq@5.81.2)
+      '@bull-board/express':
+        specifier: ^8.3.0
+        version: 8.3.0(bullmq@5.81.2)
       '@flama/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -979,12 +991,6 @@ importers:
 
   packages/backend/queue:
     dependencies:
-      '@bull-board/api':
-        specifier: ^8.3.0
-        version: 8.3.0(@bull-board/ui@8.3.0(bullmq@5.81.2))(bullmq@5.81.2)
-      '@bull-board/express':
-        specifier: ^8.3.0
-        version: 8.3.0(bullmq@5.81.2)
       '@nestjs/bullmq':
         specifier: ^11.0.4
         version: 11.0.4(@nestjs/common@11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(bullmq@5.81.2)
@@ -1004,9 +1010,6 @@ importers:
       '@flama/tsconfig':
         specifier: workspace:^
         version: link:../../tsconfig
-      '@types/express':
-        specifier: ^5.0.6
-        version: 5.0.6
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -1022,12 +1025,6 @@ importers:
 
   packages/backend/storage:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.1095.0
-        version: 3.1095.0
-      '@aws-sdk/s3-request-presigner':
-        specifier: ^3.1095.0
-        version: 3.1095.0
       '@nestjs/common':
         specifier: ^11.1.28
         version: 11.1.28(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -1510,9 +1507,6 @@ importers:
       intl-pluralrules:
         specifier: 2.0.1
         version: 2.0.1
-      posthog-react-native:
-        specifier: ^4.11.2
-        version: 4.60.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3)))(@react-navigation/native@7.3.18(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(expo-file-system@57.0.7(expo@57.0.22)(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3)))(expo-localization@57.0.2(expo@57.0.22)(react@19.2.3))(react-native-safe-area-context@5.7.0(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native-svg@15.15.4(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))
       react-native-nitro-fetch:
         specifier: 1.7.0
         version: 1.7.0(react-native-nitro-modules@0.37.1(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native-worklets@0.11.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
@@ -1652,9 +1646,6 @@ importers:
       i18next-browser-languagedetector:
         specifier: ^8.2.1
         version: 8.2.1
-      posthog-js:
-        specifier: ^1.432.0
-        version: 1.432.0(@types/react@19.2.14)(react@19.2.3)
     devDependencies:
       '@flama/tsconfig':
         specifier: workspace:^

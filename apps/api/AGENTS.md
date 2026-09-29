@@ -81,8 +81,9 @@ a slice.
 ## Config
 
 Config is composed from `registerAs` factories in `src/config/` (`app`,
-`database`, `redis`, `email`, `storage`, `oauth`), loaded in
-`AppModule` and read via `ConfigService`. Optional-credential config (OAuth,
+`database`, `redis`, `email`, `storage`, `oauth`), listed once in
+`src/config/index.ts` (`configs`), loaded by `AppModule` and read via
+`ConfigService`. Optional-credential config (OAuth,
 S3, SMTP) uses genuinely optional schema keys (`z.string().optional()`,
 never a sentinel default or `getOrThrow`) so the app boots without those env
 vars; each such feature is declared in `src/capabilities/capabilities.module.ts`,

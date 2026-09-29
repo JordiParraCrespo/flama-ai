@@ -5,7 +5,7 @@ describe('CapabilitiesService', () => {
   const service = new CapabilitiesService({
     google_oauth: true,
     github_oauth: false,
-    s3_storage: false,
+    email_delivery: false,
   });
 
   it('answers has() per capability', () => {
@@ -15,17 +15,17 @@ describe('CapabilitiesService', () => {
 
   it('splits enabled and disabled capabilities', () => {
     expect(service.enabled()).toEqual(['google_oauth']);
-    expect(service.disabled()).toEqual(['github_oauth', 's3_storage']);
+    expect(service.disabled()).toEqual(['github_oauth', 'email_delivery']);
   });
 
   it('describes the whole set on one line for the startup log', () => {
-    expect(service.describe()).toBe('google_oauth=on, github_oauth=off, s3_storage=off');
+    expect(service.describe()).toBe('google_oauth=on, github_oauth=off, email_delivery=off');
   });
 
   it('pick() narrows the snapshot to the given capabilities only', () => {
-    expect(service.pick(['google_oauth', 's3_storage'])).toEqual({
+    expect(service.pick(['google_oauth', 'email_delivery'])).toEqual({
       google_oauth: true,
-      s3_storage: false,
+      email_delivery: false,
     });
   });
 
@@ -36,9 +36,9 @@ describe('CapabilitiesService', () => {
   });
 
   it('is immutable after construction, even via the constructor argument', () => {
-    const input = { s3_storage: false };
+    const input = { email_delivery: false };
     const fromInput = new CapabilitiesService(input);
-    input.s3_storage = true;
-    expect(fromInput.has('s3_storage')).toBe(false);
+    input.email_delivery = true;
+    expect(fromInput.has('email_delivery')).toBe(false);
   });
 });

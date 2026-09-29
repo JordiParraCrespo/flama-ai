@@ -127,6 +127,127 @@
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]
+    },
+    "bull-board": {
+      "title": "Bull Board queue dashboard",
+      "summary": "apps/api/src/bull-board — `BullBoardModule`, the Bull Board dashboard over the API's queues at `/admin/queues`, mounted behind HTTP Basic auth only when `BULL_BOARD_USERNAME` and `BULL_BOARD_PASSWORD` are set",
+      "identifiers": [
+        "apps/api/src/bull-board",
+        "BullBoardModule",
+        "mountBullBoard",
+        "@bull-board",
+        "bullBoardUsername",
+        "bullBoardPassword",
+        "BULL_BOARD_USERNAME",
+        "BULL_BOARD_PASSWORD",
+        "/admin/queues"
+      ],
+      "paths": ["apps/api/src/bull-board"],
+      "slots": {
+        ".env.example": ["api-integrations-env"],
+        "apps/api/src/app.module.ts": ["api-module-imports", "api-modules"],
+        "apps/api/src/config/app.config.ts": ["config-env", "config-schema"]
+      },
+      "json": [
+        {
+          "file": "apps/api/package.json",
+          "path": ["dependencies"],
+          "set": {
+            "@bull-board/api": "^8.3.0",
+            "@bull-board/express": "^8.3.0"
+          },
+          "setAt": [3, 4]
+        }
+      ]
+    },
+    "posthog": {
+      "title": "PostHog analytics",
+      "summary": "The PostHog adapters behind the kernel's analytics port — `createPostHogClient` in each app's own `posthog.ts`, which its `flama.ts` passes to `FlamaApp.create({ analytics })` and which reads `VITE_POSTHOG_KEY` / `EXPO_PUBLIC_POSTHOG_KEY`; without them every event goes to the no-op client",
+      "identifiers": [
+        "PostHog",
+        "posthog-js",
+        "posthog-react-native",
+        "posthog.com",
+        "createPostHogClient",
+        "VITE_POSTHOG_KEY",
+        "VITE_POSTHOG_HOST",
+        "EXPO_PUBLIC_POSTHOG_KEY",
+        "EXPO_PUBLIC_POSTHOG_HOST"
+      ],
+      "paths": [
+        "apps/mobile/lib/posthog.ts",
+        "apps/mobile/types/posthog-env.d.ts",
+        "apps/web/src/lib/posthog.ts",
+        "apps/web/src/types/posthog-env.d.ts"
+      ],
+      "slots": {
+        ".env.example": ["mobile-env", "web-env"],
+        "apps/mobile/lib/flama.ts": ["app-config", "app-imports"],
+        "apps/web/src/lib/flama.ts": ["app-config", "app-imports"],
+        "scripts/check-frontend-structure.mjs": ["app-config-files"]
+      },
+      "json": [
+        {
+          "file": "apps/web/package.json",
+          "path": ["dependencies"],
+          "set": {
+            "posthog-js": "^1.432.0"
+          },
+          "setAt": [18],
+          "needs": "web"
+        },
+        {
+          "file": "apps/mobile/package.json",
+          "path": ["dependencies"],
+          "set": {
+            "posthog-react-native": "^4.11.2"
+          },
+          "setAt": [38],
+          "needs": "mobile"
+        }
+      ]
+    },
+    "storage-s3": {
+      "title": "S3 storage",
+      "summary": "apps/api/src/config/s3-storage.service.ts — the S3-compatible storage driver (AWS, Hetzner Object Storage, MinIO) with presigned reads, in the API's storage drivers as `STORAGE_PROVIDER=s3`; its `s3` config section, its `S3_*` settings and the `s3_storage` capability",
+      "identifiers": [
+        "S3",
+        "MinIO",
+        "S3StorageService",
+        "s3-storage.service",
+        "s3Config",
+        "s3.config",
+        "s3_storage",
+        "@aws-sdk/client-s3",
+        "@aws-sdk/s3-request-presigner",
+        "S3_ENDPOINT",
+        "S3_REGION",
+        "S3_BUCKET",
+        "S3_ACCESS_KEY_ID",
+        "S3_SECRET_ACCESS_KEY"
+      ],
+      "paths": [
+        "apps/api/src/capabilities/__tests__/s3-storage.capability.spec.ts",
+        "apps/api/src/config/s3-storage.service.ts",
+        "apps/api/src/config/s3.config.ts"
+      ],
+      "slots": {
+        ".env.example": ["api-integrations-env"],
+        "apps/api/src/capabilities/capabilities.module.ts": ["capabilities"],
+        "apps/api/src/config/index.ts": ["api-config", "api-config-imports"],
+        "apps/api/src/config/storage.config.ts": ["storage-driver-imports", "storage-drivers"]
+      },
+      "json": [
+        {
+          "file": "apps/api/package.json",
+          "path": ["dependencies"],
+          "set": {
+            "@aws-sdk/client-s3": "^3.1095.0",
+            "@aws-sdk/s3-request-presigner": "^3.1095.0"
+          },
+          "setAt": [0, 1]
+        }
+      ]
     }
   },
   "shared": {

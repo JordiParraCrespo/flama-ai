@@ -5,7 +5,6 @@ import { DataSource, IsNull } from 'typeorm';
 // flama:begin api-tokens
 // flama:end api-tokens
 import { Account } from '../auth/database/account.orm-entity';
-// flama:plugins entity-imports
 import { Session } from '../auth/database/session.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
 import { auth, closeAuthConnections } from '../auth/infrastructure/better-auth.config';
@@ -23,6 +22,7 @@ import { UserSettingsOrmEntity } from '../profile/database/user-settings.orm-ent
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
+// flama:plugins entity-imports
 
 // flama:begin organizations
 import { seedOrganization } from './seed-organization';

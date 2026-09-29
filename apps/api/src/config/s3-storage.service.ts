@@ -5,9 +5,9 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { StorageService } from '@flama/backend-storage';
 import { Injectable } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import { StorageService } from './storage.service';
 
 @Injectable()
 export class S3StorageService extends StorageService {
@@ -16,13 +16,13 @@ export class S3StorageService extends StorageService {
 
   constructor(private readonly configService: ConfigService) {
     super();
-    this.bucket = this.configService.get('storage.s3Bucket') || 'flama';
+    this.bucket = this.configService.get('s3.bucket') || 'flama';
     this.s3 = new S3Client({
-      region: this.configService.get('storage.s3Region') || 'auto',
-      endpoint: this.configService.get('storage.s3Endpoint'),
+      region: this.configService.get('s3.region') || 'auto',
+      endpoint: this.configService.get('s3.endpoint'),
       credentials: {
-        accessKeyId: this.configService.get('storage.s3AccessKeyId') || '',
-        secretAccessKey: this.configService.get('storage.s3SecretAccessKey') || '',
+        accessKeyId: this.configService.get('s3.accessKeyId') || '',
+        secretAccessKey: this.configService.get('s3.secretAccessKey') || '',
       },
       forcePathStyle: true,
     });

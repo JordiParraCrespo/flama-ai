@@ -23,8 +23,7 @@
     "@flama/shared": "workspace:*",
     "@flama/translations": "workspace:*",
     "@hookform/resolvers": "^5.9.1",
-    "i18next-browser-languagedetector": "^8.2.1",
-    "posthog-js": "^1.432.0"
+    "i18next-browser-languagedetector": "^8.2.1"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",

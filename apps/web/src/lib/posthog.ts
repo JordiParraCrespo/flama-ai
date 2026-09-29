@@ -20,7 +20,8 @@ function stripUrlSecrets(result: CaptureResult | null): CaptureResult | null {
 }
 
 /**
- * PostHog adapter for the web app.
+ * PostHog adapter for the web app: `flama.ts` passes it to
+ * `FlamaApp.create({ analytics })`.
  *
  * The SDK is loaded with a dynamic `import()` rather than a static one, so it
  * lands in its own chunk and is fetched only when a project key is configured.
@@ -37,6 +38,7 @@ function stripUrlSecrets(result: CaptureResult | null): CaptureResult | null {
  */
 class PostHogAnalyticsClient implements IAnalyticsClient {
   private posthog: PostHog | null = null;
+  private failed = false;
   private pending: Array<(posthog: PostHog) => void> = [];
 
   constructor(
@@ -67,9 +69,12 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
       for (const call of this.pending) call(posthog);
       this.pending = [];
     } catch (error) {
-      // A blocked or failed SDK load must not break the app. Every subsequent
-      // call stays queued against a client that never arrives, which is
-      // functionally the no-op client.
+      // A blocked or failed SDK load must not break the app, and it is never
+      // retried: drop what was queued and every call after it, so a
+      // long-lived tab behaves as the no-op client instead of holding events
+      // for a client that never arrives.
+      this.failed = true;
+      this.pending = [];
       console.warn('[analytics] PostHog failed to load', error);
     }
   }
@@ -77,7 +82,7 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
   private enqueue(call: (posthog: PostHog) => void): void {
     if (this.posthog) {
       call(this.posthog);
-    } else {
+    } else if (!this.failed) {
       this.pending.push(call);
     }
   }
@@ -108,7 +113,7 @@ class PostHogAnalyticsClient implements IAnalyticsClient {
  * has to run with no analytics account, so an unset key is a supported state,
  * not a misconfiguration.
  */
-export function createWebAnalyticsClient(): IAnalyticsClient | undefined {
+export function createPostHogClient(): IAnalyticsClient | undefined {
   const apiKey = import.meta.env.VITE_POSTHOG_KEY;
   if (!apiKey) return undefined;
 

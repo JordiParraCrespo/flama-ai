@@ -35,7 +35,6 @@
     "@flama/translations": "workspace:*",
     "@hookform/resolvers": "^5.7.1",
     "intl-pluralrules": "2.0.1",
-    "posthog-react-native": "^4.11.2",
     "react-native-nitro-fetch": "1.7.0",
     "zustand": "^5.0.14"
   },

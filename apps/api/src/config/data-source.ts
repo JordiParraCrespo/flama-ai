@@ -4,13 +4,11 @@ import { DataSource } from 'typeorm';
 // flama:begin api-tokens
 // flama:end api-tokens
 import { Account } from '../auth/database/account.orm-entity';
-// flama:plugins entity-imports
 import { Session } from '../auth/database/session.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
 // flama:begin organizations
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
 // flama:end organizations
-// flama:plugins entity-imports-b-n
 // flama:begin organizations
 import { InvitationOrmEntity } from '../organizations/database/invitation.orm-entity';
 import { MemberOrmEntity } from '../organizations/database/member.orm-entity';
@@ -22,6 +20,7 @@ import { UserSettingsOrmEntity } from '../profile/database/user-settings.orm-ent
 import { RoleOrmEntity } from '../roles/database/role.orm-entity';
 import { UserRoleOrmEntity } from '../roles/database/user-role.orm-entity';
 import { UserOrmEntity } from '../users/database/user.orm-entity';
+// flama:plugins entity-imports
 
 /**
  * Data source used by the TypeORM CLI (`migration:generate` / `migration:run` /

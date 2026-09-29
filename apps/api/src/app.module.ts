@@ -29,19 +29,10 @@ import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
 import { auth } from './auth/infrastructure/better-auth.config';
 import { AuthzModule } from './authz/authz.module';
-// flama:plugins api-module-imports
 import { CapabilitiesModule } from './capabilities/capabilities.module';
-import {
-  appConfig,
-  databaseConfig,
-  emailConfig,
-  oauthConfig,
-  redisConfig,
-  storageConfig,
-} from './config';
-// flama:plugins api-config-imports
+import { configs } from './config';
+import { storageDrivers } from './config/storage.config';
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
-// flama:plugins api-module-imports-d-g
 import { HealthModule } from './health/health.module';
 // flama:begin organizations
 import { OrganizationsModule } from './organizations/organizations.module';
@@ -54,20 +45,17 @@ import { CredentialThrottlerGuard } from './throttling/guards/credential-throttl
 import { RedisThrottlerStorage } from './throttling/infrastructure/redis-throttler.adapter';
 import { ThrottlingModule } from './throttling/throttling.module';
 import { UsersModule } from './users/user.module';
+// flama:begin bull-board
+
+import { BullBoardModule } from './bull-board/bull-board.module';
+// flama:end bull-board
+// flama:plugins api-module-imports
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [
-        appConfig,
-        databaseConfig,
-        redisConfig,
-        emailConfig,
-        storageConfig,
-        oauthConfig,
-        // flama:plugins api-config
-      ],
+      load: configs,
     }),
     // Request logging with hardened defaults (credential redaction, no
     // headers/query/bodies) plus the interceptor that attaches userId and
@@ -142,7 +130,7 @@ import { UsersModule } from './users/user.module';
     EventEmitterModule.forRoot(),
     CapabilitiesModule,
     EmailModule.register(),
-    StorageModule.register(),
+    StorageModule.register(storageDrivers),
     CacheModule.register(),
     // `bodyParser.rawBody` attaches the raw request buffer to `req.rawBody`,
     // which a webhook controller needs to verify the sender's signature.
@@ -186,6 +174,9 @@ import { UsersModule } from './users/user.module';
     // flama:begin organizations
     OrganizationsModule,
     // flama:end organizations
+    // flama:begin bull-board
+    BullBoardModule,
+    // flama:end bull-board
     // flama:plugins api-modules
   ],
   providers: [

@@ -2,8 +2,6 @@ import { timingSafeEqual } from 'node:crypto';
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { ExpressAdapter } from '@bull-board/express';
-import { getQueueToken } from '@nestjs/bullmq';
-import type { INestApplication } from '@nestjs/common';
 import type { Queue } from 'bullmq';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -22,6 +20,11 @@ export interface BullBoardOptions {
    * unauthenticated dashboard is an account-takeover surface.
    */
   auth?: BullBoardAuth;
+}
+
+/** The part of the Express app the dashboard is mounted on. */
+export interface BullBoardHost {
+  use: (path: string, ...handlers: unknown[]) => void;
 }
 
 /** Constant-time comparison that tolerates differing lengths. */
@@ -54,19 +57,19 @@ function basicAuthMiddleware(auth: BullBoardAuth) {
 }
 
 /**
- * Mount the Bull Board dashboard. Returns `true` if it was mounted, `false` if
- * it was skipped because no credentials were supplied — the caller can log the
- * outcome so a self-hoster learns the dashboard is off.
+ * Mount the Bull Board dashboard over `queues`. Returns `true` if it was
+ * mounted, `false` if it was skipped because no credentials were supplied — the
+ * caller logs the outcome so a self-hoster learns the dashboard is off.
  *
- * The dashboard is raw Express middleware attached to the HTTP adapter, so
- * NestJS global guards (`AuthGuard`/`ScopesGuard`) never see it. That is exactly
- * why it must carry its own auth: without the Basic-auth gate it would expose
- * every queued job — including password-reset and invitation tokens — to anyone
- * who can reach the host.
+ * The dashboard is raw Express middleware on the HTTP adapter, so NestJS global
+ * guards (`AuthGuard`/`ScopesGuard`) never see it. That is exactly why it must
+ * carry its own auth: without the Basic-auth gate it would expose every queued
+ * job — including password-reset and invitation tokens — to anyone who can
+ * reach the host.
  */
-export function setupBullBoard(
-  app: INestApplication,
-  queueNames: string[],
+export function mountBullBoard(
+  host: BullBoardHost,
+  queues: Queue[],
   options: BullBoardOptions = {},
 ): boolean {
   const basePath = options.basePath ?? '/admin/queues';
@@ -74,20 +77,10 @@ export function setupBullBoard(
 
   const serverAdapter = new ExpressAdapter();
   serverAdapter.setBasePath(basePath);
+  createBullBoard({ queues: queues.map((queue) => new BullMQAdapter(queue)), serverAdapter });
 
-  const queues = queueNames.map((name) => {
-    const queue = app.get<Queue>(getQueueToken(name));
-    return new BullMQAdapter(queue);
-  });
-
-  createBullBoard({ queues, serverAdapter });
-
-  // Mount on the underlying Express instance: its `use` is variadic, so the
-  // Basic-auth gate runs before the dashboard router. Nest's abstract adapter
-  // `use` is typed for at most two arguments.
-  const expressApp = app.getHttpAdapter().getInstance() as {
-    use: (path: string, ...handlers: unknown[]) => void;
-  };
-  expressApp.use(basePath, basicAuthMiddleware(options.auth), serverAdapter.getRouter());
+  // Express's `use` is variadic, so the Basic-auth gate runs before the
+  // dashboard router.
+  host.use(basePath, basicAuthMiddleware(options.auth), serverAdapter.getRouter());
   return true;
 }

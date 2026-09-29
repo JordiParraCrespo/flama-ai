@@ -35,7 +35,7 @@ Everything is re-exported from the package root (`src/index.ts`):
 - **i18n** — `i18n`, `i18nReady`, `LOCALE_STORAGE_KEY`, `LanguageSwitcher`,
   `useLocale`, `useApplyUserSettings`, the date formatters
   (`formatMediumDate`, …) and the person-name helpers.
-- **analytics** — `PageViewTracker`, `createWebAnalyticsClient`.
+- **analytics** — `PageViewTracker`.
 - **platform** — `LocalStorageService`, `useCopy`, `sanitizeRedirect`.
 - **roles** — `RolePill`.
 
