@@ -202,16 +202,14 @@ test.describe('web auth UI', () => {
     await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
   });
 
-  test('social sign-in offers no dead button', async ({ page }) => {
+  test('the login screen has no social section', async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
-    // No social section, the "not configured" note, or a working button for
-    // each configured provider are all fine; a button that cannot be used is
-    // not.
-    for (const button of await page.getByRole('button', { name: /^continue with/i }).all()) {
-      await expect(button).toBeEnabled();
-    }
+    // The app offers no social provider, so there is nothing to draw: no
+    // button, and no note about what is not configured.
+    await expect(page.getByRole('button', { name: /^continue with/i })).toHaveCount(0);
+    await expect(page.getByText(/social sign-in is not configured/i)).toHaveCount(0);
   });
 });
 

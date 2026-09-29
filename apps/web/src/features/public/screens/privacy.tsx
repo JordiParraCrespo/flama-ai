@@ -1,4 +1,4 @@
-import { useFlamaApp } from '@flama/frontend-core/react';
+import { useSocialProviders } from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
 import { LegalSection } from '@/features/public/components/legal-section';
 import { LegalPage } from '@/features/public/sections/legal-page';
@@ -7,7 +7,7 @@ export function PrivacyScreen() {
   const { t } = useTranslation();
   // What a social sign-in shares is only this policy's business when the app
   // offers one.
-  const socialSignIn = useFlamaApp().socialProviders.length > 0;
+  const socialSignIn = useSocialProviders().offered.length > 0;
 
   return (
     <LegalPage

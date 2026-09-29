@@ -1,6 +1,6 @@
-import { Button } from '@flama/design-system-web';
+import { Button, cn } from '@flama/design-system-web';
 import { ArrowRight, KeyRound, ShieldCheck, UsersRound } from '@flama/design-system-web/icons';
-import { useFlamaApp } from '@flama/frontend-core/react';
+import { useSocialProviders } from '@flama/frontend-core/react';
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { PublicSiteLayout } from '@/features/public/sections/public-site-layout';
@@ -8,7 +8,7 @@ import { PublicSiteLayout } from '@/features/public/sections/public-site-layout'
 export function AboutScreen() {
   const { t } = useTranslation();
   // The note on what a social sign-in shares, only when the app offers one.
-  const socialSignIn = useFlamaApp().socialProviders.length > 0;
+  const socialSignIn = useSocialProviders().offered.length > 0;
   const features = [
     { key: 'team', icon: UsersRound },
     { key: 'access', icon: ShieldCheck },
@@ -17,7 +17,13 @@ export function AboutScreen() {
 
   return (
     <PublicSiteLayout>
-      <section className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-8 lg:py-28">
+      <section
+        className={cn(
+          'mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:items-center lg:px-8 lg:py-28',
+          // Two columns only when the aside is there to fill the second.
+          socialSignIn && 'lg:grid-cols-[1.2fr_0.8fr]',
+        )}
+      >
         <div>
           <p className="mb-5 text-sm font-medium tracking-wide text-accent-blue uppercase">
             {t('public.home.eyebrow')}
