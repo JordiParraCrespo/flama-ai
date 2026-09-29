@@ -2,6 +2,9 @@ import { CapabilitiesService } from '@flama/backend-core';
 import { Global, Logger, Module, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+/** Whether this deployment has a capability, read from its config. */
+type CapabilityCheck = (config: ConfigService) => boolean;
+
 /**
  * Every optional capability a deployment may have, and what turns it on — the
  * one list. Its names are the `DeploymentCapability` type, the startup log and
@@ -20,7 +23,7 @@ const CAPABILITIES = {
   github_oauth: (config: ConfigService) =>
     Boolean(config.get('oauth.github.clientId') && config.get('oauth.github.clientSecret')),
   // flama:plugins capabilities
-} satisfies Record<string, (config: ConfigService) => boolean>;
+} satisfies Record<string, CapabilityCheck>;
 
 export type DeploymentCapability = keyof typeof CAPABILITIES;
 
@@ -32,8 +35,11 @@ export type DeploymentCapabilities = Record<DeploymentCapability, boolean>;
 
 /** Resolves every capability in the table from config, once at boot. */
 export function resolveCapabilities(configService: ConfigService): DeploymentCapabilities {
+  // Widened for the walk: a table with no rows would otherwise type its
+  // entries as `unknown`.
+  const checks: Record<string, CapabilityCheck> = CAPABILITIES;
   return Object.fromEntries(
-    Object.entries(CAPABILITIES).map(([name, resolve]) => [name, resolve(configService)]),
+    Object.entries(checks).map(([name, resolve]) => [name, resolve(configService)]),
   ) as DeploymentCapabilities;
 }
 
