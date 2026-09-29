@@ -103,10 +103,8 @@ boundaries, the `AuthGate` section. The colours come from `global.css`
   watches the password field so a keystroke re-renders the checklist and the
   button it gates, not the form.
 - **An effect synchronises with something outside React, and says what.** Biome
-  forbids `useEffect` outside `hooks/`, the root layout included: a store
-  outside React is read with `useSyncExternalStore`, whose subscription is
-  where anything it must start begins — `useConfig` in `lib/remote-config.ts`
-  starts the remote config fetch there.
+  forbids `useEffect` outside `hooks/`, the root layout included; a store
+  outside React is read with `useSyncExternalStore`.
 - **The React Compiler is on** (`experiments: { reactCompiler: true }` in
   `app.config.ts`). No `useMemo`, `useCallback` or `memo` outside `hooks/`;
   Biome forbids the import.
@@ -158,7 +156,7 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
 ## What is deliberately per-app
 
 `lib/` holds configuration, never helpers: `flama.ts`, `auth-client.ts`,
-`query.ts`, `remote-config.ts`. A fifth file fails `check:structure`.
+`query.ts`. A fourth file fails `check:structure`.
 
 - **`flama.ts`** — `FlamaApp.create({ modules: consumerModules })` with the
   kit's `ExpoSecureStoreService`. It passes no `analytics` client, so events
@@ -179,8 +177,3 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
   the profile never reaches the on-device MMKV cache, on top of the kernel's `auth` and `userSettings`.
   `apps/admin-mobile` calls the same factory with no argument, because the
   admin product names none.
-- **`remote-config.ts`** — the app's tunables: `AppConfig`, their defaults in
-  `staticConfig`, and the kernel's `ConfigManager` over them, with the last
-  document cached in MMKV and a fetch of `EXPO_PUBLIC_CONFIG_URL` on top.
-  `useConfig()` or `useConfig('some.path')` reads it and re-renders when the
-  fetch lands; the first reader starts that fetch.

@@ -44,9 +44,6 @@ const APP_CONFIG_FILES = [
   'auth-client.ts',
   'nav.ts',
   'query.ts',
-  // flama:begin remote-config
-  'remote-config.ts',
-  // flama:end remote-config
   // flama:plugins app-config-files
 ];
 

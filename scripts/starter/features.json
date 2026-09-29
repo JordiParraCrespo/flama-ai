@@ -127,17 +127,6 @@
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]
-    },
-    "remote-config": {
-      "title": "Mobile remote config",
-      "summary": "apps/mobile/lib/remote-config.ts — the app's tunables (`AppConfig` and their defaults) under the kernel's `ConfigManager`, cached in MMKV and refreshed from the JSON document at `EXPO_PUBLIC_CONFIG_URL`; `useConfig()` reads them and its first reader starts the fetch",
-      "identifiers": ["remote-config", "configManager", "useConfig", "EXPO_PUBLIC_CONFIG_URL"],
-      "paths": ["apps/mobile/lib/remote-config.ts", "apps/mobile/types/remote-config-env.d.ts"],
-      "slots": {
-        ".env.example": ["mobile-env"],
-        "scripts/check-frontend-structure.mjs": ["app-config-files"]
-      },
-      "requires": ["mobile"]
     }
   },
   "shared": {
