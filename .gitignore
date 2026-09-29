@@ -41,7 +41,7 @@ docker/**/*.log
 # Test
 coverage/
 
-# Sentry
+# sentry-cli's local config, which holds an auth token
 .sentryclirc
 
 # pnpm
