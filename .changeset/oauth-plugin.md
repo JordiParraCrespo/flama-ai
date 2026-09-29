@@ -5,7 +5,7 @@
 "@flama/frontend-core": minor
 "@flama/frontend-web": major
 "@flama/frontend-mobile": major
-"@flama/shared": minor
+"@flama/shared": major
 "@flama/api-client": major
 "@flama/translations": major
 ---
