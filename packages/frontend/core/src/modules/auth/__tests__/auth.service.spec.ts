@@ -130,7 +130,8 @@ describe('AuthService analytics', () => {
     await service.restoreSession();
 
     expect(analytics.capture).toHaveBeenCalledWith(ANALYTICS_EVENTS.USER_SIGNED_IN, {
-      method: 'alpha',
+      method: 'social',
+      provider: 'alpha',
     });
   });
 

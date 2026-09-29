@@ -18,6 +18,7 @@ export {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './components/ui/alert-dialog';
+export { AppIcon } from './components/ui/app-icon';
 export type { ApprovalStatus } from './components/ui/approval';
 export {
   Approval,

@@ -8,7 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { SocialAuthIntent, SocialProvider } from '../modules/auth/auth.client';
+import type { SocialAuthIntent } from '../modules/auth/auth.client';
 import { useDeploymentCapabilities } from './capabilities.queries';
 import { useFlamaApp } from './context';
 import { withCacheOnSuccess } from './mutations';
@@ -54,7 +54,8 @@ export function useSessionRestore(
  * identity it has never seen unless the caller asked for a sign-up.
  */
 export interface SocialLoginVariables {
-  provider: SocialProvider;
+  /** The provider's id, as Better Auth knows it. */
+  provider: string;
   /** Defaults to `'sign-in'`, which refuses an identity with no account here. */
   intent?: SocialAuthIntent;
 }

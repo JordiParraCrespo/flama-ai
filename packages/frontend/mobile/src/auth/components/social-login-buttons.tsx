@@ -1,6 +1,5 @@
-import { Alert, AlertDescription } from '@flama/design-system-mobile/alert';
+import { AppIcon } from '@flama/design-system-mobile/app-icon';
 import { Button } from '@flama/design-system-mobile/button';
-import { Info } from '@flama/design-system-mobile/icons';
 import { Text } from '@flama/design-system-mobile/text';
 import { cn } from '@flama/design-system-mobile/utils';
 import type { SocialAuthIntent } from '@flama/frontend-core';
@@ -11,16 +10,11 @@ import { AuthDivider, AuthFormError, authControlClass } from './auth-primitives'
 
 /**
  * Social sign-in section of the login and register screens: a button for each
- * provider the app offers (`FlamaApp.create({ socialProviders })`, with its
- * name and mark) that the deployment's capability read reports configured.
- * The kit names no provider; an app that offers none gets no section at all.
- * The web kit's component of the same name makes the same decisions from the
- * same hook.
- *
- * Until the capability read *succeeds* every offered provider shows, because
- * an unreachable API is not a missing configuration. The "nothing configured"
- * hint, for the self-hoster who is the one person able to fix it, only ever
- * renders from a successful read reporting none of them.
+ * provider the app offers (`FlamaApp.create({ socialProviders })`) that the
+ * deployment's capability read reports configured, drawn with the provider's
+ * name and its mark from the design system's brand set. With none to offer it
+ * renders nothing. The web kit's component of the same name makes the same
+ * decisions from the same hook.
  *
  * `intent` is what separates the two screens that render this. The API refuses
  * a provider identity it has never seen unless the caller asks for a sign-up,
@@ -40,19 +34,9 @@ export function SocialLoginButtons({
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const social = useSocialLogin({ onSuccess });
-  const { offered, available } = useSocialProviders();
+  const { available } = useSocialProviders();
 
-  if (offered.length === 0) return null;
-
-  if (available.length === 0) {
-    // A notice, not a failure — nobody signing in did anything wrong — so it is
-    // the plain `Alert`, not the destructive one.
-    return (
-      <Alert icon={Info} className="mt-4">
-        <AlertDescription>{t('auth.login.noSocialProviders')}</AlertDescription>
-      </Alert>
-    );
-  }
+  if (available.length === 0) return null;
 
   const providerButton = cn(authControlClass, 'gap-2.5');
 
@@ -68,7 +52,7 @@ export function SocialLoginButtons({
         </AuthFormError>
       ) : null}
       <View className="gap-2.5">
-        {available.map(({ id, name, mark: Mark }) => (
+        {available.map(({ id, name, icon }) => (
           <Button
             key={id}
             variant="outline"
@@ -76,7 +60,9 @@ export function SocialLoginButtons({
             onPress={() => social.mutate({ provider: id, intent })}
             className={providerButton}
           >
-            <Mark />
+            {/* A bare mark: the tile's box keeps the 17px logo centred, and
+                the negative margin gives the label back the box's padding. */}
+            <AppIcon app={icon} label={name} size={34} className="-mx-2 bg-transparent" />
             <Text>{t('auth.login.continueWith', { provider: name })}</Text>
           </Button>
         ))}

@@ -1,3 +1,4 @@
+import type { ClientCapabilities } from '@flama/shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
@@ -10,13 +11,22 @@ import { FlamaProvider } from '../context';
  * Which social buttons a sign-in screen draws. The providers are the app's
  * (made up here: the kernel names none) and the capabilities the deployment's.
  */
-const Mark = () => null;
-const alpha = { id: 'alpha', name: 'Alpha', capability: 'alpha_oauth', mark: Mark };
-const beta = { id: 'beta', name: 'Beta', capability: 'beta_oauth', mark: Mark };
+const alpha: SocialSignInProvider = {
+  id: 'alpha',
+  name: 'Alpha',
+  capability: 'alpha_oauth',
+  icon: 'alpha',
+};
+const beta: SocialSignInProvider = {
+  id: 'beta',
+  name: 'Beta',
+  capability: 'beta_oauth',
+  icon: 'beta',
+};
 
-function setup(socialProviders: unknown[], get: () => Promise<unknown>) {
+function setup(socialProviders: SocialSignInProvider[], get: () => Promise<ClientCapabilities>) {
   const app = {
-    socialProviders: socialProviders as SocialSignInProvider[],
+    socialProviders,
     capabilities: { get: vi.fn(get) },
   } as unknown as FlamaApp;
 

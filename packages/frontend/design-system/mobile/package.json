@@ -8,6 +8,7 @@
     "./accordion": "./src/components/ui/accordion.tsx",
     "./alert": "./src/components/ui/alert.tsx",
     "./alert-dialog": "./src/components/ui/alert-dialog.tsx",
+    "./app-icon": "./src/components/ui/app-icon.tsx",
     "./approval": "./src/components/ui/approval.tsx",
     "./aspect-ratio": "./src/components/ui/aspect-ratio.tsx",
     "./avatar": "./src/components/ui/avatar.tsx",

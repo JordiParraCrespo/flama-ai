@@ -1,13 +1,12 @@
 import 'reflect-metadata';
 import type { ClientCapability } from '@flama/shared';
 import { Container, type ContainerModule } from 'inversify';
-import type { ComponentType } from 'react';
 import type { AnalyticsService } from '../modules/analytics';
 import { AnalyticsModule } from '../modules/analytics';
 import type { IAnalyticsClient } from '../modules/analytics/analytics.client';
 import type { AuthService } from '../modules/auth';
 import { AuthModule } from '../modules/auth';
-import type { IAuthClient, SocialProvider } from '../modules/auth/auth.client';
+import type { IAuthClient } from '../modules/auth/auth.client';
 import type { CapabilitiesService } from '../modules/capabilities';
 import { CapabilitiesModule } from '../modules/capabilities';
 import { createCoreModule } from '../modules/core/core.module';
@@ -19,12 +18,12 @@ import { UsersModule } from '../modules/users';
 import { TOKENS } from './tokens';
 
 /**
- * A social sign-in provider the app offers: everything a kit needs to draw its
- * button, so the kits name no provider themselves.
+ * A social sign-in provider the app offers: what a kit needs to draw its
+ * button, all of it data, so the kits and the kernel name no provider.
  */
 export interface SocialSignInProvider {
   /** Better Auth's id for it, which the button starts the round-trip with. */
-  id: SocialProvider;
+  id: string;
   /** Its name on the button ("Continue with …"). A brand, so never translated. */
   name: string;
   /**
@@ -32,11 +31,8 @@ export interface SocialSignInProvider {
    * credentials; the button renders only then.
    */
   capability: ClientCapability;
-  /**
-   * Its mark, drawn beside the name. It takes no props and draws itself at
-   * the size of the kit's button icons (17px).
-   */
-  mark: ComponentType;
+  /** Its mark, by its name in the design systems' brand set (`AppIcon`'s `app`). */
+  icon: string;
 }
 
 export interface FlamaAppConfig {

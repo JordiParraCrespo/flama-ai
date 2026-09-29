@@ -1,5 +1,3 @@
-import type { SocialProvider } from '../auth/auth.client';
-
 /**
  * The event catalog.
  *
@@ -21,7 +19,7 @@ export const ANALYTICS_EVENTS = {
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
 
 /**
- * How a user authenticated, attached to sign-in/sign-up events: `password`, or
- * the id of the social provider they came through.
+ * How a user authenticated, attached to sign-in/sign-up events. A social
+ * sign-in also carries the provider's id, as the event's `provider`.
  */
-export type AuthMethod = 'password' | SocialProvider;
+export type AuthMethod = 'password' | 'social';

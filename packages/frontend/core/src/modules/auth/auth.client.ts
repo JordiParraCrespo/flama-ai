@@ -30,14 +30,6 @@ export interface SignUpParams {
 }
 
 /**
- * A social sign-in provider, by the id the API's Better Auth knows it by. The
- * kernel names none: an app lists the ones it offers when it builds its
- * `FlamaApp` (`socialProviders`), and the API reports which of them this
- * deployment has configured.
- */
-export type SocialProvider = string;
-
-/**
  * What the caller means by starting an OAuth round-trip.
  *
  * The API refuses to mint an account from a bare sign-in
@@ -55,13 +47,14 @@ export interface IAuthClient {
   /** Create an account with email and password. Rejects on failure. */
   signUp(params: SignUpParams): Promise<void>;
   /**
-   * Start the OAuth flow for a social provider. On web this redirects the
+   * Start the OAuth flow for a social provider, by the id Better Auth knows it
+   * by. On web this redirects the
    * browser; on mobile it opens an auth session and deep-links back.
    *
    * `intent` defaults to `'sign-in'`, which the API refuses for an identity
    * that has no account here. Only the register screens pass `'sign-up'`.
    */
-  signInSocial(provider: SocialProvider, intent?: SocialAuthIntent): Promise<void>;
+  signInSocial(provider: string, intent?: SocialAuthIntent): Promise<void>;
   /** Clear the current session. */
   signOut(): Promise<void>;
   /** Send a password reset email. */
