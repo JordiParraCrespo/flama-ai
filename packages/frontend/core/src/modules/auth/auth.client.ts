@@ -29,7 +29,13 @@ export interface SignUpParams {
   lastName: string;
 }
 
-export type SocialProvider = 'google' | 'github';
+/**
+ * A social sign-in provider, by the id the API's Better Auth knows it by. The
+ * kernel names none: an app lists the ones it offers when it builds its
+ * `FlamaApp` (`socialProviders`), and the API reports which of them this
+ * deployment has configured.
+ */
+export type SocialProvider = string;
 
 /**
  * What the caller means by starting an OAuth round-trip.

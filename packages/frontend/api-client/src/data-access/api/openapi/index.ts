@@ -16,7 +16,6 @@ export { $AuthzCatalogResponseDto } from './schemas/$AuthzCatalogResponseDto';
 export { $AuthzResourceDto } from './schemas/$AuthzResourceDto';
 export { $AuthzResourceGroupDto } from './schemas/$AuthzResourceGroupDto';
 export { $AuthzRuleDto } from './schemas/$AuthzRuleDto';
-export { $CapabilitiesResponseDto } from './schemas/$CapabilitiesResponseDto';
 export { $ChangePasswordRequest } from './schemas/$ChangePasswordRequest';
 export { $CheckSlugRequest } from './schemas/$CheckSlugRequest';
 export { $CreateAccessGrantRequest } from './schemas/$CreateAccessGrantRequest';

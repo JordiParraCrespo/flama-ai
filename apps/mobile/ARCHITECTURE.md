@@ -158,13 +158,14 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
 ## What is deliberately per-app
 
 `lib/` holds configuration, never helpers: `flama.ts`, `auth-client.ts`,
-`query.ts`. A fourth file fails `check:structure`.
+`query.ts`, `social-providers.tsx`. Any other file fails `check:structure`.
 
 - **`flama.ts`** — `FlamaApp.create({ modules: consumerModules })` with the
   kit's `ExpoSecureStoreService`. It passes no `analytics` client, so events
   go to the kernel's no-op one. Loading the consumer modules is what makes
   this app that product;
-  `apps/admin-mobile` runs the same file with `adminModules`.
+  `apps/admin-mobile` runs the same file with `adminModules`. It passes
+  `socialProviders` too, the list below.
 - **`auth-client.ts`** — Better Auth with `expoClient({ scheme, storagePrefix:
   'flama', storage: SecureStore })`. `signUp` creates an account, and
   `signInSocial` passes `requestSignUp: intent === 'sign-up'` so only the
@@ -179,3 +180,6 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
   the profile never reaches the on-device MMKV cache, on top of the kernel's `auth` and `userSettings`.
   `apps/admin-mobile` calls the same factory with no argument, because the
   admin product names none.
+- **`social-providers.tsx`** — the social sign-in providers the app offers,
+  Google and GitHub, with their marks; the web app's list, drawn with
+  `react-native-svg`.

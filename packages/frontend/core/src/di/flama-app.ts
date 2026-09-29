@@ -1,11 +1,13 @@
 import 'reflect-metadata';
+import type { ClientCapability } from '@flama/shared';
 import { Container, type ContainerModule } from 'inversify';
+import type { ComponentType } from 'react';
 import type { AnalyticsService } from '../modules/analytics';
 import { AnalyticsModule } from '../modules/analytics';
 import type { IAnalyticsClient } from '../modules/analytics/analytics.client';
 import type { AuthService } from '../modules/auth';
 import { AuthModule } from '../modules/auth';
-import type { IAuthClient } from '../modules/auth/auth.client';
+import type { IAuthClient, SocialProvider } from '../modules/auth/auth.client';
 import type { CapabilitiesService } from '../modules/capabilities';
 import { CapabilitiesModule } from '../modules/capabilities';
 import { createCoreModule } from '../modules/core/core.module';
@@ -15,6 +17,27 @@ import { UserSettingsModule } from '../modules/user-settings';
 import type { UsersService } from '../modules/users';
 import { UsersModule } from '../modules/users';
 import { TOKENS } from './tokens';
+
+/**
+ * A social sign-in provider the app offers: everything a kit needs to draw its
+ * button, so the kits name no provider themselves.
+ */
+export interface SocialSignInProvider {
+  /** Better Auth's id for it, which the button starts the round-trip with. */
+  id: SocialProvider;
+  /** Its name on the button ("Continue with …"). A brand, so never translated. */
+  name: string;
+  /**
+   * The client capability that is on when this deployment has its
+   * credentials; the button renders only then.
+   */
+  capability: ClientCapability;
+  /**
+   * Its mark, drawn beside the name. It takes no props and draws itself at
+   * the size of the kit's button icons (17px).
+   */
+  mark: ComponentType;
+}
 
 export interface FlamaAppConfig {
   apiBaseUrl: string;
@@ -27,6 +50,11 @@ export interface FlamaAppConfig {
    */
   analytics?: IAnalyticsClient;
   /**
+   * The social sign-in providers the app offers, in the order their buttons
+   * appear. Omit it and the sign-in screens have no social section.
+   */
+  socialProviders?: readonly SocialSignInProvider[];
+  /**
    * The product's modules: `consumerModules` from `@flama/frontend-consumer`
    * or `adminModules` from `@flama/frontend-admin`. The kernel binds what
    * every product shares (session, users, capabilities, analytics); the app
@@ -37,7 +65,11 @@ export interface FlamaAppConfig {
 }
 
 export class FlamaApp {
-  private constructor(public readonly container: Container) {}
+  private constructor(
+    public readonly container: Container,
+    /** What `socialProviders` listed, for the kits' sign-in screens. */
+    public readonly socialProviders: readonly SocialSignInProvider[],
+  ) {}
 
   static create(config: FlamaAppConfig): FlamaApp {
     const container = new Container();
@@ -59,7 +91,7 @@ export class FlamaApp {
       }
     }
 
-    return new FlamaApp(container);
+    return new FlamaApp(container, config.socialProviders ?? []);
   }
 
   get auth(): AuthService {

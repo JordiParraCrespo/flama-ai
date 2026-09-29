@@ -135,7 +135,7 @@ describe('Database schema (integration)', () => {
       );
       await db.query(
         `INSERT INTO "account" ("id", "userId", "accountId", "providerId")
-         VALUES ($1, $2, 'gh-1', 'github')`,
+         VALUES ($1, $2, 'provider-account-1', 'example')`,
         [randomUUID(), ids.user],
       );
     });
@@ -144,7 +144,7 @@ describe('Database schema (integration)', () => {
       await expect(
         db.query(
           `INSERT INTO "account" ("id", "userId", "accountId", "providerId")
-           VALUES ($1, $2, 'gh-1', 'github')`,
+           VALUES ($1, $2, 'provider-account-1', 'example')`,
           [randomUUID(), ids.admin],
         ),
       ).rejects.toThrow(/UQ_account_providerId_accountId/);

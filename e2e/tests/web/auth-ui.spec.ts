@@ -202,19 +202,15 @@ test.describe('web auth UI', () => {
     await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
   });
 
-  test('social sign-in is absent or explained when no provider is configured', async ({ page }) => {
+  test('social sign-in offers no dead button', async ({ page }) => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
-    const googleButton = page.getByRole('button', { name: /google/i });
-    const explanation = page.getByText(/social sign-in is not configured/i);
-    const hasButton = (await googleButton.count()) > 0;
-    const hasExplanation = (await explanation.count()) > 0;
-
-    // Either is fine; a dead button that throws on click is not.
-    expect(hasButton || hasExplanation).toBe(true);
-    if (hasButton) {
-      await expect(googleButton.first()).toBeEnabled();
+    // No social section, the "not configured" note, or a working button for
+    // each configured provider are all fine; a button that cannot be used is
+    // not.
+    for (const button of await page.getByRole('button', { name: /^continue with/i }).all()) {
+      await expect(button).toBeEnabled();
     }
   });
 });

@@ -1,2 +1,2 @@
-export { FlamaApp, type FlamaAppConfig } from './flama-app';
+export { FlamaApp, type FlamaAppConfig, type SocialSignInProvider } from './flama-app';
 export { TOKENS } from './tokens';

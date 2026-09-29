@@ -44,6 +44,7 @@ const APP_CONFIG_FILES = [
   'auth-client.ts',
   'nav.ts',
   'query.ts',
+  'social-providers.tsx',
   // flama:plugins app-config-files
 ];
 

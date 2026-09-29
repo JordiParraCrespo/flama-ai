@@ -68,8 +68,8 @@ export const webAuthClient: IAuthClient = {
         errorCallbackURL: url(intent === 'sign-up' ? '/register' : '/login'),
         // The API refuses a provider identity that has no account here
         // (`disableImplicitSignUp`), and this flag is the only thing that lifts
-        // that refusal. Only the register screen sets it: pressing "Continue
-        // with Google" to *sign in* must not quietly create an account.
+        // that refusal. Only the register screen sets it: pressing a provider's
+        // button to *sign in* must not quietly create an account.
         requestSignUp: intent === 'sign-up',
       }),
     );

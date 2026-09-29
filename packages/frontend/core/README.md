@@ -16,7 +16,9 @@ query-cache persistence policy, and the contracts the two products meet on.
 
 `@flama/frontend-core` (`src/index.ts`) — `config`, `di` and `modules`:
 
-- **di** — `FlamaApp`, `FlamaAppConfig`, `TOKENS`.
+- **di** — `FlamaApp`, `FlamaAppConfig`, `TOKENS`, and `SocialSignInProvider`,
+  one entry of the `socialProviders` an app offers: its id, its name, the
+  capability that says the deployment has it, and its mark.
 - **modules/analytics** — `AnalyticsService`, `AnalyticsModule`,
   `NoopAnalyticsClient`, `ANALYTICS_EVENTS`, `sanitizeUrlProperties`, the
   `IAnalyticsClient` port.
@@ -44,7 +46,9 @@ query-cache persistence policy, and the contracts the two products meet on.
 
 - `FlamaProvider`, `useFlamaApp`, `useAuthState`.
 - Session: `useLogin`, `useLogout`, `useSessionRestore`, `useSocialLogin`,
-  `useForgotPassword`, `useResetPassword`, `useChangePassword`, `authKeys`.
+  `useSocialProviders` (the social providers the app offers that the
+  deployment has configured), `useForgotPassword`, `useResetPassword`,
+  `useChangePassword`, `authKeys`.
 - Permissions: `useAbilityState` / `useAbility`, the caller's CASL ability
   rebuilt from `useMyPermissions`.
 - Locale and errors: `useLocale` (the resolved language to format in),

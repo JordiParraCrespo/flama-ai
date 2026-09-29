@@ -92,7 +92,7 @@ describe('AvatarStorageAdapter', () => {
     it('does not try to delete a provider-hosted image', async () => {
       // An absolute URL came from a social provider at sign-up — it is not ours
       // to delete, and passing it as a key would be a nonsense request.
-      await avatars.remove('https://lh3.googleusercontent.com/a/abc');
+      await avatars.remove('https://avatars.provider.example/a/abc');
 
       expect(storage.delete).not.toHaveBeenCalled();
     });
@@ -115,8 +115,8 @@ describe('AvatarStorageAdapter', () => {
     });
 
     it('passes an absolute URL straight through', async () => {
-      await expect(avatars.resolveUrl('https://lh3.googleusercontent.com/a/abc')).resolves.toBe(
-        'https://lh3.googleusercontent.com/a/abc',
+      await expect(avatars.resolveUrl('https://avatars.provider.example/a/abc')).resolves.toBe(
+        'https://avatars.provider.example/a/abc',
       );
       expect(storage.getSignedUrl).not.toHaveBeenCalled();
     });

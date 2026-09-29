@@ -1,25 +1,20 @@
 import { Alert, AlertDescription, Button, cn } from '@flama/design-system-web';
 import { Info } from '@flama/design-system-web/icons';
 import type { SocialAuthIntent } from '@flama/frontend-core';
-import {
-  useDeploymentCapabilities,
-  useErrorMessage,
-  useSocialLogin,
-} from '@flama/frontend-core/react';
+import { useErrorMessage, useSocialLogin, useSocialProviders } from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
 import { AuthDivider, authControlClass } from './auth-primitives';
-import { GithubIcon, GoogleIcon } from './provider-icons';
 
 /**
- * Social sign-in section of the login screen, driven by the deployment's
- * capability set (`GET /health/capabilities`) so only providers that are
- * actually configured render a button.
+ * Social sign-in section of the login and register screens: a button for each
+ * provider the app offers (`FlamaApp.create({ socialProviders })`, with its
+ * name and mark) that the deployment's capability read reports configured.
+ * The kit names no provider; an app that offers none gets no section at all.
  *
- * Failure semantics matter here: until the capability read *succeeds* we
- * assume every provider is available, because an unreachable API is not a
- * missing configuration. The "nothing configured" hint — which names the env
- * vars to set, for the self-hoster who is the one person able to fix it —
- * only ever renders from a successful read reporting no providers.
+ * Until the capability read *succeeds* every offered provider shows, because
+ * an unreachable API is not a missing configuration. The "nothing configured"
+ * hint, for the self-hoster who is the one person able to fix it, only ever
+ * renders from a successful read reporting none of them.
  *
  * `intent` is what separates the two screens that render this. The API refuses
  * a provider identity it has never seen unless the caller asks for a sign-up,
@@ -36,18 +31,11 @@ export function SocialLoginButtons({
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const social = useSocialLogin();
-  const { data, error } = useDeploymentCapabilities();
+  const { offered, available } = useSocialProviders();
 
-  // TanStack Query retains the last successful data after a failed refetch,
-  // so `data` alone can be stale (e.g. read before an operator enabled OAuth
-  // and restarted the API). Trust it only while the latest read succeeded;
-  // any error means "unknown", which falls back to showing every provider.
-  const capabilities = error == null ? data : undefined;
+  if (offered.length === 0) return null;
 
-  const google = capabilities?.google_oauth ?? true;
-  const github = capabilities?.github_oauth ?? true;
-
-  if (!google && !github) {
+  if (available.length === 0) {
     // A notice, not a failure — nobody signing in did anything wrong — so it is
     // the plain `Alert`, not the destructive one. It was a centred grey
     // paragraph, which is the shape this screen is not allowed to invent.
@@ -74,30 +62,19 @@ export function SocialLoginButtons({
         </Alert>
       )}
       <div className="flex flex-col gap-2.5">
-        {google && (
+        {available.map(({ id, name, mark: Mark }) => (
           <Button
+            key={id}
             variant="outline"
             type="button"
             disabled={disabled || social.isPending}
-            onClick={() => social.mutate({ provider: 'google', intent })}
+            onClick={() => social.mutate({ provider: id, intent })}
             className={providerButton}
           >
-            <GoogleIcon />
-            {t('auth.login.continueWithGoogle')}
+            <Mark />
+            {t('auth.login.continueWith', { provider: name })}
           </Button>
-        )}
-        {github && (
-          <Button
-            variant="outline"
-            type="button"
-            disabled={disabled || social.isPending}
-            onClick={() => social.mutate({ provider: 'github', intent })}
-            className={providerButton}
-          >
-            <GithubIcon />
-            {t('auth.login.continueWithGithub')}
-          </Button>
-        )}
+        ))}
       </div>
     </>
   );

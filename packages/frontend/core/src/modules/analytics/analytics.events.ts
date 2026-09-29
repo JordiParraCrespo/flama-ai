@@ -1,3 +1,5 @@
+import type { SocialProvider } from '../auth/auth.client';
+
 /**
  * The event catalog.
  *
@@ -18,5 +20,8 @@ export const ANALYTICS_EVENTS = {
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
 
-/** How a user authenticated, attached to sign-in/sign-up events. */
-export type AuthMethod = 'password' | 'google' | 'github';
+/**
+ * How a user authenticated, attached to sign-in/sign-up events: `password`, or
+ * the id of the social provider they came through.
+ */
+export type AuthMethod = 'password' | SocialProvider;
