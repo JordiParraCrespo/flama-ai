@@ -52,13 +52,12 @@ without it. Model absence honestly:
   (`src/capabilities/capabilities.module.ts`): its name and what turns it on.
   That table is the one list — the `DeploymentCapability` type, the set
   `resolveCapabilities()` computes once at boot and the startup log all read
-  it. Today it holds `email_delivery`, plus any a plugin adds (`billing`
-  brings `stripe_billing`), and the log is how a self-hoster learns what the
-  deployment can do. Only the **client-facing subset** (`CLIENT_CAPABILITIES`
-  in `@flama/shared`, each with its property on `CapabilitiesResponseDto`) is
-  served by `GET /health/capabilities`, so clients can hide UI for
-  capabilities that are off. Server-internal
-  capabilities (`email_delivery`) never go over the wire — a
+  it, so what a deployment can have is that file, and the log is how a
+  self-hoster learns what this one can do. Only the
+  **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`) is
+  served by `GET /health/capabilities`, as a map of those names to whether
+  each is on, so clients can hide UI for capabilities that are off.
+  Server-internal capabilities never go over the wire — a
   public endpoint must not describe a deployment's infrastructure beyond what
   its UI already reveals. Add a capability to `CLIENT_CAPABILITIES` only when
   a client has a UI decision hanging on it.

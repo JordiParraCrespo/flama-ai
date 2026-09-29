@@ -9,6 +9,7 @@ function configWith(values: Record<string, unknown>): ConfigService {
 describe('resolveCapabilities', () => {
   it('reports everything off on a bare install', () => {
     const bare = resolveCapabilities(configWith({}));
+    expect(bare).toMatchObject({ email_delivery: false });
     expect(Object.entries(bare).filter(([, on]) => on)).toEqual([]);
   });
 
