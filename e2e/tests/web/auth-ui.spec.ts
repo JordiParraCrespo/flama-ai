@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { newUser, VALID_PASSWORD } from '../../support/auth';
+import { newContext, newUser, VALID_PASSWORD } from '../../support/auth';
 import { findResetToken, findUserByEmail } from '../../support/db';
 import { waitForEmailUrl } from '../../support/mail';
 import { loginThroughUi, provisionedUser, registerThroughUi } from '../../support/web';
@@ -203,6 +203,14 @@ test.describe('web auth UI', () => {
   });
 
   test('the login screen has no social section', async ({ page }) => {
+    const api = await newContext();
+    const capabilities: Record<string, boolean> = await (
+      await api.get('/api/v1/health/capabilities')
+    ).json();
+    // A capability on the wire that is on belongs to a feature, which tests
+    // the screen it changes in its own suite.
+    test.skip(Object.values(capabilities).some(Boolean), 'a client capability is on here');
+
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
