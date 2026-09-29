@@ -15,7 +15,7 @@ feature has — and the concerns are layered: `platform`, `theme`, `config`,
 Two modules run code when imported and are imported for that alone:
 `@flama/frontend-mobile/polyfills` (first line of the entry file) and
 `@flama/frontend-mobile/i18n` (first line of the root layout). Both are
-listed in `package.json` `sideEffects`, with `platform/lib/sentry.ts`.
+listed in `package.json` `sideEffects`.
 
 ## What it exports
 
@@ -24,7 +24,8 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
 
 - **platform** — `createQueryPersistence` (a `QueryClient` plus MMKV-backed
   `persistOptions`), `ExpoSecureStoreService`, `storage`, `stateStorage`,
-  `queryStorage`, `Sentry`, `sentryEnabled`.
+  `queryStorage`, and `setErrorReporter`, where an app sends the errors the
+  boundaries catch (the console until it sets one).
 - **config** — `configManager`, `ConfigManagerContext`, `useConfigManager`,
   `useConfig`, `AppConfig`, `staticConfig`.
 - **forms** — `useZodResolver` and `FormField`; translated API failures come

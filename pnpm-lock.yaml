@@ -1499,9 +1499,6 @@ importers:
       '@react-navigation/native':
         specifier: ^7.3.18
         version: 7.3.18(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
-      '@sentry/react-native':
-        specifier: ~7.11.0
-        version: 7.11.0(expo@57.0.22)(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.1(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
       '@tanstack/query-async-storage-persister':
         specifier: ^5.102.8
         version: 5.102.8

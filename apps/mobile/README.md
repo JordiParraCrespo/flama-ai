@@ -38,6 +38,7 @@ pnpm --filter @flama/mobile build:dev    # EAS build (development profile)
 
 ```
 index.ts               # the nitro-fetch polyfill first, then expo-router/entry
+sentry.ts              # Sentry, set up at launch when EXPO_PUBLIC_SENTRY_DSN is set
 app/                   # expo-router routes: a default export that mounts a screen
 ├── _layout.tsx        # providers, error boundaries, AuthGate
 ├── (auth)/            # login, register, forgot-password, reset-password

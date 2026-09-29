@@ -41,9 +41,6 @@ docker/**/*.log
 # Test
 coverage/
 
-# Sentry
-.sentryclirc
-
 # pnpm
 .pnpm-debug.log
 

@@ -13,7 +13,7 @@ they disagree, fix the code or update both together. The tier-wide model is
 ## The layers
 
 ```
-  index.ts                        polyfills, then expo-router/entry
+  index.ts                        polyfills, Sentry (sentry.ts), then expo-router/entry
   app/                            expo-router file routes
       │                           a default export that mounts a screen
       ▼

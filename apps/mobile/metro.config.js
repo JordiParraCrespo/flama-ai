@@ -1,4 +1,4 @@
-const { getSentryExpoConfig } = require('@sentry/react-native/metro');
+const { getDefaultConfig } = require('expo/metro-config');
 const { withNativeWind } = require('nativewind/metro');
 const { wrapWithReanimatedMetroConfig } = require('react-native-reanimated/metro-config');
 const path = require('node:path');
@@ -6,7 +6,21 @@ const path = require('node:path');
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, '../..');
 
-const config = getSentryExpoConfig(projectRoot);
+// Expo's factory builds the base config. A feature that has to see the bundle
+// as Metro serialises it wraps that factory: a wrapper takes the factory before
+// it and returns one that builds on it, passing Expo's options through.
+const factoryWrappers = [
+  // Sentry's stamps each bundle with the debug ID its source maps are
+  // uploaded under.
+  (getConfig) => (root, options) =>
+    require('@sentry/react-native/metro').getSentryExpoConfig(root, {
+      ...options,
+      getDefaultConfig: getConfig,
+    }),
+];
+const createConfig = factoryWrappers.reduce((create, wrap) => wrap(create), getDefaultConfig);
+
+const config = createConfig(projectRoot);
 
 config.watchFolders = [workspaceRoot];
 
