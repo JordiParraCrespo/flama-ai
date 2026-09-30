@@ -17,8 +17,10 @@ described here. When they disagree, fix the code or update both together.
 **By product, for logic.** An entity, a repository, a service or a query hook
 belongs to a product or to both. `core` is the kernel every app loads:
 session (`auth`), `users`, `user-settings`, `capabilities`, `analytics`,
-the InversifyJS container (`FlamaApp`, `TOKENS`), `config/`,
-`validation/` and `format/` (dates through `Intl`, for both platforms).
+the InversifyJS container (`FlamaApp`, `TOKENS`), `validation/` and `format/`
+(dates through `Intl`, for both platforms). It also holds `config/`, which no
+app loads: `ConfigManager`, the layered document the `remote-config` plugin
+wires (a provider and a cache in, the merged document out).
 `consumer` (`organizations`, `profile`) and `admin`
 (`admin-users`, `roles`, with its plugin) are the two products. An app loads exactly one, and
 the products never import each other.
@@ -27,7 +29,7 @@ the products never import each other.
 i18n bootstrap belong to web or to mobile. `web` is what both Vite apps share
 (`shell`, `auth`, `table`, `layout`, `forms`, `theme`, `i18n`, `analytics`,
 `platform`, `roles`); `mobile` is what both Expo apps share (`analytics`,
-`auth`, `config`, `forms`, `i18n`, `layout`, `platform`, `theme`). A kit is
+`auth`, `forms`, `i18n`, `layout`, `platform`, `theme`). A kit is
 organised by concern, each concern with the kind directories a feature has.
 
 The split by product keeps `apps/web` from bundling the control plane's

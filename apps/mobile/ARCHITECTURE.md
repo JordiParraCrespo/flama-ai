@@ -21,8 +21,8 @@ they disagree, fix the code or update both together. The tier-wide model is
       │                           components hooks lib __tests__
       ├──────────────► @flama/frontend-mobile     the mobile platform kit
       │                  ErrorBoundary, ScreenViewTracker, NAV_THEME,
-      │                  configManager, createQueryPersistence,
-      │                  ExpoSecureStoreService, FormField, useZodResolver
+      │                  createQueryPersistence, ExpoSecureStoreService,
+      │                  FormField, useZodResolver
       │                       │
       │                       ▼
       │                @flama/design-system-mobile  NativeWind + rn-primitives
@@ -103,10 +103,7 @@ boundaries, the `AuthGate` section. The colours come from `global.css`
   watches the password field so a keystroke re-renders the checklist and the
   button it gates, not the form.
 - **An effect synchronises with something outside React, and says what.** Biome
-  forbids `useEffect` outside `hooks/` — with one deliberate exception, the
-  root layout. `app/_layout.tsx` keeps a single effect, commented as such,
-  that loads the remote config manager once per app launch: an imperative SDK
-  outside React that no component below the root owns.
+  forbids `useEffect` outside `hooks/`, the root layout included.
 - **The React Compiler is on** (`experiments: { reactCompiler: true }` in
   `app.config.ts`). No `useMemo`, `useCallback` or `memo` outside `hooks/`;
   Biome forbids the import.
