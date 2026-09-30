@@ -32,9 +32,8 @@ pnpm --filter @flama/mobile arch && pnpm check:structure
 
 ## Patterns agents get wrong
 
-- Reaching for `useEffect` in a screen. Biome allows it only in `hooks/`; the
-  one exception is `app/_layout.tsx`, whose single commented effect loads the
-  config manager once per launch.
+- Reaching for `useEffect` in a screen, or in `app/_layout.tsx`. Biome allows
+  it only in `hooks/`.
 - Dropping `field.onBlur` in a `Controller`: `touched` never updates and
   blur-mode validation silently does nothing.
 - Moving the nitro-fetch polyfill off the first line of `index.ts`, or changing

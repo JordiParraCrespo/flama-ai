@@ -105,35 +105,6 @@
               "options": {
                 "paths": {
                   "react": {
-                    "importNames": ["useMemo", "useCallback", "memo"],
-                    "message": "The React Compiler memoises components at build time. Remove the manual memo; a hook that must hand a library a stable identity lives in a hooks/ file, where this is allowed."
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": [
-        "apps/*/src/**",
-        "apps/*/app/**",
-        "apps/*/features/**",
-        "apps/*/lib/**",
-        "packages/frontend/*/src/**",
-        "!**/hooks/**",
-        "!apps/*/app/**/_layout.tsx",
-        "!packages/frontend/*/src/react/**"
-      ],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "paths": {
-                  "react": {
                     "importNames": [
                       "useEffect",
                       "useLayoutEffect",
