@@ -52,7 +52,7 @@ metro.config.js, tailwind.config.js, global.css
 ## Where the shared code lives
 
 - UI and native glue both Expo apps share — `FormField`, `useZodResolver`,
-  `ErrorBoundary`, `ScreenViewTracker`, `NAV_THEME`, `configManager`,
+  `ErrorBoundary`, `ScreenViewTracker`, `NAV_THEME`,
   `createQueryPersistence`, `ExpoSecureStoreService` — are in
   `@flama/frontend-mobile` (`packages/frontend/mobile`).
 - Primitives are in `@flama/design-system-mobile`.

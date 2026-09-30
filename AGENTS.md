@@ -219,7 +219,7 @@ The frontend is split twice, and the two splits answer different questions:
 
 - **By product** for logic. `core` is the kernel every app loads (session,
   users, user settings, capabilities, analytics, the InversifyJS container,
-  config, validation). `consumer` is the consumer product's domain (entities,
+  validation). `consumer` is the consumer product's domain (entities,
   repositories, services, TanStack Query hooks), and `admin` is the control
   plane's, arriving with that plugin; an app loads exactly one, through
   `FlamaApp.create({ modules })`. The products never import each other — where

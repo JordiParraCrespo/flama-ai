@@ -19,14 +19,6 @@ type CapabilityCheck = (config: ConfigService) => boolean;
  */
 const CAPABILITIES = {
   // flama:plugins capabilities
-  // The `console` provider only prints to stdout — that is not delivery.
-  email_delivery: (config: ConfigService) => {
-    const provider = config.get<string>('email.provider');
-    return (
-      (provider === 'nodemailer' && Boolean(config.get('email.smtpHost'))) ||
-      (provider === 'resend' && Boolean(config.get('email.resendApiKey')))
-    );
-  },
 } satisfies Record<string, CapabilityCheck>;
 
 export type DeploymentCapability = keyof typeof CAPABILITIES;

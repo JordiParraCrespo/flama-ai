@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
  *
  * With `EMAIL_PROVIDER=console` the API's `ConsoleEmailService` logs each
  * message instead of delivering it, so the API log *is* the mailbox. That is
- * what lets these tests follow a verification link end to end without an SMTP
+ * what lets these tests follow a verification link end to end without a mail
  * server: point `API_LOG` at the file the API's stdout is captured to.
  */
 const API_LOG = process.env.API_LOG ?? '/tmp/api.log';

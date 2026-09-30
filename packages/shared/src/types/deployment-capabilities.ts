@@ -4,7 +4,7 @@
  * may or may not have configured (a sign-in provider, an integration's key);
  * the full list, with what turns each one on, is the API's
  * (`apps/api/src/capabilities`), and this is the subset of it that goes over
- * the wire. Server-internal capabilities (`email_delivery`) are deliberately
+ * the wire. Server-internal capabilities are deliberately
  * not on it: no client renders anything differently for them, and a public
  * endpoint should not describe a deployment's infrastructure beyond what its UI
  * already reveals.

@@ -2,8 +2,8 @@
  * @flama/frontend-mobile — what both Expo apps share below their routes.
  *
  * Organised by concern, each with the kind directories a feature has
- * (`components/`, `hooks/`, `lib/`). `platform`, `theme`, `config`, `forms`
- * and `analytics` are leaves; `i18n` and `layout` build on `platform`.
+ * (`components/`, `hooks/`, `lib/`). `platform`, `theme`, `forms` and
+ * `analytics` are leaves; `i18n` and `layout` build on `platform`.
  * Nothing here imports a product package.
  *
  * `auth` is the one concern on top: it is the chrome both apps' sign-in screens
@@ -15,7 +15,6 @@
  */
 export * from './analytics';
 export * from './auth';
-export * from './config';
 export * from './forms';
 export * from './i18n';
 export * from './layout';

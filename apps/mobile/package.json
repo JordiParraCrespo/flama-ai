@@ -37,7 +37,6 @@
     "@react-navigation/native": "^7.3.18",
     "@rn-primitives/portal": "1.4.0",
     "@rn-primitives/slot": "1.4.0",
-    "@sentry/react-native": "~7.11.0",
     "@tanstack/query-async-storage-persister": "^5.102.8",
     "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-query-persist-client": "^5.102.8",

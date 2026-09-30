@@ -26,15 +26,17 @@ All `packages/backend/*` must have both `"import"` and `"require"` in their `pac
 There are two kinds of backend package:
 
 **Pluggable services** (`email`, `storage`, `cache`, `queue`) — an abstract
-service selected at runtime by a factory:
+service behind a `@Global` module. Where it can run on more than one driver
+(`email`, `storage`), the package ships one and `register(drivers)` takes the
+app's driver map and binds the one config names (see `nestjs-architecture.md`):
 
 ```
 packages/backend/<name>/
 ├── src/
 │   ├── index.ts              # Barrel export
 │   ├── <name>.service.ts     # Abstract class (interface)
-│   ├── <impl>.service.ts     # Concrete implementation(s)
-│   └── <name>.module.ts      # @Global DynamicModule with factory
+│   ├── <impl>.service.ts     # The driver the package ships
+│   └── <name>.module.ts      # @Global DynamicModule (register)
 ├── package.json
 └── tsconfig.json
 ```

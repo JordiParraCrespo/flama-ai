@@ -30,8 +30,8 @@ its documentation. Never add a per-package `.env` or `.env.example`.
 
 ## Optional capabilities: a missing key removes a feature, it never throws
 
-Anything a self-hoster might not have — OAuth credentials, SMTP/Resend,
-an integration's API key — is **optional capability config**, and the code must work
+Anything a self-hoster might not have — OAuth credentials, an integration's
+API key — is **optional capability config**, and the code must work
 without it. Model absence honestly:
 
 - Optional keys are genuinely optional in the Zod schema
