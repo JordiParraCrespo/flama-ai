@@ -97,7 +97,6 @@ export type {
   CancelErrors,
   CancelResponse,
   CancelResponses,
-  CapabilitiesResponseDto,
   CatalogData,
   CatalogError,
   CatalogErrors,

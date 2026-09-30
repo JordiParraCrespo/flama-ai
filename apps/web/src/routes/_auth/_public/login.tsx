@@ -16,7 +16,7 @@ export const Route = createFileRoute('/_auth/_public/login')({
     error: typeof search.error === 'string' ? search.error : undefined,
   }),
   beforeLoad: ({ search }) => {
-    // Someone who pressed "Continue with Google" with no account here is not
+    // Someone who pressed a provider's button with no account here is not
     // failing to sign in — they are trying to sign up, which the API refuses
     // from this screen on purpose. Hand them the screen that can finish it,
     // rather than an error on the one that cannot.

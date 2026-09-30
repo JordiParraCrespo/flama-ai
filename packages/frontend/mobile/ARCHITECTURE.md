@@ -23,7 +23,7 @@ compiles it with the app.
 | `analytics` | `ScreenViewTracker` | leaf |
 | `i18n` | the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`, `LanguageSwitcher`, and — re-exported from `@flama/frontend-core` — `useLocale` and the date formatters; it reads `platform`'s MMKV store for the saved locale | middle |
 | `layout` | `ErrorBoundary` (it logs what it catches to the console), `AppErrorFallback`, `ScreenErrorFallback` (optional title, message and retrying state) | middle |
-| `auth` | the sign-in chrome: `AuthLayout`, `BrandLogo`, the `Auth*` primitives, `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`, `SocialLoginButtons`, the provider marks, `SignOutButton` (owns `useLogout`); `LoginForm`, `ForgotPasswordForm`, `ResetPasswordForm`; `ForgotPasswordScreen`, `ResetPasswordScreen` | top |
+| `auth` | the sign-in chrome: `AuthLayout`, `BrandLogo`, the `Auth*` primitives, `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`, `SocialLoginButtons`, `SignOutButton` (owns `useLogout`); `LoginForm`, `ForgotPasswordForm`, `ResetPasswordForm`; `ForgotPasswordScreen`, `ResetPasswordScreen` | top |
 
 `auth` is the one concern on top, and it is on top because it is the one that
 composes: it frames a screen with the wordmark, the theme pill and the

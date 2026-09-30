@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { newUser, VALID_PASSWORD } from '../../support/auth';
+import { newContext, newUser, VALID_PASSWORD } from '../../support/auth';
 import { findResetToken, findUserByEmail } from '../../support/db';
 import { waitForEmailUrl } from '../../support/mail';
 import { loginThroughUi, provisionedUser, registerThroughUi } from '../../support/web';
@@ -202,20 +202,22 @@ test.describe('web auth UI', () => {
     await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
   });
 
-  test('social sign-in is absent or explained when no provider is configured', async ({ page }) => {
+  test('the login screen has no social section', async ({ page }) => {
+    const api = await newContext();
+    const capabilities: Record<string, boolean> = await (
+      await api.get('/api/v1/health/capabilities')
+    ).json();
+    // A capability on the wire that is on belongs to a feature, which tests
+    // the screen it changes in its own suite.
+    test.skip(Object.values(capabilities).some(Boolean), 'a client capability is on here');
+
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
-    const googleButton = page.getByRole('button', { name: /google/i });
-    const explanation = page.getByText(/social sign-in is not configured/i);
-    const hasButton = (await googleButton.count()) > 0;
-    const hasExplanation = (await explanation.count()) > 0;
-
-    // Either is fine; a dead button that throws on click is not.
-    expect(hasButton || hasExplanation).toBe(true);
-    if (hasButton) {
-      await expect(googleButton.first()).toBeEnabled();
-    }
+    // The app offers no social provider, so there is nothing to draw: no
+    // button, and no note about what is not configured.
+    await expect(page.getByRole('button', { name: /^continue with/i })).toHaveCount(0);
+    await expect(page.getByText(/social sign-in is not configured/i)).toHaveCount(0);
   });
 });
 

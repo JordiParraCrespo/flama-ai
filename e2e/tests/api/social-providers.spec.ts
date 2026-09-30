@@ -5,10 +5,11 @@ import { newContext } from '../../support/auth';
  * How the deployment behaves when the optional sign-in methods are switched
  * off. The rule the codebase states is that a missing key disables a feature
  * rather than breaking the app, and that `GET /health/capabilities` is how a
- * client finds out — so both halves are asserted here.
+ * client finds out: a provider the API does not run is refused cleanly, and
+ * signing in by password never depends on one.
  */
 test.describe('optional auth providers', () => {
-  test('capabilities reports which sign-in methods this deployment has', async () => {
+  test('capabilities reports each client capability as a boolean', async () => {
     const api = await newContext();
 
     const response = await api.get('/api/v1/health/capabilities', {
@@ -16,25 +17,21 @@ test.describe('optional auth providers', () => {
     });
 
     expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(body).toHaveProperty('google_oauth');
-    expect(body).toHaveProperty('github_oauth');
-    expect(typeof body.google_oauth).toBe('boolean');
+    // A map of whatever the deployment's features put on the wire, which may
+    // be nothing at all.
+    const body: Record<string, unknown> = await response.json();
+    for (const value of Object.values(body)) expect(typeof value).toBe('boolean');
   });
 
-  test('an unconfigured social provider fails cleanly instead of crashing', async () => {
+  test('a provider this process does not run is refused cleanly', async () => {
     const api = await newContext();
-    const capabilities = await (
-      await api.get('/api/v1/health/capabilities', { failOnStatusCode: false })
-    ).json();
-    test.skip(capabilities.google_oauth === true, 'Google is configured on this deployment');
 
     const response = await api.post('/api/auth/sign-in/social', {
       data: { provider: 'google', callbackURL: '/dashboard' },
       failOnStatusCode: false,
     });
 
-    expect(response.status(), 'a disabled provider is "not found", not a 500').toBe(404);
+    expect(response.status(), 'a provider it does not run is "not found", not a 500').toBe(404);
     expect((await response.json()).code).toBe('PROVIDER_NOT_FOUND');
   });
 

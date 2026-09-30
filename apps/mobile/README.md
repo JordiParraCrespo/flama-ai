@@ -1,7 +1,7 @@
 # @flama/mobile
 
-The consumer product's native app: sign-up and sign-in (password or a social
-provider through a deep link), password reset, and the signed-in home screen.
+The consumer product's native app: sign-up and sign-in, password reset, and
+the signed-in home screen.
 Platform administration is a different app,
 [`apps/admin-mobile`](../admin-mobile).
 

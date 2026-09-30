@@ -180,6 +180,32 @@ test('dropBlocks takes out whole the blocks their entry says a slot put in place
   );
 });
 
+test('dropBlocks takes out whole the blocks of a feature that replaces the file', () => {
+  const text = [
+    'import a;',
+    '# flama:begin gone',
+    'import b;',
+    '# flama:end gone',
+    '',
+    'const list = {};',
+    '# flama:begin gone',
+    'list.b = b;',
+    '# flama:end gone',
+    '# flama:begin other',
+    'list.c = c;',
+    '# flama:end other',
+    '',
+  ].join('\n');
+  // What is left is the starter's version of the file: no fence of the
+  // feature's, and every other feature's block as it was.
+  assert.equal(
+    dropBlocks('f', text, new Set(['gone', 'other']), { whole: new Set(['gone']) }),
+    ['import a;', '', 'const list = {};', '# flama:begin other', '# flama:end other', ''].join(
+      '\n',
+    ),
+  );
+});
+
 test('where a block sits decides nothing: a hole above a filled slot stays', () => {
   const text = [
     'keep',

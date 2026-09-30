@@ -29,13 +29,13 @@ describe('CapabilitiesRepository', () => {
 
   it('returns the capability set the deployment reports', async () => {
     api.deploymentCapabilities.mockResolvedValue({
-      google_oauth: true,
-      github_oauth: false,
+      alpha_oauth: true,
+      beta_oauth: false,
     });
 
     await expect(repository.get()).resolves.toEqual({
-      google_oauth: true,
-      github_oauth: false,
+      alpha_oauth: true,
+      beta_oauth: false,
     });
   });
 
@@ -61,10 +61,10 @@ describe('CapabilitiesRepository', () => {
 
 describe('CapabilitiesService', () => {
   it('reads through the repository', async () => {
-    const get = vi.fn().mockResolvedValue({ google_oauth: true });
+    const get = vi.fn().mockResolvedValue({ alpha_oauth: true });
     const service = new CapabilitiesService({ get } as never);
 
-    await expect(service.get()).resolves.toEqual({ google_oauth: true });
+    await expect(service.get()).resolves.toEqual({ alpha_oauth: true });
     expect(get).toHaveBeenCalled();
   });
 

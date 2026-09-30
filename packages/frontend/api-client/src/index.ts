@@ -35,7 +35,6 @@ export type {
   AuthzResourceDto,
   AuthzResourceGroupDto,
   AuthzRuleDto,
-  CapabilitiesResponseDto,
   ChangePasswordRequest,
   CheckSlugRequest,
   CreateAccessGrantRequest,

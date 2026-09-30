@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { orUndefined, parseEnv } from '../env';
 
-const OWNED = ['TEST_SECRET', 'TEST_URL', 'TEST_PASSWORD', 'TEST_G_ID', 'TEST_G_SECRET'];
+const OWNED = ['TEST_SECRET', 'TEST_URL', 'TEST_PASSWORD', 'TEST_NESTED_ID', 'TEST_NESTED_SECRET'];
 
 afterEach(() => {
   for (const key of OWNED) delete process.env[key];
@@ -90,19 +90,19 @@ describe('parseEnv', () => {
   });
 
   it('nests dotted keys into the shape the schema expects', () => {
-    process.env.TEST_G_ID = 'client-id';
+    process.env.TEST_NESTED_ID = 'client-id';
     const nested = z.object({
-      google: z.object({
+      provider: z.object({
         clientId: z.string().optional(),
         clientSecret: z.string().optional(),
       }),
     });
 
     expect(
-      parseEnv('oauth', nested, {
-        'google.clientId': 'TEST_G_ID',
-        'google.clientSecret': 'TEST_G_SECRET',
+      parseEnv('nested', nested, {
+        'provider.clientId': 'TEST_NESTED_ID',
+        'provider.clientSecret': 'TEST_NESTED_SECRET',
       }),
-    ).toEqual({ google: { clientId: 'client-id', clientSecret: undefined } });
+    ).toEqual({ provider: { clientId: 'client-id', clientSecret: undefined } });
   });
 });

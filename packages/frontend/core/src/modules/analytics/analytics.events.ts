@@ -18,5 +18,8 @@ export const ANALYTICS_EVENTS = {
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
 
-/** How a user authenticated, attached to sign-in/sign-up events. */
-export type AuthMethod = 'password' | 'google' | 'github';
+/**
+ * How a user authenticated, attached to sign-in/sign-up events. A social
+ * sign-in also carries the provider's id, as the event's `provider`.
+ */
+export type AuthMethod = 'password' | 'social';

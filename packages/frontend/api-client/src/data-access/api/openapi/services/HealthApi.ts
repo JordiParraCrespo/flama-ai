@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type {
-    CapabilitiesResponseDto,
+    DeploymentCapabilitiesResponse,
 } from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -32,10 +32,10 @@ export class HealthApi {
     }
     /**
      * Client-facing capabilities of this deployment
-     * @returns CapabilitiesResponseDto Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
+     * @returns DeploymentCapabilitiesResponse Each client-relevant optional feature (sign-in providers, integrations) by name, and whether this deployment has it configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
      * @throws ApiError
      */
-    public static deploymentCapabilities(): CancelablePromise<CapabilitiesResponseDto> {
+    public static deploymentCapabilities(): CancelablePromise<DeploymentCapabilitiesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/health/capabilities',

@@ -8,7 +8,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { SocialAuthIntent, SocialProvider } from '../modules/auth/auth.client';
+import type { SocialAuthIntent } from '../modules/auth/auth.client';
+import { useDeploymentCapabilities } from './capabilities.queries';
 import { useFlamaApp } from './context';
 import { withCacheOnSuccess } from './mutations';
 import { reconcileCacheOwner } from './persistence';
@@ -53,7 +54,8 @@ export function useSessionRestore(
  * identity it has never seen unless the caller asked for a sign-up.
  */
 export interface SocialLoginVariables {
-  provider: SocialProvider;
+  /** The provider's id, as Better Auth knows it. */
+  provider: string;
   /** Defaults to `'sign-in'`, which refuses an identity with no account here. */
   intent?: SocialAuthIntent;
 }
@@ -67,6 +69,32 @@ export function useSocialLogin(
     mutationFn: ({ provider, intent }) => app.auth.socialLogin(provider, intent),
     ...options,
   });
+}
+
+/**
+ * The social sign-in providers to draw a button for: the ones the app offers
+ * (`FlamaApp.create({ socialProviders })`) that this deployment has
+ * configured, by the capability each names.
+ *
+ * `offered` empty means the app has no social sign-in, and the screens have no
+ * social section. Until the capability read succeeds every offered provider
+ * counts as `available`, because an unreachable API is not a missing
+ * configuration. TanStack Query keeps the last good data after a failed
+ * refetch, so that data can be stale (read before an operator configured a
+ * provider and restarted the API): it is trusted only while the latest read
+ * succeeded.
+ */
+export function useSocialProviders() {
+  const app = useFlamaApp();
+  const offered = app.socialProviders;
+  // An app that offers no provider has nothing to ask the deployment about.
+  const { data, error } = useDeploymentCapabilities({ enabled: offered.length > 0 });
+  const capabilities = error == null ? data : undefined;
+
+  return {
+    offered,
+    available: offered.filter((provider) => capabilities?.[provider.capability] ?? true),
+  };
 }
 
 export function useLogin(options?: Omit<UseMutationOptions<void, Error, LoginDto>, 'mutationFn'>) {

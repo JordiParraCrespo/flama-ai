@@ -1,30 +1,20 @@
-import { Alert, AlertDescription } from '@flama/design-system-mobile/alert';
+import { AppIcon } from '@flama/design-system-mobile/app-icon';
 import { Button } from '@flama/design-system-mobile/button';
-import { Info } from '@flama/design-system-mobile/icons';
 import { Text } from '@flama/design-system-mobile/text';
 import { cn } from '@flama/design-system-mobile/utils';
 import type { SocialAuthIntent } from '@flama/frontend-core';
-import {
-  useDeploymentCapabilities,
-  useErrorMessage,
-  useSocialLogin,
-} from '@flama/frontend-core/react';
+import { useErrorMessage, useSocialLogin, useSocialProviders } from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { AuthDivider, AuthFormError, authControlClass } from './auth-primitives';
-import { GithubIcon, GoogleIcon } from './provider-icons';
 
 /**
- * Social sign-in section of the login screen, driven by the deployment's
- * capability set (`GET /health/capabilities`) so only providers that are
- * actually configured render a button. The web kit's component of the same
- * name makes the same decisions from the same read.
- *
- * Failure semantics matter here: until the capability read *succeeds* we
- * assume every provider is available, because an unreachable API is not a
- * missing configuration. The "nothing configured" hint — which names the env
- * vars to set, for the self-hoster who is the one person able to fix it —
- * only ever renders from a successful read reporting no providers.
+ * Social sign-in section of the login and register screens: a button for each
+ * provider the app offers (`FlamaApp.create({ socialProviders })`) that the
+ * deployment's capability read reports configured, drawn with the provider's
+ * name and its mark from the design system's brand set. With none to offer it
+ * renders nothing. The web kit's component of the same name makes the same
+ * decisions from the same hook.
  *
  * `intent` is what separates the two screens that render this. The API refuses
  * a provider identity it has never seen unless the caller asks for a sign-up,
@@ -44,26 +34,9 @@ export function SocialLoginButtons({
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const social = useSocialLogin({ onSuccess });
-  const { data, error } = useDeploymentCapabilities();
+  const { available } = useSocialProviders();
 
-  // TanStack Query retains the last successful data after a failed refetch,
-  // so `data` alone can be stale (e.g. read before an operator enabled OAuth
-  // and restarted the API). Trust it only while the latest read succeeded;
-  // any error means "unknown", which falls back to showing every provider.
-  const capabilities = error == null ? data : undefined;
-
-  const google = capabilities?.google_oauth ?? true;
-  const github = capabilities?.github_oauth ?? true;
-
-  if (!google && !github) {
-    // A notice, not a failure — nobody signing in did anything wrong — so it is
-    // the plain `Alert`, not the destructive one.
-    return (
-      <Alert icon={Info} className="mt-4">
-        <AlertDescription>{t('auth.login.noSocialProviders')}</AlertDescription>
-      </Alert>
-    );
-  }
+  if (available.length === 0) return null;
 
   const providerButton = cn(authControlClass, 'gap-2.5');
 
@@ -79,28 +52,20 @@ export function SocialLoginButtons({
         </AuthFormError>
       ) : null}
       <View className="gap-2.5">
-        {google ? (
+        {available.map(({ id, name, icon }) => (
           <Button
+            key={id}
             variant="outline"
             disabled={disabled || social.isPending}
-            onPress={() => social.mutate({ provider: 'google', intent })}
+            onPress={() => social.mutate({ provider: id, intent })}
             className={providerButton}
           >
-            <GoogleIcon />
-            <Text>{t('auth.login.continueWithGoogle')}</Text>
+            {/* A bare mark: the tile's box keeps the 17px logo centred, and
+                the negative margin gives the label back the box's padding. */}
+            <AppIcon app={icon} label={name} size={34} className="-mx-2 bg-transparent" />
+            <Text>{t('auth.login.continueWith', { provider: name })}</Text>
           </Button>
-        ) : null}
-        {github ? (
-          <Button
-            variant="outline"
-            disabled={disabled || social.isPending}
-            onPress={() => social.mutate({ provider: 'github', intent })}
-            className={providerButton}
-          >
-            <GithubIcon />
-            <Text>{t('auth.login.continueWithGithub')}</Text>
-          </Button>
-        ) : null}
+        ))}
       </View>
     </>
   );

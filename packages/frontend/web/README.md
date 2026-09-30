@@ -24,8 +24,7 @@ Everything is re-exported from the package root (`src/index.ts`):
   the nav types `NavItem`, `NavLink`, `NavPolicy`, `NavTo`, `ShellWorkspace`.
 - **auth** — `AuthLayout`, `AuthArtPanel`, `BrandLogo`, `PasswordInput`,
   `SocialLoginButtons`, `OAuthCallbackNotice`, the auth primitives, the
-  password-requirement helpers, the provider icons, `redirectSignedIn` /
-  `redirectSignedOut`.
+  password-requirement helpers, `redirectSignedIn` / `redirectSignedOut`.
 - **table** — `DataTable`, `DataTableColumn`, `useTableQuery`,
   `useClampedPage`, `downloadCsv`, the pagination helpers.
 - **layout** — `PageHead`, the section primitives, `ConfirmDialog`.

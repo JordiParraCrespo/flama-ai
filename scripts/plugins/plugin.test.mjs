@@ -660,3 +660,106 @@ test("a file of another feature's inside the plugin's tree lands only beside tha
   assert.equal(existsSync(join(pruned, 'epsilon', 'alpha-tool.txt')), false);
   assert.equal(existsSync(join(pruned, 'epsilon', 'index.txt')), true);
 });
+
+/** Commit whatever the fixture holds now, as the state a test starts from. */
+function commit(project, message) {
+  execFileSync('git', ['-C', project, 'add', '-A']);
+  const who = ['-c', 'user.name=t', '-c', 'user.email=t@t'];
+  execFileSync('git', ['-C', project, ...who, 'commit', '-qm', message]);
+}
+
+/** The starter's version of a file, and a feature's: the same lines, and its own fenced among them. */
+const STARTER_CONF = ['import kit;', '', 'export const providers = {};', ''].join('\n');
+const FEATURE_CONF = [
+  'import kit;',
+  '# flama:begin omega',
+  'import omega;',
+  '# flama:end omega',
+  '',
+  'export const providers = {};',
+  '# flama:begin omega',
+  'providers.omega = omega;',
+  '# flama:end omega',
+  '',
+].join('\n');
+
+test('a prune gives a replaced file back to the starter, with no fence left in it', () => {
+  const project = fixture();
+  writeFileSync(join(project, 'conf.txt'), FEATURE_CONF);
+  const catalog = join(project, 'scripts', 'starter', 'features.json');
+  const manifest = JSON.parse(readFileSync(catalog, 'utf8'));
+  manifest.features.omega = {
+    title: 'Omega',
+    summary: 'omega',
+    identifiers: ['omega'],
+    paths: [],
+    replaces: ['conf.txt'],
+  };
+  writeFileSync(catalog, `${JSON.stringify(manifest, null, 2)}\n`);
+  commit(project, 'omega');
+  const prune = join(project, 'scripts', 'starter', 'prune.mjs');
+  execFileSync('node', [prune, '--check'], { env: FIXTURE_ENV });
+
+  execFileSync('node', [prune, '--without', 'omega', '--no-install'], { env: FIXTURE_ENV });
+  assert.equal(readFileSync(join(project, 'conf.txt'), 'utf8'), STARTER_CONF);
+  execFileSync('node', [prune, '--check'], { env: FIXTURE_ENV });
+});
+
+test('--check refuses a replaced file that holds no block of the feature', () => {
+  const project = fixture();
+  writeFileSync(join(project, 'conf.txt'), STARTER_CONF);
+  const catalog = join(project, 'scripts', 'starter', 'features.json');
+  const manifest = JSON.parse(readFileSync(catalog, 'utf8'));
+  manifest.features.alpha.replaces = ['conf.txt'];
+  writeFileSync(catalog, `${JSON.stringify(manifest, null, 2)}\n`);
+  const prune = join(project, 'scripts', 'starter', 'prune.mjs');
+  let out = '';
+  try {
+    execFileSync('node', [prune, '--check'], {
+      encoding: 'utf8',
+      env: FIXTURE_ENV,
+      stdio: 'pipe',
+    });
+  } catch (error) {
+    out = `${error.stdout ?? ''}${error.stderr ?? ''}`;
+  }
+  assert.match(out, /"alpha" replaces conf\.txt, which holds no block of it/);
+});
+
+test("a plugin replaces the starter's version of a file, and its removal gives it back", () => {
+  const project = fixture();
+  writeFileSync(join(project, 'conf.txt'), STARTER_CONF);
+  commit(project, 'conf');
+
+  const from = mkdtempSync(join(tmpdir(), 'flama-source-'));
+  source(from, {
+    id: 'omega',
+    feature: {
+      title: 'Omega',
+      summary: 'omega',
+      identifiers: ['omega'],
+      paths: [],
+      replaces: ['conf.txt'],
+    },
+    files: {},
+    snapshots: [{ file: 'conf.txt', source: 'snapshots/conf.txt' }],
+  });
+  mkdirSync(join(from, 'plugins', 'omega', 'snapshots'), { recursive: true });
+  writeFileSync(join(from, 'plugins', 'omega', 'snapshots', 'conf.txt'), FEATURE_CONF);
+  const script = join(project, 'scripts', 'plugins', 'plugin.mjs');
+
+  // The install ends with `--check`, which now covers the file.
+  execFileSync('node', [script, 'add', '--no-install', 'omega', '--from', from], {
+    env: FIXTURE_ENV,
+  });
+  assert.equal(readFileSync(join(project, 'conf.txt'), 'utf8'), FEATURE_CONF);
+  const catalog = join(project, 'scripts', 'starter', 'features.json');
+  const entry = JSON.parse(readFileSync(catalog, 'utf8')).features.omega;
+  assert.deepEqual(entry.replaces, ['conf.txt']);
+  // Nothing went in at a slot: the file is the feature's place.
+  assert.deepEqual(entry.slots, {});
+
+  execFileSync('node', [script, 'remove', '--no-install', 'omega'], { env: FIXTURE_ENV });
+  const dirty = execFileSync('git', ['-C', project, 'status', '--porcelain'], { encoding: 'utf8' });
+  assert.equal(dirty, '', `not returned to its bytes:\n${dirty}`);
+});

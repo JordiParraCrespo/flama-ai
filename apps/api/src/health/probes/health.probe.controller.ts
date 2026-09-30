@@ -1,5 +1,5 @@
 import { CapabilitiesService } from '@flama/backend-core';
-import { CLIENT_CAPABILITIES } from '@flama/shared';
+import { CLIENT_CAPABILITIES, type ClientCapabilities } from '@flama/shared';
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -12,7 +12,6 @@ import {
 import { NoPolicy } from '../../auth/decorators/check-policies.decorator';
 import { AllowAnyScope } from '../../auth/decorators/require-scopes.decorator';
 import type { DeploymentCapability } from '../../capabilities/capabilities.module';
-import { CapabilitiesResponseDto } from '../dtos/capabilities.response.dto';
 import { RedisHealthIndicator } from '../infrastructure/redis-health.adapter';
 
 @ApiTags('Health')
@@ -47,11 +46,13 @@ export class HealthProbeController {
   })
   @ApiResponse({
     status: 200,
-    type: CapabilitiesResponseDto,
+    // A map, not a fixed shape: its keys are `CLIENT_CAPABILITIES`, which the
+    // features a project has decide.
+    schema: { type: 'object', additionalProperties: { type: 'boolean' } },
     description:
-      'Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.',
+      'Each client-relevant optional feature (sign-in providers, integrations) by name, and whether this deployment has it configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.',
   })
-  deploymentCapabilities(): CapabilitiesResponseDto {
+  deploymentCapabilities(): ClientCapabilities {
     // Only the client-facing subset goes over the wire; the full registry
     // stays in the startup log and in-process.
     return this.capabilities.pick(CLIENT_CAPABILITIES);

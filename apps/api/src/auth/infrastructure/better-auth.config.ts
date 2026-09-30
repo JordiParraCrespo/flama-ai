@@ -12,6 +12,7 @@ import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
+import { accountLinking, socialProviders } from './oauth-providers.config';
 // flama:plugins auth-plugin-imports
 
 // flama:begin organizations
@@ -67,9 +68,6 @@ pool.on('error', (error: Error) => {
   new Logger('BetterAuth').warn(`Idle database client dropped: ${error.message}`);
 });
 
-const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-const githubConfigured = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
-
 /**
  * Break-glass super admins, identified by user id, always pass the admin
  * plugin's authorization regardless of their `role`. Provide a comma-separated
@@ -80,21 +78,6 @@ const adminUserIds = (process.env.BETTER_AUTH_ADMIN_USER_IDS ?? '')
   .split(',')
   .map((id) => id.trim())
   .filter(Boolean);
-
-/**
- * Splits a provider-supplied display name into first/last name parts so that
- * OAuth sign-ups populate the same `firstName` / `lastName` fields used by the
- * email/password flow and the rest of the app.
- */
-function splitName(name?: string | null): {
-  firstName: string;
-  lastName: string;
-} {
-  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return { firstName: 'User', lastName: '' };
-  const [firstName, ...rest] = parts;
-  return { firstName, lastName: rest.join(' ') };
-}
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3001',
@@ -206,60 +189,10 @@ export const auth = betterAuth({
       });
     },
   },
-  socialProviders: {
-    ...(googleConfigured && {
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID as string,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-        mapProfileToUser: (profile) => splitName(profile.name),
-        // Signing in and signing up are two different intents, so a provider
-        // identity nobody here has seen before is *refused* rather than
-        // quietly turned into an account. Better Auth ends the round-trip at
-        // the caller's `errorCallbackURL` with `?error=signup_disabled`, which
-        // the login screens turn into "go and register". The register screen
-        // is the only caller that passes `requestSignUp`, which is what lets
-        // the same button create the account a moment later.
-        disableImplicitSignUp: true,
-      },
-    }),
-    ...(githubConfigured && {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID as string,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-        mapProfileToUser: (profile) => splitName(profile.name),
-        // Same policy as Google above: one door for signing in, another for
-        // signing up. A provider that could still mint accounts from the login
-        // screen would make the rule depend on which button was pressed.
-        disableImplicitSignUp: true,
-      },
-    }),
-  },
-  account: {
-    accountLinking: {
-      // Someone who registered with a password and later presses "Continue
-      // with Google" on the same address is the same person, so the Google
-      // identity is attached to the account they already have. Without this
-      // they hit `account_not_linked` on every social sign-in and the only way
-      // back in is the password they may have come here to stop using.
-      enabled: true,
-      // Deliberately empty, and not the list of providers we ship. A "trusted"
-      // provider is linked *without* checking whether the provider itself
-      // verified the address — and an unverified address is exactly the one
-      // somebody else can claim. Google and GitHub both report
-      // `email_verified`, so leaving them untrusted costs nothing and keeps
-      // that check in force.
-      trustedProviders: [],
-      // The other half of that check, on our side of the link: the existing
-      // account must have proven the address too. Sign-up here does not
-      // require verification (`requireEmailVerification: false` above), so
-      // without this anyone could register a password account on an address
-      // they do not own and be handed the real owner's account the moment that
-      // person signs in with Google. Unverified accounts get
-      // `account_not_linked` instead, which the login screen turns into "sign
-      // in with your password" — a dead end only for the attacker.
-      requireLocalEmailVerified: true,
-    },
-  },
+  // The social sign-in providers, and how one joins an account that already
+  // has its address.
+  socialProviders,
+  ...accountLinking,
   user: {
     // Declared in @flama/auth so the web/mobile clients' `inferAdditionalFields`
     // consume the same schema and cannot drift from the server.

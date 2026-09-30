@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import type { ClientCapability } from '@flama/shared';
 import { Container, type ContainerModule } from 'inversify';
 import type { AnalyticsService } from '../modules/analytics';
 import { AnalyticsModule } from '../modules/analytics';
@@ -16,6 +17,24 @@ import type { UsersService } from '../modules/users';
 import { UsersModule } from '../modules/users';
 import { TOKENS } from './tokens';
 
+/**
+ * A social sign-in provider the app offers: what a kit needs to draw its
+ * button, all of it data, so the kits and the kernel name no provider.
+ */
+export interface SocialSignInProvider {
+  /** Better Auth's id for it, which the button starts the round-trip with. */
+  id: string;
+  /** Its name on the button ("Continue with …"). A brand, so never translated. */
+  name: string;
+  /**
+   * The client capability that is on when this deployment has its
+   * credentials; the button renders only then.
+   */
+  capability: ClientCapability;
+  /** Its mark, by its name in the design systems' brand set (`AppIcon`'s `app`). */
+  icon: string;
+}
+
 export interface FlamaAppConfig {
   apiBaseUrl: string;
   storage: IStorageService;
@@ -27,6 +46,11 @@ export interface FlamaAppConfig {
    */
   analytics?: IAnalyticsClient;
   /**
+   * The social sign-in providers the app offers, in the order their buttons
+   * appear. Omit it and the sign-in screens have no social section.
+   */
+  socialProviders?: readonly SocialSignInProvider[];
+  /**
    * The product's modules: `consumerModules` from `@flama/frontend-consumer`
    * or `adminModules` from `@flama/frontend-admin`. The kernel binds what
    * every product shares (session, users, capabilities, analytics); the app
@@ -37,7 +61,11 @@ export interface FlamaAppConfig {
 }
 
 export class FlamaApp {
-  private constructor(public readonly container: Container) {}
+  private constructor(
+    public readonly container: Container,
+    /** What `socialProviders` listed, for the kits' sign-in screens. */
+    public readonly socialProviders: readonly SocialSignInProvider[],
+  ) {}
 
   static create(config: FlamaAppConfig): FlamaApp {
     const container = new Container();
@@ -59,7 +87,7 @@ export class FlamaApp {
       }
     }
 
-    return new FlamaApp(container);
+    return new FlamaApp(container, config.socialProviders ?? []);
   }
 
   get auth(): AuthService {

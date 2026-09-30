@@ -8,11 +8,11 @@
     "description": "Invita a compañeros, define roles y permisos y conecta las herramientas que usáis, todo desde un espacio de trabajo seguro.",
     "eyebrow": "Espacio de trabajo para equipos",
     "featuresTitle": "Lo que el espacio de trabajo aporta a tu equipo",
-    "google": {
-      "body": "Cuando inicias sesión con Google, usamos tu información básica de perfil para autenticarte y crear o vincular tu cuenta.",
-      "eyebrow": "Uso claro de los datos de Google",
-      "scope": "El inicio de sesión con Google solo solicita tu nombre, dirección de correo y foto de perfil. No lee Gmail, Google Drive ni ningún otro dato de Google. Las integraciones opcionales con Google requieren una autorización separada y explícita.",
-      "title": "El acceso con Google solo sirve para tu cuenta."
+    "socialSignIn": {
+      "body": "Cuando inicias sesión con la cuenta de otro servicio, usamos tu información básica de perfil para autenticarte y crear o vincular tu cuenta.",
+      "eyebrow": "Uso claro de los datos de acceso",
+      "scope": "El inicio de sesión social solo solicita tu nombre, dirección de correo y foto de perfil. No lee tu correo, tus archivos ni ningún otro dato de ese servicio. Las integraciones opcionales requieren una autorización separada y explícita.",
+      "title": "El inicio de sesión social solo sirve para tu cuenta."
     },
     "privacyCta": "Cómo protegemos los datos",
     "title": "Un espacio de trabajo para tu equipo, con el acceso adecuado para cada persona.",
@@ -40,57 +40,54 @@
   "privacy": {
     "changes": {
       "body": "Podemos actualizar esta política cuando cambie el servicio o la normativa. Publicaremos aquí la versión vigente y daremos un aviso adicional cuando un cambio afecte de forma relevante a tus derechos.",
-      "title": "11. Cambios en esta política"
+      "title": "Cambios en esta política"
     },
     "children": {
       "body": "El servicio es una herramienta empresarial y no está dirigido a menores de 16 años.",
-      "title": "10. Menores"
+      "title": "Menores"
     },
     "contactLabel": "Contacta con el operador del espacio de trabajo para solicitudes de privacidad.",
     "controller": {
       "body": "El operador del espacio de trabajo es responsable de los datos personales descritos en esta política. El servicio es un espacio de trabajo empresarial usado por equipos autorizados.",
-      "title": "1. Quién es responsable de tus datos"
+      "title": "Quién es responsable de tus datos"
     },
     "cookies": {
       "body": "El servicio usa cookies esenciales y almacenamiento del navegador para mantener tu sesión iniciada, proteger el servicio, recordar tus preferencias de idioma y tema y guardar en caché datos de la aplicación para un rendimiento fiable. Estas tecnologías son necesarias para ofrecer el espacio de trabajo. Si se introduce analítica opcional, daremos cualquier aviso u opción que exija la ley antes de usarla.",
-      "title": "7. Cookies y almacenamiento local"
+      "title": "Cookies y almacenamiento local"
     },
     "data": {
       "account": "Datos de cuenta e identidad, como nombre, correo de trabajo, foto de perfil, proveedor de autenticación y pertenencia a organizaciones.",
       "content": "Contenido introducido o subido por tu organización, incluidos notas, mensajes y archivos adjuntos cuando se usan esas funciones.",
       "integrations": "Datos de conexión y tokens de servicios de terceros que un usuario autorizado decida conectar.",
       "intro": "Los datos que tratamos dependen de cómo tú y tu organización utilicéis el servicio. Pueden incluir:",
+      "socialSignIn": "Los datos de perfil de un servicio con el que eliges iniciar sesión: tu nombre, dirección de correo, foto de perfil e identificadores del proveedor. Los usamos solo para autenticarte, proteger el acceso y crear o vincular tu perfil, y no los vendemos ni los usamos para publicidad.",
+      "socialSignInConsent": "Iniciar sesión con otro servicio no da acceso a tu correo, tus archivos ni a ningún otro servicio de ese proveedor. Si tu organización activa más adelante una integración compatible con él, pedimos los permisos correspondientes mediante una pantalla de consentimiento separada y usamos esos datos solo para ofrecer la integración que elegiste.",
       "technical": "Datos técnicos y de seguridad, incluidos dirección IP, información del navegador, marcas de tiempo, sesiones, registros de errores y eventos de seguridad.",
-      "title": "2. Datos que tratamos",
+      "title": "Datos que tratamos",
       "workspace": "Datos del espacio de trabajo, incluidos roles, permisos, ajustes, eventos de auditoría y actividad necesaria para prestar el servicio."
     },
     "eyebrow": "Legal",
-    "google": {
-      "body": "Si eliges iniciar sesión con Google, Google nos facilita tu nombre, dirección de correo, foto de perfil e identificadores del proveedor. Usamos esta información solo para autenticarte, proteger el acceso y crear o vincular tu perfil. No vendemos estos datos ni los usamos para publicidad.",
-      "separateConsent": "El inicio de sesión con Google no da acceso a Gmail, Drive ni a ningún otro servicio de Google. Si tu organización activa más adelante una integración compatible con Google, pedimos los permisos correspondientes mediante una pantalla de consentimiento separada y usamos esos datos solo para ofrecer la integración que elegiste.",
-      "title": "3. Acceso con Google y datos de usuario de Google"
-    },
     "lastUpdated": "Última actualización: 27 de agosto de 2026.",
     "purposes": {
       "body": "Tratamos datos para prestar y administrar el servicio, autenticar usuarios, facilitar la colaboración, mantener la seguridad, responder solicitudes y cumplir la ley. Según el contexto, la base jurídica es la ejecución de un contrato, nuestro interés legítimo en operar y proteger el servicio, el consentimiento cuando sea necesario o el cumplimiento de una obligación legal.",
-      "title": "4. Finalidades y bases jurídicas"
+      "title": "Finalidades y bases jurídicas"
     },
     "retention": {
       "body": "Conservamos los datos de cuenta y del espacio mientras la cuenta u organización correspondiente siga activa y durante el periodo limitado necesario para seguridad, recuperación, resolución de disputas y obligaciones legales. Los datos eliminados pueden permanecer en copias cifradas hasta que expiren en su ciclo normal. Las credenciales de integraciones se eliminan al borrar la conexión, sin perjuicio de copias operativas de corta duración.",
-      "title": "6. Durante cuánto tiempo conservamos los datos"
+      "title": "Durante cuánto tiempo conservamos los datos"
     },
     "rights": {
       "authority": "También puedes presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) o tu autoridad de control local.",
       "body": "Cuando corresponda, puedes solicitar acceso, rectificación, supresión, limitación o portabilidad de tus datos personales, oponerte a determinados tratamientos o retirar tu consentimiento sin afectar al tratamiento lícito anterior. Escríbenos desde el correo asociado a tu cuenta para que podamos verificar y responder a tu solicitud.",
-      "title": "9. Tus derechos de privacidad"
+      "title": "Tus derechos de privacidad"
     },
     "security": {
       "body": "Aplicamos medidas técnicas y organizativas diseñadas para proteger los datos, como conexiones cifradas, controles de acceso, infraestructura aislada, gestión de secretos, registros de seguridad y acceso administrativo restringido. Ningún sistema garantiza una seguridad absoluta, pero revisamos y mejoramos estas medidas conforme evoluciona el servicio.",
-      "title": "8. Seguridad"
+      "title": "Seguridad"
     },
     "sharing": {
       "body": "Compartimos datos solo cuando es necesario para operar el servicio, cumplir la ley o seguir las instrucciones de tu organización. Los proveedores pueden incluir los de alojamiento, almacenamiento, autenticación, correo e integraciones que tu organización active. Algunos proveedores pueden tratar datos fuera del Espacio Económico Europeo con las garantías aplicables, como decisiones de adecuación o cláusulas contractuales tipo. No vendemos datos personales.",
-      "title": "5. Proveedores y transferencias internacionales"
+      "title": "Proveedores y transferencias internacionales"
     },
     "summary": "Esta política explica qué datos personales trata el servicio, por qué los usamos y las opciones y derechos que tienes.",
     "title": "Política de privacidad"

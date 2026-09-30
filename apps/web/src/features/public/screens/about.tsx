@@ -1,11 +1,14 @@
-import { Button } from '@flama/design-system-web';
+import { Button, cn } from '@flama/design-system-web';
 import { ArrowRight, KeyRound, ShieldCheck, UsersRound } from '@flama/design-system-web/icons';
+import { useSocialProviders } from '@flama/frontend-core/react';
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { PublicSiteLayout } from '@/features/public/sections/public-site-layout';
 
 export function AboutScreen() {
   const { t } = useTranslation();
+  // The note on what a social sign-in shares, only when the app offers one.
+  const socialSignIn = useSocialProviders().offered.length > 0;
   const features = [
     { key: 'team', icon: UsersRound },
     { key: 'access', icon: ShieldCheck },
@@ -14,7 +17,13 @@ export function AboutScreen() {
 
   return (
     <PublicSiteLayout>
-      <section className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-8 lg:py-28">
+      <section
+        className={cn(
+          'mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:items-center lg:px-8 lg:py-28',
+          // Two columns only when the aside is there to fill the second.
+          socialSignIn && 'lg:grid-cols-[1.2fr_0.8fr]',
+        )}
+      >
         <div>
           <p className="mb-5 text-sm font-medium tracking-wide text-accent-blue uppercase">
             {t('public.home.eyebrow')}
@@ -36,16 +45,20 @@ export function AboutScreen() {
           </div>
         </div>
 
-        <aside className="rounded-3xl border border-border-default bg-surface-sunken p-8 shadow-sm">
-          <p className="text-sm font-medium text-ink-600">{t('public.home.google.eyebrow')}</p>
-          <h2 className="mt-3 text-2xl font-semibold text-ink-900">
-            {t('public.home.google.title')}
-          </h2>
-          <p className="mt-4 leading-7 text-ink-600">{t('public.home.google.body')}</p>
-          <p className="mt-5 rounded-2xl bg-surface-card p-4 text-sm leading-6 text-ink-600">
-            {t('public.home.google.scope')}
-          </p>
-        </aside>
+        {socialSignIn && (
+          <aside className="rounded-3xl border border-border-default bg-surface-sunken p-8 shadow-sm">
+            <p className="text-sm font-medium text-ink-600">
+              {t('public.home.socialSignIn.eyebrow')}
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-ink-900">
+              {t('public.home.socialSignIn.title')}
+            </h2>
+            <p className="mt-4 leading-7 text-ink-600">{t('public.home.socialSignIn.body')}</p>
+            <p className="mt-5 rounded-2xl bg-surface-card p-4 text-sm leading-6 text-ink-600">
+              {t('public.home.socialSignIn.scope')}
+            </p>
+          </aside>
+        )}
       </section>
 
       <section className="border-t border-border-default bg-surface-sunken">

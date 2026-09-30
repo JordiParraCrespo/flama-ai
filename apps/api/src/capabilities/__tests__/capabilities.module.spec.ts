@@ -1,27 +1,15 @@
 import type { ConfigService } from '@nestjs/config';
 import { describe, expect, it } from 'vitest';
-import { resolveCapabilities } from '../capabilities.module';
+import { CAPABILITIES, resolveCapabilities } from '../capabilities.module';
 
 function configWith(values: Record<string, unknown>): ConfigService {
   return { get: (key: string) => values[key] } as ConfigService;
 }
 
 describe('resolveCapabilities', () => {
-  it('reports everything off on a bare install', () => {
+  it('resolves every row of the table, and each one off on a bare install', () => {
     const bare = resolveCapabilities(configWith({}));
-    expect(bare).toMatchObject({ google_oauth: false, github_oauth: false });
-    expect(Object.entries(bare).filter(([, on]) => on)).toEqual([]);
-  });
-
-  it('requires both halves of an OAuth credential pair', () => {
-    const partial = configWith({ 'oauth.google.clientId': 'id' });
-    expect(resolveCapabilities(partial).google_oauth).toBe(false);
-
-    const complete = configWith({
-      'oauth.google.clientId': 'id',
-      'oauth.google.clientSecret': 'secret',
-    });
-    expect(resolveCapabilities(complete).google_oauth).toBe(true);
-    expect(resolveCapabilities(complete).github_oauth).toBe(false);
+    expect(Object.keys(bare)).toEqual(Object.keys(CAPABILITIES));
+    expect(Object.values(bare)).not.toContain(true);
   });
 });

@@ -42,7 +42,7 @@ export function parseEnv<T extends z.ZodTypeAny>(
   schema: T,
   envKeys: Record<string, string>,
 ): z.infer<T> {
-  // Keys may be dotted (`google.clientId`) for sections whose schema nests.
+  // Keys may be dotted (`provider.clientId`) for sections whose schema nests.
   const input: Record<string, unknown> = {};
   for (const [key, envVar] of Object.entries(envKeys)) {
     const path = key.split('.');

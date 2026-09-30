@@ -322,17 +322,6 @@ export type AssignUserRolesRequest = {
     roleIds: Array<string>;
 };
 
-export type CapabilitiesResponseDto = {
-    /**
-     * Sign-in with Google is configured.
-     */
-    google_oauth: boolean;
-    /**
-     * Sign-in with GitHub is configured.
-     */
-    github_oauth: boolean;
-};
-
 export type CreateOrganizationRequest = {
     name: string;
     slug?: string;
@@ -1426,9 +1415,11 @@ export type DeploymentCapabilitiesData = {
 
 export type DeploymentCapabilitiesResponses = {
     /**
-     * Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
+     * Each client-relevant optional feature (sign-in providers, integrations) by name, and whether this deployment has it configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.
      */
-    200: CapabilitiesResponseDto;
+    200: {
+        [key: string]: boolean;
+    };
 };
 
 export type DeploymentCapabilitiesResponse = DeploymentCapabilitiesResponses[keyof DeploymentCapabilitiesResponses];

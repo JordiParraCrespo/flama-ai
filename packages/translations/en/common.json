@@ -13,8 +13,6 @@
   "next": "Next",
   "confirm": "Confirm",
   "orContinueWith": "Or continue with",
-  "google": "Google",
-  "github": "GitHub",
   "or": "or",
   "relative": {
     "day": "{{count}}d",

@@ -12,7 +12,9 @@
  * A feature the starter still ships has no anchors of its own: its fences are
  * the only mark it leaves, and they are what comes back. The plugin carries
  * the starter's copy of each file it has a block in, and `replaySnapshots`
- * merges the blocks onto the project's copy — op 1 without the slot.
+ * merges the blocks onto the project's copy — op 1 without the slot. A file
+ * a feature replaces comes back the same way: its version is the starter's
+ * with the feature's blocks in, and the prune took those out whole.
  *
  * Plus the prune's own edit over what it copies (`trimCopied`), because a
  * plugin's files come from a starter that had every feature. Every read of a
@@ -93,7 +95,7 @@ export function projectFeatures() {
  * The manifest's feature entry, in `features.json` key order so an install
  * produces the same file a hand-written entry would.
  */
-export function featureEntry(manifest, landed, slots = {}) {
+export function featureEntry(manifest, landed, slots = {}, replaced = manifest.feature.replaces) {
   const { title, summary, identifiers, paths, keeps, requires, scripts, json, regenerate } =
     manifest.feature;
   return {
@@ -110,6 +112,9 @@ export function featureEntry(manifest, landed, slots = {}) {
     // Where the install put a block in whole, rather than into the fences a
     // prune left: those are the blocks its removal takes out whole too.
     slots,
+    // The files it replaced, which its removal gives back to the starter's
+    // version: the ones this project has.
+    ...(replaced?.length ? { replaces: replaced } : {}),
     ...(keeps ? { keeps } : {}),
     ...(requires?.length ? { requires } : {}),
     ...(scripts?.length ? { scripts } : {}),
@@ -138,7 +143,8 @@ export function writeFeature(manifest, landed, slots, dryRun) {
   if (JSON.parse(text).features[manifest.id]) {
     fail(`"${manifest.id}" is already a feature of this project — nothing to install`);
   }
-  const entry = featureEntry(manifest, landed, slots);
+  const replaced = manifest.feature.replaces?.filter((file) => existsSync(join(ROOT, file)));
+  const entry = featureEntry(manifest, landed, slots, replaced);
   const inserted = insertJsonEntry(text, ['features'], renderJsonEntry(manifest.id, entry, 2));
   if (inserted === null) fail('features.json: no "features" object to add the entry to');
   text = inserted;
@@ -387,6 +393,10 @@ export function insertBlocks(manifest, alreadyTouched, known, dryRun) {
  * the difference onto the project's copy, so a file the project has changed
  * since still takes the blocks, and one changed in the same place stops the
  * install rather than guessing.
+ *
+ * A file the feature replaces is a snapshot too: the feature's version of
+ * it, whose blocks the prune took out whole, so the base is the starter's
+ * version and the merge makes it the feature's.
  */
 export function replaySnapshots(manifest, known, dryRun) {
   for (const snapshot of manifest.snapshots ?? []) {
@@ -399,12 +409,14 @@ export function replaySnapshots(manifest, known, dryRun) {
     }
     const ours = trimText(manifest, snapshot.file, readFileSync(source, 'utf8'), known, false);
     // The project's copy holds this plugin's emptied fences where a prune left
-    // them — unless it was pruned before prunes kept them, in which case the
-    // blocks went whole and the base has to say so too.
+    // them — unless it was pruned before prunes kept them, or the feature
+    // replaces the file, in which case the blocks went whole and the base has
+    // to say so too.
     // The rest went as its entry declares: the ones a slot put in place, whole.
     // A plugin that carries no declaration is read from the starter's copy,
     // where a block on a slot is one a slot put there.
-    const whole = !grammar(() => markerIds(snapshot.file, content)).has(manifest.id);
+    const replaced = Boolean(manifest.feature.replaces?.includes(snapshot.file));
+    const whole = replaced || !grammar(() => markerIds(snapshot.file, content)).has(manifest.id);
     const declared = manifest.feature.slots
       ? new Set(manifest.feature.slots[snapshot.file] ?? [])
       : grammar(() => slotsOf(snapshot.file, ours, manifest.id));
@@ -413,7 +425,8 @@ export function replaySnapshots(manifest, known, dryRun) {
       grammar(() => dropBlocks(snapshot.file, ours, new Set([manifest.id]), { whole, slots })) ??
       ours;
     const merged = mergeThreeWay(snapshot.file, content, base, ours);
-    console.log(`  blocks ${snapshot.file} (from the starter's copy)`);
+    const note = replaced ? "the feature's version" : "from the starter's copy";
+    console.log(`  blocks ${snapshot.file} (${note})`);
     writeText(snapshot.file, merged, dryRun);
   }
 }

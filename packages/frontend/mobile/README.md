@@ -33,8 +33,8 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
 - **auth** — the sign-in chrome both apps wear, mirroring
   `@flama/frontend-web`'s concern of the same name: `AuthLayout`, `BrandLogo`,
   the `Auth*` primitives (title, subtitle, divider, note, form error, …),
-  `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`,
-  `SocialLoginButtons` and the provider marks.
+  `PasswordInput`, `PasswordRequirements`/`PasswordChecklist` and
+  `SocialLoginButtons`.
 - **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`. The
   boundary logs what it catches to the console and reports it nowhere: neither
   Expo app gets error reporting from this package.

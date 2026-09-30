@@ -1860,11 +1860,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Which client-relevant optional features (sign-in providers, integrations) this deployment has configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.",
+            "description": "Each client-relevant optional feature (sign-in providers, integrations) by name, and whether this deployment has it configured. `false` means not configured, not unhealthy. Server-internal capabilities are not exposed here.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CapabilitiesResponseDto"
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  }
                 }
               }
             }
@@ -5377,20 +5380,6 @@
           }
         },
         "required": ["roleIds"]
-      },
-      "CapabilitiesResponseDto": {
-        "type": "object",
-        "properties": {
-          "google_oauth": {
-            "type": "boolean",
-            "description": "Sign-in with Google is configured."
-          },
-          "github_oauth": {
-            "type": "boolean",
-            "description": "Sign-in with GitHub is configured."
-          }
-        },
-        "required": ["google_oauth", "github_oauth"]
       },
       "CreateOrganizationRequest": {
         "type": "object",

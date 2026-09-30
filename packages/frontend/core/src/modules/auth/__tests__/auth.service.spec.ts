@@ -106,38 +106,39 @@ describe('AuthService analytics', () => {
 
   // The API refuses a provider identity it has never seen unless the caller
   // asks to register, so an intent dropped on the way through would turn the
-  // register screen's Google button into one that can only ever fail.
+  // register screen's provider buttons into ones that can only ever fail.
   it('passes the sign-up intent through to the client', async () => {
     const { service, repository } = setup();
 
-    await service.socialLogin('google', 'sign-up');
+    await service.socialLogin('alpha', 'sign-up');
 
-    expect(repository.socialLogin).toHaveBeenCalledWith('google', 'sign-up');
+    expect(repository.socialLogin).toHaveBeenCalledWith('alpha', 'sign-up');
   });
 
   it('leaves the intent unset for a plain sign-in', async () => {
     const { service, repository } = setup();
 
-    await service.socialLogin('google');
+    await service.socialLogin('alpha');
 
-    expect(repository.socialLogin).toHaveBeenCalledWith('google', undefined);
+    expect(repository.socialLogin).toHaveBeenCalledWith('alpha', undefined);
   });
 
   it('captures the sign-in when an OAuth round-trip completes', async () => {
     const { service, analytics } = setup();
 
-    await service.socialLogin('google');
+    await service.socialLogin('alpha');
     await service.restoreSession();
 
     expect(analytics.capture).toHaveBeenCalledWith(ANALYTICS_EVENTS.USER_SIGNED_IN, {
-      method: 'google',
+      method: 'social',
+      provider: 'alpha',
     });
   });
 
   it('does not re-emit the social sign-in on a later restore', async () => {
     const { service, analytics } = setup();
 
-    await service.socialLogin('github');
+    await service.socialLogin('beta');
     await service.restoreSession();
     vi.mocked(analytics.capture).mockClear();
 
@@ -150,7 +151,7 @@ describe('AuthService analytics', () => {
   it('drops the pending marker when the user signs in with a password instead', async () => {
     const { service, analytics } = setup();
 
-    await service.socialLogin('google');
+    await service.socialLogin('alpha');
     await service.login({ email: 'ada@example.com', password: 'pw' });
     await flush();
     vi.mocked(analytics.capture).mockClear();

@@ -4,7 +4,6 @@ export type {
   IAuthClient,
   SignUpParams,
   SocialAuthIntent,
-  SocialProvider,
 } from './auth.client';
 export { AuthErrors } from './auth.errors';
 export { AuthModule } from './auth.module';

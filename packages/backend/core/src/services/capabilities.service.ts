@@ -48,7 +48,7 @@ export class CapabilitiesService<TCapability extends string = string> {
     return this.names().filter((name) => !this.capabilities[name]);
   }
 
-  /** One-line summary for the startup log, e.g. `google_oauth=on, github_oauth=off`. */
+  /** One-line summary for the startup log, e.g. `alpha=on, beta=off`. */
   describe(): string {
     return this.names()
       .map((name) => `${name}=${this.capabilities[name] ? 'on' : 'off'}`)

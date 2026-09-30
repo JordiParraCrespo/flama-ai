@@ -1,9 +1,13 @@
+import { useSocialProviders } from '@flama/frontend-core/react';
 import { useTranslation } from 'react-i18next';
 import { LegalSection } from '@/features/public/components/legal-section';
 import { LegalPage } from '@/features/public/sections/legal-page';
 
 export function PrivacyScreen() {
   const { t } = useTranslation();
+  // What a social sign-in shares is only this policy's business when the app
+  // offers one.
+  const socialSignIn = useSocialProviders().offered.length > 0;
 
   return (
     <LegalPage
@@ -20,16 +24,13 @@ export function PrivacyScreen() {
         <p>{t('public.privacy.data.intro')}</p>
         <ul className="list-disc space-y-2 pl-6">
           <li>{t('public.privacy.data.account')}</li>
+          {socialSignIn && <li>{t('public.privacy.data.socialSignIn')}</li>}
           <li>{t('public.privacy.data.workspace')}</li>
           <li>{t('public.privacy.data.content')}</li>
           <li>{t('public.privacy.data.integrations')}</li>
           <li>{t('public.privacy.data.technical')}</li>
         </ul>
-      </LegalSection>
-
-      <LegalSection title={t('public.privacy.google.title')}>
-        <p>{t('public.privacy.google.body')}</p>
-        <p>{t('public.privacy.google.separateConsent')}</p>
+        {socialSignIn && <p>{t('public.privacy.data.socialSignInConsent')}</p>}
       </LegalSection>
 
       <LegalSection title={t('public.privacy.purposes.title')}>

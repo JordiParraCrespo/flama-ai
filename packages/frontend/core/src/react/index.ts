@@ -19,6 +19,7 @@ export {
   useResetPassword,
   useSessionRestore,
   useSocialLogin,
+  useSocialProviders,
 } from './auth.queries';
 export {
   capabilitiesKeys,

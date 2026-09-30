@@ -54,11 +54,10 @@ without it. Model absence honestly:
   `resolveCapabilities()` computes once at boot and the startup log all read
   it, so what a deployment can have is that file, and the log is how a
   self-hoster learns what this one can do. Only the
-  **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`:
-  the OAuth providers) is served by
-  `GET /health/capabilities`, so clients can hide UI for capabilities that are
-  off (the web login page only renders configured providers). Server-internal
-  capabilities never go over the wire — a
+  **client-facing subset** (`CLIENT_CAPABILITIES` in `@flama/shared`) is
+  served by `GET /health/capabilities`, as a map of those names to whether
+  each is on, so clients can hide UI for capabilities that are off.
+  Server-internal capabilities never go over the wire — a
   public endpoint must not describe a deployment's infrastructure beyond what
   its UI already reveals. Add a capability to `CLIENT_CAPABILITIES` only when
   a client has a UI decision hanging on it.
@@ -69,13 +68,13 @@ without it. Model absence honestly:
 
 ```typescript
 // WRONG — crashes at boot if env var is empty
-clientID: configService.getOrThrow<string>('oauth.google.clientId'),
+apiKey: configService.getOrThrow<string>('integration.apiKey'),
 
 // WRONG — boots, but leaks a fake credential to every consumer
-clientId: z.string().default('not-set'),
+apiKey: z.string().default('not-set'),
 
 // CORRECT — absence is representable; consumers must handle undefined
-clientId: z.string().optional(),
+apiKey: z.string().optional(),
 ```
 
 ### Required vs optional — keep the boundary explicit

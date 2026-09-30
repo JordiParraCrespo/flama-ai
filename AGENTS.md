@@ -108,7 +108,9 @@ and the block with them, op 1 again with the body the plugin carries; and the
 entry's own `json` edits run backwards. A prune empties a feature's fences and
 keeps them, so a plugin bringing it back merges into its own place; only a
 block a slot put in place goes whole, and which those are is the entry's to
-say (`slots`, which an install records). Copied files arrive trimmed by the
+say (`slots`, which an install records) — that, and every block in a file the
+feature replaces (`replaces`), which the prune gives back to the starter's
+version with no fence left in it. Copied files arrive trimmed by the
 prune's own edit. Generated files — `apps/api/openapi.json` and the
 API client — carry no markers and neither direction edits them: a feature
 with endpoints declares `regenerate`, and the prune, the installer and
