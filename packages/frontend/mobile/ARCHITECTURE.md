@@ -9,8 +9,8 @@ is here is glue — native modules, storage, a bundler-level bootstrap — so
 `lib/` is the largest kind, and there is no `dialogs/`.
 
 The package is source-exported: `main`, and one subpath per concern
-(`./analytics`, `./auth`, `./config`, `./forms`, `./i18n`, `./layout`,
-`./platform`, `./theme`, plus `./polyfills`), all pointing into `src/`. Metro
+(`./analytics`, `./auth`, `./forms`, `./i18n`, `./layout`, `./platform`,
+`./theme`, plus `./polyfills`), all pointing into `src/`. Metro
 compiles it with the app.
 
 ## The concerns
@@ -19,7 +19,6 @@ compiles it with the app.
 | --- | --- | --- |
 | `platform` | `createQueryPersistence`, `ExpoSecureStoreService`, the MMKV stores (`storage`, `stateStorage`, `queryStorage`), the fetch polyfills | leaf |
 | `theme` | `THEME` (the NativeWind variable sets), `NAV_THEME` for React Navigation, `BrandGlyph`, `ThemeToggle` | leaf |
-| `config` | `configManager` over the kernel's `ConfigManager`, `AppConfig`, `staticConfig`, `ConfigManagerContext`, `useConfig` — it reads `platform`'s storage | middle |
 | `forms` | `useZodResolver`, `FormField` (a `Controller` field with its label and error) | leaf |
 | `analytics` | `ScreenViewTracker` | leaf |
 | `i18n` | the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`, `LanguageSwitcher`, and — re-exported from `@flama/frontend-core` — `useLocale` and the date formatters; it reads `platform`'s MMKV store for the saved locale | middle |
@@ -118,8 +117,8 @@ errors for an app, so neither Expo app inherits a reporter from this package.
 ## What `pnpm arch` enforces
 
 - `no-circular` — no import cycles, counting value imports only.
-- `leaves-stay-leaves` — `platform`, `theme`, `analytics`, `forms`, `config`
-  never import `i18n`, `layout` or `auth`.
+- `leaves-stay-leaves` — `platform`, `theme`, `analytics`, `forms` never
+  import `i18n`, `layout` or `auth`.
 - `middle-below-top` — `i18n` and `layout` never import `auth`.
 - `concerns-meet-at-their-index` — a concern reaches another only through
   that concern's `index.ts`.

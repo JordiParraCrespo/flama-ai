@@ -2,13 +2,13 @@
 
 What the Expo apps — `apps/mobile`, and `apps/admin-mobile` with that
 plugin — share below their routes: the persisted query client, secure storage
-and MMKV, remote config, form plumbing, i18n, theming, the sign-in chrome,
+and MMKV, form plumbing, i18n, theming, the sign-in chrome,
 error boundaries and analytics. It is source-exported (`main` points at `src/index.ts`) and compiled
 by each app's Metro bundler, with a subpath export per concern.
 
 The kit is organised by concern — `src/<concern>/<kind>/`, the kinds a
-feature has — and the concerns are layered: `platform`, `theme`, `config`,
-`forms` and `analytics` are leaves, `i18n` and `layout` build on them, and
+feature has — and the concerns are layered: `platform`, `theme`, `forms`
+and `analytics` are leaves, `i18n` and `layout` build on them, and
 `auth` sits on top. The kit imports `@flama/design-system-mobile` and
 `@flama/frontend-core`, never a product package.
 
@@ -20,13 +20,11 @@ listed in `package.json` `sideEffects`.
 ## What it exports
 
 From the root and from the matching subpath (`./analytics`, `./auth`,
-`./config`, `./forms`, `./i18n`, `./layout`, `./platform`, `./theme`):
+`./forms`, `./i18n`, `./layout`, `./platform`, `./theme`):
 
 - **platform** — `createQueryPersistence` (a `QueryClient` plus MMKV-backed
   `persistOptions`), `ExpoSecureStoreService`, `storage`, `stateStorage`,
   `queryStorage`.
-- **config** — `configManager`, `ConfigManagerContext`, `useConfigManager`,
-  `useConfig`, `AppConfig`, `staticConfig`.
 - **forms** — `useZodResolver` and `FormField`; translated API failures come
   from `@flama/frontend-core/react` and are re-exported for compatibility.
 - **i18n** — the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`,
@@ -65,8 +63,6 @@ and then the rest by name:
 import '@flama/frontend-mobile/i18n';
 import {
   AppErrorFallback,
-  ConfigManagerContext,
-  configManager,
   ErrorBoundary,
   NAV_THEME,
   ScreenErrorFallback,
