@@ -17,7 +17,7 @@ type CapabilityCheck = (config: ConfigService) => boolean;
  * `BETTER_AUTH_SECRET`) are the opposite and are not listed here: they fail
  * boot loudly in their config schemas.
  */
-const CAPABILITIES = {
+export const CAPABILITIES = {
   // flama:plugins capabilities
 } satisfies Record<string, CapabilityCheck>;
 
