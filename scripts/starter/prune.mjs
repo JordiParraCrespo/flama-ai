@@ -53,6 +53,7 @@ import { deleteJsonEntry, deleteJsonValueAt } from '../lib/json-text.mjs';
 // is this script's own, and stays here.
 import {
   dropBlocks,
+  hasFilledBlock,
   identifierRegex,
   idsOnSlot,
   isEmptyBlock,
@@ -220,10 +221,19 @@ function declaredSlots(manifest, removed, file) {
   return slots;
 }
 
+/**
+ * The removed features that replace `file`: their version is the file with
+ * their blocks in, the starter's the file without them, so `dropBlocks` takes
+ * those out whole and leaves no fence of theirs behind.
+ */
+function replacedBy(manifest, removed, file) {
+  return new Set([...removed].filter((id) => manifest.features[id]?.replaces?.includes(file)));
+}
+
 /** `dropBlocks`, reporting a malformed marker the same way. */
-function dropBlocksReported(file, content, removed, slots) {
+function dropBlocksReported(file, content, removed, slots, whole) {
   try {
-    return dropBlocks(file, content, removed, { slots });
+    return dropBlocks(file, content, removed, { slots, whole });
   } catch (error) {
     if (error instanceof MarkerError) fail(error.message);
     throw error;
@@ -259,6 +269,13 @@ function check(manifest) {
             `features.json: "${id}" declares a block on ${file} → ${anchor}, and there is none`,
           );
       }
+    }
+    // So is a replaced file: its blocks are the feature's version of it, and
+    // a file with none would give a removal nothing to put back.
+    for (const file of feature.replaces ?? []) {
+      const content = existsSync(join(ROOT, file)) ? readFileSync(join(ROOT, file), 'utf8') : '';
+      if (!hasFilledBlock(file, content, id))
+        problems.push(`features.json: "${id}" replaces ${file}, which holds no block of it`);
     }
   }
 
@@ -510,6 +527,13 @@ function dropFromManifest(features, shared, deleted, dryRun) {
       if (next === null) fail(`features.json: "${id}" declares no slots in "${file}" to drop`);
       text = next;
     }
+    // And the files it replaces there.
+    for (const file of feature.replaces ?? []) {
+      if (!inside(file)) continue;
+      const next = deleteJsonValueAt(text, ['features', id, 'replaces'], file);
+      if (next === null) fail(`features.json: "${id}" replaces no "${file}" to drop`);
+      text = next.text;
+    }
   }
 
   // Whatever shared paths remain, the departed are no longer among their
@@ -561,7 +585,13 @@ function prune(manifest, removedIds, options) {
     if (!isText(buffer)) continue;
     const content = buffer.toString('utf8');
     if (!content.includes('flama:begin')) continue;
-    const text = dropBlocksReported(file, content, removed, declaredSlots(manifest, removed, file));
+    const text = dropBlocksReported(
+      file,
+      content,
+      removed,
+      declaredSlots(manifest, removed, file),
+      replacedBy(manifest, removed, file),
+    );
     if (text === null) continue;
     console.log(`  edit   ${file}`);
     edited.push(file);

@@ -52,6 +52,12 @@
  *       //   and leaves every other fence as the hole a prune leaves. A
  *       //   feature the starter ships carries the starter's declaration,
  *       //   which says what its prune took whole where a snapshot lands.
+ *       "replaces": ["<file>"],
+ *       //   Files the starter ships a version of that this feature replaces
+ *       //   with its own: the starter's lines, and the feature's fenced among
+ *       //   them. The prune takes those blocks out whole, so what it leaves
+ *       //   is the starter's version and no fence; the plugin carries the
+ *       //   feature's as a snapshot, and the install merges it back.
  *       "requires": ["<feature id>"],
  *       "scripts":  ["<package.json script>"],
  *       "shared":   [{ "path", "identifiers" }],
@@ -92,12 +98,14 @@
  *
  *     // A feature the starter still ships leaves no anchor, only its fences:
  *     // the starter's copy of each file it has blocks in, merged back
- *     // three-way (`replaySnapshots` in ops.mjs).
+ *     // three-way (`replaySnapshots` in ops.mjs). A file the feature replaces
+ *     // is carried the same way, as the feature's version.
  *     "snapshots": [{ "file", "source", "needs" }]
  *   }
  *
  * OP 3 is the `json` list above, run backwards: what a prune removes, an
- * install puts back. There is no fourth: a snapshot is op 1 without the slot.
+ * install puts back. There is no fourth: a snapshot is op 1 without the slot,
+ * and a replaced file is a snapshot whose blocks the prune took whole.
  * The ops are `ops.mjs`; reading a plugin and deciding whether a project can
  * take it is `source.mjs`; this file is the command. Text goes through `markers.mjs` and JSON through
  * `json-text.mjs`, whose delete and insert come in pairs — that is what makes

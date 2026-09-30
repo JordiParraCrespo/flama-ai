@@ -251,7 +251,9 @@ export function idsOnSlot(file, content, slot) {
  * feature back merges into that hole, not into a slot every plugin shares.
  * Two plugins filling one list keep a fence apiece between them, so their
  * merges never meet. The exception is a block a slot put there: the slot is
- * its place, and it goes whole, leaving the slot as it was.
+ * its place, and it goes whole, leaving the slot as it was. So does a block
+ * in a file its feature replaces: the file is its place, and it goes back to
+ * the starter's version with no fence of the feature left in it.
  *
  * Which blocks a slot put there is the feature's to say, never where a block
  * happens to sit: a hole a prune left can sit right above a filled slot.
@@ -265,7 +267,8 @@ export function idsOnSlot(file, content, slot) {
  * plugin unremovable and a co-owned block unwidenable by the next install.
  *
  * `whole` takes every block out whole, fences and all: what a prune did before
- * it kept them, which a project pruned then still looks like.
+ * it kept them, which a project pruned then still looks like. A set of ids
+ * takes only theirs out whole: the features that replace this file.
  */
 export function dropBlocks(file, content, removed, { whole = false, slots = new Map() } = {}) {
   const blocks = blocksOf(file, content);
@@ -273,6 +276,7 @@ export function dropBlocks(file, content, removed, { whole = false, slots = new 
   const lines = content.split('\n');
   const gone = (block) => block.ids.every((id) => removed.has(id));
   const slotted = (block) => {
+    if (whole instanceof Set && block.ids.some((id) => whole.has(id))) return true;
     const slot = slotOf(lines, block, blocks);
     return Boolean(slot) && block.ids.some((id) => slots.get(id)?.has(slot));
   };
@@ -281,7 +285,7 @@ export function dropBlocks(file, content, removed, { whole = false, slots = new 
   for (const block of blocks) {
     if (!gone(block) || drop.has(block.begin)) continue;
     for (let i = block.begin; i <= block.end; i++) drop.add(i);
-    if (!whole && !slotted(block)) {
+    if (whole !== true && !slotted(block)) {
       kept.add(block.begin);
       kept.add(block.end);
     }
