@@ -17,12 +17,12 @@ compiles it with the app.
 
 | Concern | What it holds | Layer |
 | --- | --- | --- |
-| `platform` | `createQueryPersistence`, `ExpoSecureStoreService`, the MMKV stores (`storage`, `stateStorage`, `queryStorage`), `Sentry`/`sentryEnabled`, the fetch polyfills | leaf |
+| `platform` | `createQueryPersistence`, `ExpoSecureStoreService`, the MMKV stores (`storage`, `stateStorage`, `queryStorage`), the fetch polyfills | leaf |
 | `theme` | `THEME` (the NativeWind variable sets), `NAV_THEME` for React Navigation, `BrandGlyph`, `ThemeToggle` | leaf |
 | `forms` | `useZodResolver`, `FormField` (a `Controller` field with its label and error) | leaf |
 | `analytics` | `ScreenViewTracker` | leaf |
 | `i18n` | the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`, `LanguageSwitcher`, and — re-exported from `@flama/frontend-core` — `useLocale` and the date formatters; it reads `platform`'s MMKV store for the saved locale | middle |
-| `layout` | `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback` (optional title, message and retrying state) | middle |
+| `layout` | `ErrorBoundary` (it logs what it catches to the console), `AppErrorFallback`, `ScreenErrorFallback` (optional title, message and retrying state) | middle |
 | `auth` | the sign-in chrome: `AuthLayout`, `BrandLogo`, the `Auth*` primitives, `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`, `SocialLoginButtons`, the provider marks, `SignOutButton` (owns `useLogout`); `LoginForm`, `ForgotPasswordForm`, `ResetPasswordForm`; `ForgotPasswordScreen`, `ResetPasswordScreen` | top |
 
 `auth` is the one concern on top, and it is on top because it is the one that
@@ -78,7 +78,7 @@ app binds as the kernel's `storage`.
 
 ## Imports that run code
 
-Three files do work when imported, and all three are named in `sideEffects`:
+Two files do work when imported, and both are named in `sideEffects`:
 
 - `@flama/frontend-mobile/polyfills` (`src/platform/lib/polyfills.ts`)
   replaces `fetch`, `Headers`, `Request` and `Response` with
@@ -87,12 +87,19 @@ Three files do work when imported, and all three are named in `sideEffects`:
 - `@flama/frontend-mobile/i18n` (`src/i18n/lib/i18n.ts`) initialises i18next
   with the device locale and the saved preference. It is the first line of
   `apps/mobile/app/_layout.tsx`, before any screen renders a string.
-- `src/platform/lib/sentry.ts` initialises Sentry when a DSN is configured.
 
 `ScreenViewTracker` is the same idea in component form: Expo Router emits
 nothing an analytics provider can observe, so the tracker renders `null` and
 exists only so `usePageView(usePathname())` runs inside `FlamaProvider`. The
 root layout mounts it beside the app's content.
+
+## Where caught errors go
+
+The kit names no error-reporting vendor. `ErrorBoundary` logs what it catches
+with `console.error`, the error itself among the arguments, and that is all it
+does with it. An app that sends errors somewhere does that in a file of its
+own, imported by its entry file, and picks them up there. Nothing here reports
+errors for an app, so neither Expo app inherits a reporter from this package.
 
 ## Add a concern
 

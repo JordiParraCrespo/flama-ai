@@ -15,7 +15,7 @@ and `analytics` are leaves, `i18n` and `layout` build on them, and
 Two modules run code when imported and are imported for that alone:
 `@flama/frontend-mobile/polyfills` (first line of the entry file) and
 `@flama/frontend-mobile/i18n` (first line of the root layout). Both are
-listed in `package.json` `sideEffects`, with `platform/lib/sentry.ts`.
+listed in `package.json` `sideEffects`.
 
 ## What it exports
 
@@ -24,7 +24,7 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
 
 - **platform** — `createQueryPersistence` (a `QueryClient` plus MMKV-backed
   `persistOptions`), `ExpoSecureStoreService`, `storage`, `stateStorage`,
-  `queryStorage`, `Sentry`, `sentryEnabled`.
+  `queryStorage`.
 - **forms** — `useZodResolver` and `FormField`; translated API failures come
   from `@flama/frontend-core/react` and are re-exported for compatibility.
 - **i18n** — the i18next instance, `LOCALE_STORAGE_KEY`, `setLocale`,
@@ -35,7 +35,9 @@ From the root and from the matching subpath (`./analytics`, `./auth`,
   the `Auth*` primitives (title, subtitle, divider, note, form error, …),
   `PasswordInput`, `PasswordRequirements`/`PasswordChecklist`,
   `SocialLoginButtons` and the provider marks.
-- **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`.
+- **layout** — `ErrorBoundary`, `AppErrorFallback`, `ScreenErrorFallback`. The
+  boundary logs what it catches to the console and reports it nowhere: neither
+  Expo app gets error reporting from this package.
 - **analytics** — `ScreenViewTracker`.
 - **tailwind-config** — the package-owned NativeWind content glob, exported
   separately for app Tailwind configs.
