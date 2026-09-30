@@ -19,17 +19,8 @@ const plugins: ExpoConfig['plugins'] = [
       iconSets: [{ inputDir: '../../packages/frontend/design-system/mobile/assets/icons/ui' }],
     },
   ],
+  // flama:plugins expo-plugins
 ];
-
-if (process.env.SENTRY_ORG && process.env.SENTRY_PROJECT) {
-  plugins.push([
-    '@sentry/react-native/expo',
-    {
-      organization: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-    },
-  ]);
-}
 
 const config: ExpoConfig = {
   name: 'Flama',
