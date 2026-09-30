@@ -1,5 +1,5 @@
 export { ConsoleEmailService } from './console-email.service';
-export { EmailModule } from './email.module';
+export { type EmailDriver, type EmailDrivers, EmailModule } from './email.module';
 export {
   type ActionEmailParams,
   type EmailFrameParams,
@@ -9,5 +9,9 @@ export {
   type PasswordResetEmailParams,
   type WelcomeEmailParams,
 } from './email.service';
-export { NodemailerEmailService } from './nodemailer-email.service';
-export { ResendEmailService } from './resend-email.service';
+export {
+  renderEmailVerificationEmail,
+  renderInvitationEmail,
+  renderPasswordResetEmail,
+  renderWelcomeEmail,
+} from './render';

@@ -1,6 +1,7 @@
 # @flama/backend-email — Agent Instructions
 
-Pluggable email delivery plus React Email templates.
+Pluggable email: the email port, the module that binds it, the console driver
+and the React Email templates.
 
 > Read the root [`CLAUDE.md`](../../../CLAUDE.md) and
 > [`.agents/rules/backend-packages.md`](../../../.agents/rules/backend-packages.md)
@@ -10,11 +11,9 @@ Pluggable email delivery plus React Email templates.
 
 ```
 src/
-├── email.module.ts            # NestJS module + factory
+├── email.module.ts            # NestJS module: binds the port to the configured driver
 ├── email.service.ts           # abstract EmailService (the port)
 ├── console-email.service.ts   # dev: logs to console
-├── nodemailer-email.service.ts# SMTP via nodemailer
-├── resend-email.service.ts    # Resend provider
 ├── render.ts                  # React Email -> HTML rendering
 ├── templates/                 # React Email templates
 └── index.ts
@@ -22,10 +21,14 @@ src/
 
 ## Conventions
 
-- **Pluggable service pattern**: abstract `EmailService` → concrete providers
-  (console / nodemailer / resend) → selected by the factory in `EmailModule`.
-  Add a provider as another concrete class; do not branch inside callers.
-- Templates are **React Email** components rendered via `render.ts`.
+- **Pluggable service pattern**: abstract `EmailService` → concrete
+  implementations (drivers) → chosen by the factory in `EmailModule`. The
+  package ships the port and the console driver, and names no other: the app
+  passes the drivers it runs on to `EmailModule.register({ console: … })`, and
+  its config accepts exactly those names. A driver is a class whose
+  constructor takes the `ConfigService`; do not branch inside callers.
+- Templates are **React Email** components rendered via `render.ts`, which the
+  package exports for the drivers that deliver them.
 - Ships **CommonJS**.
 
 ## Commands

@@ -24,13 +24,10 @@
     "@nestjs/core": "^11.1.28",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
-    "nodemailer": "^9.0.3",
-    "react": "19.1.0",
-    "resend": "^6.18.0"
+    "react": "19.1.0"
   },
   "devDependencies": {
     "@flama/tsconfig": "workspace:^",
-    "@types/nodemailer": "^8.0.1",
     "@types/react": "19.2.14",
     "react-dom": "19.1.0",
     "reflect-metadata": "^0.2.2",

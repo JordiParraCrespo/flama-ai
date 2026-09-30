@@ -20,14 +20,6 @@ const CAPABILITIES = {
   github_oauth: (config: ConfigService) =>
     Boolean(config.get('oauth.github.clientId') && config.get('oauth.github.clientSecret')),
   // flama:plugins capabilities
-  // The `console` provider only prints to stdout — that is not delivery.
-  email_delivery: (config: ConfigService) => {
-    const provider = config.get<string>('email.provider');
-    return (
-      (provider === 'nodemailer' && Boolean(config.get('email.smtpHost'))) ||
-      (provider === 'resend' && Boolean(config.get('email.resendApiKey')))
-    );
-  },
 } satisfies Record<string, (config: ConfigService) => boolean>;
 
 export type DeploymentCapability = keyof typeof CAPABILITIES;
