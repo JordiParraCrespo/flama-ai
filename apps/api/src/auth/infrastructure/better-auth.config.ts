@@ -12,6 +12,7 @@ import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
+import { accountLinking, socialProviders } from './oauth-providers.config';
 // flama:plugins auth-plugin-imports
 
 // flama:begin organizations
@@ -188,36 +189,10 @@ export const auth = betterAuth({
       });
     },
   },
-  // The social sign-in providers, each with its own settings, and each run only
-  // once this deployment has its credentials.
-  socialProviders: {
-    // flama:plugins social-providers
-  },
-  account: {
-    accountLinking: {
-      // Someone who registered with a password and later signs in with a
-      // provider on the same address is the same person, so the provider's
-      // identity is attached to the account they already have. Without this
-      // they hit `account_not_linked` on every social sign-in and the only way
-      // back in is the password they may have come here to stop using.
-      enabled: true,
-      // Deliberately empty, and not the list of providers we ship. A "trusted"
-      // provider is linked *without* checking whether the provider itself
-      // verified the address — and an unverified address is exactly the one
-      // somebody else can claim. A provider that reports `email_verified` loses
-      // nothing by staying untrusted, and the check stays in force.
-      trustedProviders: [],
-      // The other half of that check, on our side of the link: the existing
-      // account must have proven the address too. Sign-up here does not
-      // require verification (`requireEmailVerification: false` above), so
-      // without this anyone could register a password account on an address
-      // they do not own and be handed the real owner's account the moment that
-      // person signs in with a provider. Unverified accounts get
-      // `account_not_linked` instead, which the login screen turns into "sign
-      // in with your password" — a dead end only for the attacker.
-      requireLocalEmailVerified: true,
-    },
-  },
+  // The social sign-in providers, and how one joins an account that already
+  // has its address.
+  socialProviders,
+  ...accountLinking,
   user: {
     // Declared in @flama/auth so the web/mobile clients' `inferAdditionalFields`
     // consume the same schema and cannot drift from the server.
