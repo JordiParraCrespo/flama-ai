@@ -22,6 +22,7 @@ wired into the API.
 | `UserContextInterceptor`                                  | Attaches `userId` + credential scopes to the request log context        |
 | `createAuthRouteLoggingMiddleware`                        | Request logging for Better Auth routes (its `middleware` option)        |
 | `PaginatedRequest`, `paginationSchema`                    | Standard pagination query request                                       |
+| `likeContains`                                            | An `ILIKE` contains-pattern with the term's `%`, `_` and `\` escaped     |
 | `Mapper`                                                  | Domain ↔ persistence/response mapper interface                          |
 
 ## Usage

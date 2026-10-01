@@ -4,6 +4,7 @@ import {
   Paginated,
   type PaginatedQueryParams,
 } from '@flama/backend-ddd';
+import { likeContains } from '@flama/backend-core';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
@@ -82,12 +83,14 @@ export class UserRepository implements UserRepositoryPort {
     const baseWhere: FindOptionsWhere<UserOrmEntity> = {};
     if (role) baseWhere.role = role;
 
-    // Search matches name or email; applied as an OR across the columns.
-    const where: FindOptionsWhere<UserOrmEntity>[] | FindOptionsWhere<UserOrmEntity> = search
+    // Search matches name or email, as an OR across the columns, with the
+    // term's `%` and `_` matched literally.
+    const needle = search ? ILike(likeContains(search)) : undefined;
+    const where: FindOptionsWhere<UserOrmEntity>[] | FindOptionsWhere<UserOrmEntity> = needle
       ? [
-          { ...baseWhere, firstName: ILike(`%${search}%`) },
-          { ...baseWhere, lastName: ILike(`%${search}%`) },
-          { ...baseWhere, email: ILike(`%${search}%`) },
+          { ...baseWhere, firstName: needle },
+          { ...baseWhere, lastName: needle },
+          { ...baseWhere, email: needle },
         ]
       : baseWhere;
 

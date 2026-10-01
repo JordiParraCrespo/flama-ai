@@ -4,6 +4,7 @@ import {
   Paginated,
   type PaginatedQueryParams,
 } from '@flama/backend-ddd';
+import { likeContains } from '@flama/backend-core';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
@@ -149,7 +150,8 @@ function searchWhere(
 ): FindOptionsWhere<RoleOrmEntity> | FindOptionsWhere<RoleOrmEntity>[] {
   if (!search) return scopedWhere({}, organizationId);
 
-  const needle = ILike(`%${search}%`);
+  // The term's `%` and `_` match literally.
+  const needle = ILike(likeContains(search));
 
   return [{ name: needle }, { description: needle }].flatMap((match) => {
     const scoped = scopedWhere(match, organizationId);
