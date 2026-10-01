@@ -23,7 +23,8 @@ rules.
   `ArgumentOutOfRangeException`.
 - **Transactional outbox**: `OutboxService` (stage domain events / BullMQ jobs
   in the same transaction as the aggregate write; claim with
-  `FOR UPDATE SKIP LOCKED`; retries with backoff and expiring leases),
+  `FOR UPDATE SKIP LOCKED`; retries with backoff and expiring leases, renewed
+  by `extendLease` while a batch is delivered and fenced on the owner),
   `OutboxRelay` (drain loop + publisher contract), `OutboxMessageSchema`
   (decorator-free `EntitySchema` for the `outbox_message` table).
 - **Utilities**: `RequestContextService`, `convertPropsToObject`.

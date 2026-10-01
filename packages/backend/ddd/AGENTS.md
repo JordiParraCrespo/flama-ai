@@ -41,7 +41,9 @@ src/
   `OutboxService.stageEvents` / `stageJob` **inside the same TypeORM
   transaction** as the aggregate write; `OutboxRelay` (hosted by the app)
   claims rows with `FOR UPDATE SKIP LOCKED`, so replicas lease disjoint rows
-  and expired leases are reclaimed. The `outbox_message` table is created by a
+  and expired leases are reclaimed. While it delivers a batch the relay renews
+  the lease (`extendLease`, a heartbeat at a third of the lease), and the marks
+  that end a delivery only touch rows the relay still owns. The `outbox_message` table is created by a
   migration in the consuming app, mirroring `OutboxMessageSchema`.
 
 ## Commands

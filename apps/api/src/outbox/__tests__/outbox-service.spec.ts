@@ -105,7 +105,9 @@ describe('OutboxService', () => {
 
       const [, params] = query.mock.calls[0];
       // [id, status, error, delayMs] — attempt 2 backs off 1000 * 2^1.
-      expect(params).toEqual(['row-1', 'pending', 'boom', 2000]);
+      // [id, status, error, delayMs, attempts, lockedBy]: the last two fence the
+      // update on the claim the message came from.
+      expect(params).toEqual(['row-1', 'pending', 'boom', 2000, 2, null]);
     });
 
     it('parks the row as failed once attempts are exhausted', async () => {
