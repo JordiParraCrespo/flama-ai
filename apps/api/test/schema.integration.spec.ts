@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { likeContains } from '@flama/backend-core';
 import { GenericContainer, type StartedTestContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';
 import { loadMigrations } from './run-migrations';
@@ -7,7 +8,8 @@ import { loadMigrations } from './run-migrations';
  * The schema the whole migration chain leaves behind, checked in the catalog:
  * the rules in `.agents/rules/database-design.md` that a later migration could
  * quietly break. `HardenAuthTables` and `TimestampsWithTimeZone` are also
- * reverted and re-applied, with rows in place, so their `down()` is proven.
+ * reverted and re-applied, with rows in place, so their `down()` is proven; so
+ * are `AddUserSearchTrigramIndex` and `IndexUnbackedForeignKeys`.
  */
 describe('Database schema (integration)', () => {
   let pgContainer: StartedTestContainer;
@@ -53,6 +55,15 @@ describe('Database schema (integration)', () => {
          FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid
         WHERE c.relnamespace = 'public'::regnamespace`,
     );
+
+  /** Undoes migrations, newest first, until `name` is no longer applied. */
+  const revertThrough = async (name: string) => {
+    for (;;) {
+      const [applied] = await db.query(`SELECT 1 FROM "migrations" WHERE "name" = $1`, [name]);
+      if (!applied) return;
+      await db.undoLastMigration();
+    }
+  };
 
   const naiveTimestamps = async (): Promise<string[]> =>
     (
@@ -185,6 +196,99 @@ describe('Database schema (integration)', () => {
     });
   });
 
+  describe('AddUserSearchTrigramIndex and IndexUnbackedForeignKeys', () => {
+    const TRIGRAM = 'AddUserSearchTrigramIndex1789100000000';
+    const FK_INDEXES = 'IndexUnbackedForeignKeys1789200000000';
+
+    /** Every index the two migrations create, with what `pg_get_indexdef` ends with. */
+    const EXPECTED: [string, RegExp][] = [
+      [
+        'IDX_user_search_trgm',
+        /USING gin \("firstName" gin_trgm_ops, "lastName" gin_trgm_ops, email gin_trgm_ops\)$/,
+      ],
+      [
+        'IDX_user_role_organization',
+        /USING btree \("organizationId"\) WHERE \("organizationId" IS NOT NULL\)$/,
+      ],
+      ['IDX_user_role_role', /USING btree \("roleId"\)$/],
+    ];
+    const ALL = EXPECTED.map(([name]) => name);
+
+    const expectIndexes = async (present: string[]) => {
+      const index = await indexes();
+      const definitions = await db.query(
+        `SELECT c.relname AS name, pg_get_indexdef(i.indexrelid) AS definition
+           FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid
+          WHERE c.relnamespace = 'public'::regnamespace`,
+      );
+      const definition = new Map<string, string>(
+        definitions.map((row: { name: string; definition: string }) => [row.name, row.definition]),
+      );
+      for (const [name, pattern] of EXPECTED) {
+        if (present.includes(name)) {
+          expect(index.get(name), name).toMatchObject({ valid: true });
+          expect(definition.get(name), name).toMatch(pattern);
+        } else {
+          expect(index.has(name), name).toBe(false);
+        }
+      }
+    };
+
+    /** The admin search as `UserRepository.findUsers` issues it. */
+    const search = (term: string) =>
+      db.query(
+        `SELECT "email" FROM "user"
+          WHERE "firstName" ILIKE $1 OR "lastName" ILIKE $1 OR "email" ILIKE $1
+          ORDER BY "email"`,
+        [likeContains(term)],
+      );
+
+    beforeAll(async () => {
+      await db.query(
+        `INSERT INTO "user" ("id", "name", "email", "firstName", "lastName")
+         VALUES ($1, 'Axb', 'axb@search.test', 'Axb', 'Plain'),
+                ($2, 'A_b', 'a_b@search.test', 'A_b', 'Underscore'),
+                ($3, 'Pct', 'pct@search.test', 'Fifty%', 'Percent')`,
+        [randomUUID(), randomUUID(), randomUUID()],
+      );
+    });
+
+    it('builds the user search index and backs the two user_role foreign keys', async () => {
+      await expectIndexes(ALL);
+    });
+
+    it('matches `_` and `%` literally, and serves the search from the trigram index', async () => {
+      expect(await search('a_b')).toEqual([{ email: 'a_b@search.test' }]);
+      expect(await search('%')).toEqual([{ email: 'pct@search.test' }]);
+      expect(await search('axb')).toEqual([{ email: 'axb@search.test' }]);
+
+      // The planner prefers a sequential scan on a table this small; with it
+      // off, the plan shows the one index serving all three conditions.
+      const plan: { 'QUERY PLAN': string }[] = await db.transaction(async (manager) => {
+        await manager.query('SET LOCAL enable_seqscan = off');
+        return manager.query(
+          `EXPLAIN SELECT "email" FROM "user"
+            WHERE "firstName" ILIKE $1 OR "lastName" ILIKE $1 OR "email" ILIKE $1`,
+          [likeContains('ada')],
+        );
+      });
+      const text = plan.map((row) => row['QUERY PLAN']).join('\n');
+      expect(text).toContain('BitmapOr');
+      expect(text.match(/Bitmap Index Scan on "IDX_user_search_trgm"/g)).toHaveLength(3);
+    });
+
+    it('reverts and re-applies both over the same rows', async () => {
+      await revertThrough(FK_INDEXES);
+      await expectIndexes(['IDX_user_search_trgm']);
+      await revertThrough(TRIGRAM);
+      await expectIndexes([]);
+      expect(await search('a_b')).toEqual([{ email: 'a_b@search.test' }]);
+
+      await db.runMigrations();
+      await expectIndexes(ALL);
+    });
+  });
+
   describe('reverting and re-applying', () => {
     const userId = randomUUID();
 
@@ -194,8 +298,8 @@ describe('Database schema (integration)', () => {
     });
 
     it('restores the original schema, and keeps every instant across the round trip', async () => {
-      await db.undoLastMigration(); // TimestampsWithTimeZone
-      await db.undoLastMigration(); // HardenAuthTables
+      await revertThrough('TimestampsWithTimeZone1789000000000');
+      await revertThrough('HardenAuthTables1788900000000');
 
       expect(await naiveTimestamps()).toContain('session.expiresAt');
       expect((await foreignKeys()).has('FK_session_user')).toBe(false);
@@ -219,7 +323,7 @@ describe('Database schema (integration)', () => {
     });
 
     it('refuses to guess the zone when the API and the database disagree', async () => {
-      await db.undoLastMigration();
+      await revertThrough('TimestampsWithTimeZone1789000000000');
       process.env.TZ = 'Europe/Madrid';
       await expect(db.runMigrations()).rejects.toThrow(/TIMESTAMP_SOURCE_TIME_ZONE/);
       expect(await naiveTimestamps()).toContain('user.createdAt');

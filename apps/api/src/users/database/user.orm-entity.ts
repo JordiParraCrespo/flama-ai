@@ -1,5 +1,13 @@
 import type { Role } from '@flama/shared';
-import { Column, CreateDateColumn, Entity, PrimaryColumn, Unique, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
 /**
  * Persistence model for the Better Auth `user` table. This is infrastructure —
@@ -12,6 +20,9 @@ import { Column, CreateDateColumn, Entity, PrimaryColumn, Unique, UpdateDateColu
  */
 @Entity('user')
 @Unique('UQ_user_email', ['email'])
+// A trigram GIN over firstName, lastName and email for the admin search
+// (1789100000000-AddUserSearchTrigramIndex); TypeORM cannot express GIN.
+@Index('IDX_user_search_trgm', { synchronize: false })
 export class UserOrmEntity {
   @PrimaryColumn({ type: 'uuid', primaryKeyConstraintName: 'PK_user' })
   id!: string;
