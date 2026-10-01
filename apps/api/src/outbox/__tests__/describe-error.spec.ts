@@ -1,5 +1,5 @@
+import { describeError } from '@flama/backend-ddd';
 import { describe, expect, it } from 'vitest';
-import { describeError } from '../describe-error';
 
 describe('describeError', () => {
   it('answers an Error by its message', () => {

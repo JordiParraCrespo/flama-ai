@@ -4,6 +4,7 @@ export {
   type CommandMetadata,
   type CommandProps,
 } from './command.base';
+export { describeError } from './describe-error';
 export {
   DomainEvent,
   type DomainEventMetadata,

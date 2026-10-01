@@ -1,4 +1,5 @@
 import type { DataSource, EntityManager } from 'typeorm';
+import { describeError } from '../describe-error';
 import type { DomainEvent } from '../domain-event.base';
 import {
   OUTBOX_TABLE,
@@ -200,11 +201,10 @@ export class OutboxService {
 
   /**
    * Renew `owner`'s lease on `ids` to `leaseMs` from now, and return the ids it
-   * still held. The relay calls it on a timer while it delivers a batch, so a
-   * listener slower than the lease keeps its rows instead of another replica
-   * claiming and running them again. A row whose lease `owner` already lost (it
-   * lapsed and another relay claimed it) or that is no longer pending is left
-   * alone and missing from the result.
+   * still held. The relay calls it before each row of a batch, so the rows
+   * still waiting behind a slow one keep their leases. A row whose lease
+   * `owner` already lost (it lapsed and another relay claimed it) or that is no
+   * longer pending is left alone and missing from the result.
    */
   async extendLease(owner: string, ids: readonly string[], leaseMs: number): Promise<string[]> {
     if (ids.length === 0) return [];
@@ -220,17 +220,17 @@ export class OutboxService {
   }
 
   /**
-   * Mark delivered rows, releasing their leases. With `owner`, only rows that
-   * owner still leases are marked: a row another relay claimed after this one
-   * lost the lease is that relay's to finish.
+   * Mark delivered rows, releasing their leases. Only rows `owner` still leases
+   * are marked: a row another relay claimed after this one lost the lease is
+   * that relay's to finish.
    */
-  async markProcessed(ids: readonly string[], owner?: string): Promise<void> {
+  async markProcessed(ids: readonly string[], owner: string): Promise<void> {
     if (ids.length === 0) return;
     await this.dataSource.query(
       `UPDATE "${OUTBOX_TABLE}"
        SET "status" = 'processed', "processedAt" = now(), "lockedBy" = NULL, "lockedUntil" = NULL
-       WHERE "id" = ANY($1) AND ($2::varchar IS NULL OR "lockedBy" = $2::varchar)`,
-      [ids, owner ?? null],
+       WHERE "id" = ANY($1) AND "lockedBy" = $2`,
+      [ids, owner],
     );
   }
 
@@ -240,12 +240,12 @@ export class OutboxService {
    * parks as `failed` — kept, with its reason and last error, rather than
    * dropped.
    *
-   * The update is fenced on the claim `message` came from (its `lockedBy` and
+   * The update is fenced on `owner` and the claim `message` came from (its
    * `attempts`): if that lease lapsed and another relay claimed the row since,
    * this is a no-op, so a stale failure never releases the other relay's lease
    * or rewinds its backoff.
    */
-  async markFailed(message: OutboxMessageRecord, error: string): Promise<void> {
+  async markFailed(message: OutboxMessageRecord, error: string, owner: string): Promise<void> {
     const exhausted = message.attempts >= this.maxAttempts;
     const status: OutboxMessageStatus = exhausted ? 'failed' : 'pending';
     const delayMs = Math.min(
@@ -256,9 +256,8 @@ export class OutboxService {
       `UPDATE "${OUTBOX_TABLE}"
        SET "status" = $2, "lastError" = $3, "lockedBy" = NULL, "lockedUntil" = NULL,
            "availableAt" = now() + ($4::int * interval '1 millisecond')
-       WHERE "id" = $1 AND "attempts" = $5
-         AND ($6::varchar IS NULL OR "lockedBy" = $6::varchar)`,
-      [message.id, status, error, delayMs, message.attempts, message.lockedBy ?? null],
+       WHERE "id" = $1 AND "attempts" = $5 AND "lockedBy" = $6`,
+      [message.id, status, error, delayMs, message.attempts, owner],
     );
   }
 
@@ -281,8 +280,9 @@ export class OutboxService {
     try {
       await this.drainer();
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger?.warn(`Outbox drain failed; rows stay pending for the next poll: ${message}`);
+      this.logger?.warn(
+        `Outbox drain failed; rows stay pending for the next poll: ${describeError(error)}`,
+      );
     }
   }
 

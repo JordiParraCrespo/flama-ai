@@ -1,3 +1,4 @@
+import { describeError } from '../describe-error';
 import { DEFAULT_LEASE_MS, type OutboxService } from './outbox.service';
 import type { OutboxMessageRecord } from './outbox-message';
 
@@ -15,14 +16,8 @@ export interface OutboxRelayOptions {
   /** Poll interval for the background loop. */
   pollIntervalMs?: number;
   batchSize?: number;
-  /** Lease duration passed to `OutboxService.claim` and renewed while a batch is delivered. */
+  /** Lease duration passed to `OutboxService.claim` and renewed before each row of a batch. */
   leaseMs?: number;
-  /**
-   * How often the lease on the batch being delivered is renewed. Defaults to a
-   * third of `leaseMs`, so two renewals can fail before another relay may
-   * claim the rows.
-   */
-  heartbeatMs?: number;
   logger?: { warn(message: string): void };
 }
 
@@ -43,14 +38,14 @@ const DEFAULT_BATCH_SIZE = 20;
  * delivery (see `drainOnce`) queues its pass and returns at once instead of
  * joining that same chain.
  *
- * While a batch is delivered, a heartbeat renews the lease on its undelivered
- * rows every `heartbeatMs` (`OutboxService.extendLease`, fenced on this
- * relay's `owner`), so a listener slower than `leaseMs` keeps its rows:
- * another replica's poll cannot claim them and run them a second time. The
- * lease still lapses when the process dies or stalls long enough to miss the
- * renewals, which is the crash recovery. The marks that end a delivery are
- * fenced the same way: a relay that lost its lease anyway (a stall past
- * `leaseMs`) neither marks the other relay's claim processed nor releases it.
+ * Before each row of a batch the relay renews the lease on the rows still
+ * waiting (`OutboxService.extendLease`, fenced on this relay's `owner`), so a
+ * slow row does not let the ones behind it lapse to another replica. A row
+ * whose lease was lost anyway is skipped, not published. The marks that end a
+ * delivery are fenced on `owner` too, so a relay that lost a row neither marks
+ * it processed nor releases the other relay's claim. One publisher slower than
+ * `leaseMs` is not covered: that duplicate is accepted, and listeners must be
+ * idempotent.
  */
 export class OutboxRelay {
   private timer?: ReturnType<typeof setInterval>;
@@ -109,86 +104,44 @@ export class OutboxRelay {
           leaseMs: this.options.leaseMs,
         });
       } catch (error) {
-        this.options.logger?.warn(`Outbox claim failed: ${describe(error)}`);
+        this.options.logger?.warn(`Outbox claim failed: ${describeError(error)}`);
         return delivered;
       }
       if (batch.length === 0) return delivered;
-      const leased = new Set(batch.map((message) => message.id));
-      const stopHeartbeat = this.startHeartbeat(leased);
-      try {
-        for (const message of batch) {
-          try {
-            this.delivering = true;
-            try {
-              await this.publisher(message);
-            } finally {
-              this.delivering = false;
-            }
-            await this.outbox.markProcessed([message.id], this.options.owner);
-            leased.delete(message.id);
-            delivered++;
-          } catch (error) {
+      for (const [index, message] of batch.entries()) {
+        try {
+          const kept = await this.outbox.extendLease(
+            this.options.owner,
+            batch.slice(index).map((row) => row.id),
+            this.options.leaseMs ?? DEFAULT_LEASE_MS,
+          );
+          if (!kept.includes(message.id)) {
             this.options.logger?.warn(
-              `Outbox delivery of ${message.eventName} (${message.id}) failed: ${describe(error)}`,
+              `Outbox lease lost on ${message.eventName} (${message.id}) before delivery; skipped`,
             );
-            // `markFailed` releases the lease, so the heartbeat stops renewing it.
-            leased.delete(message.id);
-            try {
-              await this.outbox.markFailed(message, describe(error));
-            } catch {
-              // Can't reach the database to record the failure; the lease
-              // expires and the row is reclaimed on a later pass.
-            }
+            continue;
+          }
+          this.delivering = true;
+          try {
+            await this.publisher(message);
+          } finally {
+            this.delivering = false;
+          }
+          await this.outbox.markProcessed([message.id], this.options.owner);
+          delivered++;
+        } catch (error) {
+          this.options.logger?.warn(
+            `Outbox delivery of ${message.eventName} (${message.id}) failed: ${describeError(error)}`,
+          );
+          try {
+            await this.outbox.markFailed(message, describeError(error), this.options.owner);
+          } catch {
+            // Can't reach the database to record the failure; the lease
+            // expires and the row is reclaimed on a later pass.
           }
         }
-      } finally {
-        stopHeartbeat();
       }
       if (batch.length < batchSize) return delivered;
     }
   }
-
-  /**
-   * Renew the lease on the `leased` rows every `heartbeatMs` until the
-   * returned function is called. A row the renewal no longer finds under this
-   * owner was lost (the process stalled past `leaseMs` and another relay
-   * claimed it); it is logged and dropped from the set, and the fenced marks
-   * leave it to that relay. A failed renewal is logged, not thrown: the
-   * delivery carries on and the next tick tries again.
-   */
-  private startHeartbeat(leased: Set<string>): () => void {
-    const leaseMs = this.options.leaseMs ?? DEFAULT_LEASE_MS;
-    const heartbeatMs = this.options.heartbeatMs ?? Math.max(Math.floor(leaseMs / 3), 1);
-    let renewing = false;
-    const timer = setInterval(() => {
-      // Never stack renewals on a slow database; the next tick tries again.
-      if (renewing || leased.size === 0) return;
-      renewing = true;
-      const ids = [...leased];
-      void this.outbox
-        .extendLease(this.options.owner, ids, leaseMs)
-        .then((kept) => {
-          const lost = ids.filter((id) => leased.has(id) && !kept.includes(id));
-          for (const id of lost) leased.delete(id);
-          if (lost.length > 0) {
-            this.options.logger?.warn(
-              `Outbox lease lost on ${lost.length} row(s) still being delivered: ${lost.join(', ')}`,
-            );
-          }
-        })
-        .catch((error: unknown) => {
-          this.options.logger?.warn(`Outbox lease renewal failed: ${describe(error)}`);
-        })
-        .finally(() => {
-          renewing = false;
-        });
-    }, heartbeatMs);
-    // A renewal never keeps the process alive on its own.
-    timer.unref?.();
-    return () => clearInterval(timer);
-  }
-}
-
-function describe(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

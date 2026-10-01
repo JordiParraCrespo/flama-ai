@@ -101,13 +101,13 @@ describe('OutboxService', () => {
         baseRetryDelayMs: 1000,
       });
 
-      await service.markFailed(record(2), 'boom');
+      await service.markFailed(record(2), 'boom', 'relay-1');
 
       const [, params] = query.mock.calls[0];
       // [id, status, error, delayMs] — attempt 2 backs off 1000 * 2^1.
-      // [id, status, error, delayMs, attempts, lockedBy]: the last two fence the
+      // [id, status, error, delayMs, attempts, owner]: the last two fence the
       // update on the claim the message came from.
-      expect(params).toEqual(['row-1', 'pending', 'boom', 2000, 2, null]);
+      expect(params).toEqual(['row-1', 'pending', 'boom', 2000, 2, 'relay-1']);
     });
 
     it('parks the row as failed once attempts are exhausted', async () => {
@@ -116,7 +116,7 @@ describe('OutboxService', () => {
         maxAttempts: 3,
       });
 
-      await service.markFailed(record(3), 'boom');
+      await service.markFailed(record(3), 'boom', 'relay-1');
 
       const [, params] = query.mock.calls[0];
       expect(params[1]).toBe('failed');
@@ -130,7 +130,7 @@ describe('OutboxService', () => {
         maxRetryDelayMs: 4000,
       });
 
-      await service.markFailed(record(50), 'boom');
+      await service.markFailed(record(50), 'boom', 'relay-1');
 
       const [, params] = query.mock.calls[0];
       expect(params[3]).toBe(4000);

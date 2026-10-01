@@ -1,5 +1,5 @@
 import { type OutboxMessageRecord, OutboxRelay, type OutboxService } from '@flama/backend-ddd';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * The relay's contract: claim → publish → mark processed, with failures marked
@@ -80,6 +80,7 @@ describe('OutboxRelay', () => {
     expect(outbox.markFailed).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'bad' }),
       'redis is down',
+      'test:1',
     );
     expect(outbox.markProcessed).toHaveBeenCalledWith(['good'], 'test:1');
   });
@@ -167,89 +168,60 @@ describe('OutboxRelay', () => {
     expect(outbox.registerDrainer).toHaveBeenLastCalledWith(undefined);
   });
 
-  describe('the lease heartbeat', () => {
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    /** A publisher that blocks until `release()`, and the relay around it. */
-    const slowRelay = (options: { leaseMs?: number; heartbeatMs?: number } = {}) => {
-      let release: () => void = () => {};
-      const gate = new Promise<void>((resolve) => {
-        release = resolve;
-      });
-      const logger = { warn: vi.fn() };
-      const relay = new OutboxRelay(
-        outbox as unknown as OutboxService,
-        (m) => (m.id === 'bad' ? Promise.reject(new Error('listener threw')) : gate),
-        { owner: 'test:1', logger, ...options },
-      );
-      return { relay, release: () => release(), logger };
-    };
-
-    it('renews the batch lease while a slow publisher runs, and stops after', async () => {
-      vi.useFakeTimers();
-      outbox.claim.mockResolvedValueOnce([message({ id: 'a' })]).mockResolvedValue([]);
-      const { relay, release } = slowRelay({ leaseMs: 3_000 });
-      const drain = relay.drainOnce();
-
-      // Every leaseMs / 3 by default.
-      await vi.advanceTimersByTimeAsync(3_500);
-      expect(outbox.extendLease).toHaveBeenCalledTimes(3);
-      expect(outbox.extendLease).toHaveBeenLastCalledWith('test:1', ['a'], 3_000);
-
-      release();
-      await drain;
-      await vi.advanceTimersByTimeAsync(10_000);
-      expect(outbox.extendLease).toHaveBeenCalledTimes(3);
-      expect(outbox.markProcessed).toHaveBeenCalledWith(['a'], 'test:1');
-    });
-
-    it('stops renewing a row once it is marked failed or delivered', async () => {
-      vi.useFakeTimers();
+  describe('the lease renewal', () => {
+    it('renews the rows still waiting before each row, under this owner', async () => {
       outbox.claim
-        .mockResolvedValueOnce([message({ id: 'bad' }), message({ id: 'slow' })])
+        .mockResolvedValueOnce([message({ id: 'a' }), message({ id: 'b' }), message({ id: 'c' })])
         .mockResolvedValue([]);
-      const { relay, release } = slowRelay({ leaseMs: 900, heartbeatMs: 300 });
-      const drain = relay.drainOnce();
+      const relay = new OutboxRelay(outbox as unknown as OutboxService, async () => {}, {
+        owner: 'test:1',
+        leaseMs: 900,
+      });
 
-      await vi.advanceTimersByTimeAsync(300);
-      expect(outbox.extendLease).toHaveBeenLastCalledWith('test:1', ['slow'], 900);
+      await relay.drainOnce();
 
-      release();
-      await drain;
+      expect(outbox.extendLease.mock.calls).toEqual([
+        ['test:1', ['a', 'b', 'c'], 900],
+        ['test:1', ['b', 'c'], 900],
+        ['test:1', ['c'], 900],
+      ]);
     });
 
-    it('logs a row whose lease was lost and stops renewing it', async () => {
-      vi.useFakeTimers();
+    it('skips a row whose lease was lost, without publishing or marking it', async () => {
       outbox.claim
         .mockResolvedValueOnce([message({ id: 'a' }), message({ id: 'b' })])
         .mockResolvedValue([]);
-      outbox.extendLease.mockResolvedValueOnce(['a']);
-      const { relay, release, logger } = slowRelay({ leaseMs: 900, heartbeatMs: 300 });
-      const drain = relay.drainOnce();
+      outbox.extendLease.mockResolvedValueOnce(['b']).mockResolvedValueOnce(['b']);
+      const logger = { warn: vi.fn() };
+      const published: string[] = [];
+      const relay = new OutboxRelay(
+        outbox as unknown as OutboxService,
+        async (m) => {
+          published.push(m.id);
+        },
+        { owner: 'test:1', logger },
+      );
 
-      await vi.advanceTimersByTimeAsync(600);
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('lease lost on 1 row(s)'));
-      expect(outbox.extendLease).toHaveBeenLastCalledWith('test:1', ['a'], 900);
+      await expect(relay.drainOnce()).resolves.toBe(1);
 
-      release();
-      await drain;
+      expect(published).toEqual(['b']);
+      expect(outbox.markProcessed).toHaveBeenCalledTimes(1);
+      expect(outbox.markFailed).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('lease lost'));
     });
 
-    it('keeps delivering when a renewal fails', async () => {
-      vi.useFakeTimers();
+    it('marks a row failed when the renewal itself throws', async () => {
       outbox.claim.mockResolvedValueOnce([message({ id: 'a' })]).mockResolvedValue([]);
       outbox.extendLease.mockRejectedValueOnce(new Error('connection reset'));
-      const { relay, release, logger } = slowRelay({ leaseMs: 900, heartbeatMs: 300 });
-      const drain = relay.drainOnce();
+      const relay = relayWith(async () => {});
 
-      await vi.advanceTimersByTimeAsync(600);
-      expect(logger.warn).toHaveBeenCalledWith('Outbox lease renewal failed: connection reset');
-      expect(outbox.extendLease).toHaveBeenCalledTimes(2);
+      await expect(relay.drainOnce()).resolves.toBe(0);
 
-      release();
-      await expect(drain).resolves.toBe(1);
+      expect(outbox.markFailed).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a' }),
+        'connection reset',
+        'test:1',
+      );
     });
   });
 });

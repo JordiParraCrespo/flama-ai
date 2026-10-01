@@ -1,6 +1,5 @@
 ---
-"@flama/backend-core": minor
+"@flama/backend-ddd": minor
 ---
 
-Export `describeError(error: unknown): string`: an `Error`'s message, or any
-other thrown value as a string, for the log lines of best-effort paths.
+Export `describeError(error)` from backend-ddd: an `Error`'s message, else `String(error)`.
