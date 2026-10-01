@@ -17,11 +17,9 @@ const EXTENSIONS: Record<AvatarMimeType, string> = {
  * Owns everything about where an avatar lives: what is accepted, the key it is
  * stored under, and how a stored value becomes a URL a browser can load.
  *
- * The **key** is what lands in `user.image`, not a URL. Storage drivers
- * disagree about what `upload()` returns — local hands back a public URL, an
- * object store may hand back the key — and a private bucket has to be signed at
- * read time anyway, so persisting the key and resolving it per response is the
- * only shape that is correct for every driver.
+ * The **key** is what lands in `user.image`, not a URL: a private bucket's URL
+ * is signed and expires, so the key is resolved per response with
+ * `getSignedUrl()`.
  */
 @Injectable()
 export class AvatarStorageAdapter implements AvatarStoragePort {

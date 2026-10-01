@@ -45,7 +45,7 @@ export class LocalStorageService extends StorageService {
     const filePath = this.resolveKeyPath(key);
     await mkdir(dirname(filePath), { recursive: true });
     await writeFile(filePath, file);
-    return this.toPublicUrl(key);
+    return key;
   }
 
   async delete(key: string): Promise<void> {
