@@ -22,12 +22,15 @@ export {
   titleForStatus,
 } from './errors/problem-details';
 export { AllExceptionsFilter } from './filters/all-exceptions.filter';
-export { RequestContextInterceptor } from './interceptors/request-context.interceptor';
 export type { Mapper } from './interfaces/mapper.interface';
 export {
   type AuthRouteLoggingMiddleware,
   createAuthRouteLoggingMiddleware,
 } from './logging/auth-route-logging.middleware';
+export {
+  CORRELATION_HEADER,
+  resolveCorrelationId,
+} from './logging/correlation-id';
 export {
   LoggingModule,
   type LoggingModuleAsyncOptions,
@@ -37,6 +40,7 @@ export {
   type LoggingOptions,
 } from './logging/pino-http-options';
 export { UserContextInterceptor } from './logging/user-context.interceptor';
+export { RequestContextMiddleware } from './middleware/request-context.middleware';
 export { SanitizePipe } from './pipes/sanitize.pipe';
 export { ZodValidationPipe } from './pipes/zod-validation.pipe';
 export {

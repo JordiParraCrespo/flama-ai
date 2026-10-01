@@ -16,8 +16,8 @@ src/
 ├── database/       # SQL helpers that need no ORM (likeContains)
 ├── decorators/     # Swagger decorators (ApiProblemResponse)
 ├── dtos/           # Swagger models (ProblemDetailsDto)
-├── interceptors/   # response/logging interceptors
-├── logging/        # hardened nestjs-pino setup (LoggingModule + helpers)
+├── logging/        # hardened nestjs-pino setup (LoggingModule + helpers, correlation ids)
+├── middleware/     # Nest middleware (RequestContextMiddleware)
 ├── pipes/          # validation & transform pipes
 ├── requests/       # request-scoped helpers
 ├── services/       # shared base services

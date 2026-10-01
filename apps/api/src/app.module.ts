@@ -4,7 +4,7 @@ import {
   AllExceptionsFilter,
   createAuthRouteLoggingMiddleware,
   LoggingModule,
-  RequestContextInterceptor,
+  RequestContextMiddleware,
 } from '@flama/backend-core';
 import { EmailModule } from '@flama/backend-email';
 import { I18nModule } from '@flama/backend-i18n';
@@ -14,9 +14,9 @@ import { StorageModule } from '@flama/backend-storage';
 import en from '@flama/translations/en/index.json';
 import es from '@flama/translations/es/index.json';
 import { BullModule } from '@nestjs/bullmq';
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -181,7 +181,13 @@ import { UsersModule } from './users/user.module';
     // omission. Browser sessions pass straight through.
     { provide: APP_GUARD, useClass: ScopesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
-    { provide: APP_INTERCEPTOR, useClass: RequestContextInterceptor },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  // The correlation id is opened in middleware, ahead of the guards above: a
+  // 401, 403 or 429 a guard throws carries the same id as the log line and
+  // the `x-correlation-id` response header. See `RequestContextMiddleware`.
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestContextMiddleware).forRoutes('*');
+  }
+}
