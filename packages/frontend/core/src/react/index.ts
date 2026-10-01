@@ -30,7 +30,11 @@ export { type EntityQueryOptions, useEntityQuery } from './entity-query';
 export { type ResolvedErrorMessage, useErrorMessage } from './error-message';
 export { useAuthState } from './hooks';
 export { useLocale } from './locale';
-export { type HookMutationOptions, withCacheOnSuccess } from './mutations';
+export {
+  type HookMutationOptions,
+  refetchEverythingForNewIdentity,
+  withCacheOnSuccess,
+} from './mutations';
 export {
   cacheOwnerKey,
   createQueryPersistOptions,

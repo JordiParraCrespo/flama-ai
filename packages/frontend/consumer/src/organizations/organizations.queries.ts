@@ -5,8 +5,8 @@ import {
   type EntityQueryOptions,
   type HookMutationOptions,
   MEMBER_LISTS_KEY,
+  refetchEverythingForNewIdentity,
   useEntityQuery,
-  usersKeys,
   withCacheOnSuccess,
 } from '@flama/frontend-core/react';
 import type { CreateOrganizationDto, InviteMemberDto, OrganizationRole } from '@flama/shared';
@@ -18,7 +18,6 @@ import type {
 } from '../modules/organizations/organization.entity';
 import type { MemberFilters } from '../modules/organizations/organizations.repository';
 import { useConsumerApp } from '../react/context';
-import { profileKeys } from '../react/profile.queries';
 
 /**
  * Query key factory for the `organizations` feature, one function per level.
@@ -158,7 +157,7 @@ export function useAcceptInvitation(
     // redirects a settled empty list to onboarding, and navigating while the
     // cached `[]` was still being refetched bounced the reader straight back.
     ...withCacheOnSuccess(options, async () => {
-      await queryClient.invalidateQueries();
+      await refetchEverythingForNewIdentity(queryClient);
     }),
   });
 }
@@ -225,15 +224,7 @@ export function useAcceptInvitationAsNewcomer(
       }
       await app.organizations.acceptInvitation(invitationId);
     },
-    ...withCacheOnSuccess(options, async () => {
-      await Promise.all([
-        // `me()` is a prefix of the caller's permissions, which the nav reads.
-        queryClient.invalidateQueries({ queryKey: usersKeys.me() }),
-        queryClient.invalidateQueries({ queryKey: profileKeys.me() }),
-        queryClient.invalidateQueries({ queryKey: organizationsKeys.list() }),
-        queryClient.invalidateQueries({ queryKey: organizationsKeys.myInvitations() }),
-      ]);
-    }),
+    ...withCacheOnSuccess(options, () => refetchEverythingForNewIdentity(queryClient)),
   });
 }
 
@@ -263,7 +254,7 @@ export function useCreateOrganization(
         ...(current ?? []),
         organization,
       ]);
-      await queryClient.invalidateQueries();
+      await refetchEverythingForNewIdentity(queryClient);
     }),
   });
 }

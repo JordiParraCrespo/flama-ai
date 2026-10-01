@@ -33,7 +33,15 @@
     "maxLength": "Debe tener como máximo {{max}} caracteres",
     "minItems": "Selecciona al menos {{min}}",
     "maxItems": "Selecciona como máximo {{max}}",
-    "url": "Introduce una URL válida, incluyendo https://"
+    "url": "Introduce una URL válida, incluyendo https://",
+    "invalid": "Este valor no es válido",
+    "format": "El formato no es válido",
+    "choice": "Elige una de las opciones",
+    "date": "Introduce una fecha válida",
+    "min": "Debe ser como mínimo {{min}}",
+    "max": "Debe ser como máximo {{max}}",
+    "multipleOf": "Debe ser múltiplo de {{step}}",
+    "tooLong": "Es demasiado largo"
   },
   "errors": {
     "fallback": "Algo ha ido mal. Inténtalo de nuevo.",
@@ -84,6 +92,7 @@
       "FAILED_TO_CREATE_USER": "No se ha podido crear tu cuenta. Inténtalo de nuevo.",
       "ROLE_005": "No puedes dar a un rol más acceso del que tienes tú.",
       "ROLE_006": "Ese rol pertenece a otra organización.",
+      "ROLE_008": "Cambia a una organización para crear un rol en ella.",
       "AUTHZ_001": "No eres miembro de esa organización.",
       "AUTHZ_002": "Hay un problema de configuración en el servidor. Inténtalo más tarde.",
       "GRANT_001": "No se ha encontrado esa concesión de acceso.",

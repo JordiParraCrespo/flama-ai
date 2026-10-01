@@ -33,3 +33,25 @@ export class AccessGrantResponseDto {
   @ApiProperty()
   createdAt!: Date;
 }
+
+export class AccessGrantPaginationMetaDto {
+  @ApiProperty()
+  total!: number;
+
+  @ApiProperty()
+  page!: number;
+
+  @ApiProperty()
+  limit!: number;
+
+  @ApiProperty()
+  totalPages!: number;
+}
+
+export class PaginatedAccessGrantsResponseDto {
+  @ApiProperty({ type: [AccessGrantResponseDto] })
+  data!: AccessGrantResponseDto[];
+
+  @ApiProperty({ type: AccessGrantPaginationMetaDto })
+  meta!: AccessGrantPaginationMetaDto;
+}

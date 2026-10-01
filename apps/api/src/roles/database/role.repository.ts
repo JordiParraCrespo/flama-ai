@@ -1,3 +1,4 @@
+import { likeContains } from '@flama/backend-core';
 import {
   type AggregateID,
   OutboxService,
@@ -149,7 +150,8 @@ function searchWhere(
 ): FindOptionsWhere<RoleOrmEntity> | FindOptionsWhere<RoleOrmEntity>[] {
   if (!search) return scopedWhere({}, organizationId);
 
-  const needle = ILike(`%${search}%`);
+  // The term's `%` and `_` match literally.
+  const needle = ILike(likeContains(search));
 
   return [{ name: needle }, { description: needle }].flatMap((match) => {
     const scoped = scopedWhere(match, organizationId);

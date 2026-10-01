@@ -270,7 +270,10 @@ what makes the pattern safe under horizontal scaling — and delivers them:
 Delivery failures retry with exponential backoff and park as `failed` after
 `maxAttempts` — kept for inspection, never dropped. Leases expire
 (`lockedUntil`), so rows owned by a dead process are reclaimed rather than
-stuck. Every row records a human-readable **reason** (pass `reason` when raising
+stuck; before each row of a batch the relay renews the lease on the rows still
+waiting (`extendLease`), skips one it lost, and the marks that end a delivery
+only touch rows the relay still owns. One publisher slower than the lease is
+still delivered twice, so listeners must be idempotent. Every row records a human-readable **reason** (pass `reason` when raising
 the event) so the table is self-explaining at 2am.
 
 This does **not** replace BullMQ: BullMQ still owns retries, delayed jobs and

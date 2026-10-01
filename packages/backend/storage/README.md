@@ -21,6 +21,11 @@ import { LocalStorageService, StorageModule, StorageService } from '@flama/backe
 StorageModule.register({ local: LocalStorageService });
 
 constructor(private readonly storage: StorageService) {}
+
+// Every back-end resolves `upload` to the key: persist the key, never a URL.
+const key = await this.storage.upload(file, 'avatars/u/1.png', 'image/png');
+// Resolve it per response (signed and expiring on an object store).
+const url = await this.storage.getSignedUrl(key);
 ```
 
 ## Scripts

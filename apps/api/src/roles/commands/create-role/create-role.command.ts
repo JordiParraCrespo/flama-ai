@@ -9,7 +9,6 @@ export class CreateRoleCommand extends CommandBase {
   readonly actorId?: string;
   readonly actorRole?: string;
   readonly activeOrganizationId?: string | null;
-
   constructor(props: CommandProps<CreateRoleCommand>) {
     super(props);
     this.name = props.name;

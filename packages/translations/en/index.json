@@ -33,7 +33,15 @@
     "maxLength": "Must be at most {{max}} characters",
     "minItems": "Select at least {{min}}",
     "maxItems": "Select at most {{max}}",
-    "url": "Enter a valid URL, including https://"
+    "url": "Enter a valid URL, including https://",
+    "invalid": "This value is not valid",
+    "format": "This is not in the expected format",
+    "choice": "Choose one of the options",
+    "date": "Enter a valid date",
+    "min": "Must be at least {{min}}",
+    "max": "Must be at most {{max}}",
+    "multipleOf": "Must be a multiple of {{step}}",
+    "tooLong": "This is too long"
   },
   "errors": {
     "fallback": "Something went wrong. Please try again.",
@@ -84,6 +92,7 @@
       "FAILED_TO_CREATE_USER": "Your account could not be created. Please try again.",
       "ROLE_005": "You cannot give a role more access than you have yourself.",
       "ROLE_006": "That role belongs to another organization.",
+      "ROLE_008": "Switch to an organization to create a role in it.",
       "AUTHZ_001": "You are not a member of that organization.",
       "AUTHZ_002": "Something is misconfigured on the server. Please try again later.",
       "GRANT_001": "That access grant could not be found.",

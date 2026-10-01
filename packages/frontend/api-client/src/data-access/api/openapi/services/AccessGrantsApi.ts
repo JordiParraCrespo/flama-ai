@@ -5,6 +5,7 @@
 import type {
     AccessGrantResponseDto,
     CreateAccessGrantRequest,
+    PaginatedAccessGrantsResponseDto,
 } from '../../../../generated/types.gen';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -12,13 +13,23 @@ import { request as __request } from '../core/request';
 export class AccessGrantsApi {
     /**
      * List the access grants in the active organization
-     * @returns AccessGrantResponseDto
+     * Newest first, one page at a time (`page`, `limit` up to 100).
+     * @param page Page number (default: 1)
+     * @param limit Items per page (default: 20, max: 100)
+     * @returns PaginatedAccessGrantsResponseDto
      * @throws ApiError
      */
-    public static list(): CancelablePromise<Array<AccessGrantResponseDto>> {
+    public static list(
+        page?: number,
+        limit?: number,
+    ): CancelablePromise<PaginatedAccessGrantsResponseDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/access-grants',
+            query: {
+                'page': page,
+                'limit': limit,
+            },
             errors: {
                 401: `AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired`,
                 403: `AUTH_002 / TOKEN_004 / TOKEN_005 / TOKEN_006 / TOKEN_007 — The caller's roles, or their credential's scopes, do not permit this`,

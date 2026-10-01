@@ -31,6 +31,7 @@ describe('OutboxRelay', () => {
     claim: ReturnType<typeof vi.fn>;
     markProcessed: ReturnType<typeof vi.fn>;
     markFailed: ReturnType<typeof vi.fn>;
+    extendLease: ReturnType<typeof vi.fn>;
     registerDrainer: ReturnType<typeof vi.fn>;
   };
 
@@ -39,6 +40,7 @@ describe('OutboxRelay', () => {
       claim: vi.fn().mockResolvedValue([]),
       markProcessed: vi.fn().mockResolvedValue(undefined),
       markFailed: vi.fn().mockResolvedValue(undefined),
+      extendLease: vi.fn(async (_owner: string, ids: string[]) => ids),
       registerDrainer: vi.fn(),
     };
   });
@@ -60,8 +62,8 @@ describe('OutboxRelay', () => {
 
     expect(delivered).toBe(2);
     expect(published).toEqual(['a', 'b']);
-    expect(outbox.markProcessed).toHaveBeenCalledWith(['a']);
-    expect(outbox.markProcessed).toHaveBeenCalledWith(['b']);
+    expect(outbox.markProcessed).toHaveBeenCalledWith(['a'], 'test:1');
+    expect(outbox.markProcessed).toHaveBeenCalledWith(['b'], 'test:1');
     expect(outbox.markFailed).not.toHaveBeenCalled();
   });
 
@@ -78,8 +80,9 @@ describe('OutboxRelay', () => {
     expect(outbox.markFailed).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'bad' }),
       'redis is down',
+      'test:1',
     );
-    expect(outbox.markProcessed).toHaveBeenCalledWith(['good']);
+    expect(outbox.markProcessed).toHaveBeenCalledWith(['good'], 'test:1');
   });
 
   it('keeps claiming until a batch comes back short', async () => {
@@ -163,5 +166,62 @@ describe('OutboxRelay', () => {
     expect(outbox.registerDrainer).toHaveBeenCalledWith(expect.any(Function));
     await relay.stop();
     expect(outbox.registerDrainer).toHaveBeenLastCalledWith(undefined);
+  });
+
+  describe('the lease renewal', () => {
+    it('renews the rows still waiting before each row, under this owner', async () => {
+      outbox.claim
+        .mockResolvedValueOnce([message({ id: 'a' }), message({ id: 'b' }), message({ id: 'c' })])
+        .mockResolvedValue([]);
+      const relay = new OutboxRelay(outbox as unknown as OutboxService, async () => {}, {
+        owner: 'test:1',
+        leaseMs: 900,
+      });
+
+      await relay.drainOnce();
+
+      expect(outbox.extendLease.mock.calls).toEqual([
+        ['test:1', ['a', 'b', 'c'], 900],
+        ['test:1', ['b', 'c'], 900],
+        ['test:1', ['c'], 900],
+      ]);
+    });
+
+    it('skips a row whose lease was lost, without publishing or marking it', async () => {
+      outbox.claim
+        .mockResolvedValueOnce([message({ id: 'a' }), message({ id: 'b' })])
+        .mockResolvedValue([]);
+      outbox.extendLease.mockResolvedValueOnce(['b']).mockResolvedValueOnce(['b']);
+      const logger = { warn: vi.fn() };
+      const published: string[] = [];
+      const relay = new OutboxRelay(
+        outbox as unknown as OutboxService,
+        async (m) => {
+          published.push(m.id);
+        },
+        { owner: 'test:1', logger },
+      );
+
+      await expect(relay.drainOnce()).resolves.toBe(1);
+
+      expect(published).toEqual(['b']);
+      expect(outbox.markProcessed).toHaveBeenCalledTimes(1);
+      expect(outbox.markFailed).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('lease lost'));
+    });
+
+    it('marks a row failed when the renewal itself throws', async () => {
+      outbox.claim.mockResolvedValueOnce([message({ id: 'a' })]).mockResolvedValue([]);
+      outbox.extendLease.mockRejectedValueOnce(new Error('connection reset'));
+      const relay = relayWith(async () => {});
+
+      await expect(relay.drainOnce()).resolves.toBe(0);
+
+      expect(outbox.markFailed).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a' }),
+        'connection reset',
+        'test:1',
+      );
+    });
   });
 });

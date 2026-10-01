@@ -234,6 +234,18 @@ export type AccessGrantResponseDto = {
     createdAt: string;
 };
 
+export type AccessGrantPaginationMetaDto = {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+};
+
+export type PaginatedAccessGrantsResponseDto = {
+    data: Array<AccessGrantResponseDto>;
+    meta: AccessGrantPaginationMetaDto;
+};
+
 export type CreateAccessGrantRequest = {
     principalType: 'user' | 'team' | 'role';
     principalId: string;
@@ -783,7 +795,7 @@ export type FindAllData = {
     path?: never;
     query?: {
         /**
-         * Search by name or email
+         * Search by name or email; `%` and `_` match literally
          */
         search?: string;
         /**
@@ -996,7 +1008,16 @@ export type CatalogResponse = CatalogResponses[keyof CatalogResponses];
 export type ListData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Items per page (default: 20, max: 100)
+         */
+        limit?: number;
+        /**
+         * Page number (default: 1)
+         */
+        page?: number;
+    };
     url: '/api/v1/access-grants';
 };
 
@@ -1014,7 +1035,7 @@ export type ListErrors = {
 export type ListError = ListErrors[keyof ListErrors];
 
 export type ListResponses = {
-    200: Array<AccessGrantResponseDto>;
+    200: PaginatedAccessGrantsResponseDto;
 };
 
 export type ListResponse = ListResponses[keyof ListResponses];
@@ -1089,7 +1110,7 @@ export type FindAll2Data = {
     path?: never;
     query?: {
         /**
-         * Search by role name
+         * Search by role name or description; `%` and `_` match literally
          */
         search?: string;
         /**
@@ -1131,6 +1152,10 @@ export type Create2Data = {
 };
 
 export type Create2Errors = {
+    /**
+     * ROLE_008 — No active organization, and the caller is not a platform admin
+     */
+    400: ProblemDetailsDto;
     /**
      * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
      */

@@ -11,14 +11,23 @@ describe('CreateRoleCommandHandler', () => {
   let service: CreateRoleCommandHandler;
   let repo: Pick<RoleRepositoryPort, 'findOneByName' | 'insert'>;
 
+  let policy: {
+    assertGrantable: ReturnType<typeof vi.fn>;
+    assertCanCreateGlobal: ReturnType<typeof vi.fn>;
+  };
+
   beforeEach(() => {
     repo = {
       findOneByName: vi.fn().mockResolvedValue(None),
       insert: vi.fn().mockResolvedValue(undefined),
     };
+    policy = {
+      assertGrantable: vi.fn().mockResolvedValue(undefined),
+      assertCanCreateGlobal: vi.fn().mockResolvedValue(undefined),
+    };
     service = new CreateRoleCommandHandler(
       repo as RoleRepositoryPort,
-      { assertGrantable: vi.fn().mockResolvedValue(undefined) } as unknown as RoleGrantPolicy,
+      policy as unknown as RoleGrantPolicy,
     );
   });
 
@@ -28,6 +37,7 @@ describe('CreateRoleCommandHandler', () => {
         name: 'editor',
         description: 'Can edit articles',
         permissions: [{ action: 'update', subject: 'Article' }],
+        activeOrganizationId: 'organization-1',
       }),
     );
 
@@ -55,7 +65,13 @@ describe('CreateRoleCommandHandler', () => {
     );
 
     await expect(
-      service.execute(new CreateRoleCommand({ name: 'editor', permissions: [] })),
+      service.execute(
+        new CreateRoleCommand({
+          name: 'editor',
+          permissions: [],
+          activeOrganizationId: 'organization-1',
+        }),
+      ),
     ).rejects.toMatchObject({ code: RoleErrors.NAME_TAKEN.code });
     expect(repo.insert).not.toHaveBeenCalled();
   });
@@ -72,5 +88,59 @@ describe('CreateRoleCommandHandler', () => {
     expect(repo.findOneByName).toHaveBeenCalledWith('Content Lead', 'organization-1');
     const created = vi.mocked(repo.insert).mock.calls[0][0] as RoleEntity;
     expect(created.organizationId).toBe('organization-1');
+  });
+
+  describe('with no organization', () => {
+    it.each([
+      ['undefined', undefined],
+      ['null', null],
+    ])(
+      'asks the policy for a global role when the tenant is %s',
+      async (_label, organizationId) => {
+        await service.execute(
+          new CreateRoleCommand({
+            name: 'auditor',
+            permissions: [],
+            actorId: 'user-1',
+            actorRole: 'admin',
+            activeOrganizationId: organizationId,
+          }),
+        );
+
+        expect(policy.assertCanCreateGlobal).toHaveBeenCalledWith({
+          id: 'user-1',
+          role: 'admin',
+          activeOrganizationId: null,
+        });
+        expect(repo.findOneByName).toHaveBeenCalledWith('auditor', null);
+        const created = vi.mocked(repo.insert).mock.calls[0][0] as RoleEntity;
+        expect(created.organizationId).toBeNull();
+      },
+    );
+
+    it('writes nothing when the policy refuses', async () => {
+      policy.assertCanCreateGlobal.mockRejectedValue(
+        Object.assign(new Error('no'), { code: RoleErrors.ORGANIZATION_REQUIRED.code }),
+      );
+
+      await expect(
+        service.execute(
+          new CreateRoleCommand({ name: 'auditor', permissions: [], actorId: 'user-1' }),
+        ),
+      ).rejects.toMatchObject({ code: RoleErrors.ORGANIZATION_REQUIRED.code });
+      expect(repo.insert).not.toHaveBeenCalled();
+    });
+
+    it('does not ask the policy inside an organization', async () => {
+      await service.execute(
+        new CreateRoleCommand({
+          name: 'editor',
+          permissions: [],
+          activeOrganizationId: 'organization-1',
+        }),
+      );
+
+      expect(policy.assertCanCreateGlobal).not.toHaveBeenCalled();
+    });
   });
 });

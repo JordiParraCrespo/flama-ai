@@ -17,11 +17,13 @@ wired into the API.
 | `ProblemDetailsDto`, `ApiProblemResponse`                 | Swagger model + decorator for documenting failures                      |
 | `ZodValidationPipe`                                       | Validates DTOs against Zod schemas (`nestjs-zod`)                       |
 | `SanitizePipe`                                            | Input sanitization pipe                                                 |
-| `RequestContextInterceptor` / `RequestContextService`     | Per-request context propagation                                         |
+| `RequestContextMiddleware`                                | Opens the per-request correlation id before guards run (backend-ddd's `RequestContextService`) |
+| `resolveCorrelationId`, `CORRELATION_HEADER`              | The validated `x-correlation-id` (≤64 of `[A-Za-z0-9._:-]`) or a fresh UUID |
 | `LoggingModule`, `buildPinoHttpOptions`                   | Hardened request logging (`nestjs-pino`): no headers/query/bodies       |
 | `UserContextInterceptor`                                  | Attaches `userId` + credential scopes to the request log context        |
 | `createAuthRouteLoggingMiddleware`                        | Request logging for Better Auth routes (its `middleware` option)        |
 | `PaginatedRequest`, `paginationSchema`                    | Standard pagination query request                                       |
+| `likeContains`                                            | An `ILIKE` contains-pattern with the term's `%`, `_` and `\` escaped     |
 | `Mapper`                                                  | Domain ↔ persistence/response mapper interface                          |
 
 ## Usage

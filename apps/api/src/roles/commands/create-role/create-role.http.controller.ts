@@ -42,21 +42,27 @@ export class CreateRoleHttpController {
     description: 'A role with this name already exists',
     code: 'ROLE_002',
   })
+  @ApiProblemResponse({
+    status: 400,
+    description: 'No active organization, and the caller is not a platform admin',
+    code: 'ROLE_008',
+  })
   async create(
     @Body() body: CreateRoleRequest,
     @CurrentUser() actor: { id: string; role?: string },
     @Req() request: ScopedRequest,
   ): Promise<RoleResponseDto> {
+    const organizationId = activeOrganizationIdOf(request);
     const roleId = await this.commandBus.execute<CreateRoleCommand, AggregateID>(
       new CreateRoleCommand({
         ...body,
         actorId: actor.id,
         actorRole: actor.role,
-        activeOrganizationId: activeOrganizationIdOf(request),
+        activeOrganizationId: organizationId,
       }),
     );
     const role = await this.queryBus.execute<FindRoleByIdQuery, RoleEntity>(
-      new FindRoleByIdQuery(roleId, activeOrganizationIdOf(request)),
+      new FindRoleByIdQuery(roleId, organizationId),
     );
     return this.mapper.toResponse(role);
   }

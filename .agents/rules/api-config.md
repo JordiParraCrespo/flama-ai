@@ -24,6 +24,13 @@ its documentation. Never add a per-package `.env` or `.env.example`.
   `generate-openapi.ts`, `auth/infrastructure/better-auth.config.ts`). Do not import `dotenv/config` —
   it resolves `.env` against `process.cwd()`, which is exactly the fragility
   `@flama/env` replaces.
+- **Correlation ids are opened in middleware.** `RequestContextMiddleware`
+  (applied to every route in `AppModule.configure`) opens the
+  `RequestContextService` scope before any guard runs, so a 401/403/429 carries
+  a `correlationId` too. The id is pino's `req.id` and is echoed as the
+  `x-correlation-id` response header: a client's header is honoured only when it
+  is 1–64 characters of `[A-Za-z0-9._:-]`, otherwise a UUID replaces it. Log
+  the validated id, never the raw header.
 - `apps/web` does not use the loader: `vite.config.ts` points `envDir` at the
   workspace root. `apps/mobile` calls `loadEnv()` in `app.config.ts` so Metro
   inlines `EXPO_PUBLIC_*` values from the root file.

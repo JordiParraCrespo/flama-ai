@@ -34,10 +34,16 @@ afterEach(async () => {
 
 describe('LocalStorageService', () => {
   describe('upload', () => {
-    it('writes the file and returns its public URL', async () => {
-      const url = await storage().upload(Buffer.from('hello'), 'avatars/user-1.png', 'image/png');
+    it('writes the file and returns its key, not a URL', async () => {
+      const stored = await storage().upload(
+        Buffer.from('hello'),
+        'avatars/user-1.png',
+        'image/png',
+      );
 
-      expect(url).toBe('https://api.example.com/uploads/avatars/user-1.png');
+      // The contract every back-end shares: callers persist the key and ask
+      // `getSignedUrl` for a URL at read time.
+      expect(stored).toBe('avatars/user-1.png');
       await expect(readFile(join(uploadDir, 'avatars/user-1.png'), 'utf8')).resolves.toBe('hello');
     });
 
@@ -89,9 +95,9 @@ describe('LocalStorageService', () => {
 
     it('allows a traversal that stays inside the directory', async () => {
       // The rule is where the path lands, not whether it contains `..`.
-      await expect(
-        storage().upload(Buffer.from('x'), 'a/../b.txt', 'text/plain'),
-      ).resolves.toContain('/uploads/a/../b.txt');
+      await expect(storage().upload(Buffer.from('x'), 'a/../b.txt', 'text/plain')).resolves.toBe(
+        'a/../b.txt',
+      );
       await expect(readFile(join(uploadDir, 'b.txt'), 'utf8')).resolves.toBe('x');
     });
 

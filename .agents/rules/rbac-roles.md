@@ -168,7 +168,7 @@ is built. The principal is only `{ id, role }` (`AbilityPrincipal`), so no other
 
 | Method & path                   | Purpose                                    |
 | ------------------------------- | ------------------------------------------ |
-| `POST /v1/roles`                | Create a custom role                       |
+| `POST /v1/roles`                | Create a custom role in the active organization (`ROLE_008` without one; a platform admin with none creates a global role) |
 | `GET /v1/roles`                 | List roles (paginated, `?search=`)         |
 | `GET /v1/roles/:id`             | Get a role                                 |
 | `PATCH /v1/roles/:id`           | Update description and/or permissions      |

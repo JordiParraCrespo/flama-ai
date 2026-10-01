@@ -1,4 +1,5 @@
-import type { OutboxService } from './outbox.service';
+import { describeError } from '../describe-error';
+import { DEFAULT_LEASE_MS, type OutboxService } from './outbox.service';
 import type { OutboxMessageRecord } from './outbox-message';
 
 /**
@@ -15,7 +16,7 @@ export interface OutboxRelayOptions {
   /** Poll interval for the background loop. */
   pollIntervalMs?: number;
   batchSize?: number;
-  /** Lease duration passed to `OutboxService.claim`. */
+  /** Lease duration passed to `OutboxService.claim` and renewed before each row of a batch. */
   leaseMs?: number;
   logger?: { warn(message: string): void };
 }
@@ -36,6 +37,15 @@ const DEFAULT_BATCH_SIZE = 20;
  * queues a follow-up pass instead of racing it. A wake called from inside a
  * delivery (see `drainOnce`) queues its pass and returns at once instead of
  * joining that same chain.
+ *
+ * Before each row of a batch the relay renews the lease on the rows still
+ * waiting (`OutboxService.extendLease`, fenced on this relay's `owner`), so a
+ * slow row does not let the ones behind it lapse to another replica. A row
+ * whose lease was lost anyway is skipped, not published. The marks that end a
+ * delivery are fenced on `owner` too, so a relay that lost a row neither marks
+ * it processed nor releases the other relay's claim. One publisher slower than
+ * `leaseMs` is not covered: that duplicate is accepted, and listeners must be
+ * idempotent.
  */
 export class OutboxRelay {
   private timer?: ReturnType<typeof setInterval>;
@@ -94,26 +104,37 @@ export class OutboxRelay {
           leaseMs: this.options.leaseMs,
         });
       } catch (error) {
-        this.options.logger?.warn(`Outbox claim failed: ${describe(error)}`);
+        this.options.logger?.warn(`Outbox claim failed: ${describeError(error)}`);
         return delivered;
       }
       if (batch.length === 0) return delivered;
-      for (const message of batch) {
+      for (const [index, message] of batch.entries()) {
         try {
+          const kept = await this.outbox.extendLease(
+            this.options.owner,
+            batch.slice(index).map((row) => row.id),
+            this.options.leaseMs ?? DEFAULT_LEASE_MS,
+          );
+          if (!kept.includes(message.id)) {
+            this.options.logger?.warn(
+              `Outbox lease lost on ${message.eventName} (${message.id}) before delivery; skipped`,
+            );
+            continue;
+          }
           this.delivering = true;
           try {
             await this.publisher(message);
           } finally {
             this.delivering = false;
           }
-          await this.outbox.markProcessed([message.id]);
+          await this.outbox.markProcessed([message.id], this.options.owner);
           delivered++;
         } catch (error) {
           this.options.logger?.warn(
-            `Outbox delivery of ${message.eventName} (${message.id}) failed: ${describe(error)}`,
+            `Outbox delivery of ${message.eventName} (${message.id}) failed: ${describeError(error)}`,
           );
           try {
-            await this.outbox.markFailed(message, describe(error));
+            await this.outbox.markFailed(message, describeError(error), this.options.owner);
           } catch {
             // Can't reach the database to record the failure; the lease
             // expires and the row is reclaimed on a later pass.
@@ -123,8 +144,4 @@ export class OutboxRelay {
       if (batch.length < batchSize) return delivered;
     }
   }
-}
-
-function describe(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

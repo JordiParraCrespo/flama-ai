@@ -24,6 +24,9 @@ src/
   passes the drivers it runs on to `StorageModule.register({ local: … })`, and
   its config accepts exactly those names. A driver is a class whose
   constructor takes the `ConfigService`. Keep the abstract contract stable.
+- **`upload` resolves to the key on every back-end**, and `getSignedUrl` is the
+  only way to a URL. Callers persist keys; a URL (signed and expiring on an
+  object store) is derived at read time.
 - Ships **CommonJS**.
 
 ## Commands

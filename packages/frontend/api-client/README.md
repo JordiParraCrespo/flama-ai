@@ -18,7 +18,11 @@ Query `queryOptions` / `queryKeys`). Screens still go through
 `@flama/frontend-core`, `-consumer` and `-admin` wrappers so persist policy
 and entity mapping stay in one place.
 
-Regenerate after any change to an API endpoint or its Swagger decorators. The
+Regenerate after any change to an API endpoint or its Swagger decorators. It
+needs no database, Redis or `.env`: the API boots its module graph without
+connecting and stands in a placeholder `BETTER_AUTH_SECRET` when none is set
+(the `generate:openapi` script), and `openapi.json` is formatted with Biome, so a
+regeneration with no API change leaves git clean. The
 legacy class client under `src/data-access/` remains until call sites finish
 moving to the SDK; nothing regenerates its services, and they import their
 DTOs from `src/generated/types.gen.ts`. The post-processing step

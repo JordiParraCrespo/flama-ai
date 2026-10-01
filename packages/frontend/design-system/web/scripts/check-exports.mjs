@@ -46,8 +46,11 @@ const WILDCARD_REEXPORT = '<a wildcard `export *`, which the barrel cannot enume
 const DEFAULT_EXPORT = '<a default export, which the barrel cannot name>';
 
 /** Every name in `export { ... }` / `export function X` / `export const X`. */
-function exportedNames(source) {
+function exportedNames(rawSource) {
   const names = new Set();
+  // Comments are prose: a doc line that happens to end in "export" and a next
+  // line that starts with " * " would otherwise read as `export *`.
+  const source = rawSource.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
   for (const match of source.matchAll(/export\s+(?:type\s+)?\{([^}]*)\}/g)) {
     for (const entry of match[1].split(',')) {

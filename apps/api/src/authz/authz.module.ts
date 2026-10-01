@@ -24,6 +24,7 @@ import { RevokeAccessGrantHttpController } from './commands/revoke-access-grant/
 import { AccessGrantOrmEntity } from './database/access-grant.orm-entity';
 import { AccessGrantRepository } from './database/access-grant.repository';
 import { AccessScopeInterceptor } from './interceptors/access-scope.interceptor';
+import { FindAccessGrantQueryHandler } from './queries/find-access-grant/find-access-grant.query-handler';
 import { FindAccessGrantsHttpController } from './queries/find-access-grants/find-access-grants.http.controller';
 import { FindAccessGrantsQueryHandler } from './queries/find-access-grants/find-access-grants.query-handler';
 // flama:end organizations
@@ -83,6 +84,7 @@ const queryHandlers: Provider[] = [FindAuthzCatalogQueryHandler];
     CreateAccessGrantCommandHandler,
     RevokeAccessGrantCommandHandler,
     FindAccessGrantsQueryHandler,
+    FindAccessGrantQueryHandler,
     AccessGrantMapper,
     { provide: ACCESS_GRANT_REPOSITORY, useClass: AccessGrantRepository },
     ActiveOrganizationResolver,
