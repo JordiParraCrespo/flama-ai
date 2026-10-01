@@ -101,6 +101,14 @@ describe('RoleGrantPolicy', () => {
       });
     });
 
+    it('answers ROLE_008 to an actor with no role rights in the platform scope', async () => {
+      const policy = policyFor([{ action: 'read', subject: 'Lead' }]);
+
+      await expect(policy.assertCanCreateGlobal(ACTOR)).rejects.toMatchObject({
+        code: 'ROLE_008',
+      });
+    });
+
     it('trusts an internal caller with no actor', async () => {
       await expect(policyFor([]).assertCanCreateGlobal(undefined)).resolves.toBeUndefined();
     });

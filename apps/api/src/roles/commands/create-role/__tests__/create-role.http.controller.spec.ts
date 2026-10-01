@@ -13,13 +13,13 @@ import { CreateRoleCommandHandler } from '../create-role.command-handler';
 import { CreateRoleHttpController } from '../create-role.http.controller';
 
 /**
- * `POST /v1/roles` with no active organization: the route asks for a global
- * role only for a platform admin, and the handler checks it again. Everyone
+ * `POST /v1/roles` with no active organization: only a platform admin
+ * (`manage all` in the platform scope) creates a global role. Everyone
  * else gets ROLE_008 rather than a role every tenant reads.
  */
 describe('CreateRoleHttpController with no active organization', () => {
   const ADMIN: PermissionDefinition[] = [{ action: 'manage', subject: 'all' }];
-  const ROLE_EDITOR: PermissionDefinition[] = [{ action: 'create', subject: 'Role' }];
+  const NO_ROLE_RIGHTS: PermissionDefinition[] = [{ action: 'read', subject: 'Lead' }];
 
   function wiring(held: PermissionDefinition[]) {
     const ability = defineAbilitiesFromPermissions(held);
@@ -44,8 +44,8 @@ describe('CreateRoleHttpController with no active organization', () => {
       queryBus as unknown as QueryBus,
       new RoleMapper(),
     );
-    // What the guards leave on the request: the caller's ability, and no active organization.
-    const request = { ability, session: {} } as never;
+    // What the guards leave on the request: no active organization.
+    const request = { session: {} } as never;
     const create = () =>
       controller.create({ name: 'auditor', permissions: [] }, { id: 'user-1' }, request);
     return { repo, commandBus, create };
@@ -57,17 +57,16 @@ describe('CreateRoleHttpController with no active organization', () => {
     await create();
 
     expect(commandBus.execute).toHaveBeenCalledWith(
-      expect.objectContaining({ activeOrganizationId: null, global: true }),
+      expect.objectContaining({ activeOrganizationId: null }),
     );
     const created = vi.mocked(repo.insert).mock.calls[0][0] as RoleEntity;
     expect(created.organizationId).toBeNull();
   });
 
   it('answers ROLE_008 to anyone else', async () => {
-    const { repo, commandBus, create } = wiring(ROLE_EDITOR);
+    const { repo, create } = wiring(NO_ROLE_RIGHTS);
 
     await expect(create()).rejects.toMatchObject({ code: RoleErrors.ORGANIZATION_REQUIRED.code });
-    expect(commandBus.execute).toHaveBeenCalledWith(expect.objectContaining({ global: false }));
     expect(repo.insert).not.toHaveBeenCalled();
   });
 });

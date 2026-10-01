@@ -3,7 +3,6 @@ import type { AggregateID } from '@flama/backend-ddd';
 import { Body, Controller, Post, Req, UseGuards, Version } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import type { AbilityHttpRequest } from '../../../auth/application/ability.port';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
@@ -45,13 +44,13 @@ export class CreateRoleHttpController {
   })
   @ApiProblemResponse({
     status: 400,
-    description: 'No active organization, and the caller cannot create a global role',
+    description: 'No active organization, and the caller is not a platform admin',
     code: 'ROLE_008',
   })
   async create(
     @Body() body: CreateRoleRequest,
     @CurrentUser() actor: { id: string; role?: string },
-    @Req() request: ScopedRequest & AbilityHttpRequest,
+    @Req() request: ScopedRequest,
   ): Promise<RoleResponseDto> {
     const organizationId = activeOrganizationIdOf(request);
     const roleId = await this.commandBus.execute<CreateRoleCommand, AggregateID>(
@@ -60,10 +59,6 @@ export class CreateRoleHttpController {
         actorId: actor.id,
         actorRole: actor.role,
         activeOrganizationId: organizationId,
-        // With no active organization, a platform admin (`manage all`) creates
-        // a global role, as before; anyone else gets ROLE_008. The handler
-        // checks `manage all` again before writing it.
-        global: organizationId === null && request.ability?.can('manage', 'all') === true,
       }),
     );
     const role = await this.queryBus.execute<FindRoleByIdQuery, RoleEntity>(

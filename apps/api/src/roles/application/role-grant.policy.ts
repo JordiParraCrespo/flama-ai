@@ -85,7 +85,11 @@ export class RoleGrantPolicy {
    * which every tenant's ability reads. That is platform-wide reach, so it
    * takes `manage all` in the platform scope (no active organization), not the
    * tenant `owner`'s conditioned `manage Role`. No actor is an internal caller
-   * (a seed, a test fixture), trusted as `assertGrantable` trusts it.
+   * (a seed), trusted as `assertGrantable` trusts it.
+   *
+   * An actor with no role rights at all in that scope is just someone with no
+   * organization selected (ROLE_008); one who holds some but not `manage all`
+   * is refused the reach (ROLE_005).
    */
   async assertCanCreateGlobal(actor: RoleActor | undefined): Promise<void> {
     if (!actor) return;
@@ -96,6 +100,11 @@ export class RoleGrantPolicy {
     );
     if (ability.can('manage', 'all')) return;
 
+    if (!ability.can('create', 'Role')) {
+      throw new AppError(RoleErrors.ORGANIZATION_REQUIRED, {
+        detail: 'Switch to an organization to create a role in it.',
+      });
+    }
     throw new AppError(RoleErrors.PERMISSION_NOT_GRANTABLE, {
       detail: 'Creating a global role takes "manage all" on the platform.',
     });

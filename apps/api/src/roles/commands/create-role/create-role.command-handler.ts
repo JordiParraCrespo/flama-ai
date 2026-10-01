@@ -25,17 +25,9 @@ export class CreateRoleCommandHandler implements ICommandHandler<CreateRoleComma
       ? { id: command.actorId, role: command.actorRole, activeOrganizationId: organizationId }
       : undefined;
 
-    // A role with no organization is global: every tenant's ability reads it.
-    // That is never what a missing tenant means, so it takes an explicit
-    // `global` and platform-wide `manage all`.
-    if (organizationId === null) {
-      if (!command.global) {
-        throw new AppError(RoleErrors.ORGANIZATION_REQUIRED, {
-          detail: 'Switch to an organization to create a role in it.',
-        });
-      }
-      await this.grantPolicy.assertCanCreateGlobal(actor);
-    }
+    // No organization means a global role, which every tenant reads: the
+    // policy admits a seed (no actor) and a platform admin, and refuses the rest.
+    if (organizationId === null) await this.grantPolicy.assertCanCreateGlobal(actor);
 
     // No privilege escalation: the author must already hold everything they
     // are putting on the role.
@@ -48,7 +40,7 @@ export class CreateRoleCommandHandler implements ICommandHandler<CreateRoleComma
       name: command.name,
       description: command.description,
       // A role created inside an organization belongs to it. Global roles are
-      // created only on purpose (`global`), by a platform admin or an internal caller.
+      // global (no organization) only for a platform admin or a seed.
       organizationId,
       permissions: command.permissions.map((permission) => Permission.fromDefinition(permission)),
     });
