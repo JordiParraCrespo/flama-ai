@@ -1,5 +1,12 @@
 # @flama/backend-queue
 
+## 0.2.0
+
+### Minor Changes
+
+- b87af0a: The Bull Board queue dashboard leaves the starter, and `@flama/backend-queue` no longer exports `setupBullBoard` or depends on `@bull-board/*`.
+- bdb5922: New `jobId(...parts)` helper joins a custom BullMQ job id from its parts and throws where BullMQ would refuse it (a `:`) or could mistake it for its own (any all-digit id).
+
 ## 0.1.1
 
 ### Patch Changes
