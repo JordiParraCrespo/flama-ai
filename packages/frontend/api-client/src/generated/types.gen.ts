@@ -1153,7 +1153,7 @@ export type Create2Data = {
 
 export type Create2Errors = {
     /**
-     * ROLE_008 — No active organization, and the caller cannot create a global role
+     * ROLE_008 — No active organization, and the caller is not a platform admin
      */
     400: ProblemDetailsDto;
     /**
