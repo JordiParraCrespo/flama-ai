@@ -1,6 +1,6 @@
+import { AppError } from '@flama/backend-core';
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { AppError } from '@flama/backend-core';
 import { ACCESS_GRANT_REPOSITORY } from '../../authz.di-tokens';
 import type { AccessGrantRepositoryPort } from '../../database/access-grant.repository.port';
 import type { AccessGrantEntity } from '../../domain/access-grant.entity';

@@ -1,5 +1,5 @@
-import type { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { defineAbilitiesFromPermissions, type PermissionDefinition } from '@flama/shared';
+import type { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { None } from 'oxide.ts';
 import { describe, expect, it, vi } from 'vitest';
 import type { AbilityFactory } from '../../../application/ability.factory';

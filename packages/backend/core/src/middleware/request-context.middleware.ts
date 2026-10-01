@@ -1,5 +1,5 @@
-import { Injectable, type NestMiddleware } from '@nestjs/common';
 import { RequestContextService } from '@flama/backend-ddd';
+import { Injectable, type NestMiddleware } from '@nestjs/common';
 import { CORRELATION_HEADER, resolveCorrelationId } from '../logging/correlation-id';
 
 interface CorrelatedRequest {

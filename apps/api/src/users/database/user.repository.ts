@@ -1,10 +1,10 @@
+import { likeContains } from '@flama/backend-core';
 import {
   type AggregateID,
   OutboxService,
   Paginated,
   type PaginatedQueryParams,
 } from '@flama/backend-ddd';
-import { likeContains } from '@flama/backend-core';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { None, type Option, Some } from 'oxide.ts';
