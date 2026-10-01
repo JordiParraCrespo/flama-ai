@@ -115,9 +115,17 @@ password: z.string().min(8),
 email: z.string().email('Invalid email address'),
 ```
 
-The exception is a `refine` whose meaning cannot be recovered from the issue
-code (an IP-or-CIDR check, say). Those keep their message and fall through
-untranslated by design.
+A `refine` has no issue code worth reading (`custom`), so it names its message
+through params instead of stating one:
+
+```ts
+.refine((value) => byteLength(value) <= MAX, { params: { i18nKey: 'validation.tooLong' } })
+```
+
+The map translates the key, interpolating any other params; a `refine` that
+names no key reads as `validation.invalid`. Every issue code has a case, so
+nothing reaches a form in Zod's English. The one remaining exception is a
+check that states its own message: Zod never asks the map about it.
 
 ## Adding a message
 
@@ -125,7 +133,7 @@ untranslated by design.
 a `validation.*` translation key. To cover a new issue code:
 
 1. Add the case to `createZodErrorMap`.
-2. Add the key to `ValidationMessageKey` in the same file.
+2. Add the key to `VALIDATION_MESSAGE_KEYS` in the same file.
 3. Add the message to **every** locale in `packages/translations/*/validation.json`,
    then run `pnpm --filter @flama/translations assemble` (the `index.json`
    beside it is generated).
