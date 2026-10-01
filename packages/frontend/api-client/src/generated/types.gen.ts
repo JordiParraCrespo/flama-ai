@@ -783,7 +783,7 @@ export type FindAllData = {
     path?: never;
     query?: {
         /**
-         * Search by name or email
+         * Search by name or email; `%` and `_` match literally
          */
         search?: string;
         /**
@@ -1089,7 +1089,7 @@ export type FindAll2Data = {
     path?: never;
     query?: {
         /**
-         * Search by role name
+         * Search by role name or description; `%` and `_` match literally
          */
         search?: string;
         /**
@@ -1131,6 +1131,10 @@ export type Create2Data = {
 };
 
 export type Create2Errors = {
+    /**
+     * ROLE_008 — No active organization, and the caller cannot create a global role
+     */
+    400: ProblemDetailsDto;
     /**
      * AUTH_001 / TOKEN_003 — No credential was presented, or it is invalid or expired
      */
