@@ -12,6 +12,7 @@ import {
 } from '../../../auth/domain/scope-context.types';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
+import type { AbilityHttpRequest } from '../../../auth/application/ability.port';
 import type { RoleEntity } from '../../domain/role.entity';
 import { RoleResponseDto } from '../../dtos/role.response.dto';
 import { FindRoleByIdQuery } from '../../queries/find-role-by-id/find-role-by-id.query';
@@ -42,21 +43,31 @@ export class CreateRoleHttpController {
     description: 'A role with this name already exists',
     code: 'ROLE_002',
   })
+  @ApiProblemResponse({
+    status: 400,
+    description: 'No active organization, and the caller cannot create a global role',
+    code: 'ROLE_008',
+  })
   async create(
     @Body() body: CreateRoleRequest,
     @CurrentUser() actor: { id: string; role?: string },
-    @Req() request: ScopedRequest,
+    @Req() request: ScopedRequest & AbilityHttpRequest,
   ): Promise<RoleResponseDto> {
+    const organizationId = activeOrganizationIdOf(request);
     const roleId = await this.commandBus.execute<CreateRoleCommand, AggregateID>(
       new CreateRoleCommand({
         ...body,
         actorId: actor.id,
         actorRole: actor.role,
-        activeOrganizationId: activeOrganizationIdOf(request),
+        activeOrganizationId: organizationId,
+        // With no active organization, a platform admin (`manage all`) creates
+        // a global role, as before; anyone else gets ROLE_008. The handler
+        // checks `manage all` again before writing it.
+        global: organizationId === null && request.ability?.can('manage', 'all') === true,
       }),
     );
     const role = await this.queryBus.execute<FindRoleByIdQuery, RoleEntity>(
-      new FindRoleByIdQuery(roleId, activeOrganizationIdOf(request)),
+      new FindRoleByIdQuery(roleId, organizationId),
     );
     return this.mapper.toResponse(role);
   }
