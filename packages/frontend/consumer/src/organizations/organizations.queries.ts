@@ -5,6 +5,7 @@ import {
   type EntityQueryOptions,
   type HookMutationOptions,
   MEMBER_LISTS_KEY,
+  refetchEverythingForNewIdentity,
   useEntityQuery,
   usersKeys,
   withCacheOnSuccess,
@@ -158,7 +159,7 @@ export function useAcceptInvitation(
     // redirects a settled empty list to onboarding, and navigating while the
     // cached `[]` was still being refetched bounced the reader straight back.
     ...withCacheOnSuccess(options, async () => {
-      await queryClient.invalidateQueries();
+      await refetchEverythingForNewIdentity(queryClient);
     }),
   });
 }
@@ -263,7 +264,7 @@ export function useCreateOrganization(
         ...(current ?? []),
         organization,
       ]);
-      await queryClient.invalidateQueries();
+      await refetchEverythingForNewIdentity(queryClient);
     }),
   });
 }
