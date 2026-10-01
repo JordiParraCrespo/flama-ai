@@ -27,6 +27,7 @@ export { WorkspacesApi } from './data-access/api/openapi/services/WorkspacesApi'
 
 // DTOs
 export type {
+  AccessGrantPaginationMetaDto,
   AccessGrantResponseDto,
   AddMemberRequest,
   AddWorkspaceMemberRequest,
@@ -49,6 +50,7 @@ export type {
   MemberUserResponseDto,
   MyPermissionsResponseDto,
   OrganizationResponseDto,
+  PaginatedAccessGrantsResponseDto,
   PaginatedRolesResponseDto,
   PaginatedUsersResponseDto,
   PaginationMetaDto,

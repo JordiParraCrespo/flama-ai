@@ -1,29 +1,34 @@
-import { AppError } from '@flama/backend-core';
-import type { Paginated } from '@flama/backend-ddd';
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { AppError } from '@flama/backend-core';
 import { ACCESS_GRANT_REPOSITORY } from '../../authz.di-tokens';
 import type { AccessGrantRepositoryPort } from '../../database/access-grant.repository.port';
 import type { AccessGrantEntity } from '../../domain/access-grant.entity';
 import { AccessGrantErrors } from '../../domain/access-grant.errors';
-import { FindAccessGrantsQuery } from './find-access-grants.query';
+import { FindAccessGrantQuery } from './find-access-grant.query';
 
-@QueryHandler(FindAccessGrantsQuery)
-export class FindAccessGrantsQueryHandler
-  implements IQueryHandler<FindAccessGrantsQuery, Paginated<AccessGrantEntity>>
+@QueryHandler(FindAccessGrantQuery)
+export class FindAccessGrantQueryHandler
+  implements IQueryHandler<FindAccessGrantQuery, AccessGrantEntity>
 {
   constructor(
     @Inject(ACCESS_GRANT_REPOSITORY)
     private readonly grants: AccessGrantRepositoryPort,
   ) {}
 
-  async execute(query: FindAccessGrantsQuery): Promise<Paginated<AccessGrantEntity>> {
+  async execute(query: FindAccessGrantQuery): Promise<AccessGrantEntity> {
     if (!query.scope.organizationId) {
       throw new AppError(AccessGrantErrors.NO_ACTIVE_ORGANIZATION);
     }
-    return this.grants.findPageInOrganization(query.scope.organizationId, {
-      page: query.page,
-      limit: query.limit,
-    });
+    const found = await this.grants.findOneInOrganization(
+      query.scope.organizationId,
+      query.grantId,
+    );
+    if (found.isNone()) {
+      throw new AppError(AccessGrantErrors.NOT_FOUND, {
+        detail: `No access grant with id ${query.grantId}`,
+      });
+    }
+    return found.unwrap();
   }
 }
