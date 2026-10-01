@@ -13,6 +13,7 @@ wired into the API.
 | --------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `AppError`, `ErrorDefinition`                             | Catalog error: code, stable title, per-occurrence detail                |
 | `AllExceptionsFilter`                                     | Global filter rendering every exception as an RFC 7807 problem document |
+| `describeError`                                           | A caught value as one log line: an `Error`'s message, else `String(value)` |
 | `ProblemDetails`, `buildProblemDetails`, `problemTypeFor` | The problem-document contract and its builders                          |
 | `ProblemDetailsDto`, `ApiProblemResponse`                 | Swagger model + decorator for documenting failures                      |
 | `ZodValidationPipe`                                       | Validates DTOs against Zod schemas (`nestjs-zod`)                       |
