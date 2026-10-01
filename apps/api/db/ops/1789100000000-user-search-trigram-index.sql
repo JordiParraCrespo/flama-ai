@@ -33,8 +33,7 @@ BEGIN
 END $$;
 
 -- 3. The index, built without blocking writes.
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "IDX_user_search_trgm"
-  ON "user" USING gin ("firstName" gin_trgm_ops, "lastName" gin_trgm_ops, "email" gin_trgm_ops);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS "IDX_user_search_trgm" ON "user" USING gin ("firstName" gin_trgm_ops, "lastName" gin_trgm_ops, "email" gin_trgm_ops);
 
 -- 4. Fresh statistics for the planner.
 ANALYZE "user";

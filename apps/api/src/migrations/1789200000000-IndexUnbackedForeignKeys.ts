@@ -1,4 +1,5 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
+import { dropIndexes, ensureIndexes, type IndexSpec } from './helpers/index-migration';
 
 /**
  * Backs the two foreign keys on `user_role` that had no index at all
@@ -43,89 +44,26 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
 const OPS = 'apps/api/db/ops/1789200000000-foreign-key-indexes.sql';
 const ROLLBACK = 'apps/api/db/ops/1789200000000-foreign-key-indexes.rollback.sql';
 
-/** [table, name, definition, what `pg_get_indexdef` ends with]. */
-type IndexSpec = [string, string, string, string];
-
-const CREATED: IndexSpec[] = [
+export const FOREIGN_KEY_INDEXES: IndexSpec[] = [
   // Q1
-  [
-    'user_role',
-    'IDX_user_role_organization',
-    `("organizationId") WHERE "organizationId" IS NOT NULL`,
-    `USING btree ("organizationId") WHERE ("organizationId" IS NOT NULL)`,
-  ],
+  {
+    table: 'user_role',
+    name: 'IDX_user_role_organization',
+    columns: ['"organizationId"'],
+    where: '"organizationId" IS NOT NULL',
+  },
   // Q2
-  ['user_role', 'IDX_user_role_role', `("roleId")`, `USING btree ("roleId")`],
+  { table: 'user_role', name: 'IDX_user_role_role', columns: ['"roleId"'] },
 ];
 
 export class IndexUnbackedForeignKeys1789200000000 implements MigrationInterface {
   name = 'IndexUnbackedForeignKeys1789200000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
-    for (const spec of CREATED) {
-      await this.ensureIndex(queryRunner, spec);
-    }
-    await queryRunner.query(`RESET lock_timeout`);
+    await ensureIndexes(queryRunner, FOREIGN_KEY_INDEXES, OPS);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
-    for (const [table, name] of [...CREATED].reverse()) {
-      await this.ensureNoIndex(queryRunner, table, name);
-    }
-    await queryRunner.query(`RESET lock_timeout`);
-  }
-
-  /** True when a table is too big to build or drop an index on it inside the boot transaction. */
-  private async isLarge(queryRunner: QueryRunner, table: string): Promise<boolean> {
-    const [row] = await queryRunner.query(
-      `SELECT c.reltuples > 100000 OR pg_total_relation_size(c.oid) > 128 * 1024 * 1024 AS large
-         FROM pg_class c WHERE c.oid = $1::regclass`,
-      [`"${table}"`],
-    );
-    return row.large === true;
-  }
-
-  /** Valid with the wanted definition, valid with another one, invalid, or missing. */
-  private async indexState(queryRunner: QueryRunner, name: string, definition: string) {
-    const [row] = await queryRunner.query(
-      `SELECT i.indisvalid AS valid, pg_get_indexdef(i.indexrelid) AS definition
-         FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid
-        WHERE c.relname = $1 AND c.relnamespace = 'public'::regnamespace`,
-      [name],
-    );
-    if (!row) return 'missing';
-    if (!row.valid) return 'invalid';
-    return (row.definition as string).endsWith(definition) ? 'valid' : 'outdated';
-  }
-
-  private async refuseIfLarge(queryRunner: QueryRunner, table: string, what: string, ops: string) {
-    if (await this.isLarge(queryRunner, table)) {
-      throw new Error(
-        `${what} and "${table}" is too large to change it at boot. Run ${ops} first (see this migration's header).`,
-      );
-    }
-  }
-
-  private async ensureIndex(
-    queryRunner: QueryRunner,
-    [table, name, definition, indexdef]: IndexSpec,
-  ) {
-    const state = await this.indexState(queryRunner, name, indexdef);
-    if (state === 'valid') return;
-    await this.refuseIfLarge(queryRunner, table, `${name} is ${state}`, OPS);
-    if (state !== 'missing') await queryRunner.query(`DROP INDEX "${name}"`);
-    await queryRunner.query(`CREATE INDEX "${name}" ON "${table}" ${definition}`);
-  }
-
-  private async ensureNoIndex(queryRunner: QueryRunner, table: string, name: string) {
-    const [row] = await queryRunner.query(
-      `SELECT 1 FROM pg_class c WHERE c.relname = $1 AND c.relnamespace = 'public'::regnamespace`,
-      [name],
-    );
-    if (!row) return;
-    await this.refuseIfLarge(queryRunner, table, `${name} is still there`, ROLLBACK);
-    await queryRunner.query(`DROP INDEX IF EXISTS "${name}"`);
+    await dropIndexes(queryRunner, FOREIGN_KEY_INDEXES, ROLLBACK);
   }
 }

@@ -1,4 +1,5 @@
 import type { MigrationInterface, QueryRunner } from 'typeorm';
+import { dropIndexes, ensureIndexes, type IndexSpec } from './helpers/index-migration';
 
 /**
  * A trigram index for the admin user search.
@@ -42,66 +43,24 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
 const OPS = 'apps/api/db/ops/1789100000000-user-search-trigram-index.sql';
 const ROLLBACK = 'apps/api/db/ops/1789100000000-user-search-trigram-index.rollback.sql';
 
-const NAME = 'IDX_user_search_trgm';
-const DEFINITION = `USING gin ("firstName" gin_trgm_ops, "lastName" gin_trgm_ops, "email" gin_trgm_ops)`;
-/** What `pg_get_indexdef` ends with for the index above. */
-const INDEXDEF = `USING gin ("firstName" gin_trgm_ops, "lastName" gin_trgm_ops, email gin_trgm_ops)`;
+export const USER_SEARCH_INDEXES: IndexSpec[] = [
+  {
+    table: 'user',
+    name: 'IDX_user_search_trgm',
+    method: 'gin',
+    columns: ['"firstName" gin_trgm_ops', '"lastName" gin_trgm_ops', '"email" gin_trgm_ops'],
+  },
+];
 
 export class AddUserSearchTrigramIndex1789100000000 implements MigrationInterface {
   name = 'AddUserSearchTrigramIndex1789100000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
-
-    const state = await this.indexState(queryRunner);
-    if (state !== 'valid') {
-      await this.refuseIfLarge(queryRunner, `${NAME} is ${state}`, OPS);
-      if (state !== 'missing') await queryRunner.query(`DROP INDEX "${NAME}"`);
-      await queryRunner.query(`CREATE INDEX "${NAME}" ON "user" ${DEFINITION}`);
-    }
-    await queryRunner.query(`RESET lock_timeout`);
+    await ensureIndexes(queryRunner, USER_SEARCH_INDEXES, OPS);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`SET LOCAL lock_timeout = '5s'`);
-    if ((await this.indexState(queryRunner)) !== 'missing') {
-      await this.refuseIfLarge(queryRunner, `${NAME} is still there`, ROLLBACK);
-      await queryRunner.query(`DROP INDEX IF EXISTS "${NAME}"`);
-    }
-    await queryRunner.query(`RESET lock_timeout`);
-  }
-
-  /** True when `user` is too big to build or drop an index on it inside the boot transaction. */
-  private async isLarge(queryRunner: QueryRunner): Promise<boolean> {
-    const [row] = await queryRunner.query(
-      `SELECT c.reltuples > 100000 OR pg_total_relation_size(c.oid) > 128 * 1024 * 1024 AS large
-         FROM pg_class c WHERE c.oid = '"user"'::regclass`,
-    );
-    return row.large === true;
-  }
-
-  /**
-   * Valid with the wanted definition, valid with another one, invalid (an
-   * interrupted concurrent build) or missing.
-   */
-  private async indexState(queryRunner: QueryRunner) {
-    const [row] = await queryRunner.query(
-      `SELECT i.indisvalid AS valid, pg_get_indexdef(i.indexrelid) AS definition
-         FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid
-        WHERE c.relname = $1 AND c.relnamespace = 'public'::regnamespace`,
-      [NAME],
-    );
-    if (!row) return 'missing';
-    if (!row.valid) return 'invalid';
-    return (row.definition as string).endsWith(INDEXDEF) ? 'valid' : 'outdated';
-  }
-
-  private async refuseIfLarge(queryRunner: QueryRunner, what: string, ops: string) {
-    if (await this.isLarge(queryRunner)) {
-      throw new Error(
-        `${what} and "user" is too large to change it at boot. Run ${ops} first (see this migration's header).`,
-      );
-    }
+    await dropIndexes(queryRunner, USER_SEARCH_INDEXES, ROLLBACK);
   }
 }

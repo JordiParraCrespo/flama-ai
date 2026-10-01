@@ -29,10 +29,8 @@ BEGIN
 END $$;
 
 -- 2. The indexes, built without blocking writes.
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "IDX_user_role_organization"
-  ON "user_role" ("organizationId") WHERE "organizationId" IS NOT NULL;
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "IDX_user_role_role"
-  ON "user_role" ("roleId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS "IDX_user_role_organization" ON "user_role" USING btree ("organizationId") WHERE "organizationId" IS NOT NULL;
+CREATE INDEX CONCURRENTLY IF NOT EXISTS "IDX_user_role_role" ON "user_role" USING btree ("roleId");
 
 -- 3. Fresh statistics for the planner.
 ANALYZE "user_role";
