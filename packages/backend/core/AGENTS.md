@@ -21,6 +21,7 @@ src/
 ├── pipes/          # validation & transform pipes
 ├── requests/       # request-scoped helpers
 ├── services/       # shared base services
+├── upstream/       # calling systems we do not run: rate-limit signals, the shared pause, the concurrency cap
 ├── interfaces/     # shared interfaces
 └── index.ts        # public surface
 ```

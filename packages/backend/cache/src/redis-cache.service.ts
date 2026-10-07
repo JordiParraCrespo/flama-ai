@@ -3,6 +3,19 @@ import type { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { CacheService } from './cache.service';
 
+/**
+ * `KEYS[1]` keeps the larger of itself and `ARGV[1]`; only a write resets the
+ * TTL (`ARGV[2]` seconds). Values are JSON, and a JSON number reads as a Lua
+ * number, so the stored form is the one `get` parses.
+ */
+const SET_MAX_SCRIPT = `
+local current = tonumber(redis.call('GET', KEYS[1]))
+local candidate = tonumber(ARGV[1])
+if current and current >= candidate then return tostring(current) end
+redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+return ARGV[1]
+`;
+
 @Injectable()
 export class RedisCacheService extends CacheService {
   private redis: Redis;
@@ -32,6 +45,18 @@ export class RedisCacheService extends CacheService {
     } else {
       await this.redis.set(key, serialized);
     }
+  }
+
+  /** One `EVAL`, so the compare and the write cannot interleave with another replica's. */
+  async setMax(key: string, value: number, ttlSeconds: number): Promise<number> {
+    const kept = await this.redis.eval(
+      SET_MAX_SCRIPT,
+      1,
+      key,
+      JSON.stringify(value),
+      Math.max(1, Math.ceil(ttlSeconds)),
+    );
+    return Number(kept);
   }
 
   async del(key: string): Promise<void> {
