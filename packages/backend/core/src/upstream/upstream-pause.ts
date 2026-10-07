@@ -2,7 +2,9 @@ import { Logger } from '@nestjs/common';
 
 /**
  * Where a pause is shared, so every replica of the API stops calling a
- * provider the moment one of them was told to. `CacheService` satisfies it.
+ * provider the moment one of them was told to. An adapter supplies a store whose
+ * `setMax` is one atomic command (a Redis script, as the throttler's storage
+ * keeps its own); without one a pause holds in this process only.
  */
 export interface UpstreamPauseStore {
   get<T>(key: string): Promise<T | undefined>;
@@ -30,9 +32,8 @@ const MAX_PAUSE_MS = 60 * 60_000;
  * app itself, a project).
  *
  * Calling a provider that already said "not until 14:05" only earns another
- * refusal, and providers that see it keep happening escalate: GitHub's
- * secondary limits lengthen, and an integration that ignores them can have its
- * App banned. `UpstreamLimiter` asks {@link pausedUntil} before every call and
+ * refusal, and providers that see it keep happening escalate: limits
+ * lengthen, and an integration that ignores them can be banned. `UpstreamLimiter` asks {@link pausedUntil} before every call and
  * {@link pause}s a bucket the moment an answer says so.
  *
  * A pause lives in this process and in the store. A store that is down never

@@ -5,16 +5,14 @@
  * Headers are read here, in the spellings providers use:
  *
  * - `Retry-After` (RFC 9110): seconds, or an HTTP date.
- * - `X-RateLimit-Remaining` / `X-RateLimit-Reset`: GitHub, Slack, Discord and
- *   most others. The reset is epoch seconds for some and seconds-from-now for
+ * - `X-RateLimit-Remaining` / `X-RateLimit-Reset`: many providers. The reset is epoch seconds for some and seconds-from-now for
  *   others; a value past 10⁹ can only be an epoch, so that is the tell.
  * - `RateLimit-Remaining` / `RateLimit-Reset` and the structured
  *   `RateLimit: "default";r=0;t=30` of the IETF draft
  *   (draft-ietf-httpapi-ratelimit-headers), which defines the reset as
  *   seconds-from-now and nothing else; that is the only unit read there.
  *
- * What only a body says (GitHub's secondary limit, Google's
- * `rateLimitExceeded`) is the adapter's to read, since only it knows the
+ * What only a body says (a provider's quota error code) is the adapter's to read, since only it knows the
  * provider's shape; it hands the answer in as `bodyLimited`.
  */
 export interface RateLimitSignal {
@@ -86,7 +84,7 @@ function retryAfterOf(value: string | null, now: number): Date | null {
   return Number.isNaN(date) ? null : new Date(date);
 }
 
-/** `X-RateLimit-Reset`: epoch seconds (GitHub) or seconds from now (others). */
+/** `X-RateLimit-Reset`: epoch seconds (some providers) or seconds from now (others). */
 function xResetOf(value: string | null, now: number): Date | null {
   const seconds = numberOf(value);
   if (seconds === null) return null;

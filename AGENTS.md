@@ -183,10 +183,8 @@ declared in its module's `domain/*.errors.ts`; with the `docs` plugin
 installed it also needs a row in `apps/docs/docs/errors.md`. See
 `nestjs-architecture.md`.
 
-- `integrations.md` — every call to a system we do not run respects its rate
-  limit: the budget written down first, then every call through one
-  `UpstreamLimiter.exchange` (`@flama/backend-core`), with buckets named for
-  what the provider counts and a `429` code of its own
+- `integrations.md` — calls to a system we do not run respect its rate limit,
+  through `UpstreamLimiter` (`@flama/backend-core`)
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, scoped credentials
 

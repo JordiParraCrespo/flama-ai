@@ -23,6 +23,9 @@ export interface ExchangedResponse extends RateLimitedResponse {
  * it was about rate, and which bucket it covers when that is not the first
  * (Google's project-wide quota against a person's own).
  */
+/** What a client is told to wait when our own queue, not the provider, is full. */
+const SATURATED_RETRY_MS = 1_000;
+
 export type RefusalReader = (errorBody: string) => { limited: boolean; bucket?: string };
 
 export interface UpstreamLimiterOptions extends UpstreamPauseOptions, ConcurrencyLimitOptions {
@@ -87,7 +90,7 @@ export class UpstreamLimiter {
       });
       throw upstreamRateLimited(this.error, {
         system: this.system,
-        resetAt: new Date(Date.now() + this.options.maxWaitMs),
+        resetAt: new Date(Date.now() + SATURATED_RETRY_MS),
         detail: `Too many ${this.system} requests at once; try again shortly.`,
       });
     }

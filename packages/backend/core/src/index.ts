@@ -53,11 +53,6 @@ export {
 } from './services/capabilities.service';
 export { RequestContextService } from './services/request-context.service';
 export {
-  ConcurrencyLimit,
-  type ConcurrencyLimitOptions,
-  ConcurrencyLimitSaturatedError,
-} from './upstream/concurrency-limit';
-export {
   type RateLimitedResponse,
   type RateLimitSignal,
   type ReadRateLimitOptions,
@@ -69,9 +64,5 @@ export {
   UpstreamLimiter,
   type UpstreamLimiterOptions,
 } from './upstream/upstream-limiter';
-export {
-  UpstreamPause,
-  type UpstreamPauseOptions,
-  type UpstreamPauseStore,
-} from './upstream/upstream-pause';
+export type { UpstreamPauseStore } from './upstream/upstream-pause';
 export { upstreamRateLimited } from './upstream/upstream-rate-limited.error';

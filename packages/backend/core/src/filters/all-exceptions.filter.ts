@@ -161,13 +161,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
 }
 
 /**
- * `AppError.retryAfterSeconds`, as a header: a client that reads `Retry-After`
- * waits instead of retrying into the same wall.
+ * The `retryAfterSeconds` extension the problem document carries, as a header:
+ * a client that reads `Retry-After` waits instead of retrying into the same
+ * wall, and header and body cannot disagree.
  */
 function retryAfterOf(exception: unknown): number | null {
   if (!(exception instanceof AppError)) return null;
-  const seconds = exception.retryAfterSeconds;
-  return seconds !== undefined && Number.isFinite(seconds) && seconds > 0
+  const seconds = exception.extensions.retryAfterSeconds;
+  return typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0
     ? Math.ceil(seconds)
     : null;
 }

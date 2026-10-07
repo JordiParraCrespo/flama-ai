@@ -19,10 +19,9 @@ interface Waiter {
  * At most `limit` calls in flight; a bounded number wait their turn, first come
  * first served, for a bounded time.
  *
- * A screen that fans out (`Promise.all` over every open pull request of every
- * watched repository) would otherwise open a hundred connections to a provider
- * at once, and concurrency is itself rate-limited: GitHub's secondary limit
- * counts concurrent requests first. Waiting is bounded because a request must
+ * A request that fans out (`Promise.all` over a list) would otherwise open a
+ * hundred connections to a provider at once, and some providers count
+ * concurrent requests before they count anything else. Waiting is bounded because a request must
  * not hang on a provider's budget: past `maxQueued` or `maxWaitMs` the call is
  * refused with {@link ConcurrencyLimitSaturatedError}, which the limiter
  * answers as the provider's rate-limit problem.

@@ -74,23 +74,19 @@ and tells the person to reconnect something that works.
 
 ## Outside the API
 
-- **A package with no workspace dependencies** (`backend-email`,
-  a provider SDK wrapper) cannot use the limiter. It still reports a rate limit as
-  its own error type or code, carrying `resetAt`, and does not call the
-  provider again before then. Its README says what it does.
-- **A background job** (BullMQ) does not retry a rate limit on its own
-  schedule. When the limit covers the whole provider, the worker holds the
-  queue with `queue.rateLimit(ms)` and throws `Worker.RateLimitError()`, which
-  needs a `limiter` on the `@Processor`. The job goes back to waiting without
-  spending an attempt. When the limit covers
-  one job, move that job to delayed until the reset.
+- **A package with no workspace dependencies** cannot use the limiter. It
+  still reports a rate limit as its own error type or code, carrying `resetAt`,
+  and does not call the provider again before then. Its README says what it
+  does.
+- **A background job** does not retry a rate limit on its own schedule: hold
+  the queue (or move the job to delayed) until the reset, without spending an
+  attempt.
 
 ## Spend less before you limit more
 
-Cache reads with `CacheService.getOrSet` (single-flight per key), take webhooks
-over polling, reuse a credential for its lifetime (one minted token per hour,
+Cache reads, take webhooks over polling, reuse a credential for its lifetime (one minted token per hour,
 not per call), and use conditional requests where the provider does not count
-a `304` (a few providers, GitHub among them, do not).
+a `304`.
 
 ## Tests
 

@@ -23,7 +23,7 @@ describe('readRateLimit', () => {
     expect(signal.resetAt).toEqual(new Date(NOW + 30_000));
   });
 
-  it('reads GitHub’s exhausted primary limit: a 403 with no calls left, reset in epoch seconds', () => {
+  it('reads an exhausted primary limit: a 403 with no calls left, reset in epoch seconds', () => {
     const reset = NOW / 1000 + 900;
     const signal = readRateLimit(
       answer(403, { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': String(reset) }),
@@ -72,7 +72,7 @@ describe('readRateLimit', () => {
   });
 
   it('takes the adapter’s reading of the body for a refusal no header explains', () => {
-    // GitHub's secondary limit: a 403 with no rate header at all.
+    // A secondary limit: a 403 with no rate header at all.
     expect(readRateLimit(answer(403), { now: NOW, bodyLimited: true }).limited).toBe(true);
     expect(readRateLimit(answer(403), { now: NOW }).limited).toBe(false);
     // A success is never a refusal, whatever the adapter thought of its body.

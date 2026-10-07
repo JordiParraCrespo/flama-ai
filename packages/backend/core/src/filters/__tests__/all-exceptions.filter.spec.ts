@@ -48,9 +48,9 @@ function handle(exception: unknown) {
 
 describe('AllExceptionsFilter', () => {
   it('tells the client when an upstream rate limit lifts, as Retry-After', () => {
-    const limited: ErrorDefinition = { code: 'GITHUB_015', message: 'Slow down', httpStatus: 429 };
+    const limited: ErrorDefinition = { code: 'X_001', message: 'Slow down', httpStatus: 429 };
     const { status, setHeader, problem } = handle(
-      new AppError(limited, { retryAfterSeconds: 41.2, extensions: { retryAfterSeconds: 41.2 } }),
+      new AppError(limited, { extensions: { retryAfterSeconds: 41.2 } }),
     );
 
     expect(status).toHaveBeenCalledWith(429);
@@ -60,10 +60,6 @@ describe('AllExceptionsFilter', () => {
 
   it('sends no Retry-After for an error that does not carry one', () => {
     expect(handle(new AppError(USER_NOT_FOUND)).setHeader).not.toHaveBeenCalled();
-    // An extension of the same name is body data, not the header.
-    expect(
-      handle(new AppError(USER_NOT_FOUND, { extensions: { retryAfterSeconds: 9 } })).setHeader,
-    ).not.toHaveBeenCalled();
   });
 
   it('serves problem documents as application/problem+json', () => {
