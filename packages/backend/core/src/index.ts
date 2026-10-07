@@ -52,3 +52,17 @@ export {
   type CapabilityMap,
 } from './services/capabilities.service';
 export { RequestContextService } from './services/request-context.service';
+export {
+  type RateLimitedResponse,
+  type RateLimitSignal,
+  type ReadRateLimitOptions,
+  readRateLimit,
+} from './upstream/rate-limit-signal';
+export {
+  type ExchangedResponse,
+  type RefusalReader,
+  UpstreamLimiter,
+  type UpstreamLimiterOptions,
+} from './upstream/upstream-limiter';
+export type { UpstreamPauseStore } from './upstream/upstream-pause';
+export { upstreamRateLimited } from './upstream/upstream-rate-limited.error';

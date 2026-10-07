@@ -183,6 +183,8 @@ declared in its module's `domain/*.errors.ts`; with the `docs` plugin
 installed it also needs a row in `apps/docs/docs/errors.md`. See
 `nestjs-architecture.md`.
 
+- `integrations.md` — calls to a system we do not run respect its rate limit,
+  through `UpstreamLimiter` (`@flama/backend-core`)
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, scoped credentials
 
