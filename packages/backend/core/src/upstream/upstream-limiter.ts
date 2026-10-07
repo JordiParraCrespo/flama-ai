@@ -63,7 +63,7 @@ export class UpstreamLimiter {
     private readonly system: string,
     private readonly error: ErrorDefinition,
     store: UpstreamPauseStore | undefined,
-    private readonly options: UpstreamLimiterOptions,
+    options: UpstreamLimiterOptions,
   ) {
     this.pauses = new UpstreamPause(system, store, options);
     this.inFlight = new ConcurrencyLimit(options.maxInFlight, options);

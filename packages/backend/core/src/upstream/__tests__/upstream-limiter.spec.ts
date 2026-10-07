@@ -37,7 +37,10 @@ describe('UpstreamLimiter', () => {
     const first = limiter.exchange('app', send);
     const second = limiter.exchange('app', send);
 
-    await expect(first).rejects.toMatchObject({ code: 'X_001', extensions: { retryAfterSeconds: 30 } });
+    await expect(first).rejects.toMatchObject({
+      code: 'X_001',
+      extensions: { retryAfterSeconds: 30 },
+    });
     await expect(second).rejects.toMatchObject({ code: 'X_001' });
     expect(send).toHaveBeenCalledTimes(1);
   });
