@@ -14,6 +14,15 @@ function answer(status: number, headers: Record<string, string> = {}) {
 }
 
 describe('readRateLimit', () => {
+  it('reads the tightest member of a structured RateLimit list, with its own window', () => {
+    const signal = readRateLimit(
+      answer(200, { ratelimit: '"hour";r=10;t=3600, "minute";r=0;t=30' }),
+      { now: NOW },
+    );
+    expect(signal.remaining).toBe(0);
+    expect(signal.resetAt).toEqual(new Date(NOW + 30_000));
+  });
+
   it('reads GitHub’s exhausted primary limit: a 403 with no calls left, reset in epoch seconds', () => {
     const reset = NOW / 1000 + 900;
     const signal = readRateLimit(

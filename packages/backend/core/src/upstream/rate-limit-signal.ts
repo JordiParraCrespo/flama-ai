@@ -97,13 +97,25 @@ function deltaOf(seconds: number | null, now: number): Date | null {
   return seconds === null ? null : new Date(now + seconds * 1000);
 }
 
-/** `"default";r=0;t=30` — `r` is what is left, `t` the seconds until it refills. */
+/**
+ * `"default";r=0;t=30` — `r` is what is left, `t` the seconds until it refills.
+ * The header is a list (`"hour";r=10;t=3600, "minute";r=0;t=30`): the member
+ * with the least left is the one that stops us, and its own `t` is the wait.
+ */
 function parseStructured(value: string | null): {
   remaining: number | null;
   resetSeconds: number | null;
 } {
   if (!value) return { remaining: null, resetSeconds: null };
-  const param = (key: string) =>
-    numberOf(new RegExp(`(?:^|;)\\s*${key}=(\\d+)`).exec(value)?.[1] ?? null);
-  return { remaining: param('r'), resetSeconds: param('t') };
+  let tightest: { remaining: number; resetSeconds: number | null } | null = null;
+  for (const member of value.split(',')) {
+    const param = (key: string) =>
+      numberOf(new RegExp(`(?:^|;)\\s*${key}=(\\d+)`).exec(member)?.[1] ?? null);
+    const remaining = param('r');
+    if (remaining === null) continue;
+    if (tightest === null || remaining < tightest.remaining) {
+      tightest = { remaining, resetSeconds: param('t') };
+    }
+  }
+  return { remaining: tightest?.remaining ?? null, resetSeconds: tightest?.resetSeconds ?? null };
 }

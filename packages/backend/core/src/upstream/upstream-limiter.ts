@@ -76,6 +76,7 @@ export class UpstreamLimiter {
     readRefusal?: RefusalReader,
   ): Promise<{ response: R; errorBody: string | null }> {
     const list = typeof buckets === 'string' ? [buckets] : buckets;
+    if (list.length === 0) throw new Error(`${this.system}: an exchange needs at least one bucket`);
     try {
       return await this.inFlight.run(() => this.once(list, send, readRefusal));
     } catch (error) {

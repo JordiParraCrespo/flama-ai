@@ -21,6 +21,13 @@ function answer(status: number, headers: Record<string, string> = {}, body = '')
 }
 
 describe('UpstreamLimiter', () => {
+  it('rejects an exchange with no bucket instead of sending it unguarded', async () => {
+    const limiter = new UpstreamLimiter('Example', LIMITED, undefined, OPTIONS);
+    const send = vi.fn();
+    await expect(limiter.exchange([], send)).rejects.toThrow(/at least one bucket/);
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it('refuses a call that waited for its slot once an earlier call was rate-limited', async () => {
     // The burst case: with one slot, the second call is already queued when the
     // first is refused. It must not be sent.
