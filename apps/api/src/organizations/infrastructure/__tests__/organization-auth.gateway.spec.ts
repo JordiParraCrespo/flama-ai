@@ -136,26 +136,82 @@ describe('OrganizationAuthGateway', () => {
       expect(await gateway.isSlugAvailable(headers, 'free-slug')).toBe(true);
     });
 
-    it('answers false when Better Auth throws an APIError (slug taken)', async () => {
+    it('answers false when Better Auth says the slug is taken', async () => {
       api.checkOrganizationSlug.mockRejectedValue(
-        new APIError('BAD_REQUEST', { message: 'taken' }),
+        new APIError('BAD_REQUEST', {
+          message: 'Organization slug already taken',
+          code: 'ORGANIZATION_SLUG_ALREADY_TAKEN',
+        }),
       );
       expect(await gateway.isSlugAvailable(headers, 'taken-slug')).toBe(false);
     });
 
-    it('rethrows non-APIError failures', async () => {
+    /**
+     * Any other refusal used to read as "taken": a client was told to pick
+     * another slug when the plugin had failed, and would never learn why.
+     */
+    it('raises any other Better Auth failure as the organization problem it is', async () => {
+      api.checkOrganizationSlug.mockRejectedValue(
+        new APIError('INTERNAL_SERVER_ERROR', { message: 'database unavailable' }),
+      );
+      await expect(gateway.isSlugAvailable(headers, 'x')).rejects.toMatchObject({
+        code: 'ORG_016',
+      });
+    });
+
+    it('raises a failure that is not an APIError as an upstream failure too', async () => {
       api.checkOrganizationSlug.mockRejectedValue(new Error('network down'));
-      await expect(gateway.isSlugAvailable(headers, 'x')).rejects.toThrow('network down');
+      await expect(gateway.isSlugAvailable(headers, 'x')).rejects.toMatchObject({
+        code: 'ORG_016',
+      });
     });
   });
 
-  it('lists members unwrapping the `{ members }` envelope', async () => {
-    api.listMembers.mockResolvedValue({ members: [memberRecord] });
-    const result = await gateway.listMembers(headers, 'org1');
-    expect(result.map((member) => member.id)).toEqual(['m1']);
-    expect(api.listMembers).toHaveBeenCalledWith(
-      expect.objectContaining({ query: { organizationId: 'org1' } }),
-    );
+  describe('listMembers', () => {
+    const member = (n: number) => ({ ...memberRecord, id: `m${n}`, userId: `u${n}` });
+
+    it('lists members unwrapping the `{ members }` envelope, oldest first', async () => {
+      api.listMembers.mockResolvedValue({ members: [memberRecord], total: 1 });
+      const result = await gateway.listMembers(headers, 'org1');
+      expect(result.map((m) => m.id)).toEqual(['m1']);
+      expect(api.listMembers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query: {
+            organizationId: 'org1',
+            limit: 100,
+            offset: 0,
+            sortBy: 'createdAt',
+            sortDirection: 'asc',
+          },
+        }),
+      );
+    });
+
+    /**
+     * Better Auth answers at most `membershipLimit` (100) members per call. The
+     * members list and its filters work on what this returns, so stopping at
+     * one page dropped everyone past the hundredth from both.
+     */
+    it('reads every page of a roster longer than one answer', async () => {
+      const roster = Array.from({ length: 230 }, (_, i) => member(i));
+      api.listMembers.mockImplementation(async ({ query }: { query: { offset: number } }) => ({
+        members: roster.slice(query.offset, query.offset + 100),
+        total: roster.length,
+      }));
+
+      const result = await gateway.listMembers(headers, 'org1');
+
+      expect(result).toHaveLength(230);
+      expect(api.listMembers.mock.calls.map(([call]) => call.query.offset)).toEqual([0, 100, 200]);
+    });
+
+    it('stops on an exact multiple of the page size without asking for an empty page', async () => {
+      const roster = Array.from({ length: 100 }, (_, i) => member(i));
+      api.listMembers.mockResolvedValue({ members: roster, total: 100 });
+
+      expect(await gateway.listMembers(headers, 'org1')).toHaveLength(100);
+      expect(api.listMembers).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('adds a member forwarding role and teamId', async () => {

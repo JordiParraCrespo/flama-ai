@@ -5,6 +5,31 @@ import type { MembershipAccessPolicy } from '../../../application/membership-acc
 import { AcceptInvitationCommand } from '../accept-invitation.command';
 import { AcceptInvitationCommandHandler } from '../accept-invitation.command-handler';
 
+/** The policy's admit sequence over a `grant` double: write, grant, undo on failure. */
+function fakeMembershipAccess() {
+  const grant = vi.fn().mockResolvedValue(undefined);
+  return {
+    grant,
+    release: vi.fn(),
+    admit: vi.fn(
+      async <E>(write: () => Promise<E>, undo: (entry: E) => Promise<unknown>): Promise<E> => {
+        const entry = await write();
+        try {
+          await grant(entry);
+        } catch (error) {
+          try {
+            await undo(entry);
+          } catch {
+            // The real policy logs this; the original failure is what is raised.
+          }
+          throw error;
+        }
+        return entry;
+      },
+    ),
+  };
+}
+
 const headers: IncomingHttpHeaders = { cookie: 'session=abc' };
 const invitation = {
   id: 'inv1',
@@ -20,10 +45,10 @@ const invitation = {
 
 describe('AcceptInvitationCommandHandler', () => {
   const invitationAuth = { accept: vi.fn() };
-  const organizations = { setActive: vi.fn(), session: vi.fn() };
+  const organizations = { setActive: vi.fn(), session: vi.fn(), leave: vi.fn() };
   const invitations = { findOneById: vi.fn() };
   const members = { findMembership: vi.fn() };
-  const membershipAccess = { grant: vi.fn() };
+  let membershipAccess: ReturnType<typeof fakeMembershipAccess>;
   let handler: AcceptInvitationCommandHandler;
 
   const accept = () =>
@@ -33,7 +58,7 @@ describe('AcceptInvitationCommandHandler', () => {
     vi.clearAllMocks();
     invitations.findOneById.mockResolvedValue(Some(invitation));
     members.findMembership.mockResolvedValue(None);
-    membershipAccess.grant.mockResolvedValue(undefined);
+    membershipAccess = fakeMembershipAccess();
     handler = new AcceptInvitationCommandHandler(
       invitationAuth as never,
       organizations as never,
@@ -48,7 +73,9 @@ describe('AcceptInvitationCommandHandler', () => {
 
     expect(await accept()).toBe('inv1');
     expect(invitationAuth.accept).toHaveBeenCalledWith(headers, 'inv1');
-    expect(membershipAccess.grant).toHaveBeenCalledWith('u2', 'org1', 'member');
+    expect(membershipAccess.grant).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u2', organizationId: 'org1', role: 'member' }),
+    );
   });
 
   it('passes an invited admin’s organization role through to the grant', async () => {
@@ -59,7 +86,9 @@ describe('AcceptInvitationCommandHandler', () => {
 
     await accept();
 
-    expect(membershipAccess.grant).toHaveBeenCalledWith('u2', 'org1', 'admin');
+    expect(membershipAccess.grant).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u2', organizationId: 'org1', role: 'admin' }),
+    );
   });
 
   it('repairs an already-accepted invitation for the same member', async () => {
@@ -76,7 +105,9 @@ describe('AcceptInvitationCommandHandler', () => {
     expect(invitationAuth.accept).not.toHaveBeenCalled();
     expect(members.findMembership).toHaveBeenCalledWith('org1', 'u2');
     expect(organizations.setActive).toHaveBeenCalledWith(headers, 'org1');
-    expect(membershipAccess.grant).toHaveBeenCalledWith('u2', 'org1', 'member');
+    expect(membershipAccess.grant).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u2', organizationId: 'org1', role: 'member' }),
+    );
   });
 
   it('does not recover an accepted invitation for a different account', async () => {
@@ -107,5 +138,14 @@ describe('AcceptInvitationCommandHandler', () => {
 
     expect(organizations.setActive).not.toHaveBeenCalled();
     expect(invitationAuth.accept).toHaveBeenCalled();
+  });
+
+  it('leaves the organization again when the role its invitation grants cannot be written', async () => {
+    invitationAuth.accept.mockResolvedValue({ invitation, userId: 'u2' });
+    const failure = new Error('Required system role "user" is missing');
+    membershipAccess.grant.mockRejectedValueOnce(failure);
+
+    await expect(accept()).rejects.toBe(failure);
+    expect(organizations.leave).toHaveBeenCalledWith(headers, 'org1');
   });
 });

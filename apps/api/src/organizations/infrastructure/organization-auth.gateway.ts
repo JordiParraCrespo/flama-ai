@@ -1,10 +1,16 @@
 import type { IncomingHttpHeaders } from 'node:http';
+import { AppError } from '@flama/backend-core';
 import type { AddMemberDto, UpdateOrganizationDto } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
-import { APIError } from 'better-auth/api';
 import { auth } from '../../auth/infrastructure/better-auth.config';
-import { betterAuthHeaders, unwrap, unwrapArray } from '../../auth/infrastructure/better-auth.util';
+import {
+  asRecord,
+  betterAuthHeaders,
+  unwrap,
+  unwrapArray,
+} from '../../auth/infrastructure/better-auth.util';
 import type { Member } from '../domain/membership.types';
+import { OrganizationErrors } from '../domain/organization.errors';
 import type { FullOrganization, Organization } from '../domain/organization.types';
 import { OrganizationMapper } from '../organization.mapper';
 import type {
@@ -20,6 +26,9 @@ import { invokeOrganizationApi } from './organization-error.util';
  * organization and member tables; every call goes through
  * `invokeOrganizationApi`, so its failures arrive as this module's catalog.
  */
+/** Members read per call while paging through a roster; Better Auth's own default. */
+const MEMBER_PAGE_SIZE = 100;
+
 @Injectable()
 export class OrganizationAuthGateway implements OrganizationAuthPort {
   async session(headers: IncomingHttpHeaders): Promise<CallerSession | null> {
@@ -99,28 +108,54 @@ export class OrganizationAuthGateway implements OrganizationAuthPort {
     return result ? OrganizationMapper.toFullOrganization(result) : null;
   }
 
-  /** Better Auth throws when a slug is taken; translate that to a boolean. */
+  /**
+   * Better Auth answers a taken slug with an error, and that one error is the
+   * answer "no". Any other failure — the plugin refusing the request, a
+   * failure upstream — stays the problem document the invoker makes of it.
+   */
   async isSlugAvailable(headers: IncomingHttpHeaders, slug: string): Promise<boolean> {
     try {
-      await auth.api.checkOrganizationSlug({
-        body: { slug },
-        headers: betterAuthHeaders(headers),
-      });
+      await invokeOrganizationApi(() =>
+        auth.api.checkOrganizationSlug({
+          body: { slug },
+          headers: betterAuthHeaders(headers),
+        }),
+      );
       return true;
     } catch (error) {
-      if (error instanceof APIError) return false;
+      if (error instanceof AppError && error.code === OrganizationErrors.SLUG_TAKEN.code) {
+        return false;
+      }
       throw error;
     }
   }
 
+  /**
+   * The whole roster, a page at a time. Better Auth caps one answer at
+   * `membershipLimit` (100 unless configured), so a single call would silently
+   * drop every member past it; it still checks on each page that the caller is
+   * a member, which is why the roster is read through it and not from Postgres.
+   */
   async listMembers(headers: IncomingHttpHeaders, organizationId: string): Promise<Member[]> {
-    const result = await invokeOrganizationApi(() =>
-      auth.api.listMembers({
-        query: { organizationId },
-        headers: betterAuthHeaders(headers),
-      }),
-    );
-    return OrganizationMapper.toMembers(unwrapArray(result, 'members'));
+    const members: Member[] = [];
+    for (;;) {
+      const result = await invokeOrganizationApi(() =>
+        auth.api.listMembers({
+          query: {
+            organizationId,
+            limit: MEMBER_PAGE_SIZE,
+            offset: members.length,
+            sortBy: 'createdAt',
+            sortDirection: 'asc',
+          },
+          headers: betterAuthHeaders(headers),
+        }),
+      );
+      const page = OrganizationMapper.toMembers(unwrapArray(result, 'members'));
+      members.push(...page);
+      const total = Number(asRecord(result).total);
+      if (page.length < MEMBER_PAGE_SIZE || members.length >= total) return members;
+    }
   }
 
   async addMember(

@@ -1,0 +1,168 @@
+import { randomUUID } from 'node:crypto';
+import { GenericContainer, type StartedTestContainer, Wait } from 'testcontainers';
+import { DataSource } from 'typeorm';
+import { Session } from '../src/auth/database/session.orm-entity';
+import { AccessGrantOrmEntity } from '../src/authz/database/access-grant.orm-entity';
+import { MemberOrmEntity } from '../src/organizations/database/member.orm-entity';
+import { OrganizationAccessRepository } from '../src/organizations/database/organization-access.repository';
+import { RoleOrmEntity } from '../src/roles/database/role.orm-entity';
+import { UserRoleOrmEntity } from '../src/roles/database/user-role.orm-entity';
+import { UserRoleRepository } from '../src/roles/database/user-role.repository';
+import type { UserRoleRepositoryPort } from '../src/roles/database/user-role.repository.port';
+import { RoleMapper } from '../src/roles/roles.mapper';
+import { loadMigrations } from './run-migrations';
+
+/**
+ * What a person keeps in an organization once they are out of it, against the
+ * migrated schema: `OrganizationAccessRepository.revokeFor`, which removing a
+ * member and leaving both end in, and the foreign keys that clean up after an
+ * organization is deleted outright.
+ */
+describe('Organization access (integration)', () => {
+  let pgContainer: StartedTestContainer;
+  let dataSource: DataSource;
+  let userRoles: UserRoleRepository;
+
+  beforeAll(async () => {
+    pgContainer = await new GenericContainer('postgres:16-alpine')
+      .withEnvironment({ POSTGRES_USER: 'test', POSTGRES_PASSWORD: 'test', POSTGRES_DB: 'test' })
+      .withExposedPorts(5432)
+      .withWaitStrategy(Wait.forLogMessage(/database system is ready to accept connections/, 2))
+      .start();
+    dataSource = new DataSource({
+      type: 'postgres',
+      url: `postgres://test:test@${pgContainer.getHost()}:${pgContainer.getMappedPort(5432)}/test`,
+      entities: [Session, AccessGrantOrmEntity, MemberOrmEntity, RoleOrmEntity, UserRoleOrmEntity],
+      migrations: await loadMigrations(),
+    });
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+    userRoles = new UserRoleRepository(
+      dataSource.getRepository(UserRoleOrmEntity),
+      dataSource.getRepository(RoleOrmEntity),
+      new RoleMapper(),
+    );
+  }, 180000);
+
+  afterAll(async () => {
+    await dataSource?.destroy();
+    await pgContainer?.stop();
+  });
+
+  /**
+   * A person who is a member of `left` and `kept`, with a role and a grant in
+   * `left` and a session that has `left` selected.
+   */
+  async function seedMembership() {
+    const ids = {
+      user: randomUUID(),
+      left: randomUUID(),
+      kept: randomUUID(),
+      session: randomUUID(),
+    };
+    await dataSource.query(
+      `INSERT INTO "user" ("id", "name", "email", "firstName", "lastName")
+       VALUES ($1, 'Ada', $2, 'Ada', 'L')`,
+      [ids.user, `${ids.user}@example.com`],
+    );
+    await dataSource.query(
+      `INSERT INTO "organization" ("id", "name", "slug") VALUES ($1, 'Left', $2), ($3, 'Kept', $4)`,
+      [ids.left, `left-${ids.left}`, ids.kept, `kept-${ids.kept}`],
+    );
+    // Better Auth has already removed the membership in `left`; `kept` remains.
+    await dataSource.query(
+      `INSERT INTO "member" ("id", "organizationId", "userId", "role") VALUES ($1, $2, $3, 'member')`,
+      [randomUUID(), ids.kept, ids.user],
+    );
+    const [{ id: roleId }] = await dataSource.query(
+      `SELECT "id" FROM "role" WHERE "name" = 'user'`,
+    );
+    await dataSource.query(
+      `INSERT INTO "user_role" ("userId", "roleId", "organizationId") VALUES ($1, $2, $3)`,
+      [ids.user, roleId, ids.left],
+    );
+    await dataSource.query(
+      `INSERT INTO "access_grant" ("organizationId", "principalType", "principalId",
+                                   "resourceType", "resourceId", "grantedBy")
+       VALUES ($1, 'user', $2, 'Project', $3, $2)`,
+      [ids.left, ids.user, randomUUID()],
+    );
+    await dataSource.query(
+      `INSERT INTO "session" ("id", "userId", "token", "expiresAt", "activeOrganizationId")
+       VALUES ($1, $2, $3, now() + interval '1 day', $4)`,
+      [ids.session, ids.user, `token-${ids.session}`, ids.left],
+    );
+    return ids;
+  }
+
+  async function whatRemains(ids: { user: string; left: string; session: string }) {
+    const [{ roles, grants }] = await dataSource.query(
+      `SELECT (SELECT count(*)::int FROM "user_role"
+                WHERE "userId" = $1 AND "organizationId" = $2) AS roles,
+              (SELECT count(*)::int FROM "access_grant"
+                WHERE "principalId" = $1 AND "organizationId" = $2) AS grants`,
+      [ids.user, ids.left],
+    );
+    const [{ activeOrganizationId }] = await dataSource.query(
+      `SELECT "activeOrganizationId" FROM "session" WHERE "id" = $1`,
+      [ids.session],
+    );
+    return { roles, grants, activeOrganizationId };
+  }
+
+  it('takes the roles and grants, and moves the session to an organization still held', async () => {
+    const ids = await seedMembership();
+
+    await new OrganizationAccessRepository(dataSource, userRoles).revokeFor(ids.user, ids.left);
+
+    expect(await whatRemains(ids)).toEqual({
+      roles: 0,
+      grants: 0,
+      activeOrganizationId: ids.kept,
+    });
+  });
+
+  /**
+   * The roles are written by the roles module, through its port; they still
+   * belong to this revocation's transaction, so a failure later in it leaves
+   * the person exactly as they were rather than with no roles but a grant and
+   * a session still reaching the organization.
+   */
+  it('rolls every write back when a later one fails', async () => {
+    const ids = await seedMembership();
+    const failingAfterTheRoles: UserRoleRepositoryPort = {
+      findRoleIdsForUser: (...args) => userRoles.findRoleIdsForUser(...args),
+      findRolesForUser: (...args) => userRoles.findRolesForUser(...args),
+      setRolesForUser: async (userId, roleIds, organizationId, manager) => {
+        await userRoles.setRolesForUser(userId, roleIds, organizationId, manager);
+        throw new Error('the next write failed');
+      },
+    };
+
+    await expect(
+      new OrganizationAccessRepository(dataSource, failingAfterTheRoles).revokeFor(
+        ids.user,
+        ids.left,
+      ),
+    ).rejects.toThrow('the next write failed');
+
+    expect(await whatRemains(ids)).toEqual({
+      roles: 1,
+      grants: 1,
+      activeOrganizationId: ids.left,
+    });
+  });
+
+  /**
+   * Deleting an organization revokes nothing in code, and needs not to: the
+   * schema takes its role assignments and grants with it and clears every
+   * session that had it selected.
+   */
+  it('leaves no role, grant or session selection behind when the organization is deleted', async () => {
+    const ids = await seedMembership();
+
+    await dataSource.query(`DELETE FROM "organization" WHERE "id" = $1`, [ids.left]);
+
+    expect(await whatRemains(ids)).toEqual({ roles: 0, grants: 0, activeOrganizationId: null });
+  });
+});

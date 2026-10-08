@@ -4,6 +4,31 @@ import type { MembershipAccessPolicy } from '../../../application/membership-acc
 import { CreateOrganizationCommand } from '../create-organization.command';
 import { CreateOrganizationCommandHandler } from '../create-organization.command-handler';
 
+/** The policy's admit sequence over a `grant` double: write, grant, undo on failure. */
+function fakeMembershipAccess() {
+  const grant = vi.fn().mockResolvedValue(undefined);
+  return {
+    grant,
+    release: vi.fn(),
+    admit: vi.fn(
+      async <E>(write: () => Promise<E>, undo: (entry: E) => Promise<unknown>): Promise<E> => {
+        const entry = await write();
+        try {
+          await grant(entry);
+        } catch (error) {
+          try {
+            await undo(entry);
+          } catch {
+            // The real policy logs this; the original failure is what is raised.
+          }
+          throw error;
+        }
+        return entry;
+      },
+    ),
+  };
+}
+
 const headers: IncomingHttpHeaders = { cookie: 'session=abc' };
 const organization = {
   id: 'org1',
@@ -25,7 +50,7 @@ describe('CreateOrganizationCommandHandler', () => {
     addMember: vi.fn(),
     setActive: vi.fn(),
   };
-  const membershipAccess = { grant: vi.fn() };
+  let membershipAccess: ReturnType<typeof fakeMembershipAccess>;
   let handler: CreateOrganizationCommandHandler;
 
   const create = (input: { name: string; slug?: string }) =>
@@ -41,7 +66,7 @@ describe('CreateOrganizationCommandHandler', () => {
       activeOrganizationId: null,
     });
     workspaces.create.mockResolvedValue({ id: 'team1' });
-    membershipAccess.grant.mockResolvedValue(undefined);
+    membershipAccess = fakeMembershipAccess();
     handler = new CreateOrganizationCommandHandler(
       organizations as never,
       workspaces as never,
@@ -72,7 +97,11 @@ describe('CreateOrganizationCommandHandler', () => {
    */
   it('grants the creator the org-scoped role that opens the organization', async () => {
     expect(await create({ name: 'Acme' })).toBe('org1');
-    expect(membershipAccess.grant).toHaveBeenCalledWith('u1', 'org1', 'owner');
+    expect(membershipAccess.grant).toHaveBeenCalledWith({
+      userId: 'u1',
+      organizationId: 'org1',
+      role: 'owner',
+    });
   });
 
   it('gives the organization a default workspace with its creator in it', async () => {
@@ -128,6 +157,10 @@ describe('CreateOrganizationCommandHandler', () => {
     workspaces.create.mockRejectedValue(new Error('teams are unavailable'));
 
     expect(await create({ name: 'Acme' })).toBe('org1');
-    expect(membershipAccess.grant).toHaveBeenCalledWith('u1', 'org1', 'owner');
+    expect(membershipAccess.grant).toHaveBeenCalledWith({
+      userId: 'u1',
+      organizationId: 'org1',
+      role: 'owner',
+    });
   });
 });

@@ -8,15 +8,13 @@ const headers: IncomingHttpHeaders = { cookie: 'session=abc' };
 
 describe('RemoveMemberCommandHandler', () => {
   const organizations = { removeMember: vi.fn() };
-  const members = { findAccounts: vi.fn() };
-  const membershipAccess = { revoke: vi.fn() };
+  const membershipAccess = { release: vi.fn() };
   let handler: RemoveMemberCommandHandler;
 
   beforeEach(() => {
     vi.clearAllMocks();
     handler = new RemoveMemberCommandHandler(
       organizations as never,
-      members as never,
       membershipAccess as unknown as MembershipAccessPolicy,
     );
   });
@@ -30,14 +28,19 @@ describe('RemoveMemberCommandHandler', () => {
       createdAt: new Date(),
       user: null,
     });
-    members.findAccounts.mockResolvedValue([{ id: 'u1', email: 'member@x.com' }]);
+    membershipAccess.release.mockImplementation(async (member) => ({
+      ...member,
+      user: { email: 'member@x.com' },
+    }));
 
     const removed = await handler.execute(
       new RemoveMemberCommand({ headers, organizationId: 'org1', memberIdOrEmail: 'm1' }),
     );
 
     expect(organizations.removeMember).toHaveBeenCalledWith(headers, 'org1', 'm1');
-    expect(membershipAccess.revoke).toHaveBeenCalledWith('u1', 'org1');
+    expect(membershipAccess.release).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u1', organizationId: 'org1' }),
+    );
     expect(removed).toMatchObject({ id: 'm1', user: { email: 'member@x.com' } });
   });
 });
