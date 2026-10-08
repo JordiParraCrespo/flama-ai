@@ -186,7 +186,7 @@ describe('Organization access (integration)', () => {
    * would otherwise find it used up. Only an accepted one moves: a rejected or
    * cancelled answer is the invitee's or the organization's, not ours to undo.
    */
-  it('reopens an accepted invitation, and leaves any other answer alone', async () => {
+  it('reopens an accepted invitation and closes it again, leaving any other answer alone', async () => {
     const ids = await seedMembership();
     const invite = async (status: string) => {
       const id = randomUUID();
@@ -207,6 +207,12 @@ describe('Organization access (integration)', () => {
     const statusOf = async (id: string) =>
       (await dataSource.query(`SELECT "status" FROM "invitation" WHERE "id" = $1`, [id]))[0].status;
     expect(await statusOf(accepted)).toBe('pending');
+    expect(await statusOf(rejected)).toBe('rejected');
+
+    // And back, when the membership could not be left after all.
+    await invitations.markAccepted(accepted);
+    await invitations.markAccepted(rejected);
+    expect(await statusOf(accepted)).toBe('accepted');
     expect(await statusOf(rejected)).toBe('rejected');
   });
 });

@@ -22,4 +22,8 @@ export class InvitationRepository implements InvitationRepositoryPort {
   async reopen(invitationId: string): Promise<void> {
     await this.invitations.update({ id: invitationId, status: 'accepted' }, { status: 'pending' });
   }
+
+  async markAccepted(invitationId: string): Promise<void> {
+    await this.invitations.update({ id: invitationId, status: 'pending' }, { status: 'accepted' });
+  }
 }

@@ -21,7 +21,7 @@ const invitation = {
 describe('AcceptInvitationCommandHandler', () => {
   const invitationAuth = { accept: vi.fn() };
   const organizations = { setActive: vi.fn(), session: vi.fn(), leave: vi.fn() };
-  const invitations = { findOneById: vi.fn(), reopen: vi.fn() };
+  const invitations = { findOneById: vi.fn(), reopen: vi.fn(), markAccepted: vi.fn() };
   const members = { findMembership: vi.fn() };
   // The real policy over the role store's doubles.
   const roles = { findOneByName: vi.fn() };
@@ -125,13 +125,29 @@ describe('AcceptInvitationCommandHandler', () => {
     expect(invitations.reopen).toHaveBeenCalledWith('inv1');
   });
 
-  it('keeps the invitation accepted when leaving fails, for the replay to repair', async () => {
+  it('puts the invitation back to accepted when leaving fails, for the replay to repair', async () => {
     invitationAuth.accept.mockResolvedValue({ invitation, userId: 'u2' });
     userRoles.setRolesForUser.mockRejectedValueOnce(new Error('role store unavailable'));
     organizations.leave.mockRejectedValueOnce(new Error('leave failed'));
 
     await expect(accept()).rejects.toThrow('role store unavailable');
-    expect(invitations.reopen).not.toHaveBeenCalled();
+    expect(invitations.reopen).toHaveBeenCalledWith('inv1');
+    expect(invitations.markAccepted).toHaveBeenCalledWith('inv1');
+  });
+
+  /**
+   * Reopening first is what makes a failed reopen harmless: the membership is
+   * still there and the invitation still accepted, so the replay grants the
+   * role on retry. Leaving first would strand an accepted invitation with no
+   * membership, which neither Better Auth nor the replay could take back.
+   */
+  it('stays a member with the invitation accepted when reopening fails', async () => {
+    invitationAuth.accept.mockResolvedValue({ invitation, userId: 'u2' });
+    userRoles.setRolesForUser.mockRejectedValueOnce(new Error('role store unavailable'));
+    invitations.reopen.mockRejectedValueOnce(new Error('invitation table locked'));
+
+    await expect(accept()).rejects.toThrow('role store unavailable');
+    expect(organizations.leave).not.toHaveBeenCalled();
   });
 
   /**

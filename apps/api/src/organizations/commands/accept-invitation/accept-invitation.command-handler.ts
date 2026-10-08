@@ -64,13 +64,19 @@ export class AcceptInvitationCommandHandler
           invitation: accepted.invitation,
         };
       },
-      // Leave, then reopen the invitation: Better Auth accepts a pending one
-      // only, and a retry must find something to accept. If leaving fails, the
-      // membership stands and the invitation stays accepted, which is the
-      // state the replay above repairs.
+      // Reopen, then leave: Better Auth accepts a pending invitation only, and
+      // a retry must find something to accept. Every step that can fail leaves
+      // a state a retry repairs — the invitation accepted with its membership
+      // still there, which the replay above grants — and never an accepted
+      // invitation with no membership, which nothing could take back.
       async (entry) => {
-        await this.organizations.leave(headers, entry.organizationId);
         await this.invitations.reopen(entry.invitation.id);
+        try {
+          await this.organizations.leave(headers, entry.organizationId);
+        } catch (error) {
+          await this.invitations.markAccepted(entry.invitation.id);
+          throw error;
+        }
       },
     );
     return invitation.id;
