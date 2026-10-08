@@ -75,8 +75,6 @@ jobs:
       # Import rules are dependency-cruiser's, below.
       - name: API structure
         run: pnpm check:api-structure
-      - name: Backend public API
-        run: pnpm check:public-api
       # flama:begin web|mobile
       # The frontend layout contract: feature names, kind directories, the
       # route line cap, no copies of what a kit ships, and the docs every
@@ -110,6 +108,14 @@ jobs:
       - name: Build
         run: |
           [[ "$AFFECTED_PACKAGES" == '[]' ]] || pnpm turbo run build $AFFECTED_FILTERS
+      # The packages must compile against their dependencies' built
+      # declarations, and every backend package is checked whatever the diff
+      # touched, so it builds them first; Turborepo's cache makes that free
+      # where Build already did.
+      - name: Backend public API
+        run: |
+          pnpm turbo run build --filter='./packages/backend/*'
+          pnpm check:public-api
       # After the build, whose outputs dependency-cruiser resolves the
       # @flama/* imports through.
       - name: Architecture boundaries
