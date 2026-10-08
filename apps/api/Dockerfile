@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:26-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 # The lockfile and every manifest the API's graph needs, and nothing else, so
@@ -43,7 +43,7 @@ COPY --from=deps /app ./
 COPY . .
 RUN pnpm --filter @flama/api... build
 
-FROM node:22-alpine AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
