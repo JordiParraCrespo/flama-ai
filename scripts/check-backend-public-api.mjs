@@ -7,20 +7,27 @@
  * keeps it. Once a signature the package exports names an ioredis or BullMQ
  * type, every caller is written against that library too, and swapping the
  * driver is a change across the API instead of inside the package. So the
- * surface a package exports may name the framework it is a part of (Nest,
- * zod), the workspace, Node, and the few libraries that are the point of that
+ * surface a package exports may name what `ALLOWED` lists — the framework,
+ * the workspace, Node, and the few libraries that are the point of that
  * package — and nothing else.
  *
- * "The surface" is read off the declarations `tsc` would emit for the package:
- * its `index.d.ts` and every declaration file that one reaches through a
- * relative import. A private field's type is not emitted, so a driver may hold
- * an ioredis client; a constructor parameter, a return type or a re-export is
- * emitted, and is checked. The declarations are emitted in memory from the
- * sources, so the check needs no build and sees the working tree as it is.
+ * "The surface" is the declarations `tsc` would emit for the package, from
+ * `src/index.ts` and every package file those declarations reach. A private
+ * field's type is not emitted, so a driver may hold an ioredis client; a
+ * constructor parameter, a return type or a re-export is emitted, and is
+ * checked. The program is built from the package's own `tsconfig.json`, in
+ * memory, so the check needs no build and sees the working tree as it is.
  *
- * `ALLOWED` is the list per package, with the reason for each entry. `BASELINE`
- * lists the imports already exported that the list would refuse: they pass,
- * and an entry that no longer matches anything fails, so the list only shrinks.
+ * The module names are read off the declaration ASTs inside the emit, by an
+ * `afterDeclarations` transformer: that is exactly what the `.d.ts` will
+ * name, including the `import("x")` types the emitter synthesises for
+ * inferred types, which walking the checker's exported symbols would have to
+ * re-derive. The transformer sees each declaration file with its original
+ * source, which is the path a violation is reported at.
+ *
+ * It fails closed: a package whose program has diagnostics, or whose emit is
+ * skipped, fails with those diagnostics rather than being judged on a
+ * partial surface.
  *
  *   node scripts/check-backend-public-api.mjs           check every package
  *   node scripts/check-backend-public-api.mjs --list    print every library each surface names
@@ -29,7 +36,7 @@
  */
 import { existsSync, readdirSync } from 'node:fs';
 import { builtinModules } from 'node:module';
-import { dirname, join, posix, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
@@ -37,18 +44,27 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BACKEND = join(ROOT, 'packages/backend');
 
 /**
- * What any backend package may name. The Nest packages and rxjs are the
- * framework the packages plug into (a module returns a `DynamicModule`, an
- * interceptor an `Observable`); `@flama/*` is held to its own rules.
- */
-const COMMON = ['@nestjs/common', '@nestjs/core', '@nestjs/config', 'rxjs'];
-
-/**
- * What one package may name beyond `COMMON`, and why. A library goes here only
- * when it is the point of the package, not the driver behind it; the
- * pluggable packages (cache, email, queue, storage) have no entry.
+ * What a package's surface may name, keyed by package; `'*'` is what every
+ * package may name. A library goes under a package only when it is the point
+ * of the package, not the driver behind it; the pluggable packages (cache,
+ * email, queue, storage) have no entry. An entry ending in `/*` matches the
+ * whole scope.
  */
 export const ALLOWED = {
+  '*': [
+    // The framework the packages plug into: a module returns a
+    // `DynamicModule`, an interceptor an `Observable`.
+    '@nestjs/common',
+    '@nestjs/core',
+    '@nestjs/config',
+    'rxjs',
+    // The workspace, held to its own rules.
+    '@flama/*',
+    // Node itself: `node:*` specifiers and `/// <reference types="node" />`
+    // both come out as `node`, bare builtins as their own name.
+    'node',
+    ...builtinModules,
+  ],
   // Row scoping is applied to the caller's TypeORM query builders, which is
   // why `typeorm` is a peer dependency of the package.
   '@flama/backend-authz': ['typeorm'],
@@ -61,29 +77,16 @@ export const ALLOWED = {
   '@flama/backend-ddd': ['typeorm', 'oxide.ts'],
 };
 
-/**
- * Imports already exported that `ALLOWED` would refuse. Each is a breaking
- * change to remove, so it is listed here with its reason rather than fixed in
- * passing. An entry is `package → [module]`.
- */
-export const BASELINE = {};
-
-/** `@scope/name/sub` → `@scope/name`, `name/sub` → `name`, `node:fs` → `node:fs`. */
+/** `@scope/name/sub` → `@scope/name`, `name/sub` → `name`, `node:fs` → `node`. */
 export function packageOf(specifier) {
   if (specifier.startsWith('node:')) return 'node';
   const parts = specifier.split('/');
   return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
 }
 
-/** Whether a module may appear in any package's surface whatever its lists say. */
-function always(module) {
-  return module === 'node' || builtinModules.includes(module) || module.startsWith('@flama/');
-}
-
-/** Every module specifier a declaration file names: imports, re-exports, `import("x")` types. */
-export function specifiersOf(text, fileName = 'index.d.ts') {
-  const source = ts.createSourceFile(fileName, text, ts.ScriptTarget.Latest, true);
-  const found = source.typeReferenceDirectives.map((ref) => ref.fileName);
+/** Every bare module specifier one declaration SourceFile names. */
+function specifiersIn(declaration) {
+  const found = (declaration.typeReferenceDirectives ?? []).map((ref) => ref.fileName);
   const visit = (node) => {
     if (
       (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
@@ -106,73 +109,105 @@ export function specifiersOf(text, fileName = 'index.d.ts') {
     }
     ts.forEachChild(node, visit);
   };
-  visit(source);
+  visit(declaration);
   return found;
 }
 
-/**
- * The declarations `tsc` would emit for the package at `dir`, keyed by their
- * path relative to the output root (`index.d.ts`, `cache.service.d.ts`, …).
- */
-export function emitDeclarations(dir) {
-  const configPath = join(dir, 'tsconfig.json');
-  const { config, error } = ts.readConfigFile(configPath, ts.sys.readFile);
-  if (error) throw new Error(ts.flattenDiagnosticMessageText(error.messageText, '\n'));
-  const outDir = join(dir, '.public-api');
-  const parsed = ts.parseJsonConfigFileContent(config, ts.sys, dir, {
-    declaration: true,
-    emitDeclarationOnly: true,
-    declarationMap: false,
-    sourceMap: false,
-    noEmit: false,
-    noEmitOnError: false,
-    outDir,
-  });
-  const program = ts.createProgram(parsed.fileNames, parsed.options);
-  const files = new Map();
-  program.emit(undefined, (fileName, text) => {
-    if (fileName.endsWith('.d.ts')) files.set(relative(outDir, fileName), text);
-  });
-  return files;
-}
+const formatHost = {
+  getCanonicalFileName: (fileName) => fileName,
+  getCurrentDirectory: () => ROOT,
+  getNewLine: () => '\n',
+};
 
 /**
- * The bare-module specifiers the surface rooted at `index.d.ts` names, each
- * with the declaration file it was found in.
+ * Build the package at `dir` from its own tsconfig and emit its declarations
+ * in memory. Returns `{ diagnostics, imports }`: `diagnostics` is the program's
+ * and the emit's, formatted, and when it is non-empty `imports` is empty —
+ * a package that does not compile is not judged. Each import is
+ * `{ file, specifier, module }`, `file` the source path (relative to `dir`)
+ * whose declaration names it, reached from `src/index.ts`.
  */
-export function surfaceImports(files, entry = 'index.d.ts') {
+export function analyze(dir) {
+  const configPath = join(dir, 'tsconfig.json');
+  const configErrors = [];
+  const parsed = ts.getParsedCommandLineOfConfigFile(
+    configPath,
+    {
+      declaration: true,
+      emitDeclarationOnly: true,
+      declarationMap: false,
+      sourceMap: false,
+      noEmit: false,
+    },
+    { ...ts.sys, onUnRecoverableConfigFileDiagnostic: (d) => configErrors.push(d) },
+  );
+  const fail = (diagnostics) => ({
+    diagnostics: diagnostics.map((d) => ts.formatDiagnostic(d, formatHost).trimEnd()),
+    imports: [],
+  });
+  if (!parsed) return fail(configErrors);
+
+  const program = ts.createProgram({
+    rootNames: parsed.fileNames,
+    options: parsed.options,
+    projectReferences: parsed.projectReferences,
+    configFileParsingDiagnostics: parsed.errors,
+  });
+  const pre = ts.getPreEmitDiagnostics(program);
+  if (pre.length > 0) return fail(pre);
+
+  // Source file name → the specifiers its declaration file names.
+  const named = new Map();
+  const collect = () => (node) => {
+    for (const declaration of ts.isBundle(node) ? node.sourceFiles : [node]) {
+      const source = ts.getOriginalNode(declaration);
+      named.set(
+        (ts.isSourceFile(source) ? source : declaration).fileName,
+        specifiersIn(declaration),
+      );
+    }
+    return node;
+  };
+  const emitted = program.emit(undefined, () => {}, undefined, true, {
+    afterDeclarations: [collect],
+  });
+  if (emitted.emitSkipped || emitted.diagnostics.length > 0) {
+    return fail(
+      emitted.diagnostics.length > 0
+        ? emitted.diagnostics
+        : [{ category: ts.DiagnosticCategory.Error, code: 0, messageText: 'emit skipped' }],
+    );
+  }
+
+  const entry = program.getSourceFile(join(dir, 'src/index.ts'))?.fileName;
   const imports = [];
   const seen = new Set();
-  const queue = [entry];
+  const queue = entry ? [entry] : [];
   while (queue.length > 0) {
     const file = queue.shift();
-    if (seen.has(file) || !files.has(file)) continue;
+    if (seen.has(file) || !named.has(file)) continue;
     seen.add(file);
-    for (const specifier of specifiersOf(files.get(file), file)) {
-      if (specifier.startsWith('.')) {
-        const base = posix.normalize(posix.join(posix.dirname(file), specifier));
-        queue.push(`${base}.d.ts`, `${base}/index.d.ts`);
+    for (const specifier of named.get(file)) {
+      const target = ts.resolveModuleName(specifier, file, parsed.options, ts.sys).resolvedModule;
+      if (target && !target.isExternalLibraryImport && named.has(target.resolvedFileName)) {
+        queue.push(target.resolvedFileName);
       } else {
-        imports.push({ file, specifier, module: packageOf(specifier) });
+        imports.push({ file: relative(dir, file), specifier, module: packageOf(specifier) });
       }
     }
   }
-  return imports;
+  return { diagnostics: [], imports };
 }
 
-/**
- * Judge one package's surface. Returns the imports nothing allows, and the
- * baseline entries that no longer match any import.
- */
-export function judge(name, imports, { allowed = ALLOWED, baseline = BASELINE } = {}) {
-  const ok = new Set([...COMMON, ...(allowed[name] ?? [])]);
-  const tolerated = new Set(baseline[name] ?? []);
-  const named = new Set(imports.map(({ module }) => module));
-  const refused = imports.filter(
-    ({ module }) => !always(module) && !ok.has(module) && !tolerated.has(module),
-  );
-  const stale = [...tolerated].filter((module) => !named.has(module));
-  return { refused, stale };
+/** Whether `module` matches an `ALLOWED` entry: the name, or a `scope/*`. */
+function matches(entry, module) {
+  return entry.endsWith('/*') ? module.startsWith(entry.slice(0, -1)) : entry === module;
+}
+
+/** The imports of package `name` that nothing in `allowed` (its own list and `'*'`) allows. */
+export function judge(name, imports, allowed = ALLOWED) {
+  const list = [...(allowed['*'] ?? []), ...(allowed[name] ?? [])];
+  return imports.filter(({ module }) => !list.some((entry) => matches(entry, module)));
 }
 
 /** Every backend package that has an entry to check: `{ name, dir }`. */
@@ -197,26 +232,27 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const problems = [];
   const packages = backendPackages();
   for (const { name, dir } of packages) {
-    const imports = surfaceImports(emitDeclarations(dir));
+    const { diagnostics, imports } = analyze(dir);
+    if (diagnostics.length > 0) {
+      problems.push(
+        `${name}: does not compile, so its surface cannot be judged:\n${diagnostics
+          .map((d) => `      ${d.replaceAll('\n', '\n      ')}`)
+          .join('\n')}`,
+      );
+      continue;
+    }
     if (list) {
       const modules = [...new Set(imports.map(({ module }) => module))].sort();
       console.log(`${name}: ${modules.join(', ') || '(none)'}`);
       continue;
     }
-    const { refused, stale } = judge(name, imports);
-    for (const { file, specifier } of refused) {
+    for (const { file, specifier } of judge(name, imports)) {
       problems.push(
-        `${name}: ${relative(ROOT, dir)}/src/${file.replace(/\.d\.ts$/, '.ts')} exports a type from "${specifier}". ` +
+        `${name}: ${relative(ROOT, join(dir, file))} exports a type from "${specifier}". ` +
           'Keep the driver library behind the abstract service, or add it to ALLOWED with its reason.',
       );
     }
-    for (const module of stale) {
-      problems.push(
-        `${name}: BASELINE lists "${module}", which the surface no longer names — delete the entry.`,
-      );
-    }
   }
-  if (list) process.exit(0);
   if (problems.length > 0) {
     console.error(
       `Backend public API: ${problems.length} problem${problems.length === 1 ? '' : 's'}\n`,
@@ -225,5 +261,5 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     console.error('\nSee .agents/rules/backend-packages.md');
     process.exit(1);
   }
-  console.log(`Backend public API: ${packages.length} packages name no driver library.`);
+  if (!list) console.log(`Backend public API: ${packages.length} packages name no driver library.`);
 }

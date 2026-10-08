@@ -2,23 +2,17 @@
  * The public-API check, tested against packages built for the purpose.
  *
  * Running it over the repository only says the surfaces are clean today; it
- * cannot show that a leak would be caught. These fixtures emit real
- * declarations, so what is checked is what `tsc` puts in a `.d.ts`: a private
- * field's type is not emitted, a constructor parameter's is.
+ * cannot show that a leak would be caught. These fixtures are real programs
+ * with their own `node_modules`, so what is checked is what `tsc` puts in a
+ * `.d.ts`: a private field's type is not emitted, a constructor parameter's
+ * is, and a package that does not compile is not judged at all.
  */
 import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, test } from 'node:test';
-import {
-  backendPackages,
-  emitDeclarations,
-  judge,
-  packageOf,
-  specifiersOf,
-  surfaceImports,
-} from './check-backend-public-api.mjs';
+import { analyze, backendPackages, judge, packageOf } from './check-backend-public-api.mjs';
 
 const roots = [];
 after(() => {
@@ -36,13 +30,19 @@ function fixture(files) {
         target: 'ES2022',
         module: 'CommonJS',
         moduleResolution: 'node',
+        ignoreDeprecations: '6.0',
         strict: true,
         skipLibCheck: true,
+        types: [],
         rootDir: './src',
         outDir: './dist',
       },
       include: ['src'],
     }),
+    // Stand-ins for the libraries the sources import, so the programs compile.
+    'node_modules/ioredis/package.json': JSON.stringify({ name: 'ioredis', types: 'index.d.ts' }),
+    'node_modules/ioredis/index.d.ts': 'export declare class Redis { get(key: string): string; }',
+    'node_modules/@types/fake-env/index.d.ts': 'declare const FAKE_ENV: string;',
     ...files,
   };
   for (const [path, contents] of Object.entries(all)) {
@@ -52,46 +52,59 @@ function fixture(files) {
   return dir;
 }
 
-const modules = (dir) =>
-  [...new Set(surfaceImports(emitDeclarations(dir)).map(({ module }) => module))].sort();
+const modules = (imports) => [...new Set(imports.map(({ module }) => module))].sort();
 
 test('packageOf keeps the scope and drops the subpath', () => {
   assert.equal(packageOf('@nestjs/common'), '@nestjs/common');
-  assert.equal(packageOf('@aws-sdk/client-s3/dist-types/x'), '@aws-sdk/client-s3');
+  assert.equal(packageOf('@acme/driver-kit/dist/x'), '@acme/driver-kit');
   assert.equal(packageOf('ioredis/built/Redis'), 'ioredis');
   assert.equal(packageOf('node:fs'), 'node');
 });
 
-test('specifiersOf reads imports, re-exports, import() types and type references', () => {
-  const text = [
-    '/// <reference types="node" />',
-    "import { A } from 'a';",
-    "export { B } from 'b';",
-    "export declare const c: import('c').C;",
-    "import d = require('d');",
-  ].join('\n');
-  assert.deepEqual(specifiersOf(text).sort(), ['a', 'b', 'c', 'd', 'node']);
-});
-
-test('a driver library in an exported signature is on the surface', () => {
+test('a driver library in an exported signature is on the surface, at its real source', () => {
   const dir = fixture({
-    'src/index.ts': "export { Driver } from './driver';",
-    'src/driver.ts': [
+    'src/index.ts': "export { Driver } from './drivers/redis.driver';",
+    'src/drivers/redis.driver.ts': [
       "import type { Redis } from 'ioredis';",
       'export class Driver {',
       '  constructor(readonly client: Redis) {}',
       '}',
     ].join('\n'),
   });
-  assert.deepEqual(modules(dir), ['ioredis']);
-  const { refused } = judge('@flama/backend-fixture', surfaceImports(emitDeclarations(dir)), {
-    allowed: {},
-    baseline: {},
-  });
+  const { diagnostics, imports } = analyze(dir);
+  assert.deepEqual(diagnostics, []);
+  assert.deepEqual(modules(imports), ['ioredis']);
+  const refused = judge('@flama/backend-fixture', imports, {});
   assert.deepEqual(
     refused.map(({ file, module }) => [file, module]),
-    [['driver.d.ts', 'ioredis']],
+    [[join('src', 'drivers', 'redis.driver.ts'), 'ioredis']],
   );
+});
+
+test('an import() type the emitter synthesises is read, in the file that emits it', () => {
+  const dir = fixture({
+    'src/index.ts': "import { create } from './factory';\nexport const client = create();",
+    'src/factory.ts': "import { Redis } from 'ioredis';\nexport const create = () => new Redis();",
+  });
+  const { diagnostics, imports } = analyze(dir);
+  assert.deepEqual(diagnostics, []);
+  // index.ts imports nothing from ioredis, but its declaration names
+  // `import("ioredis").Redis`; factory.d.ts is not reached from it.
+  assert.deepEqual(
+    imports.map(({ file, specifier }) => [file, specifier]),
+    [[join('src', 'index.ts'), 'ioredis']],
+  );
+});
+
+test('a type reference directive the declaration keeps is read', () => {
+  // Since TS 5.5 declaration emit keeps only a directive marked preserve.
+  const dir = fixture({
+    'src/index.ts':
+      '/// <reference types="fake-env" preserve="true" />\nexport const env: string = FAKE_ENV;',
+  });
+  const { diagnostics, imports } = analyze(dir);
+  assert.deepEqual(diagnostics, []);
+  assert.deepEqual(modules(imports), ['fake-env']);
 });
 
 test('a private field keeps its library off the surface', () => {
@@ -104,7 +117,7 @@ test('a private field keeps its library off the surface', () => {
       '}',
     ].join('\n'),
   });
-  assert.deepEqual(modules(dir), []);
+  assert.deepEqual(analyze(dir), { diagnostics: [], imports: [] });
 });
 
 test('a file the entry does not reach is not on the surface', () => {
@@ -112,19 +125,51 @@ test('a file the entry does not reach is not on the surface', () => {
     'src/index.ts': 'export const x = 1;',
     'src/internal.ts': "import type { Redis } from 'ioredis';\nexport type R = Redis;",
   });
-  assert.deepEqual(modules(dir), []);
+  assert.deepEqual(analyze(dir), { diagnostics: [], imports: [] });
 });
 
-test('judge allows the framework, the workspace and Node, and its lists', () => {
-  const imports = ['@nestjs/common', '@flama/shared', 'node', 'fs', 'zod', 'bullmq'].map(
-    (module) => ({ file: 'index.d.ts', specifier: module, module }),
-  );
-  const { refused, stale } = judge('@flama/backend-x', imports, {
-    allowed: { '@flama/backend-x': ['zod'] },
-    baseline: { '@flama/backend-x': ['bullmq', 'nodemailer'] },
+test('a package that does not typecheck fails closed with its diagnostics', () => {
+  const dir = fixture({
+    'src/index.ts': [
+      "import type { Redis } from 'ioredis';",
+      'export class Driver {',
+      '  constructor(readonly client: Redis) {}',
+      '}',
+      'export const n: number = "not a number";',
+    ].join('\n'),
   });
-  assert.deepEqual(refused, []);
-  assert.deepEqual(stale, ['nodemailer']);
+  const { diagnostics, imports } = analyze(dir);
+  assert.deepEqual(imports, []);
+  assert.equal(diagnostics.length, 1);
+  assert.match(diagnostics[0], /src\/index\.ts.*TS2322/);
+});
+
+test('an unresolved module fails closed rather than passing unjudged', () => {
+  const dir = fixture({
+    'src/index.ts': "import type { Queue } from 'bullmq';\nexport type Q = Queue;",
+  });
+  const { diagnostics, imports } = analyze(dir);
+  assert.deepEqual(imports, []);
+  assert.match(diagnostics.join('\n'), /TS2307/);
+});
+
+test('judge allows what * and the package list name, and nothing else', () => {
+  const imports = ['@nestjs/common', '@flama/shared', 'node', 'fs', 'zod', 'bullmq'].map(
+    (module) => ({ file: 'src/index.ts', specifier: module, module }),
+  );
+  const refused = judge('@flama/backend-x', imports, {
+    '*': ['@nestjs/common', '@flama/*', 'node', 'fs'],
+    '@flama/backend-x': ['zod'],
+  });
+  assert.deepEqual(
+    refused.map(({ module }) => module),
+    ['bullmq'],
+  );
+  // The real list: Node builtins and the workspace come with '*'.
+  assert.deepEqual(
+    judge('@flama/backend-cache', imports).map(({ module }) => module),
+    ['zod', 'bullmq'],
+  );
 });
 
 test('every backend package in the repository is found', () => {
