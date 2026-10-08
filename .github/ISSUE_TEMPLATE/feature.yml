@@ -1,0 +1,21 @@
+name: Feature request
+description: Something the project should do that it does not.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do, and what stops you today. Describe the need before the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How you would solve it, and the alternatives you considered.
+  - type: input
+    id: where
+    attributes:
+      label: Where it would live
+      description: The app, package or module it touches, if you know.

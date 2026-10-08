@@ -75,6 +75,9 @@ const SCAN_SKIP = [
   /^apps\/api\/openapi\.json$/,
   /^packages\/frontend\/api-client\/src\/generated\//,
   /^scripts\/starter\//,
+  // The marker grammar's own test cases: their fences are the input under
+  // test, unbalanced on purpose in places, and name no feature of this repo.
+  /^scripts\/lib\/__golden__\//,
   /\.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|zip|pdf)$/i,
 ];
 /**

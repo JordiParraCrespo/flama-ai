@@ -1,15 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleDestroy } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { CacheService } from './cache.service';
 
 @Injectable()
-export class RedisCacheService extends CacheService {
-  private redis: Redis;
+export class RedisCacheService extends CacheService implements OnModuleDestroy {
+  /** Built by the first command, so constructing the driver opens nothing. */
+  private client?: Redis;
 
   constructor(private readonly configService: ConfigService) {
     super();
-    this.redis = new Redis({
+  }
+
+  private get redis(): Redis {
+    this.client ??= new Redis({
       host: this.configService.get('redis.host'),
       port: this.configService.get('redis.port'),
       // Optional — `REDIS_PASSWORD` in the root .env. Read here rather than at
@@ -17,6 +21,13 @@ export class RedisCacheService extends CacheService {
       // refuses the cache.
       password: this.configService.get<string>('redis.password') || undefined,
     });
+    return this.client;
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    const client = this.client;
+    if (!client) return;
+    await client.quit().catch(() => client.disconnect());
   }
 
   async get<T>(key: string): Promise<T | undefined> {

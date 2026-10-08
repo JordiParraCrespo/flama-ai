@@ -1,0 +1,21 @@
+about: a value is found in an expanded array by its JSON-escaped form, so a backslash or quote in it still matches
+op: deleteJsonValueAt
+path: ["patterns"]
+literal: "a\\ b\"c"
+=== input
+{
+  "patterns": [
+    "plain",
+    "a\\ b\"c",
+    "last"
+  ]
+}
+=== output
+{
+  "patterns": [
+    "plain",
+    "last"
+  ]
+}
+=== at
+1

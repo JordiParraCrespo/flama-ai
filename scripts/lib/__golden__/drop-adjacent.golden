@@ -1,0 +1,26 @@
+about: two blocks back to back are separate places; only the removed feature's empties
+op: dropBlocks
+removed: ["gadget"]
+=== input
+{
+  # flama:begin widget
+  "widget": true,
+  # flama:end widget
+  # flama:begin gadget
+  "gadget": true,
+  # flama:end gadget
+  # flama:begin gizmo
+  "gizmo": true,
+  # flama:end gizmo
+}
+=== output
+{
+  # flama:begin widget
+  "widget": true,
+  # flama:end widget
+  # flama:begin gadget
+  # flama:end gadget
+  # flama:begin gizmo
+  "gizmo": true,
+  # flama:end gizmo
+}

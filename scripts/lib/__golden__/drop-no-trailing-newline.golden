@@ -1,0 +1,12 @@
+about: a file without a final newline does not gain one
+op: dropBlocks
+removed: ["widget"]
+=== input
+keep
+# flama:begin widget
+gone
+# flama:end widget
+=== output
+keep
+# flama:begin widget
+# flama:end widget

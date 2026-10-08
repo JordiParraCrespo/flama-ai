@@ -142,6 +142,11 @@ with before it touches anything.
   a commit it has not passed. Require the `CI` check. How CI decides what runs,
   how an image is picked up and where a root-level file is declared, is
   `scripts/ci/README.md`
+- Actions are pinned to a commit SHA with the tag in a comment, and a
+  workflow's token gets only what it uses. `.github/` holds the rest of the
+  repository's policy — Dependabot, `CODEOWNERS` (the security-critical paths
+  live there and nowhere else), `SECURITY.md`, `CONTRIBUTING.md` — and each
+  file explains itself
 
 ### Backend (`apps/api` + `packages/backend/*`)
 

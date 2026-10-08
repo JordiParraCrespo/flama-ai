@@ -1,0 +1,14 @@
+about: an inline array keeps its shape; the value is found exactly, not as a substring of a neighbour
+op: deleteJsonValueAt
+path: ["outputs"]
+literal: ".next/**"
+=== input
+{
+  "outputs": ["dist/**", "!.next/cache/**", ".next/**", "build/**"]
+}
+=== output
+{
+  "outputs": ["dist/**", "!.next/cache/**", "build/**"]
+}
+=== at
+2

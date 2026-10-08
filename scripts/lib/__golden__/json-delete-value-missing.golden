@@ -1,0 +1,9 @@
+about: a value that is not in the array is reported as null rather than guessed at
+op: deleteJsonValueAt
+path: ["env"]
+literal: "WIDGET_*"
+=== input
+{
+  "env": ["VITE_*", "EXPO_*"]
+}
+=== null

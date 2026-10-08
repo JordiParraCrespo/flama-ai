@@ -1,0 +1,19 @@
+about: narrowMarker edits only marker lines, in any syntax, and leaves a spec alone when nothing or everything was named
+op: narrowMarker
+removed: ["widget"]
+=== input
+# flama:begin widget|gadget
+    // flama:end gadget|widget|gizmo
+<!-- flama:begin gizmo|widget -->
+{/* flama:end widget|gadget */}
+# flama:begin widget
+# flama:begin gadget|gizmo
+const spec = 'flama:begin widget|gadget';
+=== output
+# flama:begin gadget
+    // flama:end gadget|gizmo
+<!-- flama:begin gizmo -->
+{/* flama:end gadget */}
+# flama:begin widget
+# flama:begin gadget|gizmo
+const spec = 'flama:begin widget|gadget';

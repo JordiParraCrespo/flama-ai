@@ -1,0 +1,19 @@
+about: a block two features share stays when one goes, and its fences stop naming the one that went
+op: dropBlocks
+removed: ["widget"]
+=== input
+jobs:
+  # flama:begin widget|gadget
+  frontend:
+    runs-on: ubuntu-latest
+  # flama:end widget|gadget
+  api:
+    runs-on: ubuntu-latest
+=== output
+jobs:
+  # flama:begin gadget
+  frontend:
+    runs-on: ubuntu-latest
+  # flama:end gadget
+  api:
+    runs-on: ubuntu-latest

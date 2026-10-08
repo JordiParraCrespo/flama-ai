@@ -1,0 +1,33 @@
+about: a position counts the object's own members, never the closing lines of nested values
+op: insertJsonEntry
+path: ["features"]
+at: 1
+=== input
+{
+  "features": {
+    "widget": {
+      "paths": ["apps/widget"]
+    },
+    "gizmo": {
+      "paths": ["apps/gizmo"]
+    }
+  }
+}
+=== entry
+    "gadget": {
+      "paths": ["apps/gadget"]
+    }
+=== output
+{
+  "features": {
+    "widget": {
+      "paths": ["apps/widget"]
+    },
+    "gadget": {
+      "paths": ["apps/gadget"]
+    },
+    "gizmo": {
+      "paths": ["apps/gizmo"]
+    }
+  }
+}

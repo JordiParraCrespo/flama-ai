@@ -1,0 +1,13 @@
+about: the file's final newline survives a whole drop at its end
+op: dropBlocks
+removed: ["widget"]
+whole: true
+=== input
+keep
+# flama:begin widget
+gone
+# flama:end widget
+
+=== output
+keep
+

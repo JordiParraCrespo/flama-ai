@@ -1,0 +1,21 @@
+about: two plugin blocks stacked on one slot; removing one takes only it, the neighbour and the anchor stay
+op: dropBlocks
+removed: ["widget"]
+slots: {"widget": ["ci-checks"], "gadget": ["ci-checks"]}
+=== input
+steps:
+  # flama:begin widget
+  - run: pnpm widget:check
+  # flama:end widget
+  # flama:begin gadget
+  - run: pnpm gadget:check
+  # flama:end gadget
+
+  # flama:plugins ci-checks
+=== output
+steps:
+  # flama:begin gadget
+  - run: pnpm gadget:check
+  # flama:end gadget
+
+  # flama:plugins ci-checks

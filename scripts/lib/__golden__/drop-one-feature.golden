@@ -1,0 +1,22 @@
+about: a block only the removed feature owns empties, and its fences stay for a plugin to fill
+op: dropBlocks
+removed: ["widget"]
+=== input
+services:
+  api:
+    image: api
+  # flama:begin widget
+  widget:
+    image: widget
+    depends_on: [api]
+  # flama:end widget
+  db:
+    image: postgres
+=== output
+services:
+  api:
+    image: api
+  # flama:begin widget
+  # flama:end widget
+  db:
+    image: postgres

@@ -1,0 +1,21 @@
+about: an entry read out is its lines verbatim, without the comma that joined it to the next member
+op: readJsonEntry
+path: ["features"]
+key: "widget"
+=== input
+{
+  "features": {
+    "widget": {
+      "paths": ["apps/widget"],
+      "requires": []
+    },
+    "gadget": {
+      "paths": ["apps/gadget"]
+    }
+  }
+}
+=== output
+    "widget": {
+      "paths": ["apps/widget"],
+      "requires": []
+    }

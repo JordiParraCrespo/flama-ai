@@ -1,0 +1,22 @@
+about: removing the outer block takes a nested block of another feature with it, since its lines existed only inside the outer one
+op: dropBlocks
+removed: ["widget"]
+=== input
+const routes = [
+  home,
+  // flama:begin widget
+  widgetList,
+  // flama:begin gadget
+  widgetGadgets,
+  // flama:end gadget
+  widgetDetail,
+  // flama:end widget
+  settings,
+];
+=== output
+const routes = [
+  home,
+  // flama:begin widget
+  // flama:end widget
+  settings,
+];

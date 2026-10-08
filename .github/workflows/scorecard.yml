@@ -1,0 +1,44 @@
+name: Scorecard
+
+# OpenSSF Scorecard: grades the repository's supply-chain practices (pinned
+# actions, token permissions, branch protection, dependency updates) and
+# files what it finds under Security → Code scanning. Informational, never a
+# required check. Scorecard publishes to its public API, which only works for
+# a public repository; a private project skips the job.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"
+  branch_protection_rule:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard
+    runs-on: ubuntu-latest
+    if: github.event.repository.private == false
+    permissions:
+      # Upload the SARIF to code scanning, and sign the published result.
+      security-events: write
+      id-token: write
+    steps:
+      # Records every outbound call the job makes; audit only, it blocks
+      # nothing. GitHub-hosted runners only, which is why the gha-vm jobs in
+      # ci.yml do not carry it.
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: results.sarif

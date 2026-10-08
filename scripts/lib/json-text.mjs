@@ -20,9 +20,14 @@
 
 const ESCAPE = /[.*+?^${}()|[\]\\]/g;
 
-/** The literal as a quoted string inside a regex — for finding it. */
+/**
+ * The literal as a regex matching it as written in the file — for finding it.
+ *
+ * The file holds the JSON-escaped form, so that is what is matched: `a\ b`
+ * is written `"a\\ b"`, and a pattern built from the raw text never meets it.
+ */
 function quote(literal) {
-  return `"${literal.replace(ESCAPE, '\\$&')}"`;
+  return render(literal).replace(ESCAPE, '\\$&');
 }
 
 /**
@@ -67,8 +72,7 @@ export function deleteJsonValueAt(text, path, literal) {
 
   if (isInline(lines[opening])) {
     const line = lines[opening];
-    const start = line.indexOf('[');
-    const end = line.indexOf(']', start);
+    const [start, end] = inlineBounds(line);
     const members = splitMembers(line.slice(start + 1, end));
     const at = members.indexOf(render(literal));
     if (at === -1) return null;
@@ -116,8 +120,7 @@ export function insertJsonValue(text, path, literal, at) {
   // Inline: the whole array is on the line that opens it.
   if (isInline(lines[opening])) {
     const line = lines[opening];
-    const start = line.indexOf('[');
-    const end = line.indexOf(']', start);
+    const [start, end] = inlineBounds(line);
     const members = splitMembers(line.slice(start + 1, end));
     const where = Math.min(index, members.length);
     members.splice(where, 0, render(literal));
@@ -142,14 +145,52 @@ export function insertJsonValue(text, path, literal, at) {
 
 /** Whether the array opening on this line also closes on it. */
 function isInline(line) {
-  return /\]/.test(line.slice(line.indexOf('[')));
+  return inlineBounds(line) !== null;
 }
 
-/** The members of an inline array body, split on the commas between them. */
+/**
+ * Where the array opening on this line opens and closes, as `[start, end]`
+ * indexes of its brackets, or null when it closes further down. Read outside
+ * strings, so a `]` inside a glob does not end it early.
+ */
+function inlineBounds(line) {
+  let start = -1;
+  let depth = 0;
+  let end = -1;
+  walk(line, (char, i) => {
+    if (start === -1) {
+      if (char !== '[') return;
+      start = i;
+    }
+    if (char === '[' || char === '{') depth++;
+    else if (char === ']' || char === '}') depth--;
+    if (depth === 0) {
+      end = i;
+      return false;
+    }
+  });
+  return end === -1 ? null : [start, end];
+}
+
+/**
+ * The members of an inline array body, split on the commas between them —
+ * not on one inside a string (`"*.{ts,tsx}"`) or a nested value.
+ */
 function splitMembers(body) {
-  const trimmed = body.trim();
-  if (!trimmed) return [];
-  return trimmed.split(/\s*,\s*/);
+  const members = [];
+  let depth = 0;
+  let from = 0;
+  walk(body, (char, i) => {
+    if (char === '[' || char === '{') depth++;
+    else if (char === ']' || char === '}') depth--;
+    else if (char === ',' && depth === 0) {
+      members.push(body.slice(from, i).trim());
+      from = i + 1;
+    }
+  });
+  const last = body.slice(from).trim();
+  if (last || members.length) members.push(last);
+  return members;
 }
 
 /**
@@ -194,23 +235,33 @@ function memberMatcher(openingLine, key) {
 }
 
 /**
- * How many brackets the line opens and does not close, ignoring any inside a
- * string — `"qa": "pnpm --filter {x} qa"` opens nothing.
+ * Call `visit(char, index)` for every character of `text` outside a string,
+ * in order, until it returns false. The one scanner here: everything that
+ * reads brackets or commas reads them through this, so a `{` or `,` inside a
+ * string — `"qa": "pnpm --filter {x} qa"`, `"*.{ts,tsx}"` — is never
+ * structure.
  */
-function depthOf(line) {
-  let depth = 0;
+function walk(text, visit) {
   let inString = false;
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
     if (inString) {
       if (char === '\\') i++;
       else if (char === '"') inString = false;
       continue;
     }
     if (char === '"') inString = true;
-    else if (char === '{' || char === '[') depth++;
-    else if (char === '}' || char === ']') depth--;
+    else if (visit(char, i) === false) return;
   }
+}
+
+/** How many brackets the line opens and does not close, ignoring any inside a string. */
+function depthOf(line) {
+  let depth = 0;
+  walk(line, (char) => {
+    if (char === '{' || char === '[') depth++;
+    else if (char === '}' || char === ']') depth--;
+  });
   return depth;
 }
 

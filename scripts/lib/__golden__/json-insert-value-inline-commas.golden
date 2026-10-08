@@ -1,0 +1,13 @@
+about: an insert into an inline array counts members, not commas, so it never lands inside a string
+op: insertJsonValue
+path: ["includes"]
+literal: "dist/**"
+at: 2
+=== input
+{
+  "includes": ["**/*.{ts,tsx}", "[a,b]", "!**/{x,y}/**"]
+}
+=== output
+{
+  "includes": ["**/*.{ts,tsx}", "[a,b]", "dist/**", "!**/{x,y}/**"]
+}

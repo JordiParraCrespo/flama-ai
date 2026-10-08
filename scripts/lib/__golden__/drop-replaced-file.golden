@@ -1,0 +1,23 @@
+about: a feature that replaces the file has its blocks taken out whole, leaving the starter's version; other removed features leave their holes
+op: dropBlocks
+removed: ["widget", "gadget"]
+whole: ["widget"]
+=== input
+import { base } from './base';
+// flama:begin widget
+import { widget } from './widget';
+// flama:end widget
+
+export const registry = { base };
+// flama:begin widget
+registry.widget = widget;
+// flama:end widget
+// flama:begin gadget
+registry.gadget = gadget;
+// flama:end gadget
+=== output
+import { base } from './base';
+
+export const registry = { base };
+// flama:begin gadget
+// flama:end gadget

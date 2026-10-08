@@ -1,0 +1,26 @@
+about: removing the inner block empties it and leaves the outer feature's lines alone
+op: dropBlocks
+removed: ["gadget"]
+=== input
+const routes = [
+  home,
+  // flama:begin widget
+  widgetList,
+  // flama:begin gadget
+  widgetGadgets,
+  // flama:end gadget
+  widgetDetail,
+  // flama:end widget
+  settings,
+];
+=== output
+const routes = [
+  home,
+  // flama:begin widget
+  widgetList,
+  // flama:begin gadget
+  // flama:end gadget
+  widgetDetail,
+  // flama:end widget
+  settings,
+];

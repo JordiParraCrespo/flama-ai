@@ -1,0 +1,25 @@
+about: blank lines collapse only at the seam a removed block leaves; runs elsewhere in the file stay
+op: dropBlocks
+removed: ["widget"]
+whole: true
+=== input
+a
+
+
+
+b
+
+# flama:begin widget
+w
+# flama:end widget
+
+
+c
+=== output
+a
+
+
+
+b
+
+c

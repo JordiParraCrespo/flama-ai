@@ -1,0 +1,16 @@
+about: widenMarker puts the id in at its index, past the end appends, and an id already there is left alone
+op: widenMarker
+id: "gadget"
+at: 1
+=== input
+# flama:begin widget
+# flama:end widget|gizmo
+  {/* flama:begin widget|gadget */}
+<!-- flama:end gizmo -->
+not a marker
+=== output
+# flama:begin widget|gadget
+# flama:end widget|gadget|gizmo
+  {/* flama:begin widget|gadget */}
+<!-- flama:end gizmo|gadget -->
+not a marker

@@ -1,0 +1,21 @@
+about: a CRLF file empties a block and narrows a fence without changing its line endings
+op: dropBlocks
+removed: ["widget"]
+eol: "crlf"
+=== input
+keep
+# flama:begin widget
+gone
+# flama:end widget
+# flama:begin widget|gadget
+shared
+# flama:end widget|gadget
+tail
+=== output
+keep
+# flama:begin widget
+# flama:end widget
+# flama:begin gadget
+shared
+# flama:end gadget
+tail

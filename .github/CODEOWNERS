@@ -1,0 +1,31 @@
+# Who reviews what. GitHub requests a review from the owners of every path a
+# pull request touches; with "Require review from Code Owners" on in branch
+# protection, their approval is what merges it.
+
+*                                   @JordiParraCrespo
+
+# The security-critical paths: who can sign in, what a role, a scope or an
+# organization lets them do, how hard they can hit the API, what an error
+# reveals, what the browser may run, and what CI's token can touch. A second
+# look there means a second owner, and a later line replaces an earlier one
+# rather than adding to it, so each line names both. Uncomment them once the
+# project has that team (a team that does not exist makes the line an error).
+#
+# /packages/auth/                     @JordiParraCrespo @your-org/security
+# /apps/api/src/auth/                 @JordiParraCrespo @your-org/security
+# /packages/backend/authz/            @JordiParraCrespo @your-org/security
+# /apps/api/src/authz/                @JordiParraCrespo @your-org/security
+# /apps/api/src/roles/                @JordiParraCrespo @your-org/security
+# /packages/shared/src/permissions/   @JordiParraCrespo @your-org/security
+# /packages/shared/src/scopes/        @JordiParraCrespo @your-org/security
+# flama:begin organizations
+# /apps/api/src/organizations/        @JordiParraCrespo @your-org/security
+# flama:end organizations
+# /apps/api/src/throttling/           @JordiParraCrespo @your-org/security
+# /packages/backend/core/src/filters/ @JordiParraCrespo @your-org/security
+# /apps/api/src/config/               @JordiParraCrespo @your-org/security
+# flama:begin web
+# /apps/web/nginx.conf                @JordiParraCrespo @your-org/security
+# flama:end web
+# flama:plugins codeowners
+# /.github/                           @JordiParraCrespo @your-org/security

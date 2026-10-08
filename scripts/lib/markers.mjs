@@ -152,7 +152,7 @@ export function narrowMarker(line, removed) {
   const ids = match[2].split('|');
   const kept = ids.filter((id) => !removed.has(id));
   if (!kept.length || kept.length === ids.length) return line;
-  return line.replace(match[2], kept.join('|'));
+  return respec(line, match, kept);
 }
 
 /**
@@ -169,7 +169,17 @@ export function widenMarker(line, id, at) {
   if (!match) return line;
   const ids = match[2].split('|');
   if (ids.includes(id)) return line;
-  return line.replace(match[2], [...ids.slice(0, at), id, ...ids.slice(at)].join('|'));
+  return respec(line, match, [...ids.slice(0, at), id, ...ids.slice(at)]);
+}
+
+/**
+ * `line` with the spec `match` found after `flama:begin`/`flama:end` replaced
+ * by `ids`. By position, not by search: the same text can occur earlier in
+ * the line — `a` in `flama`, `-` in `<!--` — and a search edits that instead.
+ */
+function respec(line, match, ids) {
+  const at = match.index + match[0].length - match[2].length;
+  return `${line.slice(0, at)}${ids.join('|')}${line.slice(at + match[2].length)}`;
 }
 
 /**
@@ -290,12 +300,18 @@ export function dropBlocks(file, content, removed, { whole = false, slots = new 
       kept.add(block.end);
     }
   }
-  const out = lines.flatMap((line, index) => {
-    if (kept.has(index)) return [line];
-    if (drop.has(index)) return [];
-    return [MARKER_RE.test(line) ? narrowMarker(line, removed) : line];
+  // Where lines went: the index in `out` of the line that follows each run
+  // of dropped ones (`out.length` when the run ends the file).
+  const out = [];
+  const seams = new Set();
+  lines.forEach((line, index) => {
+    if (drop.has(index) && !kept.has(index)) {
+      seams.add(out.length);
+      return;
+    }
+    out.push(!kept.has(index) && MARKER_RE.test(line) ? narrowMarker(line, removed) : line);
   });
-  return collapseBlankRuns(out.join('\n'));
+  return collapseBlankRuns(out, seams);
 }
 
 /**
@@ -315,9 +331,29 @@ export function hasFilledBlock(file, content, id) {
   );
 }
 
-/** Deleting a block leaves the blank lines either side of it; keep one. */
-export function collapseBlankRuns(text) {
-  return text.replace(/\n{3,}/g, '\n\n');
+/**
+ * Deleting a block leaves the blank lines either side of it; keep one.
+ *
+ * Only there: `seams` holds, for each run of lines removed, the index in
+ * `lines` of the line that now follows it, and only a run of newlines that
+ * meets one of those places collapses. A file's own blank lines elsewhere are
+ * the author's: an edit that never touched them has no business changing them.
+ */
+function collapseBlankRuns(lines, seams) {
+  const text = lines.join('\n');
+  // Where each seam falls in the text: the newline before the line that
+  // follows it, -1 before the first line and `text.length` past the last.
+  const at = new Set();
+  let offset = -1;
+  lines.forEach((line, index) => {
+    if (seams.has(index)) at.add(offset);
+    offset += line.length + 1;
+  });
+  if (seams.has(lines.length)) at.add(text.length);
+  return text.replace(/\n{3,}/g, (run, start) => {
+    for (let i = start - 1; i <= start + run.length; i++) if (at.has(i)) return '\n\n';
+    return run;
+  });
 }
 
 /** Word-boundary match for an identifier such as `apps/web` or `@flama/web`. */

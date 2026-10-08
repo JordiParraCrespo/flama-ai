@@ -1,0 +1,7 @@
+about: a file with no blocks is no rewrite at all, so the caller can skip it
+op: dropBlocks
+removed: ["widget"]
+=== input
+# a comment that mentions flama:begin widget mid-line is not a marker
+plain: true
+=== null

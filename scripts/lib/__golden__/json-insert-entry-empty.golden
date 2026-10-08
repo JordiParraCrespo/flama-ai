@@ -1,0 +1,21 @@
+about: inserting into {} opens it up, the inverse of json-delete-entry-last
+op: insertJsonEntry
+path: ["features"]
+=== input
+{
+  "features": {},
+  "shared": {}
+}
+=== entry
+    "widget": {
+      "paths": ["apps/widget"]
+    }
+=== output
+{
+  "features": {
+    "widget": {
+      "paths": ["apps/widget"]
+    }
+  },
+  "shared": {}
+}

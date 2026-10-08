@@ -6,7 +6,10 @@ Redis cache abstraction for the NestJS API, backed by
 ## What's inside
 
 - `CacheService` — abstract cache contract (the DI token consumers depend on).
-- `RedisCacheService` — the concrete `ioredis`-backed implementation.
+- `RedisCacheService` — the concrete `ioredis`-backed implementation. It
+  creates its client on the first command rather than in its constructor,
+  and quits it on shutdown (`onModuleDestroy`), so the app boots without
+  Redis for `generate:openapi`.
 - `CacheModule` — NestJS module that binds `CacheService` to `RedisCacheService`
   and reads connection config from `@nestjs/config`.
 

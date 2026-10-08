@@ -1,0 +1,19 @@
+about: a block the entry says a slot put in place goes whole, and the anchor stays where it was
+op: dropBlocks
+removed: ["widget"]
+slots: {"widget": ["ci-checks"]}
+=== input
+steps:
+  - run: pnpm test
+  # flama:begin widget
+  - run: pnpm widget:check
+  # flama:end widget
+
+  # flama:plugins ci-checks
+  - run: pnpm build
+=== output
+steps:
+  - run: pnpm test
+
+  # flama:plugins ci-checks
+  - run: pnpm build
