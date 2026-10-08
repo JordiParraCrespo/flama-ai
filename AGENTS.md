@@ -142,6 +142,16 @@ with before it touches anything.
   a commit it has not passed. Require the `CI` check. How CI decides what runs,
   how an image is picked up and where a root-level file is declared, is
   `scripts/ci/README.md`
+- Actions are pinned to a commit SHA with the tag in a comment, and each
+  workflow's token gets only what it uses (`contents: read`, widened per job
+  where one writes); Dependabot (`.github/dependabot.yml`) moves the pins monthly. A plugin
+  with another ecosystem adds its entry at that file's `flama:plugins` anchor
+- `.github/CODEOWNERS` lists the security-critical paths — auth, authz,
+  roles, scopes, tenancy, throttling, the error filter, the SPA's headers,
+  CI. A change there gets the extra scrutiny the file asks for; a new path of
+  that kind gets a line in it. Vulnerabilities are reported privately
+  (`.github/SECURITY.md`), and AI assistance is disclosed in the pull request
+  (`.github/CONTRIBUTING.md`)
 
 ### Backend (`apps/api` + `packages/backend/*`)
 

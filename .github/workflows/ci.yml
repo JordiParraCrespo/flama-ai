@@ -18,6 +18,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Read-only by default; a job that writes (Build Docker Images pushes to GHCR)
+# asks for exactly that in its own `permissions`.
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Check

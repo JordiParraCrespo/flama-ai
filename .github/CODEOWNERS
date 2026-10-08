@@ -1,0 +1,42 @@
+# Who reviews what. GitHub requests a review from the owners of every path a
+# pull request touches; with "Require review from Code Owners" on in branch
+# protection, their approval is what merges it.
+#
+# The default owner covers everything. The paths below it are the ones that
+# decide who can do what — sign-in, sessions, roles, scopes, tenancy, rate
+# limits, the error filter that shapes every response, the browser's
+# security headers, CI's tokens — and get a second look whatever else the
+# change is. A project made from this starter replaces the handle with its
+# own, or a team (`@org/security`) on the critical lines.
+
+*                                   @JordiParraCrespo
+
+# Authentication and sessions
+/packages/auth/                     @JordiParraCrespo
+/apps/api/src/auth/                 @JordiParraCrespo
+
+# Authorization: roles, policies, scopes
+/packages/backend/authz/            @JordiParraCrespo
+/apps/api/src/authz/                @JordiParraCrespo
+/apps/api/src/roles/                @JordiParraCrespo
+/packages/shared/src/permissions/   @JordiParraCrespo
+/packages/shared/src/scopes/        @JordiParraCrespo
+
+# flama:begin organizations
+# Tenancy: what one organization can see of another
+/apps/api/src/organizations/        @JordiParraCrespo
+# flama:end organizations
+
+# Abuse limits, error shaping, configuration and secrets handling
+/apps/api/src/throttling/           @JordiParraCrespo
+/packages/backend/core/src/filters/ @JordiParraCrespo
+/apps/api/src/config/               @JordiParraCrespo
+
+# flama:begin web
+# The SPA's Content-Security-Policy and headers
+/apps/web/nginx.conf                @JordiParraCrespo
+# flama:end web
+# flama:plugins codeowners
+
+# What CI runs and with which token
+/.github/                           @JordiParraCrespo

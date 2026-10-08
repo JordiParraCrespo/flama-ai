@@ -1,0 +1,40 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The smallest set of steps, commands or requests that shows it.
+      placeholder: |
+        1. pnpm docker:dev && pnpm dev
+        2. …
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The app or package, and the commit it happened on.
+      placeholder: apps/api at 1a2b3c4
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or output
+      description: Errors, stack traces, the problem document the API returned. Remove secrets first.
+      render: shell
+  - type: textarea
+    id: assistance
+    attributes:
+      label: Assistance disclosure
+      description: If an AI tool helped write or diagnose this report, say how.

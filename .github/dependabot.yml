@@ -1,0 +1,48 @@
+# Every action in .github/workflows is pinned to a commit SHA; this is what
+# moves those pins forward. One grouped pull request per ecosystem a month, so
+# updates arrive as a batch to review rather than a stream to triage.
+#
+# Prefixes keep the titles inside commitlint's conventional types and the
+# scopes it allows. A plugin that brings another ecosystem (Go modules, another
+# Dockerfile) adds its entry at the `flama:plugins dependabot` anchor below.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    open-pull-requests-limit: 1
+    groups:
+      actions:
+        patterns: ["*"]
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+
+  # The pnpm workspace is one lockfile at the root, so one entry covers every
+  # app and package.
+  - package-ecosystem: npm
+    directory: /
+    open-pull-requests-limit: 1
+    groups:
+      npm:
+        patterns: ["*"]
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+
+  - package-ecosystem: docker
+    directories:
+      - /apps/api
+      # flama:begin web
+      - /apps/web
+      # flama:end web
+    open-pull-requests-limit: 1
+    groups:
+      images:
+        patterns: ["*"]
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore(infra)
+  # flama:plugins dependabot
