@@ -1,0 +1,10 @@
+about: widenMarker edits the spec after the keyword, even when the same text occurs earlier in the line
+op: widenMarker
+id: "a-"
+at: 0
+=== input
+# flama:begin a
+<!-- flama:begin - -->
+=== output
+# flama:begin a-|a
+<!-- flama:begin a-|- -->

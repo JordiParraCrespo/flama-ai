@@ -1,0 +1,14 @@
+about: an inline array is split between its members, never on a comma or bracket inside a string
+op: deleteJsonValueAt
+path: ["includes"]
+literal: "dist/**"
+=== input
+{
+  "includes": ["**/*.{ts,tsx}", "[a,b]", "dist/**", "!**/{x,y}/**"]
+}
+=== output
+{
+  "includes": ["**/*.{ts,tsx}", "[a,b]", "!**/{x,y}/**"]
+}
+=== at
+2

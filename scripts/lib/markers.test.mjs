@@ -133,6 +133,8 @@ test('dropBlocks empties what only the removed own, and narrows what they share'
       // The fences stay where the feature stood, for a plugin to fill again.
       '# flama:begin gone',
       '# flama:end gone',
+      // The author's blank lines were not beside anything removed: they stay.
+      '',
       '',
       '# flama:begin stays',
       'shared',

@@ -120,6 +120,61 @@ function fromEol(text, eol) {
   return text.replaceAll('\r\n', '\n');
 }
 
+/** The value at `path` in a parsed document. */
+function valueAt(document, path) {
+  return path.reduce((value, key) => value?.[key], document);
+}
+
+/** `object` with `entries` put in at member `at`, or last; key order kept. */
+function withEntries(object, entries, at) {
+  const members = Object.entries(object);
+  members.splice(at ?? members.length, 0, ...Object.entries(entries));
+  return Object.fromEntries(members);
+}
+
+/**
+ * What a JSON edit means, as the same edit made on the parsed input. The bytes
+ * say how a file was written; this says the edit did what it is named for, so a
+ * case accepted with UPDATE_GOLDEN=1 cannot record a change of meaning.
+ */
+const MEANING = {
+  deleteJsonValueAt: (document, { path, literal }, result) => {
+    const array = valueAt(document, path);
+    assert.equal(array[result.at], literal, 'the reported position holds the deleted value');
+    array.splice(result.at, 1);
+    return document;
+  },
+  insertJsonValue: (document, { path, literal, at }) => {
+    const array = valueAt(document, path);
+    array.splice(Math.min(at ?? array.length, array.length), 0, literal);
+    return document;
+  },
+  deleteJsonEntry: (document, { path, key }) => {
+    delete valueAt(document, path)[key];
+    return document;
+  },
+  insertJsonEntry: (document, { path, at }, _result, entry) => {
+    const added = JSON.parse(`{${entry}}`);
+    if (!path.length) return withEntries(document, added, at);
+    const parent = valueAt(document, path.slice(0, -1));
+    parent[path.at(-1)] = withEntries(parent[path.at(-1)], added, at);
+    return document;
+  },
+};
+
+/** Assert a JSON edit's output parses to its meaning applied to the input. */
+function assertMeaning(file, op, args, input, entry, result) {
+  const meaning = MEANING[op];
+  if (!meaning || result === null) return;
+  const output = typeof result === 'string' ? result : result.text;
+  const expected = meaning(JSON.parse(input), args, result, entry);
+  assert.equal(
+    JSON.stringify(JSON.parse(output), null, 2),
+    JSON.stringify(expected, null, 2),
+    `${file}: the output does not parse to the ${op} edit applied to the input`,
+  );
+}
+
 const files = readdirSync(DIR)
   .filter((file) => file.endsWith('.golden'))
   .sort();
@@ -140,10 +195,12 @@ for (const file of files) {
       assert.ok(spec.args.includes(key), `${file}: ${op} takes no "${key}"`);
     }
     assert.ok('input' in bodies, `${file}: no "=== input" section`);
-    const actual = render(
-      spec.run({ input: toEol(bodies.input, eol), entry: toEol(bodies.entry, eol) }, args),
-      eol,
+    const result = spec.run(
+      { input: toEol(bodies.input, eol), entry: toEol(bodies.entry, eol) },
+      args,
     );
+    assertMeaning(file, op, args, bodies.input, bodies.entry, result);
+    const actual = render(result, eol);
     if (UPDATE) {
       writeFileSync(path, prefix + actual);
       return;

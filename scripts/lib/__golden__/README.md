@@ -41,5 +41,16 @@ UPDATE_GOLDEN=1 node --test scripts/lib/golden.test.mjs
 ```
 
 That rewrites the result sections of every case from what the code returns
-now. Read each output it wrote before committing it: a golden file records
-what the code does, so one generated from a bug makes the bug the contract.
+now, so:
+
+- **Never run it to make a failing case pass.** A failure is the code
+  disagreeing with the contract; regenerating rewrites the contract to agree
+  with the code. Fix the code, or, when the contract itself is changing, say
+  so in the diff.
+- **Read every output it regenerated** before committing it, not only the
+  case you meant to touch: it rewrites them all, and a golden file records
+  whatever the code returned.
+- **JSON cases are also checked by parse.** For the value and entry edits, the
+  test parses the output and requires it to equal the same edit made on the
+  parsed input, so a regenerated file that keeps the bytes tidy but changes
+  the meaning still fails.
