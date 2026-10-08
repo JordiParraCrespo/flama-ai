@@ -23,7 +23,8 @@ import { AcceptInvitationCommand } from './accept-invitation.command';
  * Accepts an invitation the caller was sent, with the application role its
  * organization role stands for — scoped to the organization, so an org admin
  * never becomes a platform-wide one — or not at all: a membership whose role
- * cannot be granted is left again. Answers the invitation's id.
+ * cannot be granted is left again, and the invitation is pending again for a
+ * retry. Answers the invitation's id.
  *
  * Accepting twice is safe. A retry whose first attempt Better Auth committed
  * (the response was lost, or a later client request failed) finds the
@@ -63,7 +64,14 @@ export class AcceptInvitationCommandHandler
           invitation: accepted.invitation,
         };
       },
-      (entry) => this.organizations.leave(headers, entry.organizationId),
+      // Leave, then reopen the invitation: Better Auth accepts a pending one
+      // only, and a retry must find something to accept. If leaving fails, the
+      // membership stands and the invitation stays accepted, which is the
+      // state the replay above repairs.
+      async (entry) => {
+        await this.organizations.leave(headers, entry.organizationId);
+        await this.invitations.reopen(entry.invitation.id);
+      },
     );
     return invitation.id;
   }

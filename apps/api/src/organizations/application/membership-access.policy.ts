@@ -44,7 +44,7 @@ export class MembershipAccessPolicy {
    * organization cannot be granted after it (the system role is missing, the
    * store failed), `undo` reverts the roster and the original error is raised.
    * Every door into an organization goes through here: creating it, adding a
-   * member, changing their role, accepting an invitation.
+   * member, accepting an invitation. A role change is {@link reassign}.
    */
   async admit<Entry extends RosterEntry>(
     write: () => Promise<Entry>,
@@ -74,6 +74,37 @@ export class MembershipAccessPolicy {
   }
 
   /**
+   * Change a member's organization role and the application role that stands
+   * for it, or neither — in the opposite order to {@link admit}. The new
+   * application role is granted first and Better Auth's write follows; if that
+   * write is refused, the application roles the member held before are put
+   * back. Undoing Better Auth's write instead would need the caller's
+   * permission to change roles, which a caller demoting themselves has just
+   * given up; putting back rows in the app's own store needs none.
+   */
+  async reassign<T>(entry: RosterEntry, write: () => Promise<T>): Promise<T> {
+    const before = await this.scopedRoleIds(entry.userId, entry.organizationId);
+    await this.grant(entry);
+    try {
+      return await write();
+    } catch (error) {
+      try {
+        await this.userRoles.setRolesForUser(entry.userId, before, entry.organizationId);
+      } catch (restoreError) {
+        this.logger.error(
+          {
+            message: 'Could not restore the application roles of a refused role change',
+            userId: entry.userId,
+            organizationId: entry.organizationId,
+          },
+          restoreError instanceof Error ? restoreError.stack : String(restoreError),
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Write the org-scoped application role the organization role stands for.
    *
    * Only the role that stands for the membership (`owner` or `user`) is
@@ -91,15 +122,24 @@ export class MembershipAccessPolicy {
     const roleId = membershipRoleIds.get(applicationRoleFor(role));
     if (!roleId) throw new Error(`No system role stands for the organization role "${role}"`);
 
-    // The port answers a scoped read with the global assignments included;
-    // those are not this scope's to rewrite.
+    const membership = [...membershipRoleIds.values()];
+    const custom = (await this.scopedRoleIds(userId, organizationId)).filter(
+      (id) => !membership.includes(id),
+    );
+    await this.userRoles.setRolesForUser(userId, [...custom, roleId], organizationId);
+  }
+
+  /**
+   * The roles assigned to `userId` in `organizationId` itself. The port answers
+   * a scoped read with the global assignments included; those are not this
+   * scope's to rewrite.
+   */
+  private async scopedRoleIds(userId: string, organizationId: string): Promise<string[]> {
     const [inScope, global] = await Promise.all([
       this.userRoles.findRoleIdsForUser(userId, organizationId),
       this.userRoles.findRoleIdsForUser(userId, null),
     ]);
-    const membership = [...membershipRoleIds.values()];
-    const custom = inScope.filter((id) => !global.includes(id) && !membership.includes(id));
-    await this.userRoles.setRolesForUser(userId, [...custom, roleId], organizationId);
+    return inScope.filter((id) => !global.includes(id));
   }
 
   /**

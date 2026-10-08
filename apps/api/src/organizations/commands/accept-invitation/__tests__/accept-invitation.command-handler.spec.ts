@@ -46,7 +46,7 @@ const invitation = {
 describe('AcceptInvitationCommandHandler', () => {
   const invitationAuth = { accept: vi.fn() };
   const organizations = { setActive: vi.fn(), session: vi.fn(), leave: vi.fn() };
-  const invitations = { findOneById: vi.fn() };
+  const invitations = { findOneById: vi.fn(), reopen: vi.fn() };
   const members = { findMembership: vi.fn() };
   let membershipAccess: ReturnType<typeof fakeMembershipAccess>;
   let handler: AcceptInvitationCommandHandler;
@@ -147,5 +147,17 @@ describe('AcceptInvitationCommandHandler', () => {
 
     await expect(accept()).rejects.toBe(failure);
     expect(organizations.leave).toHaveBeenCalledWith(headers, 'org1');
+    // Better Auth accepts a pending invitation only; without this the retry
+    // finds nothing to accept and the invitation is used up.
+    expect(invitations.reopen).toHaveBeenCalledWith('inv1');
+  });
+
+  it('keeps the invitation accepted when leaving fails, for the replay to repair', async () => {
+    invitationAuth.accept.mockResolvedValue({ invitation, userId: 'u2' });
+    membershipAccess.grant.mockRejectedValueOnce(new Error('role store unavailable'));
+    organizations.leave.mockRejectedValueOnce(new Error('leave failed'));
+
+    await expect(accept()).rejects.toThrow('role store unavailable');
+    expect(invitations.reopen).not.toHaveBeenCalled();
   });
 });

@@ -3,6 +3,8 @@ import { GenericContainer, type StartedTestContainer, Wait } from 'testcontainer
 import { DataSource } from 'typeorm';
 import { Session } from '../src/auth/database/session.orm-entity';
 import { AccessGrantOrmEntity } from '../src/authz/database/access-grant.orm-entity';
+import { InvitationOrmEntity } from '../src/organizations/database/invitation.orm-entity';
+import { InvitationRepository } from '../src/organizations/database/invitation.repository';
 import { MemberOrmEntity } from '../src/organizations/database/member.orm-entity';
 import { OrganizationAccessRepository } from '../src/organizations/database/organization-access.repository';
 import { RoleOrmEntity } from '../src/roles/database/role.orm-entity';
@@ -15,8 +17,9 @@ import { loadMigrations } from './run-migrations';
 /**
  * What a person keeps in an organization once they are out of it, against the
  * migrated schema: `OrganizationAccessRepository.revokeFor`, which removing a
- * member and leaving both end in, and the foreign keys that clean up after an
- * organization is deleted outright.
+ * member and leaving both end in; the foreign keys that clean up after an
+ * organization is deleted outright; and reopening an invitation whose
+ * acceptance was undone.
  */
 describe('Organization access (integration)', () => {
   let pgContainer: StartedTestContainer;
@@ -32,7 +35,14 @@ describe('Organization access (integration)', () => {
     dataSource = new DataSource({
       type: 'postgres',
       url: `postgres://test:test@${pgContainer.getHost()}:${pgContainer.getMappedPort(5432)}/test`,
-      entities: [Session, AccessGrantOrmEntity, MemberOrmEntity, RoleOrmEntity, UserRoleOrmEntity],
+      entities: [
+        Session,
+        AccessGrantOrmEntity,
+        InvitationOrmEntity,
+        MemberOrmEntity,
+        RoleOrmEntity,
+        UserRoleOrmEntity,
+      ],
       migrations: await loadMigrations(),
     });
     await dataSource.initialize();
@@ -164,5 +174,35 @@ describe('Organization access (integration)', () => {
     await dataSource.query(`DELETE FROM "organization" WHERE "id" = $1`, [ids.left]);
 
     expect(await whatRemains(ids)).toEqual({ roles: 0, grants: 0, activeOrganizationId: null });
+  });
+
+  /**
+   * An acceptance undone because its role could not be granted puts the
+   * invitation back to pending — Better Auth accepts nothing else, so a retry
+   * would otherwise find it used up. Only an accepted one moves: a rejected or
+   * cancelled answer is the invitee's or the organization's, not ours to undo.
+   */
+  it('reopens an accepted invitation, and leaves any other answer alone', async () => {
+    const ids = await seedMembership();
+    const invite = async (status: string) => {
+      const id = randomUUID();
+      await dataSource.query(
+        `INSERT INTO "invitation" ("id", "organizationId", "email", "role", "status", "inviterId", "expiresAt")
+         VALUES ($1, $2, 'invitee@example.com', 'member', $3, $4, now() + interval '7 days')`,
+        [id, ids.kept, status, ids.user],
+      );
+      return id;
+    };
+    const accepted = await invite('accepted');
+    const rejected = await invite('rejected');
+    const invitations = new InvitationRepository(dataSource.getRepository(InvitationOrmEntity));
+
+    await invitations.reopen(accepted);
+    await invitations.reopen(rejected);
+
+    const statusOf = async (id: string) =>
+      (await dataSource.query(`SELECT "status" FROM "invitation" WHERE "id" = $1`, [id]))[0].status;
+    expect(await statusOf(accepted)).toBe('pending');
+    expect(await statusOf(rejected)).toBe('rejected');
   });
 });

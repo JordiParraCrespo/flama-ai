@@ -117,6 +117,60 @@ describe('MembershipAccessPolicy', () => {
     });
   });
 
+  describe('reassign', () => {
+    beforeEach(() => {
+      // Before the change: the `owner` membership role and a custom role here.
+      userRoles.findRoleIdsForUser.mockImplementation(async (_userId: string, scope: unknown) =>
+        scope === null ? [] : ['owner-role', 'custom-role'],
+      );
+    });
+
+    it("grants the new role, then makes Better Auth's change", async () => {
+      const order: string[] = [];
+      userRoles.setRolesForUser.mockImplementation(async () => {
+        order.push('grant');
+      });
+      const write = vi.fn(async () => {
+        order.push('write');
+        return { id: 'm1' };
+      });
+
+      expect(await policy.reassign(entry('member'), write)).toEqual({ id: 'm1' });
+      expect(order).toEqual(['grant', 'write']);
+      expect(userRoles.setRolesForUser).toHaveBeenCalledWith(
+        'u1',
+        ['custom-role', 'user-role'],
+        'org1',
+      );
+    });
+
+    /**
+     * The case undoing Better Auth's write could not cover: an owner demoting
+     * themselves loses the permission that undo would need. Here nothing of
+     * Better Auth's changed, and the app's own roles are put back.
+     */
+    it('puts the roles held before back when Better Auth refuses the change', async () => {
+      const refusal = new Error('YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_MEMBER');
+
+      await expect(policy.reassign(entry('member'), () => Promise.reject(refusal))).rejects.toBe(
+        refusal,
+      );
+      expect(userRoles.setRolesForUser).toHaveBeenLastCalledWith(
+        'u1',
+        ['owner-role', 'custom-role'],
+        'org1',
+      );
+    });
+
+    it('never calls Better Auth when the new role cannot be granted', async () => {
+      roles.findOneByName.mockResolvedValue(None);
+      const write = vi.fn();
+
+      await expect(policy.reassign(entry('member'), write)).rejects.toThrow(/is missing/);
+      expect(write).not.toHaveBeenCalled();
+    });
+  });
+
   it('releases a membership: revokes what it gave and answers it with its account', async () => {
     members.findAccounts.mockResolvedValue([{ id: 'u1', email: 'member@x.com' }]);
     const member = {
