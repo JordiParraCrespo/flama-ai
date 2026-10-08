@@ -228,8 +228,8 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   can *read* the organizations it belongs to and *create* one. Both paths that
   create a membership write the org-scoped application role — the tenant
   `owner` system role for a Better Auth owner/admin, `user` for a member
-  in the same breath — `InvitationsService.accept` for a workspace someone
-  joins, `OrganizationsService.create` for one the caller makes (which also
+  in the same breath — `AcceptInvitationCommandHandler` for a workspace someone
+  joins, `CreateOrganizationCommandHandler` for one the caller makes (which also
   provisions the "General" workspace) — so "you are a member" and "you may work
   here" are never set separately. `owner` grants organization resources only
   (Organization/Member/Invitation/Workspace/Role, conditioned on
@@ -251,11 +251,11 @@ calls them through the `adminClient()` / `organizationClient()` client plugins,
   façade**: it calls `auth.api.*` (via `auth/infrastructure/better-auth.util.ts`
   — `betterAuthHeaders` + `invokeBetterAuth`) rather than writing the tables,
   so Better Auth stays the single source of truth. There is no app-owned
-  aggregate, but the module contract still applies: a port plus a gateway in
-  `infrastructure/` and one use-case slice per operation. The module still
-  carries the pre-contract controller → service → `auth.api` layout and is
-  being migrated — add a new operation as a slice, never to the old service
-  (see `apps/api/AGENTS.md`).
+  aggregate, but the module contract still applies: a port per plugin part
+  plus a gateway in `infrastructure/` (`organization-auth`, `invitation-auth`,
+  `workspace-auth`), one use-case slice per operation, and
+  `application/membership-access.policy.ts` for the one rule the app adds —
+  the org-scoped application role that goes with a membership.
 - **Workspaces = teams** — modelled on the org plugin's teams feature
   (`team` / `teamMember`).
 - **Org-scoped CASL** — `PoliciesGuard` builds the ability for the route's

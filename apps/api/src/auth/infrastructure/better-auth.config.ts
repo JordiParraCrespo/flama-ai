@@ -229,7 +229,7 @@ export const auth = betterAuth({
           // owned an organization it had no permission to open, and the
           // dashboard the app redirects to answered 403 on the first screen
           // after registering. Creating an organization is now what grants
-          // access to it (see `OrganizationsService.create`), so the two are
+          // access to it (see `CreateOrganizationCommandHandler`), so the two are
           // one act instead of two mechanisms that disagreed.
         },
       },

@@ -842,8 +842,8 @@ outbox-driven invalidation eventually consistent. Fine for notifying listeners;
 not a mechanism to hang permission revocation on.
 
 **Structural scope — never cached.** Team membership is owned by Better Auth:
-`WorkspacesService.addMember` / `removeMember` call `auth.api.addTeamMember` /
-`removeTeamMember` (`apps/api/src/organizations/workspaces.service.ts:106-127`),
+the add- and remove-workspace-member use cases call `auth.api.addTeamMember` /
+`removeTeamMember` (`apps/api/src/organizations/infrastructure/workspace-auth.gateway.ts`),
 writing the `teamMember` table outside any app transaction and staging nothing
 on the outbox. A cached `teamIds` would keep granting a removed member that
 team's rows until some unrelated authorization write happened to bump the

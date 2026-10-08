@@ -152,14 +152,6 @@ module.exports = {
           // The seed is a composition root of its own: a standalone script
           // that boots the same providers to write the first admin user.
           '^src/database/seed\\.ts$',
-          // Ledger: the delegating façade that still calls Better Auth from a
-          // service or a mapper instead of a gateway. Cleared when
-          // organizations/ is cut into use-case slices over a gateway port.
-          '^src/organizations/organizations\\.service\\.ts$',
-          '^src/organizations/invitations\\.service\\.ts$',
-          '^src/organizations/workspaces\\.service\\.ts$',
-          '^src/organizations/organization\\.mappers\\.ts$',
-          '^src/organizations/organization-error\\.mapper\\.ts$',
           // Ledger: profile's error mapper folds Better Auth's error codes onto
           // this module's catalog, which needs the invoker but is not itself an
           // adapter. It belongs beside the gateway once that file moves.

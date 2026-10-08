@@ -72,11 +72,11 @@ reason to skip the module contract (see [`ARCHITECTURE.md`](./ARCHITECTURE.md)):
 - every result normalized through the module's mapper;
 - one use-case slice per operation.
 
-`profile/infrastructure/` is the port and gateway to copy. `organizations/` is
-mid-migration: its root-level services and multi-route controllers are on the
-ledgers of `pnpm check:api-structure` and `.dependency-cruiser.cjs`. Do not copy
-it, and do not add a route to it in the old shape — a new operation goes in as
-a slice.
+`profile/infrastructure/` is the port and gateway to copy, and
+`organizations/` is the same shape at a larger size: a port and gateway per
+Better Auth plugin part, read-only repositories over the plugin's tables so a
+command's controller can answer with what it just wrote, and one slice per
+route.
 
 ## Config
 

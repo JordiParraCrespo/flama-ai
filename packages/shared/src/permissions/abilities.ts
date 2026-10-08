@@ -313,7 +313,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionDefinition[]> = {
     // tell "you are in a workspace" from "you are waiting for an invitation".
     { action: 'read', subject: 'Organization' },
     // Self-service sign-up: a fresh account creates its first workspace from
-    // onboarding. `OrganizationsService.create` grants the creator the
+    // onboarding. Creating an organization grants the creator the
     // org-scoped `admin` role in the same act, so this is the one door into a
     // workspace besides an invitation.
     { action: 'create', subject: 'Organization' },

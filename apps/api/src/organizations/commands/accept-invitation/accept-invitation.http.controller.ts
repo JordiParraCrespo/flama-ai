@@ -1,0 +1,45 @@
+import { ApiAuthProblemResponses } from '@flama/backend-core';
+import type { AggregateID } from '@flama/backend-ddd';
+import { Controller, Param, ParseUUIDPipe, Post, Req, UseGuards, Version } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
+import { NoPolicy } from '../../../auth/decorators/check-policies.decorator';
+import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
+import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
+import { PoliciesGuard } from '../../../auth/guards/policies.guard';
+import { InvitationProblemResponses } from '../../decorators/invitation-problem-responses.decorator';
+import { InvitationResponseDto } from '../../dtos/organization.response.dto';
+import { FindInvitationQuery } from '../../queries/find-invitation/find-invitation.query';
+import { AcceptInvitationCommand } from './accept-invitation.command';
+
+@ApiTags('Invitations')
+@ApiBearerAuth()
+@ApiAuthProblemResponses()
+@InvitationProblemResponses()
+@UseGuards(ApiAuthGuard, PoliciesGuard)
+@Controller('invitations')
+export class AcceptInvitationHttpController {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Post(':id/accept')
+  @NoPolicy('the caller acting on their own invitation')
+  @Version('1')
+  @RequireScopes('invitations:write')
+  @ApiOperation({ summary: 'Accept an invitation' })
+  @ApiResponse({ status: 200, type: InvitationResponseDto })
+  async accept(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<InvitationResponseDto> {
+    await this.commandBus.execute<AcceptInvitationCommand, AggregateID>(
+      new AcceptInvitationCommand({ headers: req.headers, invitationId: id }),
+    );
+    return this.queryBus.execute<FindInvitationQuery, InvitationResponseDto>(
+      new FindInvitationQuery({ invitationId: id }),
+    );
+  }
+}
