@@ -88,6 +88,7 @@
         "apps/api/src/authz/access-grant.mapper.ts",
         "apps/api/src/database/seed-organization.ts",
         "apps/api/test/access-grants.integration.spec.ts",
+        "apps/api/test/organization-access.integration.spec.ts",
         "apps/mobile/app/onboarding.tsx",
         "apps/mobile/features/organizations",
         "apps/web/src/features/organizations",
