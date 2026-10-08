@@ -1,42 +1,31 @@
 # Who reviews what. GitHub requests a review from the owners of every path a
 # pull request touches; with "Require review from Code Owners" on in branch
 # protection, their approval is what merges it.
-#
-# The default owner covers everything. The paths below it are the ones that
-# decide who can do what — sign-in, sessions, roles, scopes, tenancy, rate
-# limits, the error filter that shapes every response, the browser's
-# security headers, CI's tokens — and get a second look whatever else the
-# change is. A project made from this starter replaces the handle with its
-# own, or a team (`@org/security`) on the critical lines.
 
 *                                   @JordiParraCrespo
 
-# Authentication and sessions
-/packages/auth/                     @JordiParraCrespo
-/apps/api/src/auth/                 @JordiParraCrespo
-
-# Authorization: roles, policies, scopes
-/packages/backend/authz/            @JordiParraCrespo
-/apps/api/src/authz/                @JordiParraCrespo
-/apps/api/src/roles/                @JordiParraCrespo
-/packages/shared/src/permissions/   @JordiParraCrespo
-/packages/shared/src/scopes/        @JordiParraCrespo
-
+# The security-critical paths: who can sign in, what a role, a scope or an
+# organization lets them do, how hard they can hit the API, what an error
+# reveals, what the browser may run, and what CI's token can touch. A second
+# look there means a second owner, and a later line replaces an earlier one
+# rather than adding to it, so each line names both. Uncomment them once the
+# project has that team (a team that does not exist makes the line an error).
+#
+# /packages/auth/                     @JordiParraCrespo @your-org/security
+# /apps/api/src/auth/                 @JordiParraCrespo @your-org/security
+# /packages/backend/authz/            @JordiParraCrespo @your-org/security
+# /apps/api/src/authz/                @JordiParraCrespo @your-org/security
+# /apps/api/src/roles/                @JordiParraCrespo @your-org/security
+# /packages/shared/src/permissions/   @JordiParraCrespo @your-org/security
+# /packages/shared/src/scopes/        @JordiParraCrespo @your-org/security
 # flama:begin organizations
-# Tenancy: what one organization can see of another
-/apps/api/src/organizations/        @JordiParraCrespo
+# /apps/api/src/organizations/        @JordiParraCrespo @your-org/security
 # flama:end organizations
-
-# Abuse limits, error shaping, configuration and secrets handling
-/apps/api/src/throttling/           @JordiParraCrespo
-/packages/backend/core/src/filters/ @JordiParraCrespo
-/apps/api/src/config/               @JordiParraCrespo
-
+# /apps/api/src/throttling/           @JordiParraCrespo @your-org/security
+# /packages/backend/core/src/filters/ @JordiParraCrespo @your-org/security
+# /apps/api/src/config/               @JordiParraCrespo @your-org/security
 # flama:begin web
-# The SPA's Content-Security-Policy and headers
-/apps/web/nginx.conf                @JordiParraCrespo
+# /apps/web/nginx.conf                @JordiParraCrespo @your-org/security
 # flama:end web
 # flama:plugins codeowners
-
-# What CI runs and with which token
-/.github/                           @JordiParraCrespo
+# /.github/                           @JordiParraCrespo @your-org/security

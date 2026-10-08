@@ -26,8 +26,7 @@ src/
   package ships the port and the console driver, and names no other: the app
   passes the drivers it runs on to `EmailModule.register({ console: … })`, and
   its config accepts exactly those names. A driver is a class whose
-  constructor takes the `ConfigService` and does no I/O (the driver
-  lifecycle in `backend-packages.md`); do not branch inside callers.
+  constructor takes the `ConfigService`; do not branch inside callers.
 - Templates are **React Email** components rendered via `render.ts`, which the
   package exports for the drivers that deliver them.
 - Ships **CommonJS**.

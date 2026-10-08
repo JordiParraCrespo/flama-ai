@@ -51,9 +51,8 @@ the `pre-push` hook refuses a commit it has not passed.
 Fill in the template. Keep it to one concern; a refactor the change needed
 can ride along, one it did not goes in its own pull request.
 
-Reviews look harder at the paths `CODEOWNERS` lists as security-critical —
-authentication, authorization, scopes, tenancy, rate limits, the error
-filter, the SPA's security headers and CI — so expect questions there.
+Reviews look harder at the paths [`CODEOWNERS`](CODEOWNERS) marks as
+security-critical, so expect questions there.
 
 ## AI-assisted contributions
 

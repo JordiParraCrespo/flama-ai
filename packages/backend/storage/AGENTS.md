@@ -23,8 +23,7 @@ src/
   package ships the port and the local driver, and names no other: the app
   passes the drivers it runs on to `StorageModule.register({ local: … })`, and
   its config accepts exactly those names. A driver is a class whose
-  constructor takes the `ConfigService` and does no I/O (the driver
-  lifecycle in `backend-packages.md`). Keep the abstract contract stable.
+  constructor takes the `ConfigService`. Keep the abstract contract stable.
 - **`upload` resolves to the key on every back-end**, and `getSignedUrl` is the
   only way to a URL. Callers persist keys; a URL (signed and expiring on an
   object store) is derived at read time.

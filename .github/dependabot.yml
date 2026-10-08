@@ -45,4 +45,16 @@ updates:
       interval: monthly
     commit-message:
       prefix: chore(infra)
+
+  # Postgres and Redis, pinned in the compose files rather than a Dockerfile.
+  - package-ecosystem: docker-compose
+    directory: /docker
+    open-pull-requests-limit: 1
+    groups:
+      compose:
+        patterns: ["*"]
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore(infra)
   # flama:plugins dependabot

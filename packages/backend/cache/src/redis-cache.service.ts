@@ -5,32 +5,29 @@ import { CacheService } from './cache.service';
 
 @Injectable()
 export class RedisCacheService extends CacheService implements OnModuleDestroy {
-  private readonly redis: Redis;
+  /** Built by the first command, so constructing the driver opens nothing. */
+  private client?: Redis;
 
   constructor(private readonly configService: ConfigService) {
     super();
-    this.redis = new Redis({
+  }
+
+  private get redis(): Redis {
+    this.client ??= new Redis({
       host: this.configService.get('redis.host'),
       port: this.configService.get('redis.port'),
       // Optional — `REDIS_PASSWORD` in the root .env. Read here rather than at
       // one call site only, or a `requirepass` Redis accepts the queue and
       // refuses the cache.
       password: this.configService.get<string>('redis.password') || undefined,
-      // The constructor performs no I/O: the connection opens on the first
-      // command. `generate:openapi` builds this driver with no Redis running.
-      lazyConnect: true,
     });
+    return this.client;
   }
 
   async onModuleDestroy(): Promise<void> {
-    if (this.redis.status === 'end') return;
-    // A client that never connected has nothing to flush, and `quit` would
-    // connect it first.
-    if (this.redis.status === 'wait') {
-      this.redis.disconnect();
-      return;
-    }
-    await this.redis.quit().catch(() => this.redis.disconnect());
+    const client = this.client;
+    if (!client) return;
+    await client.quit().catch(() => client.disconnect());
   }
 
   async get<T>(key: string): Promise<T | undefined> {
