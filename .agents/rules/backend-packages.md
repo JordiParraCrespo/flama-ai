@@ -47,6 +47,50 @@ still follow the CJS export and shared-config rules below. `@flama/backend-ddd`
 holds the DDD/hexagon primitives; `@flama/backend-core` holds cross-cutting
 NestJS infrastructure.
 
+## A driver's lifecycle
+
+A driver — any class a pluggable module builds behind its abstract service —
+goes through the same steps, and each step does only its own work:
+
+1. **Construct: no I/O.** The constructor reads config and stores it. It opens
+   no connection, makes no network call and writes nothing to disk.
+   `pnpm generate:api-client` boots the whole app with no database or Redis,
+   so a constructor that connects hangs or fails it. A client library that
+   connects when built is told not to (`lazyConnect: true` for ioredis), and
+   a directory a write needs is made by that write.
+2. **Validate at boot.** A bad setting fails the boot, not the first request:
+   the app's config schema (`apps/api/src/config/`) checks the value, and the
+   module's factory refuses a driver name nothing answers to.
+3. **Connect late.** On the first call, or in `onModuleInit` /
+   `onApplicationBootstrap` when the app should not start without it.
+   `NestFactory.create` alone (what `generate:openapi` runs) calls neither.
+4. **Tear down.** Whatever step 3 opened is closed in `onModuleDestroy` /
+   `beforeApplicationShutdown`, without opening it first if it never was.
+
+The compiler holds the shape: a driver `extends` its abstract service, so a
+missing method fails the build, and the app's driver map is declared
+`satisfies EmailDrivers` / `StorageDrivers`, so a driver whose constructor
+does not take the `ConfigService` does too. A lifecycle hook is declared with
+`implements OnModuleDestroy` (or the hook it uses), so a misspelled method is
+an error rather than a hook Nest never calls.
+
+## No driver library in the public API
+
+What a package exports — `index.ts` and every signature it reaches — names
+no type from the library a driver runs on (ioredis, bullmq, nodemailer,
+`@aws-sdk/*`). A caller written against an ioredis type is written against
+ioredis, and the driver can no longer change without it. A driver keeps its
+client in a `private` field; the abstract service speaks in plain types.
+
+A package may name the framework (`@nestjs/common`, `@nestjs/core`,
+`@nestjs/config`, `rxjs`), the workspace (`@flama/*`), Node, and the
+libraries that are the point of that package: `typeorm` for `ddd` and
+`authz`, `oxide.ts` for `ddd`, zod and the pino/nestjs-zod pieces for `core`.
+`pnpm check:public-api` (`scripts/check-backend-public-api.mjs`) reads the
+declarations `tsc` would emit and fails on anything else; its `ALLOWED`
+holds the list and the reason for each entry. Adding to it is a decision for
+review, in its own diff.
+
 ## Email package specifics
 
 - `tsconfig.json` must have `"jsx": "react-jsx"` for React Email templates

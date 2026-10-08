@@ -75,6 +75,11 @@ jobs:
       # Import rules are dependency-cruiser's, below.
       - name: API structure
         run: pnpm check:api-structure
+      # What a backend package exports names no driver library: its surface
+      # (the declarations tsc would emit, read from the sources, so no build
+      # first) may name the framework, the workspace and what ALLOWED lists.
+      - name: Backend public API
+        run: pnpm check:public-api
       # flama:begin web|mobile
       # The frontend layout contract: feature names, kind directories, the
       # route line cap, no copies of what a kit ships, and the docs every

@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleDestroy } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { CacheService } from './cache.service';
 
 @Injectable()
-export class RedisCacheService extends CacheService {
-  private redis: Redis;
+export class RedisCacheService extends CacheService implements OnModuleDestroy {
+  private readonly redis: Redis;
 
   constructor(private readonly configService: ConfigService) {
     super();
@@ -16,7 +16,21 @@ export class RedisCacheService extends CacheService {
       // one call site only, or a `requirepass` Redis accepts the queue and
       // refuses the cache.
       password: this.configService.get<string>('redis.password') || undefined,
+      // The constructor performs no I/O: the connection opens on the first
+      // command. `generate:openapi` builds this driver with no Redis running.
+      lazyConnect: true,
     });
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    if (this.redis.status === 'end') return;
+    // A client that never connected has nothing to flush, and `quit` would
+    // connect it first.
+    if (this.redis.status === 'wait') {
+      this.redis.disconnect();
+      return;
+    }
+    await this.redis.quit().catch(() => this.redis.disconnect());
   }
 
   async get<T>(key: string): Promise<T | undefined> {

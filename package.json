@@ -17,6 +17,7 @@
     "check:biome-plugins": "biome lint --error-on-warnings biome-plugins/fixtures",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:api-structure": "node scripts/check-api-structure.mjs && node --test scripts/check-api-structure.test.mjs",
+    "check:public-api": "node --test scripts/check-backend-public-api.test.mjs && node scripts/check-backend-public-api.mjs",
     "check:structure": "node scripts/check-frontend-structure.mjs && node --test scripts/check-frontend-structure.test.mjs",
     "check:compiler": "node --test scripts/check-react-compiler.test.mjs && node scripts/check-react-compiler.mjs",
     "ci:local": "node scripts/ci/local.mjs",
