@@ -2,12 +2,9 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { RoleRepositoryPort } from '../../roles/database/role.repository.port';
 import type { UserRoleRepositoryPort } from '../../roles/database/user-role.repository.port';
 import { ROLE_REPOSITORY, USER_ROLE_REPOSITORY } from '../../roles/roles.di-tokens';
-import type { MemberRepositoryPort } from '../database/member.repository.port';
 import type { OrganizationAccessRepositoryPort } from '../database/organization-access.repository.port';
 import { applicationRoleFor, MEMBERSHIP_ROLES } from '../domain/application-role.policy';
-import type { Member } from '../domain/membership.types';
-import { OrganizationMapper } from '../organization.mapper';
-import { MEMBER_REPOSITORY, ORGANIZATION_ACCESS } from '../organizations.di-tokens';
+import { ORGANIZATION_ACCESS } from '../organizations.di-tokens';
 
 /** A membership as Better Auth wrote it: who, where, in which organization role. */
 export interface RosterEntry {
@@ -34,8 +31,6 @@ export class MembershipAccessPolicy {
     private readonly userRoles: UserRoleRepositoryPort,
     @Inject(ORGANIZATION_ACCESS)
     private readonly access: OrganizationAccessRepositoryPort,
-    @Inject(MEMBER_REPOSITORY)
-    private readonly members: MemberRepositoryPort,
   ) {}
 
   /**
@@ -143,16 +138,10 @@ export class MembershipAccessPolicy {
   }
 
   /**
-   * After Better Auth ends a membership: take everything the organization gave
-   * — roles, grants and a session still acting in it — and answer with the
-   * membership that ended, with the account behind it.
+   * After Better Auth ends a membership, take everything the organization gave
+   * — roles, grants and a session still acting in it.
    */
-  async release(member: Member): Promise<Member> {
-    await this.access.revokeFor(member.userId, member.organizationId);
-    const [withAccount] = OrganizationMapper.withAccounts(
-      [member],
-      await this.members.findAccounts([member.userId]),
-    );
-    return withAccount;
+  revoke({ userId, organizationId }: RosterEntry): Promise<void> {
+    return this.access.revokeFor(userId, organizationId);
   }
 }

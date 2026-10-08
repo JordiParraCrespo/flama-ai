@@ -36,27 +36,22 @@ export class CreateOrganizationCommandHandler
     private readonly membershipAccess: MembershipAccessPolicy,
   ) {}
 
-  async execute({ headers, input }: CreateOrganizationCommand): Promise<AggregateID> {
-    const create = () =>
-      this.organizations.create(headers, {
-        name: input.name,
-        slug: input.slug ?? deriveOrganizationSlug(input.name),
-        logo: input.logo,
-      });
-
-    const session = await this.organizations.session(headers);
-    // No session means a delegated credential Better Auth resolved on its own;
-    // the membership is still correct, and the owner's roles are untouched.
-    if (!session) return (await create()).id;
-
+  async execute({ headers, input, creatorId }: CreateOrganizationCommand): Promise<AggregateID> {
     // An organization its creator cannot open would count as a workspace: the
     // next reload skips onboarding into a 403, and a retry leaves a second one
     // beside it. So if the role cannot be granted, the organization goes.
     const { organizationId } = await this.membershipAccess.admit(
-      async () => ({ userId: session.userId, organizationId: (await create()).id, role: 'owner' }),
+      async () => {
+        const organization = await this.organizations.create(headers, {
+          name: input.name,
+          slug: input.slug ?? deriveOrganizationSlug(input.name),
+          logo: input.logo,
+        });
+        return { userId: creatorId, organizationId: organization.id, role: 'owner' };
+      },
       (entry) => this.organizations.delete(headers, entry.organizationId),
     );
-    await this.provisionDefaultWorkspace(headers, organizationId, session.userId);
+    await this.provisionDefaultWorkspace(headers, organizationId, creatorId);
     return organizationId;
   }
 

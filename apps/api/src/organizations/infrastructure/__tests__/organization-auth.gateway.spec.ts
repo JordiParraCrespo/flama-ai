@@ -147,6 +147,19 @@ describe('OrganizationAuthGateway', () => {
     });
 
     /**
+     * `ORGANIZATION_ALREADY_EXISTS` folds onto the same catalog entry as a taken
+     * slug (ORG_002); it is not the answer to "is this slug free".
+     */
+    it('raises another code that shares the slug-taken catalog entry', async () => {
+      api.checkOrganizationSlug.mockRejectedValue(
+        new APIError('BAD_REQUEST', { message: 'exists', code: 'ORGANIZATION_ALREADY_EXISTS' }),
+      );
+      await expect(gateway.isSlugAvailable(headers, 'x')).rejects.toMatchObject({
+        code: 'ORG_002',
+      });
+    });
+
+    /**
      * Any other refusal used to read as "taken": a client was told to pick
      * another slug when the plugin had failed, and would never learn why.
      */
@@ -205,12 +218,23 @@ describe('OrganizationAuthGateway', () => {
       expect(api.listMembers.mock.calls.map(([call]) => call.query.offset)).toEqual([0, 100, 200]);
     });
 
-    it('stops on an exact multiple of the page size without asking for an empty page', async () => {
+    it('takes a short page, even an empty one, as the end of the roster', async () => {
       const roster = Array.from({ length: 100 }, (_, i) => member(i));
-      api.listMembers.mockResolvedValue({ members: roster, total: 100 });
+      api.listMembers.mockResolvedValueOnce({ members: roster, total: 100 });
+      api.listMembers.mockResolvedValueOnce({ members: [], total: 100 });
 
       expect(await gateway.listMembers(headers, 'org1')).toHaveLength(100);
-      expect(api.listMembers).toHaveBeenCalledTimes(1);
+      expect(api.listMembers).toHaveBeenCalledTimes(2);
+    });
+
+    it('refuses a roster that never ends instead of reading it forever', async () => {
+      const page = Array.from({ length: 100 }, (_, i) => member(i));
+      api.listMembers.mockResolvedValue({ members: page });
+
+      await expect(gateway.listMembers(headers, 'org1')).rejects.toMatchObject({
+        code: 'ORG_016',
+      });
+      expect(api.listMembers).toHaveBeenCalledTimes(1000);
     });
   });
 

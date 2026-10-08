@@ -9,7 +9,6 @@ describe('MembershipAccessPolicy', () => {
     setRolesForUser: vi.fn(),
   };
   const access = { revokeFor: vi.fn() };
-  const members = { findAccounts: vi.fn() };
   let policy: MembershipAccessPolicy;
 
   const entry = (role: string) => ({ userId: 'u1', organizationId: 'org1', role });
@@ -20,13 +19,7 @@ describe('MembershipAccessPolicy', () => {
     userRoles.findRoleIdsForUser.mockResolvedValue([]);
     userRoles.setRolesForUser.mockResolvedValue(undefined);
     access.revokeFor.mockResolvedValue(undefined);
-    members.findAccounts.mockResolvedValue([]);
-    policy = new MembershipAccessPolicy(
-      roles as never,
-      userRoles as never,
-      access as never,
-      members as never,
-    );
+    policy = new MembershipAccessPolicy(roles as never, userRoles as never, access as never);
   });
 
   describe('grant', () => {
@@ -171,20 +164,8 @@ describe('MembershipAccessPolicy', () => {
     });
   });
 
-  it('releases a membership: revokes what it gave and answers it with its account', async () => {
-    members.findAccounts.mockResolvedValue([{ id: 'u1', email: 'member@x.com' }]);
-    const member = {
-      id: 'm1',
-      organizationId: 'org1',
-      userId: 'u1',
-      role: 'member',
-      createdAt: new Date(),
-      user: null,
-    };
-
-    const released = await policy.release(member);
-
+  it('revokes everything the organization gave a membership that ended', async () => {
+    await policy.revoke(entry('member'));
     expect(access.revokeFor).toHaveBeenCalledWith('u1', 'org1');
-    expect(released).toMatchObject({ id: 'm1', user: { email: 'member@x.com' } });
   });
 });

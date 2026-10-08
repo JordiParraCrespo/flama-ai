@@ -79,10 +79,12 @@ describe('Organization access (integration)', () => {
       `INSERT INTO "organization" ("id", "name", "slug") VALUES ($1, 'Left', $2), ($3, 'Kept', $4)`,
       [ids.left, `left-${ids.left}`, ids.kept, `kept-${ids.kept}`],
     );
-    // Better Auth has already removed the membership in `left`; `kept` remains.
+    // The membership in `kept`, and — joined earlier, so it would be picked
+    // first — the one in `left`, as if Better Auth's delete had not landed yet.
     await dataSource.query(
-      `INSERT INTO "member" ("id", "organizationId", "userId", "role") VALUES ($1, $2, $3, 'member')`,
-      [randomUUID(), ids.kept, ids.user],
+      `INSERT INTO "member" ("id", "organizationId", "userId", "role", "createdAt")
+       VALUES ($1, $2, $3, 'member', now() - interval '1 day'), ($4, $5, $3, 'member', now())`,
+      [randomUUID(), ids.left, ids.user, randomUUID(), ids.kept],
     );
     const [{ id: roleId }] = await dataSource.query(
       `SELECT "id" FROM "role" WHERE "name" = 'user'`,
@@ -120,7 +122,7 @@ describe('Organization access (integration)', () => {
     return { roles, grants, activeOrganizationId };
   }
 
-  it('takes the roles and grants, and moves the session to an organization still held', async () => {
+  it('takes the roles and grants, and moves the session to an organization still held, never the one left', async () => {
     const ids = await seedMembership();
 
     await new OrganizationAccessRepository(dataSource, userRoles).revokeFor(ids.user, ids.left);
@@ -133,8 +135,8 @@ describe('Organization access (integration)', () => {
   });
 
   /**
-   * The roles are written by the roles module, through its port; they still
-   * belong to this revocation's transaction, so a failure later in it leaves
+   * The roles are written by the roles module, through its port, whose adapter
+   * joins this revocation's transaction without being handed it; so a failure later in it leaves
    * the person exactly as they were rather than with no roles but a grant and
    * a session still reaching the organization.
    */
@@ -143,8 +145,8 @@ describe('Organization access (integration)', () => {
     const failingAfterTheRoles: UserRoleRepositoryPort = {
       findRoleIdsForUser: (...args) => userRoles.findRoleIdsForUser(...args),
       findRolesForUser: (...args) => userRoles.findRolesForUser(...args),
-      setRolesForUser: async (userId, roleIds, organizationId, manager) => {
-        await userRoles.setRolesForUser(userId, roleIds, organizationId, manager);
+      setRolesForUser: async (userId, roleIds, organizationId) => {
+        await userRoles.setRolesForUser(userId, roleIds, organizationId);
         throw new Error('the next write failed');
       },
     };
@@ -164,9 +166,11 @@ describe('Organization access (integration)', () => {
   });
 
   /**
-   * Deleting an organization revokes nothing in code, and needs not to: the
-   * schema takes its role assignments and grants with it and clears every
-   * session that had it selected.
+   * Deleting an organization revokes nothing in code, and needs not to: Better
+   * Auth's delete removes the organization row, and the schema takes its role
+   * assignments and grants with it and clears every session that had it
+   * selected. `e2e/tests/api/organization-membership.spec.ts` drives the same
+   * delete through the API.
    */
   it('leaves no role, grant or session selection behind when the organization is deleted', async () => {
     const ids = await seedMembership();

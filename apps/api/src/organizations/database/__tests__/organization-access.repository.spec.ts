@@ -1,3 +1,4 @@
+import { Not } from 'typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { OrganizationAccessRepository } from '../organization-access.repository';
 
@@ -23,8 +24,8 @@ describe('OrganizationAccessRepository', () => {
     await repository.revokeFor('u1', 'org1');
 
     expect(dataSource.transaction).toHaveBeenCalledTimes(1);
-    // The roles are written on the same transaction, not one of their own.
-    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', [], 'org1', manager);
+    // The roles adapter joins this transaction itself; nothing ORM crosses its port.
+    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', [], 'org1');
     expect(manager.delete).toHaveBeenCalledWith(expect.anything(), {
       organizationId: 'org1',
       principalType: 'user',
@@ -37,13 +38,14 @@ describe('OrganizationAccessRepository', () => {
     );
   });
 
-  it('moves a session to the organization the person joined first among those left', async () => {
+  it('moves a session to the organization joined first, never the one being left', async () => {
     manager.findOne.mockResolvedValue({ organizationId: 'org2' });
 
     await repository.revokeFor('u1', 'org1');
 
     expect(manager.findOne).toHaveBeenCalledWith(expect.anything(), {
-      where: { userId: 'u1' },
+      // Excluded by id, not by trusting Better Auth's delete to have landed.
+      where: { userId: 'u1', organizationId: Not('org1') },
       order: { createdAt: 'ASC' },
     });
     expect(manager.update).toHaveBeenCalledWith(

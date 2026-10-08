@@ -1,33 +1,9 @@
 import type { IncomingHttpHeaders } from 'node:http';
+import { None, Some } from 'oxide.ts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { MembershipAccessPolicy } from '../../../application/membership-access.policy';
+import { MembershipAccessPolicy } from '../../../application/membership-access.policy';
 import { CreateOrganizationCommand } from '../create-organization.command';
 import { CreateOrganizationCommandHandler } from '../create-organization.command-handler';
-
-/** The policy's admit sequence over a `grant` double: write, grant, undo on failure. */
-function fakeMembershipAccess() {
-  const grant = vi.fn().mockResolvedValue(undefined);
-  return {
-    grant,
-    release: vi.fn(),
-    admit: vi.fn(
-      async <E>(write: () => Promise<E>, undo: (entry: E) => Promise<unknown>): Promise<E> => {
-        const entry = await write();
-        try {
-          await grant(entry);
-        } catch (error) {
-          try {
-            await undo(entry);
-          } catch {
-            // The real policy logs this; the original failure is what is raised.
-          }
-          throw error;
-        }
-        return entry;
-      },
-    ),
-  };
-}
 
 const headers: IncomingHttpHeaders = { cookie: 'session=abc' };
 const organization = {
@@ -40,37 +16,29 @@ const organization = {
 };
 
 describe('CreateOrganizationCommandHandler', () => {
-  const organizations = {
-    create: vi.fn(),
-    delete: vi.fn(),
-    session: vi.fn(),
-  };
-  const workspaces = {
-    create: vi.fn(),
-    addMember: vi.fn(),
-    setActive: vi.fn(),
-  };
-  let membershipAccess: ReturnType<typeof fakeMembershipAccess>;
+  const organizations = { create: vi.fn(), delete: vi.fn() };
+  const workspaces = { create: vi.fn(), addMember: vi.fn(), setActive: vi.fn() };
+  // The real policy over the role store's doubles, so the undo under test is
+  // the one the policy runs.
+  const roles = { findOneByName: vi.fn() };
+  const userRoles = { findRoleIdsForUser: vi.fn(), setRolesForUser: vi.fn() };
   let handler: CreateOrganizationCommandHandler;
 
   const create = (input: { name: string; slug?: string }) =>
-    handler.execute(new CreateOrganizationCommand({ headers, input }));
+    handler.execute(new CreateOrganizationCommand({ headers, input, creatorId: 'u1' }));
   const slugSent = (): string => organizations.create.mock.calls[0][1].slug;
 
   beforeEach(() => {
     vi.clearAllMocks();
     organizations.create.mockResolvedValue(organization);
-    organizations.session.mockResolvedValue({
-      userId: 'u1',
-      email: 'u1@x.com',
-      activeOrganizationId: null,
-    });
     workspaces.create.mockResolvedValue({ id: 'team1' });
-    membershipAccess = fakeMembershipAccess();
+    roles.findOneByName.mockImplementation(async (name: string) => Some({ id: `${name}-role` }));
+    userRoles.findRoleIdsForUser.mockResolvedValue([]);
+    userRoles.setRolesForUser.mockResolvedValue(undefined);
     handler = new CreateOrganizationCommandHandler(
       organizations as never,
       workspaces as never,
-      membershipAccess as unknown as MembershipAccessPolicy,
+      new MembershipAccessPolicy(roles as never, userRoles as never, {} as never),
     );
   });
 
@@ -97,11 +65,7 @@ describe('CreateOrganizationCommandHandler', () => {
    */
   it('grants the creator the org-scoped role that opens the organization', async () => {
     expect(await create({ name: 'Acme' })).toBe('org1');
-    expect(membershipAccess.grant).toHaveBeenCalledWith({
-      userId: 'u1',
-      organizationId: 'org1',
-      role: 'owner',
-    });
+    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['owner-role'], 'org1');
   });
 
   it('gives the organization a default workspace with its creator in it', async () => {
@@ -115,21 +79,13 @@ describe('CreateOrganizationCommandHandler', () => {
     expect(workspaces.setActive).toHaveBeenCalledWith(headers, 'team1');
   });
 
-  it('touches no roles for a delegated credential Better Auth resolved without a session', async () => {
-    organizations.session.mockResolvedValue(null);
-
-    expect(await create({ name: 'Acme' })).toBe('org1');
-    expect(membershipAccess.grant).not.toHaveBeenCalled();
-    expect(workspaces.create).not.toHaveBeenCalled();
-  });
-
   /**
    * The failure mode this whole change exists to remove, reached from the
    * other side: an organization that exists, is owned, and cannot be opened.
    */
   it('discards the organization when the role that opens it cannot be written', async () => {
     const failure = new Error('role store unavailable');
-    membershipAccess.grant.mockRejectedValueOnce(failure);
+    userRoles.setRolesForUser.mockRejectedValueOnce(failure);
 
     await expect(create({ name: 'Acme' })).rejects.toBe(failure);
 
@@ -138,9 +94,16 @@ describe('CreateOrganizationCommandHandler', () => {
     expect(workspaces.create).not.toHaveBeenCalled();
   });
 
+  it('discards it too when a system role the grant needs is missing', async () => {
+    roles.findOneByName.mockResolvedValue(None);
+
+    await expect(create({ name: 'Acme' })).rejects.toThrow(/is missing/);
+    expect(organizations.delete).toHaveBeenCalledWith(headers, 'org1');
+  });
+
   it('reports the original failure even when the cleanup itself fails', async () => {
     const failure = new Error('role store unavailable');
-    membershipAccess.grant.mockRejectedValueOnce(failure);
+    userRoles.setRolesForUser.mockRejectedValueOnce(failure);
     organizations.delete.mockRejectedValueOnce(new Error('delete failed too'));
 
     // The caller needs the reason they could not create a workspace, not a
@@ -157,10 +120,6 @@ describe('CreateOrganizationCommandHandler', () => {
     workspaces.create.mockRejectedValue(new Error('teams are unavailable'));
 
     expect(await create({ name: 'Acme' })).toBe('org1');
-    expect(membershipAccess.grant).toHaveBeenCalledWith({
-      userId: 'u1',
-      organizationId: 'org1',
-      role: 'owner',
-    });
+    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['owner-role'], 'org1');
   });
 });
