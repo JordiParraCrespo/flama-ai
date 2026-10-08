@@ -1,0 +1,16 @@
+about: whole takes the fences too, and the blank lines either side of the block collapse to one
+op: dropBlocks
+removed: ["widget"]
+whole: true
+=== input
+first
+
+# flama:begin widget
+WIDGET_URL=http://localhost:3001
+# flama:end widget
+
+last
+=== output
+first
+
+last

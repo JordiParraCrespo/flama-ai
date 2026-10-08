@@ -1,0 +1,11 @@
+about: narrowing keeps the order of the owners that are left, wherever the one that went stood
+op: dropBlocks
+removed: ["gadget"]
+=== input
+// flama:begin widget|gadget|gizmo
+export const clients = ['widget', 'gizmo'];
+// flama:end widget|gadget|gizmo
+=== output
+// flama:begin widget|gizmo
+export const clients = ['widget', 'gizmo'];
+// flama:end widget|gizmo

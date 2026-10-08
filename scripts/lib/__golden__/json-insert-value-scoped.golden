@@ -1,0 +1,30 @@
+about: the path is walked member by member, so the same key deeper in an earlier object is not the one edited
+op: insertJsonValue
+path: ["widget"]
+literal: "gizmo"
+at: 1
+=== input
+{
+  "gadget": {
+    "widget": [
+      "decoy"
+    ]
+  },
+  "widget": [
+    "alpha",
+    "beta"
+  ]
+}
+=== output
+{
+  "gadget": {
+    "widget": [
+      "decoy"
+    ]
+  },
+  "widget": [
+    "alpha",
+    "gizmo",
+    "beta"
+  ]
+}

@@ -1,0 +1,23 @@
+about: deleting the last member of an expanded array takes the comma off the one above, and reports where it stood
+op: deleteJsonValueAt
+path: ["pipeline", "outputs"]
+literal: "build/**"
+=== input
+{
+  "pipeline": {
+    "outputs": [
+      "dist/**",
+      "build/**"
+    ]
+  }
+}
+=== output
+{
+  "pipeline": {
+    "outputs": [
+      "dist/**"
+    ]
+  }
+}
+=== at
+1

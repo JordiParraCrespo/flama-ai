@@ -1,0 +1,18 @@
+about: deleting the only member closes the object to {}, the shape insertJsonEntry opens up again
+op: deleteJsonEntry
+path: ["features"]
+key: "widget"
+=== input
+{
+  "features": {
+    "widget": {
+      "paths": ["apps/widget"]
+    }
+  },
+  "shared": {}
+}
+=== output
+{
+  "features": {},
+  "shared": {}
+}

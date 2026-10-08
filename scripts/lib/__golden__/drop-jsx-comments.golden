@@ -1,0 +1,30 @@
+about: JSX brace-comment fences, indented inside an element, keep their indentation and narrow in place
+op: dropBlocks
+removed: ["widget"]
+=== input
+export function Nav() {
+  return (
+    <nav>
+      <Link to="/">Home</Link>
+      {/* flama:begin widget */}
+      <Link to="/widgets">Widgets</Link>
+      {/* flama:end widget */}
+      {/* flama:begin widget|gadget */}
+      <Link to="/shop">Shop</Link>
+      {/* flama:end widget|gadget */}
+    </nav>
+  );
+}
+=== output
+export function Nav() {
+  return (
+    <nav>
+      <Link to="/">Home</Link>
+      {/* flama:begin widget */}
+      {/* flama:end widget */}
+      {/* flama:begin gadget */}
+      <Link to="/shop">Shop</Link>
+      {/* flama:end gadget */}
+    </nav>
+  );
+}

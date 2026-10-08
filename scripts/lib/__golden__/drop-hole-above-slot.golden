@@ -1,0 +1,16 @@
+about: a block the entry does not declare on the slot keeps its fences even when it sits right above the anchor
+op: dropBlocks
+removed: ["widget", "gadget"]
+slots: {"gadget": ["nav"]}
+=== input
+// flama:begin widget
+{ to: '/widgets' },
+// flama:end widget
+// flama:begin gadget
+{ to: '/gadgets' },
+// flama:end gadget
+// flama:plugins nav
+=== output
+// flama:begin widget
+// flama:end widget
+// flama:plugins nav

@@ -1,0 +1,17 @@
+about: Go template comment fences (a Helm chart) empty like the rest
+op: dropBlocks
+removed: ["widget"]
+=== input
+spec:
+  containers:
+    - name: api
+{{- /* flama:begin widget */}}
+    - name: widget
+      image: {{ .Values.widget.image }}
+{{- /* flama:end widget */}}
+=== output
+spec:
+  containers:
+    - name: api
+{{- /* flama:begin widget */}}
+{{- /* flama:end widget */}}

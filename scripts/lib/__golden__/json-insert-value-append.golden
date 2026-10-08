@@ -1,0 +1,17 @@
+about: with no position the value is appended, and the old last member gains its comma
+op: insertJsonValue
+path: ["ignore"]
+literal: "@scope/widget"
+=== input
+{
+  "ignore": [
+    "@scope/alpha"
+  ]
+}
+=== output
+{
+  "ignore": [
+    "@scope/alpha",
+    "@scope/widget"
+  ]
+}

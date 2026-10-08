@@ -1,0 +1,17 @@
+about: the last owner of a shared block going empties it, and the hole keeps naming every owner
+op: dropBlocks
+removed: ["widget", "gadget"]
+=== input
+jobs:
+  # flama:begin widget|gadget
+  frontend:
+    runs-on: ubuntu-latest
+  # flama:end widget|gadget
+  api:
+    runs-on: ubuntu-latest
+=== output
+jobs:
+  # flama:begin widget|gadget
+  # flama:end widget|gadget
+  api:
+    runs-on: ubuntu-latest

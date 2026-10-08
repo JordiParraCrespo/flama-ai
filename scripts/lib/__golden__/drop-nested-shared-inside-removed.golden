@@ -1,0 +1,15 @@
+about: a shared block nested in a removed one goes with its parent even though another owner remains, and nothing is narrowed in a block that went
+op: dropBlocks
+removed: ["widget"]
+=== input
+# flama:begin widget
+widget:
+  # flama:begin widget|gadget
+  shared: true
+  # flama:end widget|gadget
+# flama:end widget
+tail
+=== output
+# flama:begin widget
+# flama:end widget
+tail

@@ -1,0 +1,17 @@
+about: removing a feature with no block in the file changes nothing
+op: dropBlocks
+removed: ["sprocket"]
+=== input
+a
+# flama:begin widget
+b
+# flama:end widget
+
+c
+=== output
+a
+# flama:begin widget
+b
+# flama:end widget
+
+c

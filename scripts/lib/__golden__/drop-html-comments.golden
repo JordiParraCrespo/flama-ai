@@ -1,0 +1,22 @@
+about: HTML comment fences work like any other syntax
+op: dropBlocks
+removed: ["widget"]
+=== input
+<ul>
+  <li>Home</li>
+  <!-- flama:begin widget -->
+  <li><a href="/widgets">Widgets</a></li>
+  <!-- flama:end widget -->
+  <!-- flama:begin widget|gadget -->
+  <li><a href="/shop">Shop</a></li>
+  <!-- flama:end widget|gadget -->
+</ul>
+=== output
+<ul>
+  <li>Home</li>
+  <!-- flama:begin widget -->
+  <!-- flama:end widget -->
+  <!-- flama:begin gadget -->
+  <li><a href="/shop">Shop</a></li>
+  <!-- flama:end gadget -->
+</ul>
