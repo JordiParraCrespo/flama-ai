@@ -28,7 +28,7 @@ export class RemoveMemberCommandHandler implements ICommandHandler<RemoveMemberC
   async execute(command: RemoveMemberCommand): Promise<Member> {
     const { headers, organizationId, memberIdOrEmail } = command;
     const member = await this.organizations.removeMember(headers, organizationId, memberIdOrEmail);
-    await this.membershipAccess.revoke(member.userId, organizationId);
+    await this.membershipAccess.revoke(member);
     const [withAccount] = OrganizationMapper.withAccounts(
       [member],
       await this.members.findAccounts([member.userId]),

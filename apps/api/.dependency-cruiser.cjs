@@ -27,6 +27,10 @@ const TESTS = ['\\.spec\\.ts$', '^src/[^/]+/__tests__/', '^src/__tests__/'];
  */
 const CROSS_MODULE_PUBLIC_SURFACE = [
   '^src/config/', // not a module: the composition root's configuration
+  // Not a module either: the unit of work repositories in different modules
+  // join, so a write spanning them commits as one. Repositories only — see
+  // `transactions-stay-in-the-database-layer`.
+  '^src/database/transaction-context\\.ts$',
   '\\.di-tokens\\.ts$', // the token a port is bound to
   '\\.repository\\.port\\.ts$', // the port itself
   '^src/[^/]+/infrastructure/[^/]+\\.port\\.ts$', // ports for non-database adapters
@@ -178,6 +182,14 @@ module.exports = {
         path: '^src/$1/(commands|queries)/([^/]+)/',
         pathNot: ['^src/$1/(commands|queries)/$3/', '\\.(command|query)\\.ts$'],
       },
+    },
+    {
+      name: 'transactions-stay-in-the-database-layer',
+      comment:
+        'The unit of work is a persistence detail. A repository opens or joins it; a handler, policy or controller asks a repository port for a write that is atomic, never for the transaction itself.',
+      severity: 'error',
+      from: { path: '^src/', pathNot: ['^src/[^/]+/database/', ...TESTS] },
+      to: { path: '^src/database/transaction-context\\.ts$' },
     },
     {
       name: 'no-cross-module-internals',

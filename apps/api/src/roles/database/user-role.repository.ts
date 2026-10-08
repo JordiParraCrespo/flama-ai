@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, type Repository } from 'typeorm';
+import { type EntityManager, In, IsNull, type Repository } from 'typeorm';
+import { joinedTransaction } from '../../database/transaction-context';
 import type { RoleEntity } from '../domain/role.entity';
 import { RoleMapper } from '../roles.mapper';
 import { RoleOrmEntity } from './role.orm-entity';
@@ -68,7 +69,7 @@ export class UserRoleRepository implements UserRoleRepositoryPort {
     // organizations are left alone: replacing a user's roles in one tenant must
     // not silently revoke them in another.
     const uniqueRoleIds = [...new Set(roleIds)];
-    await this.userRoleRepository.manager.transaction(async (manager) => {
+    const replace = async (manager: EntityManager) => {
       await manager.delete(UserRoleOrmEntity, {
         userId,
         organizationId: organizationId ?? IsNull(),
@@ -80,7 +81,10 @@ export class UserRoleRepository implements UserRoleRepositoryPort {
         );
       }
       if (organizationId) await bumpRoleVersion(manager, organizationId);
-    });
+    };
+    const joined = joinedTransaction();
+    if (joined) await replace(joined);
+    else await this.userRoleRepository.manager.transaction(replace);
   }
 }
 

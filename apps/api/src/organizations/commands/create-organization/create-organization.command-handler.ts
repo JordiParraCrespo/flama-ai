@@ -36,52 +36,23 @@ export class CreateOrganizationCommandHandler
     private readonly membershipAccess: MembershipAccessPolicy,
   ) {}
 
-  async execute({ headers, input }: CreateOrganizationCommand): Promise<AggregateID> {
-    const organization = await this.organizations.create(headers, {
-      name: input.name,
-      slug: input.slug ?? deriveOrganizationSlug(input.name),
-      logo: input.logo,
-    });
-
-    const session = await this.organizations.session(headers);
-    // No session means a delegated credential Better Auth resolved on its own;
-    // the membership is still correct, and the owner's roles are untouched.
-    if (!session) return organization.id;
-
-    try {
-      await this.membershipAccess.grant(session.userId, organization.id, 'owner');
-    } catch (error) {
-      // Returning an organization its creator cannot open would have the app
-      // count it as a workspace: the next reload skips onboarding into a 403,
-      // and a retry leaves a second one beside it. Undo the write and fail.
-      await this.discardUnopenableOrganization(headers, organization.id);
-      throw error;
-    }
-    await this.provisionDefaultWorkspace(headers, organization.id, session.userId);
-
-    return organization.id;
-  }
-
-  /**
-   * Safe here and nowhere else: the organization is seconds old and its only
-   * member is the caller. A failed delete is logged, not thrown — the caller
-   * must see the original error, not one about the cleanup.
-   */
-  private async discardUnopenableOrganization(
-    headers: IncomingHttpHeaders,
-    organizationId: string,
-  ): Promise<void> {
-    try {
-      await this.organizations.delete(headers, organizationId);
-    } catch (error) {
-      this.logger.error(
-        {
-          message: 'Could not discard an organization whose role assignment failed',
-          organizationId,
-        },
-        error instanceof Error ? error.stack : String(error),
-      );
-    }
+  async execute({ headers, input, creatorId }: CreateOrganizationCommand): Promise<AggregateID> {
+    // An organization its creator cannot open would count as a workspace: the
+    // next reload skips onboarding into a 403, and a retry leaves a second one
+    // beside it. So if the role cannot be granted, the organization goes.
+    const { organizationId } = await this.membershipAccess.admit(
+      async () => {
+        const organization = await this.organizations.create(headers, {
+          name: input.name,
+          slug: input.slug ?? deriveOrganizationSlug(input.name),
+          logo: input.logo,
+        });
+        return { userId: creatorId, organizationId: organization.id, role: 'owner' };
+      },
+      (entry) => this.organizations.delete(headers, entry.organizationId),
+    );
+    await this.provisionDefaultWorkspace(headers, organizationId, creatorId);
+    return organizationId;
   }
 
   /**

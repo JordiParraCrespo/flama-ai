@@ -2,7 +2,10 @@ import type { IncomingHttpHeaders } from 'node:http';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { MembershipAccessPolicy } from '../../application/membership-access.policy';
+import {
+  MembershipAccessPolicy,
+  type RosterEntry,
+} from '../../application/membership-access.policy';
 import type { InvitationRepositoryPort } from '../../database/invitation.repository.port';
 import type { MemberRepositoryPort } from '../../database/member.repository.port';
 import type { Invitation } from '../../domain/invitation.types';
@@ -19,7 +22,9 @@ import { AcceptInvitationCommand } from './accept-invitation.command';
 /**
  * Accepts an invitation the caller was sent, with the application role its
  * organization role stands for — scoped to the organization, so an org admin
- * never becomes a platform-wide one. Answers the invitation's id.
+ * never becomes a platform-wide one — or not at all: a membership whose role
+ * cannot be granted is left again, and the invitation is pending again for a
+ * retry. Answers the invitation's id.
  *
  * Accepting twice is safe. A retry whose first attempt Better Auth committed
  * (the response was lost, or a later client request failed) finds the
@@ -46,21 +51,35 @@ export class AcceptInvitationCommandHandler
     const replayed = await this.acceptedByCaller(headers, invitationId);
     if (replayed) {
       await this.organizations.setActive(headers, replayed.invitation.organizationId);
-      await this.grant(replayed.userId, replayed.invitation);
+      // The membership predates this request, so there is nothing to undo.
+      await this.membershipAccess.grant(rosterEntry(replayed.userId, replayed.invitation));
       return replayed.invitation.id;
     }
 
-    const accepted = await this.invitationAuth.accept(headers, invitationId);
-    await this.grant(accepted.userId, accepted.invitation);
-    return accepted.invitation.id;
-  }
-
-  private grant(userId: string, invitation: Invitation): Promise<void> {
-    return this.membershipAccess.grant(
-      userId,
-      invitation.organizationId,
-      invitation.role ?? 'member',
+    const { invitation } = await this.membershipAccess.admit(
+      async () => {
+        const accepted = await this.invitationAuth.accept(headers, invitationId);
+        return {
+          ...rosterEntry(accepted.userId, accepted.invitation),
+          invitation: accepted.invitation,
+        };
+      },
+      // Reopen, then leave: Better Auth accepts a pending invitation only, and
+      // a retry must find something to accept. Every step that can fail leaves
+      // a state a retry repairs — the invitation accepted with its membership
+      // still there, which the replay above grants — and never an accepted
+      // invitation with no membership, which nothing could take back.
+      async (entry) => {
+        await this.invitations.reopen(entry.invitation.id);
+        try {
+          await this.organizations.leave(headers, entry.organizationId);
+        } catch (error) {
+          await this.invitations.markAccepted(entry.invitation.id);
+          throw error;
+        }
+      },
     );
+    return invitation.id;
   }
 
   /**
@@ -85,4 +104,8 @@ export class AcceptInvitationCommandHandler
 
     return { invitation, userId: session.userId };
   }
+}
+
+function rosterEntry(userId: string, invitation: Invitation): RosterEntry {
+  return { userId, organizationId: invitation.organizationId, role: invitation.role ?? 'member' };
 }

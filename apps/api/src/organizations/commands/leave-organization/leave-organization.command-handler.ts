@@ -29,7 +29,7 @@ export class LeaveOrganizationCommandHandler
 
   async execute({ headers, organizationId }: LeaveOrganizationCommand): Promise<Member> {
     const member = await this.organizations.leave(headers, organizationId);
-    await this.membershipAccess.revoke(member.userId, organizationId);
+    await this.membershipAccess.revoke(member);
     const [withAccount] = OrganizationMapper.withAccounts(
       [member],
       await this.members.findAccounts([member.userId]),

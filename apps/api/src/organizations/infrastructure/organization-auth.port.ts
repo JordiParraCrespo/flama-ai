@@ -47,6 +47,7 @@ export interface OrganizationAuthPort {
   getFull(headers: IncomingHttpHeaders, organizationId: string): Promise<FullOrganization | null>;
   isSlugAvailable(headers: IncomingHttpHeaders, slug: string): Promise<boolean>;
 
+  /** Every member of the organization, oldest first — never a single page of them. */
   listMembers(headers: IncomingHttpHeaders, organizationId: string): Promise<Member[]>;
   addMember(
     headers: IncomingHttpHeaders,
