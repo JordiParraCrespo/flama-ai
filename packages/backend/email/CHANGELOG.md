@@ -1,5 +1,11 @@
 # @flama/backend-email
 
+## 1.0.0
+
+### Major Changes
+
+- cb7bb61: The SMTP and Resend email drivers leave the starter, and `EmailModule.register` takes the drivers the app runs on, which `EMAIL_PROVIDER` must name one of.
+
 ## 0.2.0
 
 ### Minor Changes
