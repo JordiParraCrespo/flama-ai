@@ -39,7 +39,7 @@ const SEED_MEMBERSHIPS: Record<string, { organizationRole: string; applicationRo
  * interesting.
  *
  * - `admin` and `superadmin` join as `owner`, and hold the org-scoped `owner`
- *   application role — the same one `OrganizationsService.create` writes for
+ *   application role — the same one `CreateOrganizationCommandHandler` writes for
  *   whoever creates an organization, and the invitation path writes for an
  *   invited owner.
  * - `user` joins as a plain `member`, which keeps a *restricted but signed-in*

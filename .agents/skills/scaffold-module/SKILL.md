@@ -14,9 +14,10 @@ pnpm check:api-structure          # where a file may live, what it may be called
 pnpm --filter @flama/api arch     # what it is then allowed to import
 ```
 
-`users/` is the reference module — read it when a shape is unclear. Do **not**
-copy `organizations/`, which is mid-migration to this contract and is ledgered as
-such.
+`users/` is the reference module — read it when a shape is unclear. A module
+over a system it does not own (Better Auth's tables, a SaaS) follows
+`profile/` or `organizations/`: a port and gateway in `infrastructure/`, and a
+slice per operation.
 
 ## Before generating
 

@@ -25,7 +25,7 @@ export function organizationPlugin(frontendUrl: string) {
     // shared with the clients via @flama/auth so both sides must agree.
     teams: {
       ...organizationSharedOptions.teams,
-      // The default workspace is created by `OrganizationsService.create`,
+      // The default workspace is created by `CreateOrganizationCommandHandler`,
       // alongside the role that opens the organization, so organizations can
       // be created here without forcing a default team.
       allowRemovingAllTeams: false,
