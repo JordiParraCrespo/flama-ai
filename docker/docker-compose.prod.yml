@@ -68,8 +68,9 @@ services:
       REDIS_PASSWORD: ""
       # flama:plugins api-env
     healthcheck:
-      # Liveness, not readiness: `/ready` also fails on disk and heap
-      # thresholds, and a container restarted for a full disk does not free it.
+      # Liveness, not readiness: `/health` checks nothing but that the process
+      # answers, so a restart is only ever for a process that cannot serve.
+      # `/ready` (PostgreSQL and Redis) is for a load balancer, not a restart.
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/api/v1/health"]
       interval: 10s
       timeout: 5s

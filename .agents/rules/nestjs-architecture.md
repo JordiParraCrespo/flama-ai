@@ -196,10 +196,9 @@ catalog error instead of returning `false`.
 
 The only sanctioned non-`AppError` throws are the `@flama/backend-ddd` domain
 exceptions (`ArgumentInvalidException`, `NotFoundException`, …), which carry
-their own `code`/`httpStatus` and are documented as `GENERIC.*`; framework
-contracts a library owns (Terminus's `HealthCheckError`); and plain `Error` on
-paths that never reach an HTTP response (the outbox relay, queue processors,
-the standalone `packages/backend/*` services, which have no `@flama` deps by
+their own `code`/`httpStatus` and are documented as `GENERIC.*`; and plain
+`Error` on paths that never reach an HTTP response (the outbox relay, queue
+processors, the standalone `packages/backend/*` services, which have no `@flama` deps by
 design).
 
 ### Wrapping a third-party service
