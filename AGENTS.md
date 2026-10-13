@@ -327,6 +327,9 @@ pnpm ci:local           # The CI suite, locally, over what this branch affects â
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
 pnpm check:compiler     # React Compiler bailouts per app; fails on a file outside its baseline
+# flama:begin web
+pnpm check:singletons   # One installed copy of each module-state library for apps/web (pnpm-lock.yaml)
+# flama:end web
 pnpm docker:dev         # Start Postgres + Redis
 pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
@@ -378,6 +381,15 @@ pnpm changeset          # Create a changeset for versioning
 - The same applies to `@flama/translations`: `apps/web` (and `apps/admin-web`,
   with that plugin) import metadata from `@flama/translations/locales` and catalogs from
   `@flama/translations/lazy`; only the default locale is bundled
+<!-- flama:begin web -->
+- A library that holds module state installs once for `apps/web`: the list
+  is `singletons` in `apps/web/package.json`, and `pnpm check:singletons`
+  fails when the lockfile resolves a listed name to more than one snapshot,
+  or to none. `i18next` and `react-i18next` are not on it: `apps/mobile`
+  pins TypeScript 6 and `apps/web` 7, `i18next` takes TypeScript as a peer,
+  so the lockfile holds one snapshot per TypeScript; `apps/web` bundles one
+  through `resolve.dedupe` in `vite.config.ts`. List them when the two agree
+<!-- flama:end web -->
 - The web apps' critical path is budgeted: `pnpm check:bundle` fails past the
   number in `scripts/check-bundle-size.mjs`. Raise a budget only deliberately,
   in its own diff

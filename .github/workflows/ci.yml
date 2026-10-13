@@ -92,6 +92,13 @@ jobs:
       - name: React Compiler bailouts
         run: pnpm check:compiler
       # flama:end web|mobile
+      # flama:begin web
+      # A library that keeps module state must install once for apps/web: the
+      # lockfile is read, so no build is needed. See `singletons` in
+      # apps/web/package.json.
+      - name: Singletons installed once
+        run: pnpm check:singletons
+      # flama:end web
       # The marker grammar in `scripts/lib/`, which outlives a prune.
       - name: Repo scripts
         run: pnpm test:scripts
