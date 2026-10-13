@@ -3,7 +3,7 @@
  * refusal looks like an unknown path, and a refusal is logged without the
  * secret that was presented.
  */
-import { Logger } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MetricsProbeController, presentsToken } from '../probes/metrics.probe.controller';
@@ -30,7 +30,7 @@ describe('the metrics scrape', () => {
   it('does not exist on a deployment without METRICS_TOKEN', async () => {
     await expect(
       controller(undefined).scrape(basic('prometheus', TOKEN), response() as never),
-    ).rejects.toMatchObject({ httpStatus: 404 });
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it.each([
@@ -41,7 +41,7 @@ describe('the metrics scrape', () => {
   ])('answers the same 404 to %s', async (_label, authorization) => {
     await expect(
       controller(TOKEN).scrape(authorization, response() as never),
-    ).rejects.toMatchObject({ httpStatus: 404 });
+    ).rejects.toBeInstanceOf(NotFoundException);
     // the operator learns a scrape was refused; the presented value is not logged
     expect(warn).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(warn.mock.calls)).not.toContain('b'.repeat(40));

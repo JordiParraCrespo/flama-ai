@@ -29,6 +29,7 @@
 // `--git-dir=…`, `--no-pager`, …) to find the subcommand, and honours `--`.
 // `.agents/hooks/git-guard.test.mjs` holds the cases.
 
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -163,7 +164,19 @@ function refName(ref) {
   return ref.replace(/^refs\/heads\//, '');
 }
 
-function checkPush(args) {
+/** The branch checked out in the hook's directory, or undefined when none (or no git). */
+function gitCurrentBranch() {
+  try {
+    return execFileSync('git', ['symbolic-ref', '--short', '-q', 'HEAD'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return undefined;
+  }
+}
+
+function checkPush(args, { currentBranch }) {
   const { options, operands } = split(args, PUSH_WITH_VALUE);
   if (has(options, 'f', '--force', '--force-with-lease', '--force-if-includes')) {
     return 'Do not force push. Push new commits, or ask the person to force push themselves.';
@@ -173,6 +186,13 @@ function checkPush(args) {
   }
   if (has(options, null, '--all', '--mirror', '--branches')) {
     return 'Do not push every branch: it includes main. Push your branch by name.';
+  }
+  // No refspec: git pushes the current branch (to its upstream, normally), so
+  // the branch checked out is the destination. `--tags` alone pushes no branch.
+  if (operands.slice(1).length === 0 && !has(options, null, '--tags')) {
+    if (PROTECTED.has(currentBranch())) {
+      return 'Do not push to main or master. Push a branch and open a pull request.';
+    }
   }
   // The first operand is the remote; the rest are refspecs.
   for (const refspec of operands.slice(1)) {
@@ -227,11 +247,11 @@ function checkBranch(args) {
 const CHECKS = { push: checkPush, add: checkAdd, stage: checkAdd, reset: checkReset, branch: checkBranch };
 
 /** Why `line` is refused, or undefined when it may run. */
-export function verdict(line) {
+export function verdict(line, { currentBranch = gitCurrentBranch } = {}) {
   for (const words of commands(line)) {
     const git = gitInvocation(words);
     const check = git && CHECKS[git.subcommand];
-    const reason = check?.(git.args);
+    const reason = check?.(git.args, { currentBranch });
     if (reason) return reason;
   }
   return undefined;

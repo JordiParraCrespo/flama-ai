@@ -242,18 +242,21 @@ snapshots:
   assert.deepEqual(snapshots.get('string-width@4.2.3'), []);
 });
 
-test('a line the parser does not know throws instead of being skipped', () => {
+test('a shape the parser does not read throws instead of being skipped', () => {
   const shapes = [
     // a field it does not read
     '  react@19.2.3:\n    peerDependencies:\n      typescript: 7.0.2\n',
-    // a block scalar
-    '  react@19.2.3:\n    dependencies:\n      scheduler: |\n        0.27.0\n',
-    // a double-quoted value
-    '  react@19.2.3:\n    dependencies:\n      scheduler: "0.27.0"\n',
-    // a deeper indent
-    '  react@19.2.3:\n    dependencies:\n        scheduler: 0.27.0\n',
+    // a dependency whose version is not a string
+    '  react@19.2.3:\n    dependencies:\n      scheduler:\n        version: 0.27.0\n',
+    // a snapshot that is not a mapping
+    '  react@19.2.3: nope\n',
   ];
   for (const shape of shapes) {
-    assert.throws(() => parseLockfile(`snapshots:\n\n${shape}`), /pnpm-lock\.yaml:\d+:/, shape);
+    assert.throws(
+      () => parseLockfile(`importers:\n  .: {}\n\nsnapshots:\n\n${shape}`),
+      /pnpm-lock\.yaml: /,
+      shape,
+    );
   }
+  assert.throws(() => parseLockfile('importers:\n  .: {}\n'), /no "snapshots" section/);
 });

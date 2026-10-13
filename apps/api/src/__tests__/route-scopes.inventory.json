@@ -15,6 +15,7 @@
   "GET /v1/health/capabilities": "any",
   "GET /v1/invitations": ["invitations:read"],
   "GET /v1/invitations/:id": ["invitations:read"],
+  "GET /v1/metrics": "session-only",
   "GET /v1/organizations": ["organizations:read"],
   "GET /v1/organizations/:id": ["organizations:read"],
   "GET /v1/organizations/:orgId/invitations": ["invitations:read"],

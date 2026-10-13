@@ -18,6 +18,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, normalize, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse } from 'yaml';
 
 // `fileURLToPath`, not `.pathname`, for a checkout path with a space: see check-api-structure.mjs.
 const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
@@ -28,18 +29,32 @@ export function packageName(snapshotKey) {
   return at === -1 ? snapshotKey : snapshotKey.slice(0, at);
 }
 
-// A YAML scalar as pnpm writes one in these two sections: single-quoted (a
-// doubled quote escapes one) or plain, with no spaces. Anything else, a block
-// scalar, a flow map, a double-quoted string, is a shape this does not read.
-const SCALAR = String.raw`'(?:[^']|'')*'|[^\s'"{}[\]|>&*!#][^\s]*`;
-const scalar = (text) => (text.startsWith("'") ? text.slice(1, -1).replaceAll("''", "'") : text);
-const line = (pattern) => new RegExp(`^${pattern}$`);
-const KEY = line(`(${SCALAR}):( \\{\\})?`);
-const ENTRY = line(`(${SCALAR}): (${SCALAR})`);
-const ITEM = line(`- (${SCALAR})`);
+const IMPORTER_GROUPS = ['dependencies', 'devDependencies', 'optionalDependencies'];
+const SNAPSHOT_GROUPS = ['dependencies', 'optionalDependencies'];
+// Fields of a snapshot that carry no edge.
+const SNAPSHOT_OTHER = ['optional', 'transitivePeerDependencies'];
 
-const IMPORTER_GROUPS = new Set(['dependencies', 'devDependencies', 'optionalDependencies']);
-const SNAPSHOT_GROUPS = new Set(['dependencies', 'optionalDependencies']);
+const isMap = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+/** The edges of `entry` under `groups`; a field or a shape it does not know throws. */
+function edgesOf(where, entry, groups, others, version) {
+  if (!isMap(entry)) throw new Error(`pnpm-lock.yaml: ${where} is not a mapping`);
+  const edges = [];
+  for (const [field, value] of Object.entries(entry)) {
+    if (others.includes(field)) continue;
+    if (!groups.includes(field) || !isMap(value)) {
+      throw new Error(`pnpm-lock.yaml: ${where} has a field this does not read: ${field}`);
+    }
+    for (const [name, dependency] of Object.entries(value)) {
+      const resolved = version(dependency);
+      if (typeof resolved !== 'string') {
+        throw new Error(`pnpm-lock.yaml: ${where}: ${field}.${name} has no version`);
+      }
+      edges.push({ name, version: resolved });
+    }
+  }
+  return edges;
+}
 
 /**
  * The `importers` and `snapshots` sections of a v9 pnpm-lock.yaml, as data:
@@ -47,80 +62,34 @@ const SNAPSHOT_GROUPS = new Set(['dependencies', 'optionalDependencies']);
  *   importers  path → [{ name, version }] across every dependency group
  *   snapshots  key  → [{ name, version }] across dependencies and optionalDependencies
  *
- * pnpm writes both sections in one fixed shape, and this reads only that
- * shape: a line it does not recognise throws, with its number, rather than
- * being skipped. The other sections are not read.
+ * The document is read with `yaml`; it fails closed on a shape this does not
+ * expect (a missing section, a field no edge comes from, a dependency with no
+ * version) rather than skipping it. The other sections are not read.
  */
 export function parseLockfile(text) {
-  const importers = new Map();
-  const snapshots = new Map();
-  let section = null;
-  let owner = null; // the importer's or snapshot's edges
-  let group = null; // the group under the owner, or null
-  let pending = null; // an importer dependency waiting for its `version:`
-
-  text.split('\n').forEach((raw, index) => {
-    const fail = (why) => {
-      throw new Error(`pnpm-lock.yaml:${index + 1}: ${why}: ${JSON.stringify(raw)}`);
-    };
-    if (raw.trim() === '') return;
-    const indent = raw.length - raw.trimStart().length;
-    const body = raw.trim();
-
-    if (indent === 0) {
-      section = body.replace(/:.*$/, '');
-      owner = null;
-      return;
-    }
-    if (section !== 'importers' && section !== 'snapshots') return;
-    const match = (pattern) => body.match(pattern) ?? fail(`not a line ${section} has`);
-
-    if (indent === 2) {
-      const [, key] = match(KEY);
-      owner = [];
-      group = null;
-      (section === 'importers' ? importers : snapshots).set(scalar(key), owner);
-      return;
-    }
-    if (!owner) fail('an entry outside any importer or snapshot');
-
-    if (indent === 4) {
-      if (section === 'snapshots' && body === 'optional: true') {
-        group = null;
-        return;
-      }
-      const [, key, empty] = match(KEY);
-      const name = scalar(key);
-      const known =
-        section === 'importers'
-          ? IMPORTER_GROUPS.has(name)
-          : SNAPSHOT_GROUPS.has(name) || name === 'transitivePeerDependencies';
-      if (!known || empty) fail(`an unknown field under a ${section.slice(0, -1)}`);
-      group = name;
-      return;
-    }
-    if (!group) fail('an entry outside a dependency group');
-
-    if (section === 'importers') {
-      if (indent === 6) {
-        pending = scalar(match(KEY)[1]);
-      } else if (indent === 8) {
-        const [, field, value] = match(ENTRY);
-        if (field === 'version') owner.push({ name: pending, version: scalar(value) });
-        else if (field !== 'specifier') fail('an unknown field under an importer dependency');
-      } else {
-        fail('an unexpected indent');
-      }
-      return;
-    }
-    if (indent !== 6) fail('an unexpected indent');
-    if (group === 'transitivePeerDependencies') {
-      match(ITEM);
-      return;
-    }
-    const [, name, version] = match(ENTRY);
-    owner.push({ name: scalar(name), version: scalar(version) });
-  });
+  const document = parse(text);
+  const section = (name) => {
+    if (!isMap(document?.[name])) throw new Error(`pnpm-lock.yaml: no "${name}" section`);
+    return Object.entries(document[name]);
+  };
+  const importers = new Map(
+    section('importers').map(([path, entry]) => [
+      path,
+      edgesOf(`importer ${path}`, entry, IMPORTER_GROUPS, [], (dependency) => dependency?.version),
+    ]),
+  );
+  const snapshots = new Map(
+    section('snapshots').map(([key, entry]) => [
+      key,
+      edgesOf(
+        `snapshot ${key}`,
+        entry ?? {},
+        SNAPSHOT_GROUPS,
+        SNAPSHOT_OTHER,
+        (version) => version,
+      ),
+    ]),
+  );
   return { importers, snapshots };
 }
 

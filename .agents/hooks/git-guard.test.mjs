@@ -86,7 +86,6 @@ const allowed = [
   'git push origin HEAD',
   'git push origin main-fixes',
   'git push origin feature:feature',
-  'git push',
   'git -C repo push origin feature',
   'git pull origin main',
   'git fetch origin main',
@@ -111,6 +110,28 @@ const allowed = [
   'echo git add -A',
   'ls # git add -A',
 ];
+
+describe('a push with no refspec goes where the checked-out branch goes', () => {
+  const onMain = { currentBranch: () => 'main' };
+  const onFeature = { currentBranch: () => 'feature' };
+
+  for (const command of ['git push', 'git push origin', 'git push -u origin', 'git -C repo push']) {
+    it(`refuses on main: ${command}`, () => {
+      assert.ok(verdict(command, onMain), `expected a refusal for ${command}`);
+    });
+    it(`lets through on a feature branch: ${command}`, () => {
+      assert.equal(verdict(command, onFeature), undefined);
+    });
+  }
+
+  it('lets a tags-only push through on main', () => {
+    assert.equal(verdict('git push --tags', onMain), undefined);
+  });
+
+  it('lets a push through when no branch is checked out', () => {
+    assert.equal(verdict('git push', { currentBranch: () => undefined }), undefined);
+  });
+});
 
 describe('git guard', () => {
   for (const command of blocked) {

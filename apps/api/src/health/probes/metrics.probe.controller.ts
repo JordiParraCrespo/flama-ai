@@ -1,7 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { METRICS_REGISTRY, type Registry } from '@flama/backend-core';
-import { NotFoundException } from '@flama/backend-ddd';
-import { Controller, Get, Headers, Inject, Logger, Res } from '@nestjs/common';
+import { Controller, Get, Headers, Inject, Logger, NotFoundException, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Response } from 'express';
