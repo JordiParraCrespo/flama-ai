@@ -4,6 +4,7 @@ import {
   AllExceptionsFilter,
   createAuthRouteLoggingMiddleware,
   LoggingModule,
+  MetricsModule,
   RequestContextMiddleware,
 } from '@flama/backend-core';
 import { EmailModule } from '@flama/backend-email';
@@ -67,6 +68,9 @@ import { UsersModule } from './users/user.module';
         level: configService.get('database.logQueries') ? 'debug' : undefined,
       }),
     }),
+    // The registry `/api/v1/metrics` renders; every module's metrics register
+    // on it. Process metrics (heap, event loop lag, GC) come with it.
+    MetricsModule.forRoot({ defaultLabels: { app: 'api' } }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
