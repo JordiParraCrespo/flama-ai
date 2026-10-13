@@ -8,6 +8,7 @@
       "paths": [
         "apps/web",
         "e2e/tests/web",
+        "scripts/check-singletons.test.mjs",
         ".agents/skills/shadcn/evals/evals.json",
         ".agents/skills/scaffold-feature/evals"
       ],
@@ -170,6 +171,11 @@
       "identifiers": ["check-bundle-size", "check:bundle"],
       "neededBy": ["web"],
       "scripts": ["check:bundle"]
+    },
+    "scripts/check-singletons.mjs": {
+      "identifiers": ["check-singletons", "check:singletons"],
+      "neededBy": ["web"],
+      "scripts": ["check:singletons"]
     },
     "packages/tsconfig/tsconfig.expo.json": {
       "$comment": "Everything Expo leaves in the kept apps: the Better Auth expo plugin in apps/api, the EXPO_PUBLIC_* pass-through in turbo.json, the react-native override.",
