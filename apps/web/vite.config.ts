@@ -31,6 +31,12 @@ export default defineConfig({
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
     },
+    // One i18next, the one main.tsx initializes. i18next declares TypeScript as
+    // a peer; this app compiles with TypeScript 7 while @flama/frontend-core
+    // (shared with apps/mobile, which pins 6) resolves 6, so pnpm installs two
+    // copies. Without this a package's useTranslation() finds no instance:
+    // `t` returns keys and `i18n.exists` is undefined.
+    dedupe: ['i18next', 'react-i18next'],
   },
   optimizeDeps: {
     // Workspace packages are linked, not installed, so dev has to be told to

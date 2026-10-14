@@ -27,15 +27,16 @@ export class Guard {
         return true;
       }
     }
-    if (value === '') {
-      return true;
+    if (typeof value === 'string') {
+      return value.trim().length === 0;
     }
 
     return false;
   }
 
   /**
-   * Checks length range of a provided number/string/array.
+   * Checks length range of a provided number/string/array. False for an empty
+   * value, rather than a throw: empty is out of any range.
    */
   static lengthIsBetween(
     value: number | string | Array<unknown>,
@@ -43,7 +44,7 @@ export class Guard {
     max: number,
   ): boolean {
     if (Guard.isEmpty(value)) {
-      throw new Error('Cannot check length of a value. Provided value is empty');
+      return false;
     }
     const valueLength = typeof value === 'number' ? Number(value).toString().length : value.length;
     return valueLength >= min && valueLength <= max;

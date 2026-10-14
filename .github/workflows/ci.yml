@@ -70,6 +70,9 @@ jobs:
         run: pnpm lint:design
       # flama:end web|mobile
       # flama:plugins design-lint
+      # The agent git guard (`.agents/hooks/git-guard.mjs`): its policy, case by case.
+      - name: Agent git guard
+        run: pnpm check:hooks
       # The API module contract: the closed set of layer directories, the file
       # names each admits, use-case slice completeness and the line caps.
       # Import rules are dependency-cruiser's, below.
@@ -92,6 +95,13 @@ jobs:
       - name: React Compiler bailouts
         run: pnpm check:compiler
       # flama:end web|mobile
+      # flama:begin web
+      # A library that keeps module state must install once for apps/web: the
+      # lockfile is read, so no build is needed. See `singletons` in
+      # apps/web/package.json.
+      - name: Singletons resolve once
+        run: pnpm check:singletons
+      # flama:end web
       # The marker grammar in `scripts/lib/`, which outlives a prune.
       - name: Repo scripts
         run: pnpm test:scripts
