@@ -1,9 +1,10 @@
-import { useLogin } from '@flama/frontend-core/react';
+import { isTwoFactorRequired, useLogin, useVerifyTwoFactor } from '@flama/frontend-core/react';
 import {
   AuthSubtitle,
   AuthTitle,
   OAuthCallbackNotice,
   SocialLoginButtons,
+  TwoFactorChallengeForm,
   useErrorMessage,
 } from '@flama/frontend-web';
 import type { LoginDto } from '@flama/shared/schemas/auth';
@@ -25,7 +26,19 @@ export function LoginScreen({
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const navigate = useNavigate();
-  const { mutate, isPending, error } = useLogin();
+  const login = useLogin();
+  const verify = useVerifyTwoFactor();
+
+  const enterApp = () => {
+    // Split rather than pass the whole string as `to`: the target may
+    // carry search params (`/settings?section=security`), and `to` is a
+    // path — everything after the `?` would be swallowed into the pathname.
+    const [pathname, query] = (redirectTo ?? '/dashboard').split('?');
+    navigate({
+      to: pathname,
+      search: Object.fromEntries(new URLSearchParams(query ?? '')),
+    });
+  };
 
   const onSubmit = (values: LoginDto) => {
     // The social banner describes the round-trip that just failed, not this
@@ -35,19 +48,34 @@ export function LoginScreen({
       navigate({ to: '/login', search: (prev) => ({ ...prev, error: undefined }), replace: true });
     }
 
-    mutate(values, {
-      onSuccess: () => {
-        // Split rather than pass the whole string as `to`: the target may
-        // carry search params (`/settings?section=security`), and `to` is a
-        // path — everything after the `?` would be swallowed into the pathname.
-        const [pathname, query] = (redirectTo ?? '/dashboard').split('?');
-        navigate({
-          to: pathname,
-          search: Object.fromEntries(new URLSearchParams(query ?? '')),
-        });
-      },
-    });
+    login.mutate(values, { onSuccess: enterApp });
   };
+
+  // The password was right and the account has two-factor on: the sign-in is
+  // not a failure, it owes a code. Derived from the mutation rather than kept
+  // as state, so "back" is just forgetting that attempt.
+  if (isTwoFactorRequired(login.error)) {
+    return (
+      <>
+        <AuthTitle>{t('auth.twoFactor.title')}</AuthTitle>
+        <AuthSubtitle>{t('auth.twoFactor.description')}</AuthSubtitle>
+
+        <TwoFactorChallengeForm
+          isPending={verify.isPending}
+          error={
+            verify.error
+              ? resolveError(verify.error, t('auth.twoFactor.invalidCode')).message
+              : undefined
+          }
+          onSubmit={(values) => verify.mutate(values, { onSuccess: enterApp })}
+          onCancel={() => {
+            verify.reset();
+            login.reset();
+          }}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -58,8 +86,12 @@ export function LoginScreen({
 
       <LoginForm
         defaultEmail={email}
-        isPending={isPending}
-        error={error ? resolveError(error, t('auth.login.invalidCredentials')).message : undefined}
+        isPending={login.isPending}
+        error={
+          login.error
+            ? resolveError(login.error, t('auth.login.invalidCredentials')).message
+            : undefined
+        }
         forgotPasswordLink={
           <Link
             to="/forgot-password"
@@ -71,7 +103,7 @@ export function LoginScreen({
         onSubmit={onSubmit}
       />
 
-      <SocialLoginButtons disabled={isPending} />
+      <SocialLoginButtons disabled={login.isPending} />
     </>
   );
 }

@@ -110,7 +110,15 @@
       "PROFILE_008": "No hemos podido contactar con el servicio de cuentas. Inténtalo de nuevo.",
       "PROFILE_CLIENT_010": "Ese tipo de archivo no se puede usar como foto de perfil.",
       "PROFILE_CLIENT_011": "Esa imagen es demasiado grande. Elige una de menos de 2 MB.",
-      "OAUTH_CONSENT_NO_REDIRECT": "El servidor no ha indicado a dónde continuar."
+      "OAUTH_CONSENT_NO_REDIRECT": "El servidor no ha indicado a dónde continuar.",
+      "AUTH_CLIENT_004": "Esta cuenta tiene activada la verificación en dos pasos. Inicia sesión desde la página de acceso con tu aplicación de autenticación.",
+      "INVALID_CODE": "Ese código no es correcto. Revisa tu aplicación de autenticación e inténtalo de nuevo.",
+      "INVALID_BACKUP_CODE": "Ese código de respaldo no es correcto o ya se ha usado.",
+      "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE": "Demasiados códigos incorrectos. Vuelve atrás e inicia sesión de nuevo.",
+      "ACCOUNT_TEMPORARILY_LOCKED": "Demasiados códigos incorrectos. La verificación en dos pasos está bloqueada durante 15 minutos.",
+      "INVALID_TWO_FACTOR_COOKIE": "Este inicio de sesión ha caducado. Vuelve atrás e inicia sesión de nuevo.",
+      "TWO_FACTOR_NOT_ENABLED": "Esta cuenta no tiene activada la verificación en dos pasos.",
+      "TOTP_NOT_ENABLED": "Esta cuenta no tiene configurada la verificación en dos pasos."
     }
   },
   "auth": {
@@ -223,7 +231,20 @@
       "match": "Las dos contraseñas coinciden",
       "number": "Al menos un número"
     },
-    "showPassword": "Mostrar contraseña"
+    "showPassword": "Mostrar contraseña",
+    "twoFactor": {
+      "title": "Verificación en dos pasos",
+      "description": "Introduce el código de tu aplicación de autenticación para terminar de iniciar sesión.",
+      "code": "Código de verificación",
+      "backupCode": "Código de respaldo",
+      "trustDevice": "No volver a preguntar en este dispositivo durante 30 días",
+      "verify": "Verificar",
+      "verifying": "Verificando...",
+      "useBackupCode": "Usar un código de respaldo",
+      "useApp": "Usar tu aplicación de autenticación",
+      "back": "Volver",
+      "invalidCode": "Ese código no es correcto."
+    }
   },
   "dashboard": {
     "title": "Panel",
@@ -570,8 +591,7 @@
       "title": "Contraseña",
       "twoFactor": "Verificación en dos pasos",
       "twoFactorDescription": "Pedir un código de tu aplicación de autenticación al iniciar sesión.",
-      "twoFactorOn": "Activada",
-      "twoFactorUnavailable": "Aún no disponible"
+      "twoFactorOn": "Activada"
     },
     "sections": {
       "details": "Perfil",
@@ -611,6 +631,27 @@
       "weeklyDigestDescription": "Resumen de los lunes con lo ocurrido en tu espacio de trabajo.",
       "productUpdates": "Novedades del producto",
       "productUpdatesDescription": "Correos ocasionales sobre nuevas funciones."
+    },
+    "twoFactor": {
+      "enableTitle": "Configurar la verificación en dos pasos",
+      "enablePasswordStep": "Introduce tu contraseña para empezar. A partir de entonces, iniciar sesión con contraseña también pedirá un código de tu aplicación de autenticación.",
+      "enableScanStep": "Escanea el código QR con tu aplicación de autenticación e introduce el código de 6 dígitos que muestra.",
+      "enableCodesStep": "Guarda estos códigos de respaldo en un lugar seguro. Cada uno te permite iniciar sesión una vez si pierdes tu aplicación de autenticación, y no se volverán a mostrar.",
+      "password": "Contraseña",
+      "code": "Código de tu aplicación",
+      "qrLabel": "Código QR para tu aplicación de autenticación",
+      "manualEntry": "¿No puedes escanearlo? Introduce esta clave:",
+      "backupCodesLabel": "Códigos de respaldo",
+      "copyCodes": "Copiar códigos",
+      "continue": "Continuar",
+      "verify": "Activar",
+      "done": "Hecho",
+      "disableTitle": "¿Desactivar la verificación en dos pasos?",
+      "disableDescription": "Iniciar sesión solo pedirá tu contraseña, y los dispositivos de confianza volverán a pedir el código si la activas de nuevo. Introduce tu contraseña para confirmar.",
+      "disable": "Desactivar",
+      "regenerateTitle": "Nuevos códigos de respaldo",
+      "regenerateDescription": "Tus códigos de respaldo actuales dejarán de funcionar. Introduce tu contraseña para obtener otros nuevos.",
+      "regenerate": "Nuevos códigos de respaldo"
     }
   },
   "public": {
@@ -810,7 +851,9 @@
     "copied": "Copiado al portapapeles.",
     "memberRemoved": "Miembro eliminado.",
     "membersInvited": "Invitaciones enviadas.",
-    "passwordChanged": "Contraseña actualizada. Se ha cerrado la sesión en tus otros dispositivos."
+    "passwordChanged": "Contraseña actualizada. Se ha cerrado la sesión en tus otros dispositivos.",
+    "twoFactorEnabled": "La verificación en dos pasos está activada.",
+    "twoFactorDisabled": "La verificación en dos pasos está desactivada."
   },
   "emails": {
     "common": {

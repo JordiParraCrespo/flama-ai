@@ -1,6 +1,13 @@
 import { inject, injectable } from 'inversify';
 import { TOKENS } from '../../di/tokens';
-import type { AuthSession, IAuthClient, SignUpParams, SocialAuthIntent } from './auth.client';
+import type {
+  AuthSession,
+  IAuthClient,
+  SignUpParams,
+  SocialAuthIntent,
+  TwoFactorEnrolment,
+  VerifyTwoFactorParams,
+} from './auth.client';
 
 /**
  * Thin adapter over the platform {@link IAuthClient}. Keeps the service layer
@@ -12,6 +19,26 @@ export class AuthRepository {
 
   login(email: string, password: string): Promise<void> {
     return this.client.signIn(email, password);
+  }
+
+  verifyTwoFactor(params: VerifyTwoFactorParams): Promise<void> {
+    return this.client.verifyTwoFactor(params);
+  }
+
+  enableTwoFactor(password: string): Promise<TwoFactorEnrolment> {
+    return this.client.enableTwoFactor(password);
+  }
+
+  confirmTwoFactor(code: string): Promise<void> {
+    return this.client.confirmTwoFactor(code);
+  }
+
+  disableTwoFactor(password: string): Promise<void> {
+    return this.client.disableTwoFactor(password);
+  }
+
+  generateBackupCodes(password: string): Promise<string[]> {
+    return this.client.generateBackupCodes(password);
   }
 
   register(params: SignUpParams): Promise<void> {

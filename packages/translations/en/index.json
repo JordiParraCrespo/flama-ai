@@ -110,7 +110,15 @@
       "PROFILE_008": "We could not reach the account service. Please try again.",
       "PROFILE_CLIENT_010": "That file type cannot be used as a profile picture.",
       "PROFILE_CLIENT_011": "That image is too large. Pick one under 2 MB.",
-      "OAUTH_CONSENT_NO_REDIRECT": "The server did not say where to send you next."
+      "OAUTH_CONSENT_NO_REDIRECT": "The server did not say where to send you next.",
+      "AUTH_CLIENT_004": "This account has two-factor authentication on. Sign in from the login page with your authenticator app.",
+      "INVALID_CODE": "That code is not correct. Check your authenticator app and try again.",
+      "INVALID_BACKUP_CODE": "That backup code is not correct, or it has already been used.",
+      "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE": "Too many wrong codes. Go back and sign in again.",
+      "ACCOUNT_TEMPORARILY_LOCKED": "Too many wrong codes. Two-factor sign-in is locked for 15 minutes.",
+      "INVALID_TWO_FACTOR_COOKIE": "This sign-in has expired. Go back and sign in again.",
+      "TWO_FACTOR_NOT_ENABLED": "Two-factor authentication is not on for this account.",
+      "TOTP_NOT_ENABLED": "Two-factor authentication is not set up for this account."
     }
   },
   "auth": {
@@ -223,7 +231,20 @@
       "match": "Both passwords match",
       "number": "At least one number"
     },
-    "showPassword": "Show password"
+    "showPassword": "Show password",
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "description": "Enter the code from your authenticator app to finish signing in.",
+      "code": "Authentication code",
+      "backupCode": "Backup code",
+      "trustDevice": "Don't ask again on this device for 30 days",
+      "verify": "Verify",
+      "verifying": "Verifying...",
+      "useBackupCode": "Use a backup code",
+      "useApp": "Use your authenticator app",
+      "back": "Back",
+      "invalidCode": "That code is not correct."
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -570,8 +591,7 @@
       "title": "Password",
       "twoFactor": "Two-factor authentication",
       "twoFactorDescription": "Require a code from your authenticator app when signing in.",
-      "twoFactorOn": "On",
-      "twoFactorUnavailable": "Not available yet"
+      "twoFactorOn": "On"
     },
     "sections": {
       "details": "Profile",
@@ -611,6 +631,27 @@
       "weeklyDigestDescription": "Monday summary of what happened in your workspace.",
       "productUpdates": "Product updates",
       "productUpdatesDescription": "Occasional emails about new features."
+    },
+    "twoFactor": {
+      "enableTitle": "Set up two-factor authentication",
+      "enablePasswordStep": "Enter your password to start. Signing in with a password will then also ask for a code from your authenticator app.",
+      "enableScanStep": "Scan the QR code with your authenticator app, then enter the 6-digit code it shows.",
+      "enableCodesStep": "Save these backup codes somewhere safe. Each one signs you in once if you lose your authenticator app, and they are not shown again.",
+      "password": "Password",
+      "code": "Code from your app",
+      "qrLabel": "QR code for your authenticator app",
+      "manualEntry": "Can't scan it? Enter this key instead:",
+      "backupCodesLabel": "Backup codes",
+      "copyCodes": "Copy codes",
+      "continue": "Continue",
+      "verify": "Turn on",
+      "done": "Done",
+      "disableTitle": "Turn off two-factor authentication?",
+      "disableDescription": "Signing in will only need your password, and devices you chose to trust will ask again if you turn it back on. Enter your password to confirm.",
+      "disable": "Turn off",
+      "regenerateTitle": "New backup codes",
+      "regenerateDescription": "Your current backup codes will stop working. Enter your password to get new ones.",
+      "regenerate": "New backup codes"
     }
   },
   "public": {
@@ -810,7 +851,9 @@
     "copied": "Copied to clipboard.",
     "memberRemoved": "Member removed.",
     "membersInvited": "Invitations sent.",
-    "passwordChanged": "Password updated. Your other devices have been signed out."
+    "passwordChanged": "Password updated. Your other devices have been signed out.",
+    "twoFactorEnabled": "Two-factor authentication is on.",
+    "twoFactorDisabled": "Two-factor authentication is off."
   },
   "emails": {
     "common": {

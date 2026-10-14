@@ -2,5 +2,7 @@
   "copied": "Copied to clipboard.",
   "memberRemoved": "Member removed.",
   "membersInvited": "Invitations sent.",
-  "passwordChanged": "Password updated. Your other devices have been signed out."
+  "passwordChanged": "Password updated. Your other devices have been signed out.",
+  "twoFactorEnabled": "Two-factor authentication is on.",
+  "twoFactorDisabled": "Two-factor authentication is off."
 }

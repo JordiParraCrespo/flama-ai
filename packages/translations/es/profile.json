@@ -28,8 +28,7 @@
     "title": "Contraseña",
     "twoFactor": "Verificación en dos pasos",
     "twoFactorDescription": "Pedir un código de tu aplicación de autenticación al iniciar sesión.",
-    "twoFactorOn": "Activada",
-    "twoFactorUnavailable": "Aún no disponible"
+    "twoFactorOn": "Activada"
   },
   "sections": {
     "details": "Perfil",
@@ -69,5 +68,26 @@
     "weeklyDigestDescription": "Resumen de los lunes con lo ocurrido en tu espacio de trabajo.",
     "productUpdates": "Novedades del producto",
     "productUpdatesDescription": "Correos ocasionales sobre nuevas funciones."
+  },
+  "twoFactor": {
+    "enableTitle": "Configurar la verificación en dos pasos",
+    "enablePasswordStep": "Introduce tu contraseña para empezar. A partir de entonces, iniciar sesión con contraseña también pedirá un código de tu aplicación de autenticación.",
+    "enableScanStep": "Escanea el código QR con tu aplicación de autenticación e introduce el código de 6 dígitos que muestra.",
+    "enableCodesStep": "Guarda estos códigos de respaldo en un lugar seguro. Cada uno te permite iniciar sesión una vez si pierdes tu aplicación de autenticación, y no se volverán a mostrar.",
+    "password": "Contraseña",
+    "code": "Código de tu aplicación",
+    "qrLabel": "Código QR para tu aplicación de autenticación",
+    "manualEntry": "¿No puedes escanearlo? Introduce esta clave:",
+    "backupCodesLabel": "Códigos de respaldo",
+    "copyCodes": "Copiar códigos",
+    "continue": "Continuar",
+    "verify": "Activar",
+    "done": "Hecho",
+    "disableTitle": "¿Desactivar la verificación en dos pasos?",
+    "disableDescription": "Iniciar sesión solo pedirá tu contraseña, y los dispositivos de confianza volverán a pedir el código si la activas de nuevo. Introduce tu contraseña para confirmar.",
+    "disable": "Desactivar",
+    "regenerateTitle": "Nuevos códigos de respaldo",
+    "regenerateDescription": "Tus códigos de respaldo actuales dejarán de funcionar. Introduce tu contraseña para obtener otros nuevos.",
+    "regenerate": "Nuevos códigos de respaldo"
   }
 }

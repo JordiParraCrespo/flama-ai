@@ -1,5 +1,10 @@
 import { Text } from '@flama/design-system-mobile/text';
-import { useErrorMessage, useLogin } from '@flama/frontend-core/react';
+import {
+  isTwoFactorRequired,
+  useErrorMessage,
+  useLogin,
+  useVerifyTwoFactor,
+} from '@flama/frontend-core/react';
 import {
   AuthFooterNote,
   AuthLayout,
@@ -8,6 +13,7 @@ import {
   AuthTitle,
   LoginForm,
   SocialLoginButtons,
+  TwoFactorChallengeForm,
 } from '@flama/frontend-mobile';
 import { Link, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -17,9 +23,35 @@ export function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const resolveError = useErrorMessage();
-  const { mutate, isPending, error } = useLogin();
+  const { mutate, isPending, error, reset } = useLogin();
+  const verify = useVerifyTwoFactor();
 
   const toApp = () => router.replace('/(app)');
+
+  // The password was right and the account has two-factor on: the sign-in
+  // owes a code. Derived from the mutation, so "back" is forgetting it.
+  if (isTwoFactorRequired(error)) {
+    return (
+      <AuthLayout>
+        <AuthTitle>{t('auth.twoFactor.title')}</AuthTitle>
+        <AuthSubtitle>{t('auth.twoFactor.description')}</AuthSubtitle>
+
+        <TwoFactorChallengeForm
+          isPending={verify.isPending}
+          error={
+            verify.error
+              ? resolveError(verify.error, t('auth.twoFactor.invalidCode')).message
+              : undefined
+          }
+          onSubmit={(values) => verify.mutate(values, { onSuccess: toApp })}
+          onCancel={() => {
+            verify.reset();
+            reset();
+          }}
+        />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>

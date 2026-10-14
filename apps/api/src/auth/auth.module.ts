@@ -13,6 +13,7 @@ import { CREDENTIAL_SCOPE, CREDENTIAL_VERIFIER, DELEGATED_SESSION } from './auth
 import { Account } from './database/account.orm-entity';
 // flama:plugins auth-entity-imports
 import { Session } from './database/session.orm-entity';
+import { TwoFactor } from './database/two-factor.orm-entity';
 import { Verification } from './database/verification.orm-entity';
 import { ApiAuthGuard } from './guards/api-auth.guard';
 import { OptionalApiAuthGuard } from './guards/optional-api-auth.guard';
@@ -52,6 +53,7 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
       Session,
       Account,
       Verification,
+      TwoFactor,
       // flama:plugins auth-entities
       // flama:begin organizations
       OrganizationOrmEntity,

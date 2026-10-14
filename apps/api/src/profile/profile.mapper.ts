@@ -86,10 +86,7 @@ export class ProfileMapper
     dto.avatarUrl = avatarUrl;
     dto.role = user.role;
     dto.emailVerified = user.emailVerified;
-    // Hard-coded rather than read from anywhere: the Better Auth `twoFactor`
-    // plugin is not enabled, so there is no enrolment to report. When it is,
-    // this reads the user's enrolment instead and the field starts varying.
-    dto.twoFactorEnabled = false;
+    dto.twoFactorEnabled = user.twoFactorEnabled;
     dto.createdAt = user.createdAt;
     dto.updatedAt = user.updatedAt;
     return dto;

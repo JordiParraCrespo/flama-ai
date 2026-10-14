@@ -7,7 +7,7 @@ import { expo } from '@better-auth/expo';
 import { userAdditionalFields } from '@flama/auth';
 import { Logger } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
-import { admin, bearer } from 'better-auth/plugins';
+import { admin, bearer, twoFactor } from 'better-auth/plugins';
 import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
@@ -114,6 +114,11 @@ export const auth = betterAuth({
       '/forget-password': { window: 60, max: 3 },
       '/request-password-reset': { window: 60, max: 3 },
       '/reset-password': { window: 60, max: 5 },
+      // A six-digit code is guessable by volume alone. The plugin also locks
+      // an account's second factor after ten wrong codes, and a sign-in
+      // challenge after five.
+      '/two-factor/verify-totp': { window: 60, max: 10 },
+      '/two-factor/verify-backup-code': { window: 60, max: 10 },
     },
   },
   advanced: {
@@ -264,6 +269,19 @@ export const auth = betterAuth({
       adminUserIds,
       // Impersonation sessions last 1 hour by default; make it explicit.
       impersonationSessionDuration: 60 * 60,
+    }),
+    // Two-factor authentication: an authenticator app (TOTP) plus single-use
+    // backup codes. Optional per user, switched on from the profile. Enabling
+    // returns the TOTP URI and the backup codes, but `twoFactorEnabled` turns
+    // true only once the user confirms a code from the app, so an enrolment
+    // abandoned halfway never locks anyone out. After that, a correct password
+    // on `/sign-in/email` yields `{ twoFactorRedirect: true }` and a short-lived
+    // challenge cookie instead of a session; `/two-factor/verify-totp` or
+    // `/two-factor/verify-backup-code` completes the sign-in. Social sign-in is
+    // the provider's to protect and is not challenged.
+    twoFactor({
+      // The account name an authenticator app files the code under.
+      issuer: process.env.TWO_FACTOR_ISSUER || 'Flama',
     }),
     // flama:begin organizations
     organizationPlugin(frontendUrl),

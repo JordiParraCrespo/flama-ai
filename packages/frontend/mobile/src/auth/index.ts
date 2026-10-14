@@ -10,6 +10,10 @@ export { ForgotPasswordForm, type ForgotPasswordFormProps } from './forms/forgot
 export { LoginForm, type LoginFormProps } from './forms/login-form';
 export { ResetPasswordForm, type ResetPasswordFormProps } from './forms/reset-password-form';
 export {
+  TwoFactorChallengeForm,
+  type TwoFactorChallengeFormProps,
+} from './forms/two-factor-challenge-form';
+export {
   ForgotPasswordScreen,
   type ForgotPasswordScreenProps,
 } from './screens/forgot-password-screen';

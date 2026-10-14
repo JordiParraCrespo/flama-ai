@@ -57,6 +57,11 @@ export class UserOrmEntity {
   @Column({ type: 'boolean', default: true })
   isActive!: boolean;
 
+  // --- Better Auth two-factor plugin: true once an authenticator app is confirmed. ---
+
+  @Column({ type: 'boolean', default: false })
+  twoFactorEnabled!: boolean;
+
   // --- Better Auth admin plugin (super-admin / moderation) ---
 
   @Column({ type: 'boolean', default: false })

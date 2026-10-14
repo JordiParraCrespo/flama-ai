@@ -7,4 +7,5 @@ export { PasswordChecklist } from './components/password-checklist';
 export { PasswordInput } from './components/password-input';
 export * from './components/password-requirements';
 export { SocialLoginButtons } from './components/social-login-buttons';
+export { TwoFactorChallengeForm } from './forms/two-factor-challenge-form';
 export { redirectSignedIn, redirectSignedOut } from './lib/redirect-signed-in';

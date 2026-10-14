@@ -17,6 +17,8 @@ export interface UserProps {
   role: Role;
   isActive: boolean;
   emailVerified: boolean;
+  /** Owned by Better Auth's two-factor plugin; read here, never written. */
+  twoFactorEnabled: boolean;
 }
 
 /**
@@ -78,6 +80,10 @@ export class UserEntity extends AggregateRoot<UserProps> {
 
   get emailVerified(): boolean {
     return this.props.emailVerified;
+  }
+
+  get twoFactorEnabled(): boolean {
+    return this.props.twoFactorEnabled;
   }
 
   /** Apply a partial profile update, ignoring fields left undefined. */

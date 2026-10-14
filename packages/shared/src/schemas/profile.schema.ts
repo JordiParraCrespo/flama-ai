@@ -79,9 +79,8 @@ export const profileResponseSchema = z.object({
   role: z.string(),
   emailVerified: z.boolean(),
   /**
-   * Always `false` for now — the Better Auth `twoFactor` plugin is not enabled
-   * on this deployment. Present so the settings screen can render the row in
-   * its off state without branching on whether the field exists.
+   * True once the user has confirmed an authenticator app (Better Auth's
+   * `twoFactor` plugin). Signing in with a password then also asks for a code.
    */
   twoFactorEnabled: z.boolean(),
   createdAt: z.string().datetime(),

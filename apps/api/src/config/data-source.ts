@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 // flama:end api-tokens
 import { Account } from '../auth/database/account.orm-entity';
 import { Session } from '../auth/database/session.orm-entity';
+import { TwoFactor } from '../auth/database/two-factor.orm-entity';
 import { Verification } from '../auth/database/verification.orm-entity';
 // flama:begin organizations
 import { AccessGrantOrmEntity } from '../authz/database/access-grant.orm-entity';
@@ -42,6 +43,7 @@ export default new DataSource({
     Session,
     Account,
     Verification,
+    TwoFactor,
     // flama:plugins entities
     RoleOrmEntity,
     // flama:begin organizations
