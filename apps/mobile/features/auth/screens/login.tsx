@@ -1,10 +1,5 @@
 import { Text } from '@flama/design-system-mobile/text';
-import {
-  isTwoFactorRequired,
-  useErrorMessage,
-  useLogin,
-  useVerifyTwoFactor,
-} from '@flama/frontend-core/react';
+import { isTwoFactorRequired, useErrorMessage, useLogin } from '@flama/frontend-core/react';
 import {
   AuthFooterNote,
   AuthLayout,
@@ -13,7 +8,7 @@ import {
   AuthTitle,
   LoginForm,
   SocialLoginButtons,
-  TwoFactorChallengeForm,
+  TwoFactorChallenge,
 } from '@flama/frontend-mobile';
 import { Link, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +19,6 @@ export function LoginScreen() {
   const router = useRouter();
   const resolveError = useErrorMessage();
   const { mutate, isPending, error, reset } = useLogin();
-  const verify = useVerifyTwoFactor();
 
   const toApp = () => router.replace('/(app)');
 
@@ -33,22 +27,7 @@ export function LoginScreen() {
   if (isTwoFactorRequired(error)) {
     return (
       <AuthLayout>
-        <AuthTitle>{t('auth.twoFactor.title')}</AuthTitle>
-        <AuthSubtitle>{t('auth.twoFactor.description')}</AuthSubtitle>
-
-        <TwoFactorChallengeForm
-          isPending={verify.isPending}
-          error={
-            verify.error
-              ? resolveError(verify.error, t('auth.twoFactor.invalidCode')).message
-              : undefined
-          }
-          onSubmit={(values) => verify.mutate(values, { onSuccess: toApp })}
-          onCancel={() => {
-            verify.reset();
-            reset();
-          }}
-        />
+        <TwoFactorChallenge onSuccess={toApp} onCancel={reset} />
       </AuthLayout>
     );
   }

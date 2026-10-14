@@ -26,6 +26,37 @@ import { groupSecret, totpSecretOf } from '@/features/profile/lib/totp';
 const PASSWORD_FORM = 'enable-two-factor-password';
 const CODE_FORM = 'enable-two-factor-code';
 
+type Step = 'password' | 'scan' | 'codes';
+
+/** What each step tells the reader, and which form its footer button submits, labelled how. */
+const STEPS = {
+  password: {
+    description: 'profile.twoFactor.enablePasswordStep',
+    form: PASSWORD_FORM,
+    submit: 'profile.twoFactor.continue',
+  },
+  scan: {
+    description: 'profile.twoFactor.enableScanStep',
+    form: CODE_FORM,
+    submit: 'profile.twoFactor.verify',
+  },
+  codes: { description: 'profile.twoFactor.enableCodesStep', form: null, submit: null },
+} as const satisfies Record<
+  Step,
+  { description: string; form: string | null; submit: string | null }
+>;
+
+/**
+ * The step follows from the two mutations rather than from state of its own:
+ * no enrolment yet means the password, an unconfirmed one the QR code, a
+ * confirmed one the backup codes.
+ */
+function stepOf(enrolled: boolean, confirmed: boolean): Step {
+  if (!enrolled) return 'password';
+  if (!confirmed) return 'scan';
+  return 'codes';
+}
+
 /**
  * Sets up an authenticator app, in three steps that follow from the two
  * mutations it owns: the password, then the QR code and a first code from
@@ -43,8 +74,9 @@ export function EnableTwoFactorDialog({ onClose }: { onClose: () => void }) {
   });
 
   const enrolment = enable.data;
-  const step = !enrolment ? 'password' : confirm.isSuccess ? 'codes' : 'scan';
-  const error = step === 'password' ? enable.error : step === 'scan' ? confirm.error : null;
+  const step = stepOf(Boolean(enrolment), confirm.isSuccess);
+  const { description, form, submit } = STEPS[step];
+  const error = { password: enable.error, scan: confirm.error, codes: null }[step];
   const secret = enrolment ? totpSecretOf(enrolment.totpURI) : '';
 
   return (
@@ -57,13 +89,7 @@ export function EnableTwoFactorDialog({ onClose }: { onClose: () => void }) {
         </DialogHero>
         <DialogHeader>
           <DialogTitle>{t('profile.twoFactor.enableTitle')}</DialogTitle>
-          <DialogDescription>
-            {step === 'password'
-              ? t('profile.twoFactor.enablePasswordStep')
-              : step === 'scan'
-                ? t('profile.twoFactor.enableScanStep')
-                : t('profile.twoFactor.enableCodesStep')}
-          </DialogDescription>
+          <DialogDescription>{t(description)}</DialogDescription>
         </DialogHeader>
 
         <DialogBody>
@@ -113,7 +139,7 @@ export function EnableTwoFactorDialog({ onClose }: { onClose: () => void }) {
         </DialogBody>
 
         <DialogFooter>
-          {step === 'codes' ? (
+          {form === null || submit === null ? (
             <Button type="button" onClick={onClose}>
               {t('profile.twoFactor.done')}
             </Button>
@@ -122,14 +148,8 @@ export function EnableTwoFactorDialog({ onClose }: { onClose: () => void }) {
               <Button type="button" variant="outline" onClick={onClose}>
                 {t('common.cancel')}
               </Button>
-              <Button
-                type="submit"
-                form={step === 'password' ? PASSWORD_FORM : CODE_FORM}
-                disabled={enable.isPending || confirm.isPending}
-              >
-                {step === 'password'
-                  ? t('profile.twoFactor.continue')
-                  : t('profile.twoFactor.verify')}
+              <Button type="submit" form={form} disabled={enable.isPending || confirm.isPending}>
+                {t(submit)}
               </Button>
             </>
           )}

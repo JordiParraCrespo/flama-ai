@@ -1,10 +1,10 @@
-import { isTwoFactorRequired, useLogin, useVerifyTwoFactor } from '@flama/frontend-core/react';
+import { isTwoFactorRequired, useLogin } from '@flama/frontend-core/react';
 import {
   AuthSubtitle,
   AuthTitle,
   OAuthCallbackNotice,
   SocialLoginButtons,
-  TwoFactorChallengeForm,
+  TwoFactorChallenge,
   useErrorMessage,
 } from '@flama/frontend-web';
 import type { LoginDto } from '@flama/shared/schemas/auth';
@@ -27,7 +27,6 @@ export function LoginScreen({
   const resolveError = useErrorMessage();
   const navigate = useNavigate();
   const login = useLogin();
-  const verify = useVerifyTwoFactor();
 
   const enterApp = () => {
     // Split rather than pass the whole string as `to`: the target may
@@ -55,26 +54,7 @@ export function LoginScreen({
   // not a failure, it owes a code. Derived from the mutation rather than kept
   // as state, so "back" is just forgetting that attempt.
   if (isTwoFactorRequired(login.error)) {
-    return (
-      <>
-        <AuthTitle>{t('auth.twoFactor.title')}</AuthTitle>
-        <AuthSubtitle>{t('auth.twoFactor.description')}</AuthSubtitle>
-
-        <TwoFactorChallengeForm
-          isPending={verify.isPending}
-          error={
-            verify.error
-              ? resolveError(verify.error, t('auth.twoFactor.invalidCode')).message
-              : undefined
-          }
-          onSubmit={(values) => verify.mutate(values, { onSuccess: enterApp })}
-          onCancel={() => {
-            verify.reset();
-            login.reset();
-          }}
-        />
-      </>
-    );
+    return <TwoFactorChallenge onSuccess={enterApp} onCancel={login.reset} />;
   }
 
   return (

@@ -41,9 +41,9 @@ const dataSource = new DataSource({
     UserOrmEntity,
     UserSettingsOrmEntity,
     Session,
+    TwoFactor,
     Account,
     Verification,
-    TwoFactor,
     // flama:plugins entities
     RoleOrmEntity,
     // flama:begin organizations

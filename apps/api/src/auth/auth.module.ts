@@ -51,9 +51,9 @@ import { DelegatedSessionAdapter } from './infrastructure/delegated-session.adap
     UsersModule,
     TypeOrmModule.forFeature([
       Session,
+      TwoFactor,
       Account,
       Verification,
-      TwoFactor,
       // flama:plugins auth-entities
       // flama:begin organizations
       OrganizationOrmEntity,
