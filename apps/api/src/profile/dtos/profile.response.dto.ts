@@ -43,6 +43,12 @@ export class ProfileResponseDto {
   })
   twoFactorEnabled!: boolean;
 
+  @ApiProperty({
+    description:
+      'Whether the user can sign in with a password. False for an account made through a social provider until a password is set; two-factor authentication only guards password sign-in, so it needs one.',
+  })
+  hasPassword!: boolean;
+
   @ApiProperty()
   createdAt!: Date;
 

@@ -6,7 +6,12 @@ import { UserSettingsEntity } from '../domain/user-settings.entity';
 import { ProfileMapper, type SessionRecord } from '../profile.mapper';
 
 function makeUser(
-  overrides: { phone?: string | null; avatarUrl?: string | null; twoFactorEnabled?: boolean } = {},
+  overrides: {
+    phone?: string | null;
+    avatarUrl?: string | null;
+    twoFactorEnabled?: boolean;
+    hasPassword?: boolean;
+  } = {},
 ) {
   return UserEntity.create({
     id: 'user-uuid',
@@ -23,6 +28,7 @@ function makeUser(
       isActive: true,
       emailVerified: true,
       twoFactorEnabled: overrides.twoFactorEnabled ?? false,
+      hasPassword: overrides.hasPassword ?? true,
     },
   });
 }
@@ -119,6 +125,15 @@ describe('ProfileMapper', () => {
         mapper.toProfileResponse(makeUser({ twoFactorEnabled: true }), null).twoFactorEnabled,
       ).toBe(true);
       expect(mapper.toProfileResponse(makeUser(), null).twoFactorEnabled).toBe(false);
+    });
+
+    it('says whether the account has a password sign-in', () => {
+      // Two-factor guards password sign-in only; an account made through a
+      // social provider is offered a setup it could never finish otherwise.
+      expect(mapper.toProfileResponse(makeUser({ hasPassword: false }), null).hasPassword).toBe(
+        false,
+      );
+      expect(mapper.toProfileResponse(makeUser(), null).hasPassword).toBe(true);
     });
 
     it('passes a null avatar through', () => {

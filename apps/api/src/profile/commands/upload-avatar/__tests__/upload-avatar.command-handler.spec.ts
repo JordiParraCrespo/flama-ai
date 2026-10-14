@@ -22,6 +22,7 @@ function makeUser(avatarUrl: string | null): UserEntity {
       isActive: true,
       emailVerified: true,
       twoFactorEnabled: false,
+      hasPassword: true,
     },
   });
 }

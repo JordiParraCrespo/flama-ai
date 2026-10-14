@@ -20,6 +20,7 @@ const USER = UserEntity.create({
     isActive: true,
     emailVerified: true,
     twoFactorEnabled: false,
+    hasPassword: true,
   },
 });
 

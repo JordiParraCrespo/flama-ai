@@ -88,6 +88,7 @@
     "disable": "Desactivar",
     "regenerateTitle": "Nuevos códigos de respaldo",
     "regenerateDescription": "Tus códigos de respaldo actuales dejarán de funcionar. Introduce tu contraseña para obtener otros nuevos.",
-    "regenerate": "Nuevos códigos de respaldo"
+    "regenerate": "Nuevos códigos de respaldo",
+    "needsPassword": "Requiere inicio de sesión con contraseña"
   }
 }

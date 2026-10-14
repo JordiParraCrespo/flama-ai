@@ -83,6 +83,11 @@ export const profileResponseSchema = z.object({
    * `twoFactor` plugin). Signing in with a password then also asks for a code.
    */
   twoFactorEnabled: z.boolean(),
+  /**
+   * Whether the user can sign in with a password. Two-factor guards password
+   * sign-in only, so an account without one has nothing for it to protect.
+   */
+  hasPassword: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

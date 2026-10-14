@@ -73,11 +73,18 @@ export function PasswordSection({ profile }: { profile: ProfileEntity }) {
                 </Button>
               </>
             )}
+            {/* Two-factor guards password sign-in only. An account made through
+                a social provider has no password to re-enter here and nothing
+                for a code to protect, so the switch stays off and says why. */}
+            {!profile.hasPassword && !profile.twoFactorEnabled && (
+              <span className="text-sm text-ink-400">{t('profile.twoFactor.needsPassword')}</span>
+            )}
             {/* The switch opens the dialog that does the work rather than
                 flipping anything itself: both directions ask for the password,
                 and turning it on needs the app scanned first. */}
             <Switch
               checked={profile.twoFactorEnabled}
+              disabled={!profile.hasPassword && !profile.twoFactorEnabled}
               onCheckedChange={() => setDialog(profile.twoFactorEnabled ? 'disable' : 'enable')}
               aria-label={t('profile.password.twoFactor')}
             />

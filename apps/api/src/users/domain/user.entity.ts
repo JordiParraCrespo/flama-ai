@@ -19,6 +19,8 @@ export interface UserProps {
   emailVerified: boolean;
   /** Owned by Better Auth's two-factor plugin; read here, never written. */
   twoFactorEnabled: boolean;
+  /** Whether a password sign-in exists for this user (Better Auth's `credential` account). Read-only. */
+  hasPassword: boolean;
 }
 
 /**
@@ -84,6 +86,10 @@ export class UserEntity extends AggregateRoot<UserProps> {
 
   get twoFactorEnabled(): boolean {
     return this.props.twoFactorEnabled;
+  }
+
+  get hasPassword(): boolean {
+    return this.props.hasPassword;
   }
 
   /** Apply a partial profile update, ignoring fields left undefined. */

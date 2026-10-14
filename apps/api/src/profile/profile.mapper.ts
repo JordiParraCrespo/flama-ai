@@ -87,6 +87,7 @@ export class ProfileMapper
     dto.role = user.role;
     dto.emailVerified = user.emailVerified;
     dto.twoFactorEnabled = user.twoFactorEnabled;
+    dto.hasPassword = user.hasPassword;
     dto.createdAt = user.createdAt;
     dto.updatedAt = user.updatedAt;
     return dto;

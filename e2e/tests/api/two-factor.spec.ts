@@ -1,5 +1,6 @@
 import { type APIRequestContext, expect, test } from '@playwright/test';
 import { getSession, newContext, signedUpContext, signIn, signOut } from '../../support/auth';
+import { query } from '../../support/db';
 import { totpCode, totpSecretOf } from '../../support/totp';
 
 /**
@@ -147,6 +148,23 @@ test('the profile reports the enrolment', async () => {
   const profile = await api.get('/api/v1/profile', { failOnStatusCode: false });
   expect(profile.status()).toBe(200);
   expect((await profile.json()).twoFactorEnabled).toBe(true);
+
+  await api.dispose();
+});
+
+test('the profile tells an account with no password apart', async () => {
+  const { api, userId } = await signedUpContext('2fa-social');
+  const read = async () => (await (await api.get('/api/v1/profile')).json()).hasPassword;
+  expect(await read()).toBe(true);
+
+  // What an account made through a social provider looks like: its only
+  // login is the provider's. Two-factor guards password sign-in, so the
+  // profile has to say there is none for the screen to not offer it.
+  await query(
+    `UPDATE "account" SET "providerId" = 'google', "password" = NULL WHERE "userId" = $1`,
+    [userId],
+  );
+  expect(await read()).toBe(false);
 
   await api.dispose();
 });

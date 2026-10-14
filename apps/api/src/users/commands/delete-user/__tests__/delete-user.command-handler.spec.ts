@@ -21,6 +21,7 @@ function makeUser(): UserEntity {
       isActive: true,
       emailVerified: true,
       twoFactorEnabled: false,
+      hasPassword: true,
     },
   });
 }

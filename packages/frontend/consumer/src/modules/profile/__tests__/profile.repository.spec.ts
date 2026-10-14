@@ -27,6 +27,7 @@ const PROFILE = {
   role: 'owner',
   emailVerified: true,
   twoFactorEnabled: false,
+  hasPassword: false,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-02-01T00:00:00.000Z',
 };
@@ -48,6 +49,7 @@ describe('ProfileRepository', () => {
     expect(profile.initials).toBe('AR');
     expect(profile.phone).toBe('+34 600 123 456');
     expect(profile.twoFactorEnabled).toBe(false);
+    expect(profile.hasPassword).toBe(false);
     expect(profile.createdAt).toEqual(new Date('2026-01-01T00:00:00.000Z'));
   });
 

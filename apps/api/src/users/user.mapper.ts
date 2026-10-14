@@ -18,7 +18,8 @@ import { UserResponseDto } from './dtos/user.response.dto';
  * provider supplied at sign-up — exactly as it was. `twoFactorEnabled` is read
  * and never written: Better Auth's two-factor plugin is its only writer, and a
  * profile save that raced a user switching two-factor on would otherwise put
- * back the value it had read.
+ * back the value it had read. `hasPassword` is computed from Better Auth's
+ * `account` table on read and has nothing to write back to.
  */
 @Injectable()
 export class UserMapper implements Mapper<UserEntity, UserOrmEntity, UserResponseDto> {
@@ -54,6 +55,7 @@ export class UserMapper implements Mapper<UserEntity, UserOrmEntity, UserRespons
         isActive: record.isActive,
         emailVerified: record.emailVerified,
         twoFactorEnabled: record.twoFactorEnabled,
+        hasPassword: record.hasPassword,
       },
     });
   }

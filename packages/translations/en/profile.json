@@ -88,6 +88,7 @@
     "disable": "Turn off",
     "regenerateTitle": "New backup codes",
     "regenerateDescription": "Your current backup codes will stop working. Enter your password to get new ones.",
-    "regenerate": "New backup codes"
+    "regenerate": "New backup codes",
+    "needsPassword": "Needs a password sign-in"
   }
 }
