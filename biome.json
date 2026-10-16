@@ -63,6 +63,7 @@
       "!**/blob-report",
       "!**/test-results",
       "!**/node-compile-cache",
+      "!!**/.claude/worktrees",
       "!**/.agents",
       "!**/*.md",
       "!**/*.css",
