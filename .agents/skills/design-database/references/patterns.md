@@ -186,8 +186,8 @@ CREATE INDEX "IDX_audit_event_occurred_brin" ON "audit_event" USING BRIN ("occur
   delete over the BRIN index is enough, and the header names partitioning as
   the next step. At tens of millions or more, partition by month on
   `occurredAt` now (the primary key becomes `("id", "occurredAt")`, and the
-  id comes from a plain sequence: Postgres 16 has no identity columns on
-  partitioned tables), with a `DEFAULT` partition, a job that creates next
+  id is `bigint GENERATED ALWAYS AS IDENTITY`, which partitioned tables
+  accept since Postgres 17), with a `DEFAULT` partition, a job that creates next
   months' partitions and retention as `DROP` of old partitions. Compute month
   bounds on `timestamp` values and convert with `AT TIME ZONE 'UTC'`: month
   arithmetic on `timestamptz` follows the session time zone and leaves gaps.
