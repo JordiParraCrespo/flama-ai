@@ -28,8 +28,7 @@
     "title": "Password",
     "twoFactor": "Two-factor authentication",
     "twoFactorDescription": "Require a code from your authenticator app when signing in.",
-    "twoFactorOn": "On",
-    "twoFactorUnavailable": "Not available yet"
+    "twoFactorOn": "On"
   },
   "sections": {
     "details": "Profile",
@@ -69,5 +68,27 @@
     "weeklyDigestDescription": "Monday summary of what happened in your workspace.",
     "productUpdates": "Product updates",
     "productUpdatesDescription": "Occasional emails about new features."
+  },
+  "twoFactor": {
+    "enableTitle": "Set up two-factor authentication",
+    "enablePasswordStep": "Enter your password to start. Signing in with a password will then also ask for a code from your authenticator app.",
+    "enableScanStep": "Scan the QR code with your authenticator app, then enter the 6-digit code it shows.",
+    "enableCodesStep": "Save these backup codes somewhere safe. Each one signs you in once if you lose your authenticator app, and they are not shown again.",
+    "password": "Password",
+    "code": "Code from your app",
+    "qrLabel": "QR code for your authenticator app",
+    "manualEntry": "Can't scan it? Enter this key instead:",
+    "backupCodesLabel": "Backup codes",
+    "copyCodes": "Copy codes",
+    "continue": "Continue",
+    "verify": "Turn on",
+    "done": "Done",
+    "disableTitle": "Turn off two-factor authentication?",
+    "disableDescription": "Signing in will only need your password, and devices you chose to trust will ask again if you turn it back on. Enter your password to confirm.",
+    "disable": "Turn off",
+    "regenerateTitle": "New backup codes",
+    "regenerateDescription": "Your current backup codes will stop working. Enter your password to get new ones.",
+    "regenerate": "New backup codes",
+    "needsPassword": "Needs a password sign-in"
   }
 }

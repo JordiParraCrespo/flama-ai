@@ -17,3 +17,4 @@ export {
   ResetPasswordScreen,
   type ResetPasswordScreenProps,
 } from './screens/reset-password-screen';
+export { TwoFactorChallenge } from './sections/two-factor-challenge';

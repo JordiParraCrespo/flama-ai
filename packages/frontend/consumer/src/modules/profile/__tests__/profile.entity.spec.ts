@@ -13,6 +13,7 @@ function profile(firstName: string, lastName: string): ProfileEntity {
     'owner',
     true,
     false,
+    true,
     new Date('2026-06-01T00:00:00.000Z'),
     new Date('2026-06-01T00:00:00.000Z'),
   );

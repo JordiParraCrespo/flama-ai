@@ -99,6 +99,12 @@
     --email-rule: rgba(0, 0, 0, 0.12); /* quote bars and hairlines on white */
     --email-link: #2f80f6; /* matches --accent-blue */
 
+    /* A QR code (the two-factor enrolment). Dark modules on a light quiet
+       zone in both themes: not every scanner reads an inverted code, so the
+       dark block restates neither. */
+    --qr-paper: #ffffff;
+    --qr-ink: #000000;
+
     /* The theme pill. The knob and its active icon are deliberately the same
        in both themes — it is the one chrome element that does not invert, so
        the dark block below restates only the idle icon. */
@@ -368,6 +374,8 @@
   --color-email-ink-muted: var(--email-ink-muted);
   --color-email-rule: var(--email-rule);
   --color-email-link: var(--email-link);
+  --color-qr-paper: var(--qr-paper);
+  --color-qr-ink: var(--qr-ink);
 
   --color-border-subtle: var(--border-subtle);
   --color-border-default: var(--border-default);

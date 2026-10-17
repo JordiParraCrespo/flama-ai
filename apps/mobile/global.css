@@ -70,6 +70,12 @@
     --email-rule: 0 0% 88%; /* flattened from rgba(0,0,0,.12) on white */
     --email-link: 217 92% 57%; /* #2F80F6 */
 
+    /* A QR code: dark on light in both themes, as scanners expect. Mirrored
+       to keep the token files in step; mobile draws no QR code yet. See the
+       web `globals.css`. */
+    --qr-paper: 0 0% 100%; /* #FFFFFF */
+    --qr-ink: 0 0% 0%; /* #000000 */
+
     --status-active: 147 67% 37%;
     --status-paused: 34 80% 43%; /* #C77A16 */
     --status-ended: 358 75% 59%;

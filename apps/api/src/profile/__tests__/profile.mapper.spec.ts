@@ -5,7 +5,14 @@ import { UserSettingsOrmEntity } from '../database/user-settings.orm-entity';
 import { UserSettingsEntity } from '../domain/user-settings.entity';
 import { ProfileMapper, type SessionRecord } from '../profile.mapper';
 
-function makeUser(overrides: { phone?: string | null; avatarUrl?: string | null } = {}) {
+function makeUser(
+  overrides: {
+    phone?: string | null;
+    avatarUrl?: string | null;
+    twoFactorEnabled?: boolean;
+    hasPassword?: boolean;
+  } = {},
+) {
   return UserEntity.create({
     id: 'user-uuid',
     createdAt: new Date('2026-01-01'),
@@ -20,6 +27,8 @@ function makeUser(overrides: { phone?: string | null; avatarUrl?: string | null 
       role: 'owner',
       isActive: true,
       emailVerified: true,
+      twoFactorEnabled: overrides.twoFactorEnabled ?? false,
+      hasPassword: overrides.hasPassword ?? true,
     },
   });
 }
@@ -109,10 +118,22 @@ describe('ProfileMapper', () => {
       });
     });
 
-    it('reports two-factor authentication as off', () => {
-      // The plugin is not enabled on this deployment; the field exists so a
-      // client can render the control without probing for it.
+    it("reports the user's two-factor enrolment", () => {
+      // Was hard-coded to false while the plugin was off; a user who switched
+      // two-factor on would have been told it was still off.
+      expect(
+        mapper.toProfileResponse(makeUser({ twoFactorEnabled: true }), null).twoFactorEnabled,
+      ).toBe(true);
       expect(mapper.toProfileResponse(makeUser(), null).twoFactorEnabled).toBe(false);
+    });
+
+    it('says whether the account has a password sign-in', () => {
+      // Two-factor guards password sign-in only; an account made through a
+      // social provider is offered a setup it could never finish otherwise.
+      expect(mapper.toProfileResponse(makeUser({ hasPassword: false }), null).hasPassword).toBe(
+        false,
+      );
+      expect(mapper.toProfileResponse(makeUser(), null).hasPassword).toBe(true);
     });
 
     it('passes a null avatar through', () => {
