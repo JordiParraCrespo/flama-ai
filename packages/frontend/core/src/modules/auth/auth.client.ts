@@ -41,9 +41,56 @@ export interface SignUpParams {
  */
 export type SocialAuthIntent = 'sign-in' | 'sign-up';
 
+/**
+ * What answers a two-factor sign-in challenge: a code from the authenticator
+ * app, or one of the single-use backup codes handed out at enrolment.
+ */
+export type TwoFactorMethod = 'totp' | 'backup-code';
+
+export interface VerifyTwoFactorParams {
+  code: string;
+  method: TwoFactorMethod;
+  /**
+   * Skip the code on this device for the next 30 days. The API keeps the
+   * trust in a signed cookie it can revoke; turning two-factor off drops it.
+   */
+  trustDevice?: boolean;
+}
+
+/** What starting an enrolment hands back, shown to the user once. */
+export interface TwoFactorEnrolment {
+  /** The `otpauth://` URI an authenticator app scans or opens. */
+  totpURI: string;
+  /** Single-use codes that stand in for the app when it is lost. */
+  backupCodes: string[];
+}
+
 export interface IAuthClient {
-  /** Sign in with email and password. Rejects on failure. */
+  /**
+   * Sign in with email and password. Rejects on failure, and with a
+   * `TwoFactorRequiredError` when the password was right but the account has
+   * two-factor on: no session exists yet, and {@link verifyTwoFactor} with a
+   * code completes the sign-in.
+   */
   signIn(email: string, password: string): Promise<void>;
+  /**
+   * Answer the challenge a `TwoFactorRequiredError` announced, which creates
+   * the session. Rejects on a wrong code; the challenge itself lasts ten
+   * minutes and five attempts.
+   */
+  verifyTwoFactor(params: VerifyTwoFactorParams): Promise<void>;
+  /**
+   * Start enrolling an authenticator app. Two-factor is not on yet: it turns
+   * on with {@link confirmTwoFactor}, so an enrolment abandoned here locks
+   * nobody out. Starting again replaces the secret and the backup codes.
+   */
+  enableTwoFactor(password: string): Promise<TwoFactorEnrolment>;
+  /** Confirm the enrolment with a first code from the app, turning two-factor on. */
+  confirmTwoFactor(code: string): Promise<void>;
+  /** Turn two-factor off and forget the trusted devices. */
+  disableTwoFactor(password: string): Promise<void>;
+  /** Replace the backup codes; the old ones stop working. */
+  generateBackupCodes(password: string): Promise<string[]>;
   /** Create an account with email and password. Rejects on failure. */
   signUp(params: SignUpParams): Promise<void>;
   /**

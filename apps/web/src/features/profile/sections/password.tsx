@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, Badge, Switch, toast } from '@flama/design-system-web';
+import { Alert, AlertDescription, Badge, Button, Switch, toast } from '@flama/design-system-web';
 import { ShieldCheck } from '@flama/design-system-web/icons';
 import type { ProfileEntity } from '@flama/frontend-consumer';
 import { useChangeOwnPassword } from '@flama/frontend-consumer/react';
@@ -11,13 +11,21 @@ import {
   SectionRow,
   useErrorMessage,
 } from '@flama/frontend-web';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DisableTwoFactorDialog } from '@/features/profile/dialogs/disable-two-factor';
+import { EnableTwoFactorDialog } from '@/features/profile/dialogs/enable-two-factor';
+import { RegenerateBackupCodesDialog } from '@/features/profile/dialogs/regenerate-backup-codes';
 import { PasswordForm, type PasswordFormValues } from '@/features/profile/forms/password-form';
+
+type TwoFactorDialog = 'enable' | 'disable' | 'backup-codes';
 
 export function PasswordSection({ profile }: { profile: ProfileEntity }) {
   const { t } = useTranslation();
   const resolveError = useErrorMessage();
   const change = useChangeOwnPassword();
+  const [dialog, setDialog] = useState<TwoFactorDialog | null>(null);
+  const closeDialog = () => setDialog(null);
 
   const onSubmit = async (values: PasswordFormValues) => {
     await change.mutateAsync({
@@ -52,25 +60,41 @@ export function PasswordSection({ profile }: { profile: ProfileEntity }) {
             description={t('profile.password.twoFactorDescription')}
           />
           <RowControl>
-            {profile.twoFactorEnabled ? (
-              <Badge variant="active">{t('profile.password.twoFactorOn')}</Badge>
-            ) : (
-              <span className="text-sm text-ink-400">
-                {t('profile.password.twoFactorUnavailable')}
-              </span>
+            {profile.twoFactorEnabled && (
+              <>
+                <Badge variant="active">{t('profile.password.twoFactorOn')}</Badge>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDialog('backup-codes')}
+                >
+                  {t('profile.twoFactor.regenerate')}
+                </Button>
+              </>
             )}
-            {/* Read-only: this deployment does not run Better Auth's two-factor
-                plugin, so there is nothing behind the switch. Shown rather than
-                hidden so the row does not appear the day it is enabled and
-                surprise anyone. */}
+            {/* Two-factor guards password sign-in only. An account made through
+                a social provider has no password to re-enter here and nothing
+                for a code to protect, so the switch stays off and says why. */}
+            {!profile.hasPassword && !profile.twoFactorEnabled && (
+              <span className="text-sm text-ink-400">{t('profile.twoFactor.needsPassword')}</span>
+            )}
+            {/* The switch opens the dialog that does the work rather than
+                flipping anything itself: both directions ask for the password,
+                and turning it on needs the app scanned first. */}
             <Switch
               checked={profile.twoFactorEnabled}
-              disabled
+              disabled={!profile.hasPassword && !profile.twoFactorEnabled}
+              onCheckedChange={() => setDialog(profile.twoFactorEnabled ? 'disable' : 'enable')}
               aria-label={t('profile.password.twoFactor')}
             />
           </RowControl>
         </SectionRow>
       </SectionCard>
+
+      {dialog === 'enable' && <EnableTwoFactorDialog onClose={closeDialog} />}
+      {dialog === 'disable' && <DisableTwoFactorDialog onClose={closeDialog} />}
+      {dialog === 'backup-codes' && <RegenerateBackupCodesDialog onClose={closeDialog} />}
     </>
   );
 }

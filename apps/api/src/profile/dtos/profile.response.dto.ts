@@ -39,9 +39,15 @@ export class ProfileResponseDto {
 
   @ApiProperty({
     description:
-      'Always false: two-factor authentication is not enabled on this deployment. Present so a client can render the control without probing for the field.',
+      'True once the user has confirmed an authenticator app; signing in with a password then also asks for a code.',
   })
   twoFactorEnabled!: boolean;
+
+  @ApiProperty({
+    description:
+      'Whether the user can sign in with a password. False for an account made through a social provider until a password is set; two-factor authentication only guards password sign-in, so it needs one.',
+  })
+  hasPassword!: boolean;
 
   @ApiProperty()
   createdAt!: Date;

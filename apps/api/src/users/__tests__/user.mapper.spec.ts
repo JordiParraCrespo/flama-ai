@@ -16,6 +16,8 @@ function makeUser(firstName: string, lastName: string): UserEntity {
       role: 'user',
       isActive: true,
       emailVerified: true,
+      twoFactorEnabled: false,
+      hasPassword: true,
     },
   });
 }

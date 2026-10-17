@@ -1,6 +1,6 @@
 import { expoClient } from '@better-auth/expo/client';
 import { sharedClientPlugins, toAuthSession, unwrap } from '@flama/auth/client';
-import type { IAuthClient } from '@flama/frontend-core';
+import { type IAuthClient, TwoFactorRequiredError } from '@flama/frontend-core';
 import { createAuthClient } from 'better-auth/react';
 import * as SecureStore from 'expo-secure-store';
 
@@ -35,7 +35,38 @@ export const authClient = createAuthClient({
 
 export const mobileAuthClient: IAuthClient = {
   async signIn(email, password) {
-    unwrap(await authClient.signIn.email({ email, password }));
+    const result = await authClient.signIn.email({ email, password });
+    unwrap(result);
+    // The password was right, but the account has two-factor on: the API set
+    // a short-lived challenge cookie (kept in SecureStore by the Expo plugin)
+    // instead of a session.
+    if (result.data && 'twoFactorRedirect' in result.data) throw new TwoFactorRequiredError();
+  },
+
+  async verifyTwoFactor({ code, method, trustDevice }) {
+    const verify =
+      method === 'totp' ? authClient.twoFactor.verifyTotp : authClient.twoFactor.verifyBackupCode;
+    unwrap(await verify({ code, trustDevice }));
+  },
+
+  async enableTwoFactor(password) {
+    const result = await authClient.twoFactor.enable({ password });
+    unwrap(result);
+    return { totpURI: result.data?.totpURI ?? '', backupCodes: result.data?.backupCodes ?? [] };
+  },
+
+  async confirmTwoFactor(code) {
+    unwrap(await authClient.twoFactor.verifyTotp({ code }));
+  },
+
+  async disableTwoFactor(password) {
+    unwrap(await authClient.twoFactor.disable({ password }));
+  },
+
+  async generateBackupCodes(password) {
+    const result = await authClient.twoFactor.generateBackupCodes({ password });
+    unwrap(result);
+    return result.data?.backupCodes ?? [];
   },
 
   async signUp({ email, password, firstName, lastName }) {

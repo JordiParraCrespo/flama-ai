@@ -3,6 +3,7 @@ import { ANALYTICS_EVENTS } from '../../analytics/analytics.events';
 import type { AnalyticsService } from '../../analytics/analytics.service';
 import type { IStorageService } from '../../core/storage.service';
 import type { AuthSession } from '../auth.client';
+import { TwoFactorRequiredError } from '../auth.errors';
 import type { AuthRepository } from '../auth.repository';
 import { AuthService } from '../auth.service';
 import { createAuthStore } from '../auth.state';
@@ -43,6 +44,7 @@ function setup(session: AuthSession | null = SESSION) {
 
   const repository = {
     login: vi.fn().mockResolvedValue(undefined),
+    verifyTwoFactor: vi.fn().mockResolvedValue(undefined),
     register: vi.fn().mockResolvedValue(undefined),
     socialLogin: vi.fn().mockResolvedValue(undefined),
     getSession: vi.fn().mockResolvedValue(session),
@@ -88,6 +90,39 @@ describe('AuthService analytics', () => {
     await flush();
 
     expect(analytics.identify).not.toHaveBeenCalled();
+    expect(analytics.capture).toHaveBeenCalledWith(ANALYTICS_EVENTS.USER_SIGNED_IN, {
+      method: 'password',
+    });
+  });
+
+  // A correct password on a two-factor account creates no session. Marking the
+  // store or counting the sign-in then would let the app's guards wave the
+  // browser into a console every request of which answers 401.
+  it('neither signs in nor counts a sign-in that still owes a code', async () => {
+    const { service, analytics, repository } = setup();
+    vi.mocked(repository.login).mockRejectedValueOnce(new TwoFactorRequiredError());
+
+    await expect(
+      service.login({ email: 'ada@example.com', password: 'pw' }),
+    ).rejects.toBeInstanceOf(TwoFactorRequiredError);
+    await flush();
+
+    expect(service.store.getState().isAuthenticated).toBe(false);
+    expect(analytics.capture).not.toHaveBeenCalled();
+  });
+
+  it('signs in and counts a password sign-in once the code is accepted', async () => {
+    const { service, analytics, repository } = setup();
+
+    await service.verifyTwoFactor({ code: '123456', method: 'totp', trustDevice: true });
+    await flush();
+
+    expect(repository.verifyTwoFactor).toHaveBeenCalledWith({
+      code: '123456',
+      method: 'totp',
+      trustDevice: true,
+    });
+    expect(service.store.getState().isAuthenticated).toBe(true);
     expect(analytics.capture).toHaveBeenCalledWith(ANALYTICS_EVENTS.USER_SIGNED_IN, {
       method: 'password',
     });

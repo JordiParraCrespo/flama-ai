@@ -180,6 +180,7 @@ Apply `@Throttle()` on public-facing endpoints:
 | Register        | 5/min  |
 | Login           | 10/min |
 | Forgot password | 3/min  |
+| Two-factor code | 10/min |
 
 The `/api/auth/*` routes never reach the NestJS `ThrottlerGuard` (Better Auth
 mounts them on the HTTP adapter first), so their limits live in Better Auth's

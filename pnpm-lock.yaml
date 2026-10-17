@@ -646,6 +646,9 @@ importers:
       react-i18next:
         specifier: ^17.0.14
         version: 17.0.14(i18next@26.4.2(typescript@7.0.2))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@7.0.2)
+      toqr:
+        specifier: 0.1.1
+        version: 0.1.1
       zod:
         specifier: ^3.25.76
         version: 3.25.76

@@ -8,7 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import type { SocialAuthIntent } from '../modules/auth/auth.client';
+import type { SocialAuthIntent, VerifyTwoFactorParams } from '../modules/auth/auth.client';
 import { useDeploymentCapabilities } from './capabilities.queries';
 import { useFlamaApp } from './context';
 import { withCacheOnSuccess } from './mutations';
@@ -103,6 +103,25 @@ export function useLogin(options?: Omit<UseMutationOptions<void, Error, LoginDto
 
   return useMutation({
     mutationFn: (dto: LoginDto) => app.auth.login(dto),
+    ...withCacheOnSuccess(options, () => {
+      queryClient.invalidateQueries({ queryKey: usersKeys.me() });
+    }),
+  });
+}
+
+/**
+ * Answer the two-factor challenge `useLogin` rejected with (see
+ * `isTwoFactorRequired`). Succeeds with the session in place, so the caller
+ * navigates exactly as it would after `useLogin`.
+ */
+export function useVerifyTwoFactor(
+  options?: Omit<UseMutationOptions<void, Error, VerifyTwoFactorParams>, 'mutationFn'>,
+) {
+  const app = useFlamaApp();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: VerifyTwoFactorParams) => app.auth.verifyTwoFactor(params),
     ...withCacheOnSuccess(options, () => {
       queryClient.invalidateQueries({ queryKey: usersKeys.me() });
     }),

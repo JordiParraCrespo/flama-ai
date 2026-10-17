@@ -1,5 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
-import { provisionedUser, reloadFromServer, signInAs } from '../../support/web';
+import { totpCode } from '../../support/totp';
+import { loginThroughUi, provisionedUser, reloadFromServer, signInAs } from '../../support/web';
 
 /**
  * The profile screen, end to end.
@@ -299,14 +300,38 @@ test.describe('the password pane', () => {
     await api.dispose();
   });
 
-  test('shows two-factor as a row it cannot yet switch on', async ({ page }) => {
+  test('sets up two-factor, which the next sign-in then asks for', async ({ page }) => {
     const { user, api } = await provisionedUser('pw2fa');
     await signInAs(page, user);
     await openProfile(page);
     await openPane(page, 'Password', 'Password');
 
-    await expect(page.getByText('Two-factor authentication', { exact: true })).toBeVisible();
-    await expect(page.getByRole('switch', { name: 'Two-factor authentication' })).toBeDisabled();
+    const toggle = page.getByRole('switch', { name: 'Two-factor authentication' });
+    await expect(toggle).not.toBeChecked();
+    await toggle.click();
+
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Password').fill(user.password);
+    await dialog.getByRole('button', { name: 'Continue' }).click();
+
+    // The key printed under the QR code, as someone who cannot scan would type it.
+    await expect(dialog.getByRole('img', { name: /QR code/ })).toBeVisible();
+    const secret = (await dialog.locator('code').textContent()) ?? '';
+    await dialog.getByLabel('Code from your app').fill(totpCode(secret));
+    await dialog.getByRole('button', { name: 'Turn on' }).click();
+
+    await expect(
+      dialog.getByRole('list', { name: 'Backup codes' }).getByRole('listitem'),
+    ).toHaveCount(10);
+    await dialog.getByRole('button', { name: 'Done' }).click();
+    await expect(toggle).toBeChecked();
+
+    await page.context().clearCookies();
+    await loginThroughUi(page, user.email, user.password);
+    await expect(page.getByRole('heading', { name: 'Two-factor authentication' })).toBeVisible();
+    await page.getByLabel('Authentication code').fill(totpCode(secret));
+    await page.getByRole('button', { name: 'Verify', exact: true }).click();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30_000 });
 
     await api.dispose();
   });
