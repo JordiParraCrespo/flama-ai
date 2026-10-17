@@ -1,14 +1,18 @@
+import { AppError } from '@flama/backend-core';
 import type { AggregateID } from '@flama/backend-ddd';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { MembershipAccessPolicy } from '../../application/membership-access.policy';
+import type { MemberRepositoryPort } from '../../database/member.repository.port';
+import { OrganizationErrors } from '../../domain/organization.errors';
 import type { OrganizationAuthPort } from '../../infrastructure/organization-auth.port';
-import { ORGANIZATION_AUTH } from '../../organizations.di-tokens';
+import { MEMBER_REPOSITORY, ORGANIZATION_AUTH } from '../../organizations.di-tokens';
 import { UpdateMemberRoleCommand } from './update-member-role.command';
 
 /**
  * Changes a member's organization role and the application role that stands
- * for it. Answers the member's id.
+ * for it, or neither: if Better Auth refuses the change, the application roles
+ * go back to what they were. Answers the member's id.
  */
 @CommandHandler(UpdateMemberRoleCommand)
 export class UpdateMemberRoleCommandHandler
@@ -17,18 +21,21 @@ export class UpdateMemberRoleCommandHandler
   constructor(
     @Inject(ORGANIZATION_AUTH)
     private readonly organizations: OrganizationAuthPort,
+    @Inject(MEMBER_REPOSITORY)
+    private readonly members: MemberRepositoryPort,
     private readonly membershipAccess: MembershipAccessPolicy,
   ) {}
 
   async execute(command: UpdateMemberRoleCommand): Promise<AggregateID> {
     const { headers, organizationId, memberId, role } = command;
-    const member = await this.organizations.updateMemberRole(
-      headers,
-      organizationId,
-      memberId,
-      role,
+    // Whose application role this is; the member row names them.
+    const found = await this.members.findMembershipById(organizationId, memberId);
+    if (found.isNone()) throw new AppError(OrganizationErrors.MEMBER_NOT_FOUND);
+
+    const member = await this.membershipAccess.reassign(
+      { userId: found.unwrap().userId, organizationId, role },
+      () => this.organizations.updateMemberRole(headers, organizationId, memberId, role),
     );
-    await this.membershipAccess.grant(member.userId, organizationId, member.role);
     return member.id;
   }
 }

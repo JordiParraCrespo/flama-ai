@@ -87,9 +87,13 @@ export type ProfileResponseDto = {
     role: string;
     emailVerified: boolean;
     /**
-     * Always false: two-factor authentication is not enabled on this deployment. Present so a client can render the control without probing for the field.
+     * True once the user has confirmed an authenticator app; signing in with a password then also asks for a code.
      */
     twoFactorEnabled: boolean;
+    /**
+     * Whether the user can sign in with a password. False for an account made through a social provider until a password is set; two-factor authentication only guards password sign-in, so it needs one.
+     */
+    hasPassword: boolean;
     createdAt: string;
     updatedAt: string;
 };
@@ -332,6 +336,43 @@ export type UpdateRolePermissionsRequest = {
 
 export type AssignUserRolesRequest = {
     roleIds: Array<string>;
+};
+
+export type LivenessResponseDto = {
+    /**
+     * Always `ok`: the process answered.
+     */
+    status: 'ok';
+};
+
+export type DependencyStatusDto = {
+    /**
+     * `ok` when the dependency answered in time, `error` otherwise.
+     */
+    status: 'ok' | 'error';
+    /**
+     * Present only with `error`, and always this one word. Why it failed is in the API log, never here.
+     */
+    message?: 'unavailable';
+};
+
+export type ReadinessChecksDto = {
+    /**
+     * PostgreSQL, proved by a ping within `HEALTH_DATABASE_TIMEOUT_MS`.
+     */
+    database: DependencyStatusDto;
+    /**
+     * Redis, proved by a `PING` within `HEALTH_REDIS_TIMEOUT_MS`.
+     */
+    redis: DependencyStatusDto;
+};
+
+export type ReadinessResponseDto = {
+    /**
+     * `ok` only when every check is `ok`; served with 200, and `error` with 503.
+     */
+    status: 'ok' | 'error';
+    checks: ReadinessChecksDto;
 };
 
 export type CreateOrganizationRequest = {
@@ -1371,62 +1412,11 @@ export type CheckData = {
     url: '/api/v1/health';
 };
 
-export type CheckErrors = {
-    /**
-     * The Health Check is not successful
-     */
-    503: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
-};
-
-export type CheckError = CheckErrors[keyof CheckErrors];
-
 export type CheckResponses = {
     /**
-     * App is alive
-     *
-     * The Health Check is successful
+     * The process answered
      */
-    200: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
+    200: LivenessResponseDto;
 };
 
 export type CheckResponse = CheckResponses[keyof CheckResponses];
@@ -1458,60 +1448,18 @@ export type ReadinessData = {
 
 export type ReadinessErrors = {
     /**
-     * The Health Check is not successful
+     * A dependency is unavailable; this replica must not serve. Same body shape.
      */
-    503: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
+    503: ReadinessResponseDto;
 };
 
 export type ReadinessError = ReadinessErrors[keyof ReadinessErrors];
 
 export type ReadinessResponses = {
     /**
-     * App is ready to receive traffic
-     *
-     * The Health Check is successful
+     * This replica can serve
      */
-    200: {
-        status?: string;
-        info?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        error?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        } | null;
-        details?: {
-            [key: string]: {
-                status: string;
-                [key: string]: unknown;
-            };
-        };
-    };
+    200: ReadinessResponseDto;
 };
 
 export type ReadinessResponse = ReadinessResponses[keyof ReadinessResponses];

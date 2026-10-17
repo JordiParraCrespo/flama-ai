@@ -1730,150 +1730,16 @@
     },
     "/api/v1/health": {
       "get": {
+        "description": "Answers 200 while the process can serve HTTP. Says nothing about PostgreSQL, Redis or any other dependency: that is `/ready`.",
         "operationId": "check",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "App is alive\n\nThe Health Check is successful",
+            "description": "The process answered",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "ok"
-                    },
-                    "info": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "error": {
-                      "type": "object",
-                      "example": {},
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "details": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "The Health Check is not successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "error"
-                    },
-                    "info": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "error": {
-                      "type": "object",
-                      "example": {
-                        "redis": {
-                          "status": "down",
-                          "message": "Could not connect"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "details": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        },
-                        "redis": {
-                          "status": "down",
-                          "message": "Could not connect"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/LivenessResponseDto"
                 }
               }
             }
@@ -1908,150 +1774,26 @@
     },
     "/api/v1/ready": {
       "get": {
+        "description": "Answers 200 only when PostgreSQL and Redis both answer within their configured timeouts, and 503 otherwise. Why a dependency failed is logged, never returned.",
         "operationId": "readiness",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "App is ready to receive traffic\n\nThe Health Check is successful",
+            "description": "This replica can serve",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "ok"
-                    },
-                    "info": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "error": {
-                      "type": "object",
-                      "example": {},
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "details": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/ReadinessResponseDto"
                 }
               }
             }
           },
           "503": {
-            "description": "The Health Check is not successful",
+            "description": "A dependency is unavailable; this replica must not serve. Same body shape.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "error"
-                    },
-                    "info": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "error": {
-                      "type": "object",
-                      "example": {
-                        "redis": {
-                          "status": "down",
-                          "message": "Could not connect"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "details": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        },
-                        "redis": {
-                          "status": "down",
-                          "message": "Could not connect"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/ReadinessResponseDto"
                 }
               }
             }
@@ -4760,7 +4502,11 @@
           },
           "twoFactorEnabled": {
             "type": "boolean",
-            "description": "Always false: two-factor authentication is not enabled on this deployment. Present so a client can render the control without probing for the field."
+            "description": "True once the user has confirmed an authenticator app; signing in with a password then also asks for a code."
+          },
+          "hasPassword": {
+            "type": "boolean",
+            "description": "Whether the user can sign in with a password. False for an account made through a social provider until a password is set; two-factor authentication only guards password sign-in, so it needs one."
           },
           "createdAt": {
             "format": "date-time",
@@ -4782,6 +4528,7 @@
           "role",
           "emailVerified",
           "twoFactorEnabled",
+          "hasPassword",
           "createdAt",
           "updatedAt"
         ]
@@ -5442,6 +5189,69 @@
           }
         },
         "required": ["roleIds"]
+      },
+      "LivenessResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok"],
+            "description": "Always `ok`: the process answered."
+          }
+        },
+        "required": ["status"]
+      },
+      "DependencyStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok", "error"],
+            "description": "`ok` when the dependency answered in time, `error` otherwise."
+          },
+          "message": {
+            "type": "string",
+            "enum": ["unavailable"],
+            "description": "Present only with `error`, and always this one word. Why it failed is in the API log, never here."
+          }
+        },
+        "required": ["status"]
+      },
+      "ReadinessChecksDto": {
+        "type": "object",
+        "properties": {
+          "database": {
+            "description": "PostgreSQL, proved by a ping within `HEALTH_DATABASE_TIMEOUT_MS`.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DependencyStatusDto"
+              }
+            ]
+          },
+          "redis": {
+            "description": "Redis, proved by a `PING` within `HEALTH_REDIS_TIMEOUT_MS`.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DependencyStatusDto"
+              }
+            ]
+          }
+        },
+        "required": ["database", "redis"]
+      },
+      "ReadinessResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok", "error"],
+            "description": "`ok` only when every check is `ok`; served with 200, and `error` with 503."
+          },
+          "checks": {
+            "$ref": "#/components/schemas/ReadinessChecksDto"
+          }
+        },
+        "required": ["status", "checks"]
       },
       "CreateOrganizationRequest": {
         "type": "object",

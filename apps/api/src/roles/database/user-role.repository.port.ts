@@ -13,6 +13,9 @@ import type { RoleEntity } from '../domain/role.entity';
 export interface UserRoleRepositoryPort {
   findRoleIdsForUser(userId: string, organizationId?: string | null): Promise<string[]>;
   findRolesForUser(userId: string, organizationId?: string | null): Promise<RoleEntity[]>;
-  /** Replace the user's role assignments **within one scope**. */
+  /**
+   * Replace the user's role assignments **within one scope**, atomically. Inside
+   * a transaction opened with `inTransaction`, the write joins it.
+   */
   setRolesForUser(userId: string, roleIds: string[], organizationId?: string | null): Promise<void>;
 }

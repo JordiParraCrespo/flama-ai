@@ -37,7 +37,9 @@ describe('RemoveMemberCommandHandler', () => {
     );
 
     expect(organizations.removeMember).toHaveBeenCalledWith(headers, 'org1', 'm1');
-    expect(membershipAccess.revoke).toHaveBeenCalledWith('u1', 'org1');
+    expect(membershipAccess.revoke).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'u1', organizationId: 'org1' }),
+    );
     expect(removed).toMatchObject({ id: 'm1', user: { email: 'member@x.com' } });
   });
 });

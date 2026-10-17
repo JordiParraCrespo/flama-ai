@@ -65,6 +65,14 @@
     "PROFILE_008": "No hemos podido contactar con el servicio de cuentas. Inténtalo de nuevo.",
     "PROFILE_CLIENT_010": "Ese tipo de archivo no se puede usar como foto de perfil.",
     "PROFILE_CLIENT_011": "Esa imagen es demasiado grande. Elige una de menos de 2 MB.",
-    "OAUTH_CONSENT_NO_REDIRECT": "El servidor no ha indicado a dónde continuar."
+    "OAUTH_CONSENT_NO_REDIRECT": "El servidor no ha indicado a dónde continuar.",
+    "AUTH_CLIENT_004": "Esta cuenta tiene activada la verificación en dos pasos. Inicia sesión desde la página de acceso con tu aplicación de autenticación.",
+    "INVALID_CODE": "Ese código no es correcto. Revisa tu aplicación de autenticación e inténtalo de nuevo.",
+    "INVALID_BACKUP_CODE": "Ese código de respaldo no es correcto o ya se ha usado.",
+    "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE": "Demasiados códigos incorrectos. Vuelve atrás e inicia sesión de nuevo.",
+    "ACCOUNT_TEMPORARILY_LOCKED": "Demasiados códigos incorrectos. La verificación en dos pasos está bloqueada durante 15 minutos.",
+    "INVALID_TWO_FACTOR_COOKIE": "Este inicio de sesión ha caducado. Vuelve atrás e inicia sesión de nuevo.",
+    "TWO_FACTOR_NOT_ENABLED": "Esta cuenta no tiene activada la verificación en dos pasos.",
+    "TOTP_NOT_ENABLED": "Esta cuenta no tiene configurada la verificación en dos pasos."
   }
 }

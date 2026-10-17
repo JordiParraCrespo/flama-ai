@@ -147,6 +147,19 @@ with before it touches anything.
   repository's policy — Dependabot, `CODEOWNERS` (the security-critical paths
   live there and nowhere else), `SECURITY.md`, `CONTRIBUTING.md` — and each
   file explains itself
+- Agent guardrails live in `.claude/settings.json`: it denies force pushes,
+  `git reset --hard`, deleting branches, `sudo`, piping a download into a
+  shell and reading credential files, asks before `rm -rf` or reading an
+  env file, and runs `.agents/hooks/git-guard.mjs` before every shell call,
+  which refuses a push to `main`/`master`, a force push, deleting a remote
+  branch, `git reset --hard`, `git branch -D`, `git add -A`/`--all`/`.`/`*`
+  and staging an env file other than `.env.example`, however the command is
+  spelled (`git -C <dir>`, `-c k=v`, quotes, `--`, chained commands). Work goes
+  on a branch and reaches `main` through a pull request. The settings' glob
+  denies are the same policy where a prefix can say it; the hook is the
+  precise check, and `pnpm check:hooks` runs its cases. Stage files by path.
+  The same file formats every edit with Biome and runs the architecture check
+  (`.agents/hooks/arch-check.sh`) before a task ends
 
 ### Backend (`apps/api` + `packages/backend/*`)
 
@@ -174,12 +187,15 @@ The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-
 - `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
 - `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
 - `typeorm.md` — Union-typed column rules, persistence-model (ORM) conventions
+- `testing-backend.md` — Vitest tiers (domain, handler, adapter,
+  testcontainers integration, seam, meta), where each spec lives, and the
+  assertion discipline
 - `database-design.md` — the standard a table is held to: keys, types,
   `timestamptz`, foreign keys and their indexes, access-pattern indexes,
   tenancy, lifecycle, scale and lock-safe migrations. `/design-database`
   walks the process
 - `backend-packages.md` — CJS exports, package structure (pluggable vs library), email template setup
-- `api-config.md` — OAuth graceful handling, controllers, Swagger decorators, rate limiting, versioning
+- `api-config.md` — OAuth graceful handling, settings as an input to the domain, controllers, Swagger decorators, rate limiting, versioning
 
 Errors are **RFC 7807 problem documents** (`application/problem+json`) produced by
 the global `AllExceptionsFilter`; the catalog message is the stable problem
@@ -327,6 +343,9 @@ pnpm ci:local           # The CI suite, locally, over what this branch affects �
 pnpm arch               # Architecture boundaries (dependency-cruiser), API and frontend
 pnpm check:structure    # Frontend layout contract: feature names, kinds, route cap, docs
 pnpm check:compiler     # React Compiler bailouts per app; fails on a file outside its baseline
+# flama:begin web
+pnpm check:singletons   # One installed copy of each module-state library for apps/web (pnpm-lock.yaml)
+# flama:end web
 pnpm docker:dev         # Start Postgres + Redis
 pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
@@ -341,11 +360,15 @@ pnpm changeset          # Create a changeset for versioning
 ## When modifying code
 
 - Shared types/schemas go in `packages/shared`, not duplicated in apps
+- A test names the behavior it protects and the regression that breaks it,
+  lives at the owner boundary, and needs no test-only production seam; how a
+  backend test is written is `.agents/rules/testing-backend.md`
 - New env vars go in the root `.env.example` with a note on what they do; never
   add a per-package `.env` (see `.agents/rules/api-config.md`)
 - New API endpoints need Swagger decorators and `@RequireScopes`; without the
-  scope they are unreachable by a scoped credential. Afterwards run
-  `pnpm generate:api-client`
+  scope they are unreachable by a scoped credential; add the route to
+  `apps/api/src/__tests__/route-scopes.inventory.json` in the same diff.
+  Afterwards run `pnpm generate:api-client`
 - Keep the pluggable service pattern: abstract class → concrete implementations → factory in module
 - New translations go in `packages/translations/{locale}/{area}.json`, then
   run `pnpm --filter @flama/translations assemble` so `{locale}/index.json`
@@ -378,6 +401,15 @@ pnpm changeset          # Create a changeset for versioning
 - The same applies to `@flama/translations`: `apps/web` (and `apps/admin-web`,
   with that plugin) import metadata from `@flama/translations/locales` and catalogs from
   `@flama/translations/lazy`; only the default locale is bundled
+<!-- flama:begin web -->
+- A library that holds module state installs once for `apps/web`: the list
+  is `singletons` in `apps/web/package.json`, and `pnpm check:singletons`
+  fails when the lockfile resolves a listed name to more than one snapshot,
+  or to none. `i18next` and `react-i18next` are not on it: `apps/mobile`
+  pins TypeScript 6 and `apps/web` 7, `i18next` takes TypeScript as a peer,
+  so the lockfile holds one snapshot per TypeScript; `apps/web` bundles one
+  through `resolve.dedupe` in `vite.config.ts`. List them when the two agree
+<!-- flama:end web -->
 - The web apps' critical path is budgeted: `pnpm check:bundle` fails past the
   number in `scripts/check-bundle-size.mjs`. Raise a budget only deliberately,
   in its own diff

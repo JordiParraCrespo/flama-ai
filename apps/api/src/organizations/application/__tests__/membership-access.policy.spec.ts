@@ -11,6 +11,8 @@ describe('MembershipAccessPolicy', () => {
   const access = { revokeFor: vi.fn() };
   let policy: MembershipAccessPolicy;
 
+  const entry = (role: string) => ({ userId: 'u1', organizationId: 'org1', role });
+
   beforeEach(() => {
     vi.clearAllMocks();
     roles.findOneByName.mockImplementation(async (name: string) => Some({ id: `${name}-role` }));
@@ -20,52 +22,150 @@ describe('MembershipAccessPolicy', () => {
     policy = new MembershipAccessPolicy(roles as never, userRoles as never, access as never);
   });
 
-  it('grants a plain member the org-scoped `user` role', async () => {
-    await policy.grant('u1', 'org1', 'member');
-    expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['user-role'], 'org1');
+  describe('grant', () => {
+    it('grants a plain member the org-scoped `user` role', async () => {
+      await policy.grant(entry('member'));
+      expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['user-role'], 'org1');
+    });
+
+    /**
+     * An organization admin on Better Auth's roster becomes the tenant `owner`,
+     * never the global `admin`: that one is `manage all`, and org-scoped it
+     * would open every non-tenant route whenever the organization is active.
+     */
+    it.each(['owner', 'admin', 'member,admin'])(
+      'grants the org-scoped `owner` role for the organization role %s',
+      async (organizationRole) => {
+        await policy.grant(entry(organizationRole));
+        expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['owner-role'], 'org1');
+      },
+    );
+
+    it('keeps custom roles scoped to the organization when the membership role changes', async () => {
+      // Scoped reads include the global assignments; the global read is those alone.
+      userRoles.findRoleIdsForUser.mockImplementation(async (_userId: string, scope: unknown) =>
+        scope === null ? ['global-role'] : ['global-role', 'user-role', 'custom-role'],
+      );
+
+      await policy.grant(entry('admin'));
+
+      expect(userRoles.setRolesForUser).toHaveBeenCalledWith(
+        'u1',
+        ['custom-role', 'owner-role'],
+        'org1',
+      );
+    });
+
+    it('fails visibly when a required system role is missing', async () => {
+      roles.findOneByName.mockImplementation(async (name: string) =>
+        name === 'user' ? None : Some({ id: `${name}-role` }),
+      );
+
+      await expect(policy.grant(entry('member'))).rejects.toThrow(
+        'Required system role "user" is missing',
+      );
+      expect(userRoles.setRolesForUser).not.toHaveBeenCalled();
+    });
   });
 
-  /**
-   * An organization admin on Better Auth's roster becomes the tenant `owner`,
-   * never the global `admin`: that one is `manage all`, and org-scoped it
-   * would open every non-tenant route whenever the organization is active.
-   */
-  it.each(['owner', 'admin', 'member,admin'])(
-    'grants the org-scoped `owner` role for the organization role %s',
-    async (organizationRole) => {
-      await policy.grant('u1', 'org1', organizationRole);
-      expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['owner-role'], 'org1');
-    },
-  );
+  describe('admit', () => {
+    it('makes the roster write, grants its role, and answers the entry', async () => {
+      const undo = vi.fn();
+      const admitted = await policy.admit(async () => ({ ...entry('member'), id: 'm1' }), undo);
 
-  it('keeps custom roles scoped to the organization when the membership role changes', async () => {
-    // Scoped reads include the global assignments; the global read is those alone.
-    userRoles.findRoleIdsForUser.mockImplementation(async (_userId: string, scope: unknown) =>
-      scope === null ? ['global-role'] : ['global-role', 'user-role', 'custom-role'],
-    );
+      expect(admitted.id).toBe('m1');
+      expect(userRoles.setRolesForUser).toHaveBeenCalledWith('u1', ['user-role'], 'org1');
+      expect(undo).not.toHaveBeenCalled();
+    });
 
-    await policy.grant('u1', 'org1', 'admin');
+    /**
+     * The failure this exists for: Better Auth has committed the membership and
+     * the role that opens the organization was not written, which leaves a
+     * member who is answered 403 on every screen of it.
+     */
+    it('undoes the roster write when the role cannot be granted, and raises why', async () => {
+      const failure = new Error('role store unavailable');
+      userRoles.setRolesForUser.mockRejectedValueOnce(failure);
+      const undo = vi.fn().mockResolvedValue(undefined);
 
-    expect(userRoles.setRolesForUser).toHaveBeenCalledWith(
-      'u1',
-      ['custom-role', 'owner-role'],
-      'org1',
-    );
+      await expect(policy.admit(async () => entry('member'), undo)).rejects.toBe(failure);
+      expect(undo).toHaveBeenCalledWith(entry('member'));
+    });
+
+    it('still raises the original failure when the undo fails too', async () => {
+      const failure = new Error('role store unavailable');
+      userRoles.setRolesForUser.mockRejectedValueOnce(failure);
+      const undo = vi.fn().mockRejectedValue(new Error('undo failed too'));
+
+      await expect(policy.admit(async () => entry('member'), undo)).rejects.toBe(failure);
+    });
+
+    it('neither grants nor undoes when the roster write itself fails', async () => {
+      const failure = new Error('Better Auth refused');
+      const undo = vi.fn();
+
+      await expect(policy.admit(() => Promise.reject(failure), undo)).rejects.toBe(failure);
+      expect(userRoles.setRolesForUser).not.toHaveBeenCalled();
+      expect(undo).not.toHaveBeenCalled();
+    });
   });
 
-  it('fails visibly when a required system role is missing', async () => {
-    roles.findOneByName.mockImplementation(async (name: string) =>
-      name === 'user' ? None : Some({ id: `${name}-role` }),
-    );
+  describe('reassign', () => {
+    beforeEach(() => {
+      // Before the change: the `owner` membership role and a custom role here.
+      userRoles.findRoleIdsForUser.mockImplementation(async (_userId: string, scope: unknown) =>
+        scope === null ? [] : ['owner-role', 'custom-role'],
+      );
+    });
 
-    await expect(policy.grant('u1', 'org1', 'member')).rejects.toThrow(
-      'Required system role "user" is missing',
-    );
-    expect(userRoles.setRolesForUser).not.toHaveBeenCalled();
+    it("grants the new role, then makes Better Auth's change", async () => {
+      const order: string[] = [];
+      userRoles.setRolesForUser.mockImplementation(async () => {
+        order.push('grant');
+      });
+      const write = vi.fn(async () => {
+        order.push('write');
+        return { id: 'm1' };
+      });
+
+      expect(await policy.reassign(entry('member'), write)).toEqual({ id: 'm1' });
+      expect(order).toEqual(['grant', 'write']);
+      expect(userRoles.setRolesForUser).toHaveBeenCalledWith(
+        'u1',
+        ['custom-role', 'user-role'],
+        'org1',
+      );
+    });
+
+    /**
+     * The case undoing Better Auth's write could not cover: an owner demoting
+     * themselves loses the permission that undo would need. Here nothing of
+     * Better Auth's changed, and the app's own roles are put back.
+     */
+    it('puts the roles held before back when Better Auth refuses the change', async () => {
+      const refusal = new Error('YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_MEMBER');
+
+      await expect(policy.reassign(entry('member'), () => Promise.reject(refusal))).rejects.toBe(
+        refusal,
+      );
+      expect(userRoles.setRolesForUser).toHaveBeenLastCalledWith(
+        'u1',
+        ['owner-role', 'custom-role'],
+        'org1',
+      );
+    });
+
+    it('never calls Better Auth when the new role cannot be granted', async () => {
+      roles.findOneByName.mockResolvedValue(None);
+      const write = vi.fn();
+
+      await expect(policy.reassign(entry('member'), write)).rejects.toThrow(/is missing/);
+      expect(write).not.toHaveBeenCalled();
+    });
   });
 
-  it('revokes what the organization gave through the access repository', async () => {
-    await policy.revoke('u1', 'org1');
+  it('revokes everything the organization gave a membership that ended', async () => {
+    await policy.revoke(entry('member'));
     expect(access.revokeFor).toHaveBeenCalledWith('u1', 'org1');
   });
 });

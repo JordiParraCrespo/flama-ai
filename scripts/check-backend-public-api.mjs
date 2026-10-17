@@ -70,8 +70,10 @@ export const ALLOWED = {
   '@flama/backend-authz': ['typeorm'],
   // The request pipeline itself: zod schemas and the nestjs-zod DTOs and pipe
   // built on them, and the nestjs-pino/pino-http options the logging module
-  // assembles for the app.
-  '@flama/backend-core': ['zod', 'nestjs-zod', 'nestjs-pino', 'pino-http'],
+  // assembles for the app. The metrics module re-exports prometheus's
+  // instrument types (`Counter`, `Gauge`, `Histogram`, `Registry`) because a
+  // module declares its own metrics against them.
+  '@flama/backend-core': ['zod', 'nestjs-zod', 'nestjs-pino', 'pino-http', '@prometheus-io/client'],
   // The outbox is a TypeORM table written in the caller's transaction, and
   // oxide.ts's `Option` is the repository port's vocabulary.
   '@flama/backend-ddd': ['typeorm', 'oxide.ts'],

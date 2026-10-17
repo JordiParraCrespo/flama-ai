@@ -1,10 +1,17 @@
 import type { IncomingHttpHeaders } from 'node:http';
+import { AppError } from '@flama/backend-core';
 import type { AddMemberDto, UpdateOrganizationDto } from '@flama/shared';
 import { Injectable } from '@nestjs/common';
 import { APIError } from 'better-auth/api';
 import { auth } from '../../auth/infrastructure/better-auth.config';
-import { betterAuthHeaders, unwrap, unwrapArray } from '../../auth/infrastructure/better-auth.util';
+import {
+  asRecord,
+  betterAuthHeaders,
+  unwrap,
+  unwrapArray,
+} from '../../auth/infrastructure/better-auth.util';
 import type { Member } from '../domain/membership.types';
+import { OrganizationErrors } from '../domain/organization.errors';
 import type { FullOrganization, Organization } from '../domain/organization.types';
 import { OrganizationMapper } from '../organization.mapper';
 import type {
@@ -13,6 +20,17 @@ import type {
   OrganizationAuthPort,
 } from './organization-auth.port';
 import { invokeOrganizationApi } from './organization-error.util';
+
+/** Members read per call while paging through a roster; Better Auth's own default. */
+const MEMBER_PAGE_SIZE = 100;
+/** Pages read before a roster is taken to be endless: a hundred thousand members. */
+const MAX_MEMBER_PAGES = 1000;
+/** Better Auth's code for a slug some organization already has. */
+const SLUG_TAKEN_CODE = 'ORGANIZATION_SLUG_ALREADY_TAKEN';
+
+function upstreamCodeOf(error: APIError): unknown {
+  return asRecord(asRecord(error).body).code;
+}
 
 /**
  * The organization port, over the Better Auth organization plugin's server API
@@ -99,28 +117,58 @@ export class OrganizationAuthGateway implements OrganizationAuthPort {
     return result ? OrganizationMapper.toFullOrganization(result) : null;
   }
 
-  /** Better Auth throws when a slug is taken; translate that to a boolean. */
+  /**
+   * Better Auth answers a taken slug with `ORGANIZATION_SLUG_ALREADY_TAKEN`,
+   * and that one code is the answer "no". It is read off Better Auth's own
+   * error before the invoker folds it: the catalog entry it maps to also
+   * covers other upstream codes. Any other failure stays the problem document
+   * the invoker makes of it.
+   */
   async isSlugAvailable(headers: IncomingHttpHeaders, slug: string): Promise<boolean> {
-    try {
-      await auth.api.checkOrganizationSlug({
-        body: { slug },
-        headers: betterAuthHeaders(headers),
-      });
-      return true;
-    } catch (error) {
-      if (error instanceof APIError) return false;
-      throw error;
-    }
+    return invokeOrganizationApi(async () => {
+      try {
+        await auth.api.checkOrganizationSlug({
+          body: { slug },
+          headers: betterAuthHeaders(headers),
+        });
+        return true;
+      } catch (error) {
+        if (error instanceof APIError && upstreamCodeOf(error) === SLUG_TAKEN_CODE) return false;
+        throw error;
+      }
+    });
   }
 
+  /**
+   * The whole roster, a page at a time. Better Auth caps one answer at
+   * `membershipLimit` (100 unless configured), so a single call would silently
+   * drop every member past it; it still checks on each page that the caller is
+   * a member, which is why the roster is read through it and not from Postgres.
+   * A short page is the end. A roster that never ends is refused rather than
+   * read forever.
+   */
   async listMembers(headers: IncomingHttpHeaders, organizationId: string): Promise<Member[]> {
-    const result = await invokeOrganizationApi(() =>
-      auth.api.listMembers({
-        query: { organizationId },
-        headers: betterAuthHeaders(headers),
-      }),
-    );
-    return OrganizationMapper.toMembers(unwrapArray(result, 'members'));
+    const members: Member[] = [];
+    for (let read = 0; read < MAX_MEMBER_PAGES; read++) {
+      const result = await invokeOrganizationApi(() =>
+        auth.api.listMembers({
+          query: {
+            organizationId,
+            limit: MEMBER_PAGE_SIZE,
+            offset: members.length,
+            sortBy: 'createdAt',
+            sortDirection: 'asc',
+          },
+          headers: betterAuthHeaders(headers),
+        }),
+      );
+      const page = OrganizationMapper.toMembers(unwrapArray(result, 'members'));
+      members.push(...page);
+      if (page.length < MEMBER_PAGE_SIZE) return members;
+    }
+    throw new AppError(OrganizationErrors.UPSTREAM_FAILED, {
+      detail: `The member list did not end within ${MAX_MEMBER_PAGES * MEMBER_PAGE_SIZE} members`,
+    });
   }
 
   async addMember(

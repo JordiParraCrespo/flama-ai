@@ -65,6 +65,14 @@
     "PROFILE_008": "We could not reach the account service. Please try again.",
     "PROFILE_CLIENT_010": "That file type cannot be used as a profile picture.",
     "PROFILE_CLIENT_011": "That image is too large. Pick one under 2 MB.",
-    "OAUTH_CONSENT_NO_REDIRECT": "The server did not say where to send you next."
+    "OAUTH_CONSENT_NO_REDIRECT": "The server did not say where to send you next.",
+    "AUTH_CLIENT_004": "This account has two-factor authentication on. Sign in from the login page with your authenticator app.",
+    "INVALID_CODE": "That code is not correct. Check your authenticator app and try again.",
+    "INVALID_BACKUP_CODE": "That backup code is not correct, or it has already been used.",
+    "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE": "Too many wrong codes. Go back and sign in again.",
+    "ACCOUNT_TEMPORARILY_LOCKED": "Too many wrong codes. Two-factor sign-in is locked for 15 minutes.",
+    "INVALID_TWO_FACTOR_COOKIE": "This sign-in has expired. Go back and sign in again.",
+    "TWO_FACTOR_NOT_ENABLED": "Two-factor authentication is not on for this account.",
+    "TOTP_NOT_ENABLED": "Two-factor authentication is not set up for this account."
   }
 }

@@ -21,6 +21,8 @@ function makeUser(avatarUrl: string | null): UserEntity {
       role: 'user',
       isActive: true,
       emailVerified: true,
+      twoFactorEnabled: false,
+      hasPassword: true,
     },
   });
 }

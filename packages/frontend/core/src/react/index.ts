@@ -1,3 +1,7 @@
+// The sign-in challenge's error, here as well as at the root, for the web
+// apps: their critical path imports this entry, and the root's would pull the
+// whole kernel's module graph along with it.
+export { isTwoFactorRequired, TwoFactorRequiredError } from '../modules/auth/auth.errors';
 export { type AbilityState, useAbility, useAbilityState } from './ability';
 export {
   analyticsKeys,
@@ -20,6 +24,7 @@ export {
   useSessionRestore,
   useSocialLogin,
   useSocialProviders,
+  useVerifyTwoFactor,
 } from './auth.queries';
 export {
   capabilitiesKeys,

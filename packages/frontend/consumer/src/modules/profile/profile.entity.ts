@@ -19,6 +19,8 @@ export class ProfileEntity {
     public readonly role: string,
     public readonly emailVerified: boolean,
     public readonly twoFactorEnabled: boolean,
+    /** Whether a password sign-in exists; two-factor only guards that one. */
+    public readonly hasPassword: boolean,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}

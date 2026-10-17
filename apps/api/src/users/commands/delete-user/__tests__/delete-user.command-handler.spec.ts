@@ -20,6 +20,8 @@ function makeUser(): UserEntity {
       role: 'user',
       isActive: true,
       emailVerified: true,
+      twoFactorEnabled: false,
+      hasPassword: true,
     },
   });
 }

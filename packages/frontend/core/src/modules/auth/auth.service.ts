@@ -8,7 +8,7 @@ import {
 } from '../analytics/analytics.events';
 import type { AnalyticsService } from '../analytics/analytics.service';
 import type { IStorageService } from '../core/storage.service';
-import type { SocialAuthIntent } from './auth.client';
+import type { SocialAuthIntent, TwoFactorEnrolment, VerifyTwoFactorParams } from './auth.client';
 import type { AuthRepository } from './auth.repository';
 import type { AuthStore } from './auth.state';
 
@@ -44,11 +44,36 @@ export class AuthService {
     private readonly storage: IStorageService,
   ) {}
 
+  /**
+   * Rejects with a `TwoFactorRequiredError` when the account has two-factor
+   * on. Nobody is signed in yet then, so nothing is marked or counted until
+   * {@link verifyTwoFactor} completes the sign-in.
+   */
   async login(dto: LoginDto): Promise<void> {
     await this.authRepository.login(dto.email, dto.password);
-    this.store.setState({ isAuthenticated: true });
-    void this.clearPendingSocialLogin();
-    this.trackAuthenticated(ANALYTICS_EVENTS.USER_SIGNED_IN, 'password');
+    this.completePasswordSignIn();
+  }
+
+  /** Answer the two-factor challenge a password sign-in ended in. */
+  async verifyTwoFactor(params: VerifyTwoFactorParams): Promise<void> {
+    await this.authRepository.verifyTwoFactor(params);
+    this.completePasswordSignIn();
+  }
+
+  enableTwoFactor(password: string): Promise<TwoFactorEnrolment> {
+    return this.authRepository.enableTwoFactor(password);
+  }
+
+  confirmTwoFactor(code: string): Promise<void> {
+    return this.authRepository.confirmTwoFactor(code);
+  }
+
+  disableTwoFactor(password: string): Promise<void> {
+    return this.authRepository.disableTwoFactor(password);
+  }
+
+  generateBackupCodes(password: string): Promise<string[]> {
+    return this.authRepository.generateBackupCodes(password);
   }
 
   async register(dto: RegisterDto): Promise<void> {
@@ -122,6 +147,12 @@ export class AuthService {
     // who signed out rather than to a fresh anonymous id.
     this.analytics.capture(ANALYTICS_EVENTS.USER_SIGNED_OUT);
     this.analytics.reset();
+  }
+
+  private completePasswordSignIn(): void {
+    this.store.setState({ isAuthenticated: true });
+    void this.clearPendingSocialLogin();
+    this.trackAuthenticated(ANALYTICS_EVENTS.USER_SIGNED_IN, 'password');
   }
 
   /**

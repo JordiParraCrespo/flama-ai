@@ -5,6 +5,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CheckPolicies } from '../../../auth/decorators/check-policies.decorator';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireScopes } from '../../../auth/decorators/require-scopes.decorator';
 import { ApiAuthGuard } from '../../../auth/guards/api-auth.guard';
 import { PoliciesGuard } from '../../../auth/guards/policies.guard';
@@ -35,9 +36,10 @@ export class CreateOrganizationHttpController {
   async create(
     @Req() req: Request,
     @Body() body: CreateOrganizationRequest,
+    @CurrentUser('id') creatorId: string,
   ): Promise<OrganizationResponseDto> {
     const id = await this.commandBus.execute<CreateOrganizationCommand, AggregateID>(
-      new CreateOrganizationCommand({ headers: req.headers, input: body }),
+      new CreateOrganizationCommand({ headers: req.headers, input: body, creatorId }),
     );
     return this.queryBus.execute<FindOrganizationQuery, OrganizationResponseDto>(
       new FindOrganizationQuery({ organizationId: id }),

@@ -1,5 +1,5 @@
 import { Text } from '@flama/design-system-mobile/text';
-import { useErrorMessage, useLogin } from '@flama/frontend-core/react';
+import { isTwoFactorRequired, useErrorMessage, useLogin } from '@flama/frontend-core/react';
 import {
   AuthFooterNote,
   AuthLayout,
@@ -8,6 +8,7 @@ import {
   AuthTitle,
   LoginForm,
   SocialLoginButtons,
+  TwoFactorChallenge,
 } from '@flama/frontend-mobile';
 import { Link, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -17,9 +18,19 @@ export function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const resolveError = useErrorMessage();
-  const { mutate, isPending, error } = useLogin();
+  const { mutate, isPending, error, reset } = useLogin();
 
   const toApp = () => router.replace('/(app)');
+
+  // The password was right and the account has two-factor on: the sign-in
+  // owes a code. Derived from the mutation, so "back" is forgetting it.
+  if (isTwoFactorRequired(error)) {
+    return (
+      <AuthLayout>
+        <TwoFactorChallenge onSuccess={toApp} onCancel={reset} />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>

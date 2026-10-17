@@ -1,4 +1,4 @@
-import { adminClient, inferAdditionalFields } from 'better-auth/client/plugins';
+import { adminClient, inferAdditionalFields, twoFactorClient } from 'better-auth/client/plugins';
 // flama:begin organizations
 import { organizationClientPlugin } from './organization-client';
 // flama:end organizations
@@ -21,6 +21,11 @@ export function sharedClientPlugins() {
     // Super-admin operations (list/ban/impersonate/set-role) under
     // `authClient.admin.*`.
     adminClient(),
+    // Two-factor sign-in and enrolment under `authClient.twoFactor.*`. No
+    // redirect option: a sign-in that owes a code answers
+    // `{ twoFactorRedirect: true }`, and each app's `signIn` turns that into a
+    // `TwoFactorRequiredError` its login screen answers with the code step.
+    twoFactorClient(),
     // flama:begin organizations
     // Organizations, members, invitations and workspaces (teams) under
     // `authClient.organization.*`.

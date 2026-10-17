@@ -7,6 +7,7 @@ import {
   PrimaryColumn,
   Unique,
   UpdateDateColumn,
+  VirtualColumn,
 } from 'typeorm';
 
 /**
@@ -56,6 +57,24 @@ export class UserOrmEntity {
 
   @Column({ type: 'boolean', default: true })
   isActive!: boolean;
+
+  // --- Better Auth two-factor plugin: true once an authenticator app is confirmed. ---
+
+  @Column({ type: 'boolean', default: false })
+  twoFactorEnabled!: boolean;
+
+  /**
+   * Whether the user can sign in with a password: a Better Auth `credential`
+   * account holding one. Computed on read, never stored, so it cannot drift
+   * from `account`; an account made through a social provider has none until
+   * a password is set. Served by `IDX_account_userId`.
+   */
+  @VirtualColumn({
+    type: 'boolean',
+    query: (alias) =>
+      `SELECT EXISTS (SELECT 1 FROM "account" a WHERE a."userId" = ${alias}."id" AND a."providerId" = 'credential' AND a."password" IS NOT NULL)`,
+  })
+  hasPassword!: boolean;
 
   // --- Better Auth admin plugin (super-admin / moderation) ---
 

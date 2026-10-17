@@ -21,6 +21,7 @@ function toProfile(data: ProfileResponseDto): ProfileEntity {
     data.role,
     data.emailVerified,
     data.twoFactorEnabled,
+    data.hasPassword,
     new Date(data.createdAt),
     new Date(data.updatedAt),
   );
