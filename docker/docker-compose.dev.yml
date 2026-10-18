@@ -6,7 +6,7 @@ name: flama-dev
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: flama
@@ -14,11 +14,15 @@ services:
       POSTGRES_DB: flama
     ports:
       - "5432:5432"
+    # Postgres 18 images keep data in a versioned directory under
+    # /var/lib/postgresql (here /var/lib/postgresql/18/docker), so the volume
+    # mounts the parent. A volume written by an older major version is not
+    # read by this one: move it over with pg_dump/pg_restore or pg_upgrade.
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     restart: unless-stopped
     ports:
       - "6379:6379"

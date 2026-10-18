@@ -57,7 +57,7 @@ describe('AccessGrantRepository (integration)', () => {
     );
 
   beforeAll(async () => {
-    pgContainer = await new GenericContainer('postgres:16-alpine')
+    pgContainer = await new GenericContainer('postgres:18-alpine')
       .withEnvironment({ POSTGRES_USER: 'test', POSTGRES_PASSWORD: 'test', POSTGRES_DB: 'test' })
       .withExposedPorts(5432)
       .withWaitStrategy(Wait.forLogMessage(/database system is ready to accept connections/, 2))

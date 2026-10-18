@@ -20,7 +20,7 @@ describe('Correlation id (integration)', () => {
 
   beforeAll(async () => {
     [pgContainer, redisContainer] = await Promise.all([
-      new GenericContainer('postgres:16-alpine')
+      new GenericContainer('postgres:18-alpine')
         .withEnvironment({
           POSTGRES_USER: 'test',
           POSTGRES_PASSWORD: 'test',
@@ -29,7 +29,7 @@ describe('Correlation id (integration)', () => {
         .withExposedPorts(5432)
         .withWaitStrategy(Wait.forLogMessage(/database system is ready to accept connections/, 2))
         .start(),
-      new GenericContainer('redis:7-alpine').withExposedPorts(6379).start(),
+      new GenericContainer('redis:8-alpine').withExposedPorts(6379).start(),
     ]);
 
     process.env.NODE_ENV = 'test';

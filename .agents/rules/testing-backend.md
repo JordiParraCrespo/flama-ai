@@ -65,8 +65,8 @@ that statement (`[rows, affected]` for an `UPDATE`/`DELETE`), or it certifies
 the bug.
 
 **Integration specs** run the adapter, or the module, against real
-infrastructure started by **testcontainers** (`postgres:16-alpine`,
-`redis:7-alpine`):
+infrastructure started by **testcontainers** (`postgres:18-alpine`,
+`redis:8-alpine`):
 
 - the schema is built by `runAllMigrations()` (`test/run-migrations.ts`),
   never `synchronize`, so a broken migration fails here and not in production;
