@@ -124,7 +124,7 @@ with before it touches anything.
 
 ### General
 
-- Node 22 LTS, pnpm workspaces, Turborepo for task orchestration
+- Node 26, pnpm workspaces, Turborepo for task orchestration
 - **One `.env`, at the repo root**; the root `.env.example` is its
   documentation (a note per variable, nothing unread in it). Never add a
   per-package `.env`. Node apps load it via `@flama/env` (real env vars always

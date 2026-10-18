@@ -1,5 +1,6 @@
-FROM node:22-alpine AS base
-RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+FROM node:26-alpine AS base
+# Node 25+ no longer bundles corepack, so pnpm is installed from npm.
+RUN npm install -g pnpm@9.15.4
 
 FROM base AS deps
 WORKDIR /app

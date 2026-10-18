@@ -19,8 +19,8 @@ written for people and coding agents alike.
 ## Setting up
 
 ```bash
-nvm use                 # Node 22, from .nvmrc
-corepack enable         # pnpm, at the version package.json pins
+nvm use                 # Node 26, from .nvmrc
+npm i -g pnpm@9.15.4    # pnpm, at the version package.json pins
 pnpm install            # also enables the pre-push hook
 cp .env.example .env    # the only env file; every variable has a note
 pnpm docker:dev         # Postgres and Redis

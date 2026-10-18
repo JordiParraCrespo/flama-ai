@@ -1,5 +1,6 @@
-FROM node:22-alpine AS base
-RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+FROM node:26-alpine AS base
+# Node 25+ no longer bundles corepack, so pnpm is installed from npm.
+RUN npm install -g pnpm@9.15.4
 
 # The lockfile and every manifest the API's graph needs, and nothing else, so
 # both installs below are cached until one of them changes.
@@ -43,7 +44,7 @@ COPY --from=deps /app ./
 COPY . .
 RUN pnpm --filter @flama/api... build
 
-FROM node:22-alpine AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
