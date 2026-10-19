@@ -69,18 +69,6 @@ export const TARGETS = [
     ],
   },
   // flama:end web
-  // flama:begin extension
-  {
-    app: 'apps/extension',
-    compiler: 'oxc',
-    sources: [
-      'apps/extension/src',
-      'packages/frontend/web/src',
-      'packages/frontend/design-system/web/src',
-      ...SHARED,
-    ],
-  },
-  // flama:end extension
   // flama:plugins compiler-targets
   // flama:begin mobile
   {

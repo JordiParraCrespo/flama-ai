@@ -16,15 +16,6 @@ export const BASELINE = {
     'packages/frontend/design-system/web/src/components/stage-breakdown.tsx',
   ],
   // flama:end web
-  // flama:begin extension
-  // The kit and design-system files apps/web lists, for the same reasons; the
-  // extension's own source compiles whole.
-  'apps/extension': [
-    'packages/frontend/core/src/react/analytics.queries.ts',
-    'packages/frontend/design-system/web/src/components/combobox.tsx',
-    'packages/frontend/design-system/web/src/components/stage-breakdown.tsx',
-  ],
-  // flama:end extension
   // flama:plugins compiler-baseline
   // flama:begin mobile
   'apps/mobile': [

@@ -45,15 +45,6 @@ const APPS = {
   },
   // flama:end mobile
   // flama:plugins admin-mobile
-  // flama:begin extension
-  extension: {
-    dir: 'apps/extension',
-    features: 'src/features',
-    product: 'consumer',
-    allow: ['clips'],
-    platform: 'web',
-  },
-  // flama:end extension
   // flama:plugins extension
 };
 const app = APPS[args.app];
@@ -121,10 +112,10 @@ const MOBILE_SCREEN = `import { View } from 'react-native';\nimport { ${componen
 const MOBILE_SECTION = `import { Text } from '@flama/design-system-mobile/text';\nimport { View } from 'react-native';\nimport { useTranslation } from 'react-i18next';\n\n/**\n * The ${screen} pane.\n *\n * A query belongs to whatever draws its result, and that is not automatically\n * this file. Call it here when this pane renders the result itself; when one\n * child does, the query goes in that child rather than being threaded down.\n * See .agents/rules/frontend-architecture.md.\n */\nexport function ${component}Panel() {\n  const { t } = useTranslation();\n\n  return (\n    <View>\n      <Text>{t('common.appName')}</Text>\n    </View>\n  );\n}\n`;
 // flama:end mobile
 // flama:plugins mobile-templates
-// flama:begin web|extension
+// flama:begin web
 const WEB_SCREEN = `import { PageHead } from '@flama/frontend-web';\nimport { useTranslation } from 'react-i18next';\nimport { ${component}Panel } from '@/features/${args.module}/sections/${screen}-panel';\n\n/** The ${screen} screen. Mount it from a route: \`component: () => <${component}Screen />\`. It composes; the section below fetches. */\nexport function ${component}Screen() {\n  const { t } = useTranslation();\n\n  return (\n    <>\n      <PageHead title={t('common.appName')} />\n      <${component}Panel />\n    </>\n  );\n}\n`;
 const WEB_SECTION = `import { useTranslation } from 'react-i18next';\n\n/**\n * The ${screen} pane.\n *\n * A query belongs to whatever draws its result, and that is not automatically\n * this file. Call it here when this pane renders the result; when one child\n * does — a cell waiting on its own row, a dialog that needs a list only while\n * it is open — the query goes in that child, not here with the value threaded\n * down. \`pnpm check:structure\` catches the single-consumer case; the rest is\n * judgement. See .agents/rules/frontend-architecture.md.\n */\nexport function ${component}Panel() {\n  const { t } = useTranslation();\n\n  return <p>{t('common.appName')}</p>;\n}\n`;
-// flama:end web|extension
+// flama:end web
 // flama:plugins web-templates
 writeFileSync(join(featureDir, 'screens', `${screen}.tsx`), isMobile ? MOBILE_SCREEN : WEB_SCREEN);
 writeFileSync(

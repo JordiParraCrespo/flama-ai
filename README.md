@@ -118,7 +118,9 @@ second implementation of it.
 | API Docs (Swagger) | http://localhost:3001/api/docs |
 
 `pnpm plugin:add admin-web` serves the control plane on `:3003`, and
-`pnpm plugin:add docs` the Docusaurus site on `:3002`.
+`pnpm plugin:add docs` the Docusaurus site on `:3002`. `pnpm plugin:add
+extension` adds a Chrome extension over the consumer product, which you load
+from `apps/extension/dist` in `chrome://extensions`.
 
 ## Tech stack
 

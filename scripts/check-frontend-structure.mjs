@@ -80,25 +80,13 @@ const APPS = [
   },
   // flama:end mobile
   // flama:plugins admin-mobile
-  // flama:begin extension
-  {
-    app: 'apps/extension',
-    // Chrome's entrypoints — the popup, the side panel, the options page —
-    // are the routes: each composes, none contains.
-    routes: 'src/entrypoints',
-    features: 'src/features',
-    product: 'consumer',
-    allow: ['clips'],
-    kit: 'web',
-  },
-  // flama:end extension
   // flama:plugins extension
 ];
 /** The platform kits, documented like the apps they serve. */
 const KITS = [
-  // flama:begin web|extension
+  // flama:begin web
   'packages/frontend/web',
-  // flama:end web|extension
+  // flama:end web
   // flama:plugins web-kits
   // flama:begin mobile
   'packages/frontend/mobile',

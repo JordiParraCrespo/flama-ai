@@ -285,6 +285,20 @@ Not in the starter — `pnpm plugin:add admin-web` brings it, and it carries
 - Has no public registration flow; consumer products remain in `apps/web` and
   `apps/mobile`
 
+### Browser extension (the `extension` plugin)
+
+Not in the starter — `pnpm plugin:add extension` brings `apps/extension`, a
+Manifest V3 Chrome extension over the consumer product.
+
+- Popup, side panel and options page are React pages over the kernel and
+  `@flama/frontend-consumer`; a service worker and an on-demand content script
+  are not
+- `src/runtime/` is the only code that calls `chrome.*`: a typed message
+  protocol between contexts and Zod-validated `chrome.storage` items
+- Signs in with the API's session cookie; the API trusts
+  `chrome-extension://<id>` for each id in `EXTENSION_IDS`
+- Its `AGENTS.md` and `ARCHITECTURE.md` hold the rules for each context
+
 ### Mobile (apps/mobile)
 
 - Expo with expo-router

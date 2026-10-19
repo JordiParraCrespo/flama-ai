@@ -131,38 +131,12 @@
         }
       ],
       "regenerate": ["generate:api-client", "generate:openapi"]
-    },
-    "extension": {
-      "title": "Chrome extension",
-      "summary": "apps/extension — the Manifest V3 Chrome extension: a popup, a side panel and an options page over the consumer product, a service worker, and a content script injected only when the person asks; signed in with the API's session cookie",
-      "identifiers": ["apps/extension", "@flama/extension", "EXTENSION_PUBLIC_", "EXTENSION_IDS"],
-      "paths": ["apps/extension"],
-      "slots": {
-        ".agents/hooks/arch-check.sh": ["extension"],
-        ".env.example": ["api-urls", "env"],
-        ".github/workflows/ci.yml": ["ci-needs", "jobs"],
-        "apps/api/src/auth/infrastructure/better-auth.config.ts": [
-          "auth-consts",
-          "trusted-origins"
-        ],
-        "scripts/check-frontend-structure.mjs": ["extension"],
-        "scripts/check-react-compiler.baseline.mjs": ["compiler-baseline"],
-        "scripts/check-react-compiler.mjs": ["compiler-targets"],
-        "scripts/scaffold-feature.mjs": ["extension"]
-      },
-      "json": [
-        {
-          "file": "turbo.json",
-          "path": ["tasks", "build", "env"],
-          "remove": ["EXTENSION_PUBLIC_*"]
-        }
-      ]
     }
   },
   "shared": {
     "packages/frontend/design-system/web": {
       "identifiers": ["packages/frontend/design-system/web", "@flama/design-system-web"],
-      "neededBy": ["web", "extension"]
+      "neededBy": ["web"]
     },
     "packages/frontend/design-system/mobile": {
       "identifiers": ["packages/frontend/design-system/mobile", "@flama/design-system-mobile"],
@@ -170,19 +144,19 @@
     },
     "packages/frontend/core": {
       "identifiers": ["packages/frontend/core", "@flama/frontend-core"],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/frontend/consumer": {
       "identifiers": ["packages/frontend/consumer", "@flama/frontend-consumer"],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/frontend/react-hooks": {
       "identifiers": ["packages/frontend/react-hooks", "@flama/react-hooks"],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/frontend/web": {
       "identifiers": ["packages/frontend/web", "@flama/frontend-web"],
-      "neededBy": ["web", "extension"]
+      "neededBy": ["web"]
     },
     "packages/frontend/mobile": {
       "identifiers": ["packages/frontend/mobile", "@flama/frontend-mobile"],
@@ -190,7 +164,7 @@
     },
     "packages/frontend/api-client": {
       "identifiers": ["packages/frontend/api-client", "@flama/api-client"],
-      "neededBy": ["web", "mobile", "extension"],
+      "neededBy": ["web", "mobile"],
       "scripts": ["generate:api-client"]
     },
     "scripts/check-bundle-size.mjs": {
@@ -236,21 +210,21 @@
     },
     "scripts/check-frontend-structure.mjs": {
       "identifiers": ["check-frontend-structure", "check:structure"],
-      "neededBy": ["web", "mobile", "extension"],
+      "neededBy": ["web", "mobile"],
       "scripts": ["check:structure"]
     },
     "scripts/check-react-compiler.mjs": {
       "identifiers": ["check-react-compiler", "check:compiler"],
-      "neededBy": ["web", "mobile", "extension"],
+      "neededBy": ["web", "mobile"],
       "scripts": ["check:compiler"]
     },
     "scripts/check-react-compiler.baseline.mjs": {
       "identifiers": [],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     "scripts/check-react-compiler.test.mjs": {
       "identifiers": [],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     ".agents/skills/tanstack-routing": {
       "identifiers": [".agents/skills/tanstack-routing", "/tanstack-routing"],
@@ -258,7 +232,7 @@
     },
     "scripts/scaffold-feature.mjs": {
       "identifiers": ["scaffold-feature.mjs"],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     ".agents/skills/design-export-port": {
       "identifiers": [".agents/skills/design-export-port", "/design-export-port"],
@@ -266,15 +240,15 @@
     },
     ".agents/skills/scaffold-feature": {
       "identifiers": [".agents/skills/scaffold-feature", "/scaffold-feature"],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/tsconfig/depcruise/frontend-app.cjs": {
       "identifiers": ["depcruise/frontend-app"],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     },
     "packages/tsconfig/depcruise/frontend-kit.cjs": {
       "identifiers": ["depcruise/frontend-kit"],
-      "neededBy": ["web", "mobile", "extension"]
+      "neededBy": ["web", "mobile"]
     }
   }
 }
