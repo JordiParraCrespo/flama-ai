@@ -61,5 +61,10 @@ export function redirectSignedIn({ context, location, landing }: RedirectSignedI
 export function redirectSignedOut({ context, location }: RedirectSignedOutArgs) {
   if (context.auth.isAuthenticated) return;
 
-  throw redirect({ to: LOGIN, search: { redirect: location.href } });
+  // `search` is typed against the app's registered route tree, which the kit
+  // does not have: its own typecheck, and an app with no router (the browser
+  // extension), see no `/login` and so no key it could take. `/login`'s search
+  // is exactly `{ redirect }` in every app that routes there.
+  const toLogin = { to: LOGIN, search: { redirect: location.href } };
+  throw redirect(toLogin as unknown as Parameters<typeof redirect>[0]);
 }

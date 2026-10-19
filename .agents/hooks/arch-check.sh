@@ -25,6 +25,10 @@ frontend_changed+=$(git status --porcelain -- apps/mobile 2>/dev/null)
 # flama:end mobile
 # flama:plugins admin-web
 # flama:plugins admin-mobile
+# flama:begin extension
+frontend_changed+=$(git status --porcelain -- apps/extension 2>/dev/null)
+# flama:end extension
+# flama:plugins extension
 
 [[ -z "$api_changed" && -z "$frontend_changed" ]] && exit 0
 

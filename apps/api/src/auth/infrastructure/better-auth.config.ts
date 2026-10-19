@@ -46,6 +46,15 @@ const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 // flama:begin mobile
 const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
 // flama:end mobile
+// flama:begin extension
+// The Chrome extension's pages sign in from `chrome-extension://<id>`: one
+// origin per id in EXTENSION_IDS (the development build's, the store's).
+const extensionOrigins = (process.env.EXTENSION_IDS ?? '')
+  .split(',')
+  .map((id) => id.trim())
+  .filter(Boolean)
+  .map((id) => `chrome-extension://${id}`);
+// flama:end extension
 // flama:plugins auth-consts
 
 // Read through `orUndefined` so a blank `DB_X=` means "unset" here exactly as
@@ -89,6 +98,9 @@ export const auth = betterAuth({
     // flama:begin mobile
     `${mobileScheme}://`,
     // flama:end mobile
+    // flama:begin extension
+    ...extensionOrigins,
+    // flama:end extension
     // flama:plugins trusted-origins
   ],
   // Brute-force protection on the auth surface. `/api/auth/*` is mounted on the

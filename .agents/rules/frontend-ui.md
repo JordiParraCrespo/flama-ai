@@ -2,6 +2,7 @@
 paths:
   - "apps/web/**/*"
   - "apps/admin-web/**/*"
+  - "apps/extension/**/*"
   - "packages/frontend/design-system/web/**/*"
   - "packages/frontend/web/**/*"
 ---

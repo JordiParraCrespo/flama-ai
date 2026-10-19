@@ -4,6 +4,7 @@ paths:
   - "apps/admin-web/**/*"
   - "apps/mobile/**/*"
   - "apps/admin-mobile/**/*"
+  - "apps/extension/**/*"
   - "packages/frontend/**/*"
 ---
 

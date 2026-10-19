@@ -1,0 +1,5 @@
+# The store archive `pnpm zip` writes; built from dist/, never committed.
+release/
+# Playwright's output.
+test-results/
+playwright-report/

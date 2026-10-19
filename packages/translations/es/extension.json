@@ -1,0 +1,60 @@
+{
+  "chrome": {
+    "extName": "Flama",
+    "extShortName": "Flama",
+    "extDescription": "Guarda en Flama la página en la que estás y ten tu espacio de trabajo a un clic.",
+    "commandSavePage": "Guardar esta página en Flama",
+    "menuSavePage": "Guardar la página en Flama",
+    "menuSaveSelection": "Guardar la selección en Flama",
+    "toastSaved": "Guardado en Flama",
+    "toastFailed": "Flama no ha podido guardar esta página"
+  },
+  "signIn": {
+    "title": "Inicia sesión en Flama",
+    "description": "Usa tu cuenta de Flama para guardar páginas y llegar a tu espacio de trabajo desde cualquier pestaña.",
+    "noAccount": "¿Eres nuevo en Flama?",
+    "createAccount": "Crea una cuenta"
+  },
+  "page": {
+    "title": "Esta página",
+    "save": "Guardar esta página",
+    "saving": "Guardando…",
+    "saved": "Guardada",
+    "restricted": "Flama no puede leer esta página. Chrome no deja que ninguna extensión entre en sus propias páginas ni en la Web Store.",
+    "failed": "Flama no ha podido leer esta página. Recárgala y vuelve a intentarlo.",
+    "shortcutHint": "Pulsa {{shortcut}} en cualquier página para guardarla."
+  },
+  "clips": {
+    "title": "Páginas guardadas",
+    "count_one": "{{count}} página",
+    "count_other": "{{count}} páginas",
+    "emptyTitle": "Aún no hay nada guardado",
+    "emptyDescription": "Pulsa {{shortcut}} en cualquier página, o haz clic derecho sobre una selección, y aparecerá aquí.",
+    "emptyDescriptionNoShortcut": "Haz clic derecho sobre una página o una selección, y aparecerá aquí.",
+    "remove": "Quitar",
+    "clear": "Borrar todo",
+    "localNote": "Las páginas guardadas se quedan en este navegador."
+  },
+  "nav": {
+    "account": "Cuenta",
+    "openSidePanel": "Abrir el panel lateral",
+    "openWorkspace": "Abrir Flama",
+    "settings": "Ajustes",
+    "signOut": "Cerrar sesión"
+  },
+  "options": {
+    "title": "Ajustes",
+    "description": "Cómo se comporta Flama en este navegador.",
+    "accountTitle": "Cuenta",
+    "signedInAs": "Sesión iniciada como {{email}}",
+    "appearanceTitle": "Apariencia",
+    "theme": "Tema",
+    "language": "Idioma",
+    "shortcutsTitle": "Atajos de teclado",
+    "shortcutsDescription": "Abre Flama con <kbd>{{open}}</kbd> y guarda la página actual con <kbd>{{save}}</kbd>.",
+    "manageShortcuts": "Cambiar atajos",
+    "privacyTitle": "Privacidad",
+    "privacyDescription": "Flama lee una página solo cuando se lo pides, desde la barra de herramientas, el menú del clic derecho o un atajo, y solo esa página. No pide a Chrome acceso a ningún sitio web.",
+    "version": "Versión {{version}}"
+  }
+}

@@ -59,7 +59,7 @@ jobs:
         run: pnpm exec biome ci .
       # The repo's own GritQL lint plugins, over their fixtures.
       - run: pnpm check:biome-plugins
-      # flama:begin web|mobile
+      # flama:begin web|mobile|extension
       # The design-system linter (`@shadcn/lint` through oxlint, scoped to its
       # own rules — Biome keeps correctness) over every web and mobile app that
       # has a `lint:design` script. Every rule is at `warn` while the findings
@@ -68,7 +68,7 @@ jobs:
       # once it is clean.
       - name: Design-system lint
         run: pnpm lint:design
-      # flama:end web|mobile
+      # flama:end web|mobile|extension
       # flama:plugins design-lint
       # The agent git guard (`.agents/hooks/git-guard.mjs`): its policy, case by case.
       - name: Agent git guard
@@ -78,15 +78,15 @@ jobs:
       # Import rules are dependency-cruiser's, below.
       - name: API structure
         run: pnpm check:api-structure
-      # flama:begin web|mobile
+      # flama:begin web|mobile|extension
       # The frontend layout contract: feature names, kind directories, the
       # route line cap, no copies of what a kit ships, and the docs every
       # package carries. Import rules are dependency-cruiser's, below.
       - name: Frontend structure
         run: pnpm check:structure
-      # flama:end web|mobile
+      # flama:end web|mobile|extension
       # flama:plugins frontend-structure
-      # flama:begin web|mobile
+      # flama:begin web|mobile|extension
       # What the React Compiler leaves uncompiled, per app, run with the
       # compiler that app's build runs. Every build ships a bailout as written
       # and says nothing, so this is where one shows up. It fails on a file
@@ -94,7 +94,8 @@ jobs:
       # accepted, and names the listed ones that have gone so the list shrinks.
       - name: React Compiler bailouts
         run: pnpm check:compiler
-      # flama:end web|mobile
+      # flama:end web|mobile|extension
+      # flama:plugins react-compiler
       # flama:begin web
       # A library that keeps module state must install once for apps/web: the
       # lockfile is read, so no build is needed. See `singletons` in
@@ -271,6 +272,34 @@ jobs:
           head -n 60 /tmp/api.log
   # flama:end e2e
 
+  # flama:begin extension
+  test-extension:
+    name: Extension in Chromium
+    runs-on: gha-vm
+    needs: check
+    # The built extension, loaded into a real Chromium: Chrome accepts the
+    # manifest, the service worker starts, the pages render and reach the
+    # worker. The API is answered by the specs, so nothing else runs here.
+    # The unit suites already ran in Check.
+    if: contains(needs.check.outputs.packages, '"@flama/extension"')
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 26
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@flama/extension
+      - run: pnpm --filter @flama/extension exec playwright install --with-deps chromium
+      - run: pnpm --filter @flama/extension e2e
+      # The archive the Web Store takes, built and checked (no `key`, no source
+      # maps, not a development build) on every change, so a release is never
+      # the first time it is made.
+      - run: pnpm --filter @flama/extension zip
+  # flama:end extension
+  # flama:plugins jobs
+
   build-images:
     name: Build Docker Images
     runs-on: gha-vm
@@ -339,6 +368,10 @@ jobs:
       # flama:begin e2e
       - test-e2e
       # flama:end e2e
+      # flama:begin extension
+      - test-extension
+      # flama:end extension
+      # flama:plugins ci-needs
       - build-images
     steps:
       - name: Check passed, every other job passed or had nothing to do

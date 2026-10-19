@@ -5,6 +5,7 @@ import control from './es/control.json';
 import dashboard from './es/dashboard.json';
 import emails from './es/emails.json';
 import errors from './es/errors.json';
+import extension from './es/extension.json';
 import home from './es/home.json';
 import language from './es/language.json';
 import nav from './es/nav.json';
@@ -27,6 +28,7 @@ const es = {
   home,
   nav,
   control,
+  extension,
   language,
   consent,
   onboarding,
