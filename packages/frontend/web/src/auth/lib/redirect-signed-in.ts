@@ -1,4 +1,4 @@
-import { redirect } from '@tanstack/react-router';
+import { defaultStringifySearch, redirect } from '@tanstack/react-router';
 import { sanitizeRedirect } from '../../platform';
 import type { NavTo } from '../../shell';
 
@@ -61,10 +61,20 @@ export function redirectSignedIn({ context, location, landing }: RedirectSignedI
 export function redirectSignedOut({ context, location }: RedirectSignedOutArgs) {
   if (context.auth.isAuthenticated) return;
 
-  // `search` is typed against the app's registered route tree, which the kit
-  // does not have: its own typecheck, and an app with no router (the browser
-  // extension), see no `/login` and so no key it could take. `/login`'s search
-  // is exactly `{ redirect }` in every app that routes there.
-  const toLogin = { to: LOGIN, search: { redirect: location.href } };
-  throw redirect(toLogin as unknown as Parameters<typeof redirect>[0]);
+  throw redirect({ href: loginHref(location.href) });
+}
+
+/**
+ * `/login?redirect=<where they were going>` — the one contract between this
+ * pair and every app's login route, which reads `redirect` as a string.
+ *
+ * Written as a URL rather than as `{ to, search }` because the URL is the
+ * contract: `search` would be typed against the app's registered route tree,
+ * which the kit does not have (its own typecheck does not, and neither does
+ * an app with no router), and no type the kit could state would hold an app
+ * to it. The query is the router's own serialisation, so the URL is the one
+ * `{ to: '/login', search: { redirect } }` would have produced.
+ */
+export function loginHref(href: string): string {
+  return `${LOGIN}${defaultStringifySearch({ redirect: href })}`;
 }
