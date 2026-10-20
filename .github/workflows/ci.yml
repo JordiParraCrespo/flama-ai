@@ -95,6 +95,7 @@ jobs:
       - name: React Compiler bailouts
         run: pnpm check:compiler
       # flama:end web|mobile
+      # flama:plugins react-compiler
       # flama:begin web
       # A library that keeps module state must install once for apps/web: the
       # lockfile is read, so no build is needed. See `singletons` in
@@ -271,6 +272,8 @@ jobs:
           head -n 60 /tmp/api.log
   # flama:end e2e
 
+  # flama:plugins jobs
+
   build-images:
     name: Build Docker Images
     runs-on: gha-vm
@@ -339,6 +342,7 @@ jobs:
       # flama:begin e2e
       - test-e2e
       # flama:end e2e
+      # flama:plugins ci-needs
       - build-images
     steps:
       - name: Check passed, every other job passed or had nothing to do

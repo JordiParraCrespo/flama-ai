@@ -1,0 +1,40 @@
+{
+  "chrome": {
+    "extName": "Flama",
+    "extShortName": "Flama",
+    "extDescription": "Your Flama account, one click away from any tab."
+  },
+  "signIn": {
+    "title": "Sign in to Flama",
+    "description": "Use your Flama account to reach your workspace from any tab.",
+    "noAccount": "New to Flama?",
+    "createAccount": "Create an account"
+  },
+  "account": {
+    "title": "Your account",
+    "connectedTo": "Connected to {{host}}",
+    "loadError": "Flama could not load your account.",
+    "retry": "Try again"
+  },
+  "nav": {
+    "account": "Account",
+    "openSidePanel": "Open side panel",
+    "openWorkspace": "Open Flama",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "options": {
+    "title": "Settings",
+    "description": "How Flama behaves in this browser.",
+    "accountTitle": "Account",
+    "appearanceTitle": "Appearance",
+    "theme": "Theme",
+    "language": "Language",
+    "shortcutsTitle": "Keyboard shortcut",
+    "shortcutsDescription": "Open Flama from any tab with <kbd>{{open}}</kbd>.",
+    "manageShortcuts": "Change shortcut",
+    "privacyTitle": "Privacy",
+    "privacyDescription": "Flama talks only to your Flama server, to sign you in and load your account. It asks Chrome for access to no website and reads none of the pages you visit.",
+    "version": "Version {{version}}"
+  }
+}

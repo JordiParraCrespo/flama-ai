@@ -384,6 +384,46 @@
       }
     }
   },
+  "extension": {
+    "chrome": {
+      "extName": "Flama",
+      "extShortName": "Flama",
+      "extDescription": "Tu cuenta de Flama, a un clic desde cualquier pestaña."
+    },
+    "signIn": {
+      "title": "Inicia sesión en Flama",
+      "description": "Usa tu cuenta de Flama para llegar a tu espacio de trabajo desde cualquier pestaña.",
+      "noAccount": "¿Eres nuevo en Flama?",
+      "createAccount": "Crea una cuenta"
+    },
+    "account": {
+      "title": "Tu cuenta",
+      "connectedTo": "Conectado a {{host}}",
+      "loadError": "Flama no ha podido cargar tu cuenta.",
+      "retry": "Volver a intentarlo"
+    },
+    "nav": {
+      "account": "Cuenta",
+      "openSidePanel": "Abrir el panel lateral",
+      "openWorkspace": "Abrir Flama",
+      "settings": "Ajustes",
+      "signOut": "Cerrar sesión"
+    },
+    "options": {
+      "title": "Ajustes",
+      "description": "Cómo se comporta Flama en este navegador.",
+      "accountTitle": "Cuenta",
+      "appearanceTitle": "Apariencia",
+      "theme": "Tema",
+      "language": "Idioma",
+      "shortcutsTitle": "Atajo de teclado",
+      "shortcutsDescription": "Abre Flama desde cualquier pestaña con <kbd>{{open}}</kbd>.",
+      "manageShortcuts": "Cambiar el atajo",
+      "privacyTitle": "Privacidad",
+      "privacyDescription": "Flama solo se comunica con tu servidor de Flama, para iniciar tu sesión y cargar tu cuenta. No pide a Chrome acceso a ningún sitio web ni lee las páginas que visitas.",
+      "version": "Versión {{version}}"
+    }
+  },
   "language": {
     "label": "Idioma",
     "en": "English",

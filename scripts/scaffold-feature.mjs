@@ -45,6 +45,7 @@ const APPS = {
   },
   // flama:end mobile
   // flama:plugins admin-mobile
+  // flama:plugins extension
 };
 const app = APPS[args.app];
 if (!app || !args.module) {

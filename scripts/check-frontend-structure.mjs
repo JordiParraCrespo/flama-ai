@@ -80,6 +80,7 @@ const APPS = [
   },
   // flama:end mobile
   // flama:plugins admin-mobile
+  // flama:plugins extension
 ];
 /** The platform kits, documented like the apps they serve. */
 const KITS = [

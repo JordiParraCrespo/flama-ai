@@ -2,6 +2,7 @@
 paths:
   - "apps/web/**/*"
   - "apps/mobile/**/*"
+  - "apps/extension/**/*"
   - "packages/frontend/core/src/validation/**/*"
   - "packages/shared/src/schemas/**/*"
 ---
