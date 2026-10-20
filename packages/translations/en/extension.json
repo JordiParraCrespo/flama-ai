@@ -2,38 +2,19 @@
   "chrome": {
     "extName": "Flama",
     "extShortName": "Flama",
-    "extDescription": "Save the page you are on to Flama, and keep your workspace one click away.",
-    "commandSavePage": "Save this page to Flama",
-    "menuSavePage": "Save page to Flama",
-    "menuSaveSelection": "Save selection to Flama",
-    "toastSaved": "Saved to Flama",
-    "toastFailed": "Flama could not save this page"
+    "extDescription": "Your Flama account, one click away from any tab."
   },
   "signIn": {
     "title": "Sign in to Flama",
-    "description": "Use your Flama account to save pages and reach your workspace from any tab.",
+    "description": "Use your Flama account to reach your workspace from any tab.",
     "noAccount": "New to Flama?",
     "createAccount": "Create an account"
   },
-  "page": {
-    "title": "This page",
-    "save": "Save this page",
-    "saving": "Saving…",
-    "saved": "Saved",
-    "restricted": "Flama cannot read this page. Chrome keeps its own pages and the Web Store off limits to every extension.",
-    "failed": "Flama could not read this page. Reload it and try again.",
-    "shortcutHint": "Press {{shortcut}} on any page to save it."
-  },
-  "clips": {
-    "title": "Saved pages",
-    "count_one": "{{count}} page",
-    "count_other": "{{count}} pages",
-    "emptyTitle": "Nothing saved yet",
-    "emptyDescription": "Press {{shortcut}} on any page, or right-click a selection, and it lands here.",
-    "emptyDescriptionNoShortcut": "Right-click a page or a selection, and it lands here.",
-    "remove": "Remove",
-    "clear": "Clear all",
-    "localNote": "Saved pages stay in this browser."
+  "account": {
+    "title": "Your account",
+    "connectedTo": "Connected to {{host}}",
+    "loadError": "Flama could not load your account.",
+    "retry": "Try again"
   },
   "nav": {
     "account": "Account",
@@ -46,15 +27,14 @@
     "title": "Settings",
     "description": "How Flama behaves in this browser.",
     "accountTitle": "Account",
-    "signedInAs": "Signed in as {{email}}",
     "appearanceTitle": "Appearance",
     "theme": "Theme",
     "language": "Language",
-    "shortcutsTitle": "Keyboard shortcuts",
-    "shortcutsDescription": "Open Flama with <kbd>{{open}}</kbd> and save the current page with <kbd>{{save}}</kbd>.",
-    "manageShortcuts": "Change shortcuts",
+    "shortcutsTitle": "Keyboard shortcut",
+    "shortcutsDescription": "Open Flama from any tab with <kbd>{{open}}</kbd>.",
+    "manageShortcuts": "Change shortcut",
     "privacyTitle": "Privacy",
-    "privacyDescription": "Flama reads a page only when you ask it to, from the toolbar, the right-click menu or a shortcut, and only that page. It asks Chrome for access to no website.",
+    "privacyDescription": "Flama talks only to your Flama server, to sign you in and load your account. It asks Chrome for access to no website and reads none of the pages you visit.",
     "version": "Version {{version}}"
   }
 }

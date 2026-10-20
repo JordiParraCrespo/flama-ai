@@ -290,9 +290,10 @@ Not in the starter — `pnpm plugin:add admin-web` brings it, and it carries
 Not in the starter — `pnpm plugin:add extension` brings `apps/extension`, a
 Manifest V3 Chrome extension over the consumer product.
 
-- Popup, side panel and options page are React pages over the kernel and
-  `@flama/frontend-consumer`; a service worker and an on-demand content script
-  are not
+- A base to build an extension on: its one feature is signing in (password and
+  two-factor), kept in step across the popup, the side panel and the options
+  page, all React pages over the kernel and `@flama/frontend-consumer`; the
+  service worker is not one, and a content script is built once you write one
 - `src/runtime/` is the only code that calls `chrome.*`: a typed message
   protocol between contexts and Zod-validated `chrome.storage` items
 - Signs in with the API's session cookie; the API trusts
