@@ -2,10 +2,7 @@
   "title": "Flama API",
   "uid": "flama-api",
   "description": "HTTP traffic, latency and process health of the API. Source of truth: docker/monitoring/.",
-  "tags": [
-    "flama",
-    "api"
-  ],
+  "tags": ["flama", "api"],
   "timezone": "utc",
   "schemaVersion": 39,
   "version": 1,
@@ -65,9 +62,7 @@
       },
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "colorMode": "value"
       },
@@ -105,9 +100,7 @@
       },
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "colorMode": "value"
       },
@@ -145,9 +138,7 @@
       },
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "colorMode": "value"
       },
@@ -185,9 +176,7 @@
       },
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "colorMode": "value"
       },
