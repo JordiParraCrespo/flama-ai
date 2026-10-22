@@ -26,7 +26,8 @@ src/
   constructor takes the `ConfigService`. Keep the abstract contract stable.
 - **`upload` resolves to the key on every back-end**, and `getSignedUrl` is the
   only way to a URL. Callers persist keys; a URL (signed and expiring on an
-  object store) is derived at read time.
+  object store) is derived at read time. `download` is the way to the bytes,
+  guarded against key escapes like a write.
 - Ships **CommonJS**.
 
 ## Commands

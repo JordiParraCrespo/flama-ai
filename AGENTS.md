@@ -362,6 +362,7 @@ pnpm check:compiler     # React Compiler bailouts per app; fails on a file outsi
 pnpm check:singletons   # One installed copy of each module-state library for apps/web (pnpm-lock.yaml)
 # flama:end web
 pnpm docker:dev         # Start Postgres + Redis
+pnpm monitoring:up      # Prometheus + Grafana over the local API (needs METRICS_TOKEN); docker/monitoring/README.md
 pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
 ```
