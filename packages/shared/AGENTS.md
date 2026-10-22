@@ -83,6 +83,7 @@ Full context in [`.agents/rules/forms.md`](../../.agents/rules/forms.md).
   Every subpath also carries a `flama-source` condition naming its `src/*.ts`:
   `apps/web` resolves that, because this package's CommonJS `require('zod')`
   would bundle a second, untree-shaken Zod beside the frontend's.
+  `src/__tests__/exports.spec.ts` fails a subpath that leaves it out.
 - After schema changes that affect API DTOs, regenerate the client
   (`pnpm generate:api-client`).
 

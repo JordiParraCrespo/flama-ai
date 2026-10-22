@@ -140,6 +140,14 @@ describe('AllExceptionsFilter', () => {
     ]);
   });
 
+  it('lists no fields for a validation exception that carries no ZodError', () => {
+    const problem = handle(new ZodValidationException('not a ZodError')).problem();
+
+    expect(problem.status).toBe(400);
+    expect(problem.code).toBe('VALIDATION_FAILED');
+    expect(problem.invalidParams).toBeUndefined();
+  });
+
   it('gives a framework exception the status phrase as its title', () => {
     const problem = handle(new ForbiddenException('Not your token')).problem();
 

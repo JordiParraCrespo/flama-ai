@@ -15,11 +15,5 @@ export function useZodResolver<TSchema extends ZodType<unknown, FieldValues>>(
 ): Resolver<input<TSchema>, unknown, output<TSchema>> {
   const { t } = useTranslation();
 
-  return useMemo(() => {
-    return zodResolver(schema, { error: createZodErrorMap(t) }) as Resolver<
-      input<TSchema>,
-      unknown,
-      output<TSchema>
-    >;
-  }, [schema, t]);
+  return useMemo(() => zodResolver(schema, { error: createZodErrorMap(t) }), [schema, t]);
 }
