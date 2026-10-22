@@ -3,9 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "ignoreDeprecations": "6.0"
+    "module": "node20",
+    "moduleResolution": "node16"
   },
   "include": ["src"],
   "exclude": ["src/**/*.spec.ts", "src/**/__tests__/**"]

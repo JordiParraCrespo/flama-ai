@@ -27,10 +27,11 @@ const APPS = [
   {
     name: '@flama/web',
     dist: 'apps/web/dist',
-    // 371KB measured. The floor is ~108KB of Base UI and icons plus ~57KB of
-    // React; the next real reduction is keeping a vendor chunk off the auth
-    // screens, not shaving app code.
-    budgetKB: 385,
+    // 386KB measured. The floor is ~108KB of Base UI and icons plus ~57KB of
+    // React; Zod 4's classic API is ~25KB of vendor-forms, about 12KB more than
+    // Zod 3 (`zod/mini` is the smaller one). The next real reduction is keeping
+    // a vendor chunk off the auth screens, not shaving app code.
+    budgetKB: 400,
   },
   // flama:end web
   // flama:plugins admin-web

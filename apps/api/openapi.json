@@ -592,13 +592,27 @@
         "operationId": "findAll",
         "parameters": [
           {
-            "name": "search",
+            "name": "page",
             "required": false,
             "in": "query",
-            "description": "Search by name or email; `%` and `_` match literally",
+            "description": "Page number (default: 1)",
             "schema": {
-              "maxLength": 100,
-              "type": "string"
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (default: 20, max: 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
             }
           },
           {
@@ -611,21 +625,13 @@
             }
           },
           {
-            "name": "limit",
+            "name": "search",
             "required": false,
             "in": "query",
-            "description": "Items per page (default: 20, max: 100)",
+            "description": "Search by name or email; `%` and `_` match literally",
             "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "Page number (default: 1)",
-            "schema": {
-              "type": "number"
+              "maxLength": 100,
+              "type": "string"
             }
           }
         ],
@@ -1004,20 +1010,26 @@
         "operationId": "list",
         "parameters": [
           {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Items per page (default: 20, max: 100)",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
             "name": "page",
             "required": false,
             "in": "query",
             "description": "Page number (default: 1)",
             "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (default: 20, max: 100)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
               "type": "number"
             }
           }
@@ -1189,13 +1201,15 @@
         "operationId": "findAll",
         "parameters": [
           {
-            "name": "search",
+            "name": "page",
             "required": false,
             "in": "query",
-            "description": "Search by role name or description; `%` and `_` match literally",
+            "description": "Page number (default: 1)",
             "schema": {
-              "maxLength": 100,
-              "type": "string"
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1,
+              "type": "number"
             }
           },
           {
@@ -1204,16 +1218,20 @@
             "in": "query",
             "description": "Items per page (default: 20, max: 100)",
             "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
               "type": "number"
             }
           },
           {
-            "name": "page",
+            "name": "search",
             "required": false,
             "in": "query",
-            "description": "Page number (default: 1)",
+            "description": "Search by role name or description; `%` and `_` match literally",
             "schema": {
-              "type": "number"
+              "maxLength": 100,
+              "type": "string"
             }
           }
         ],
@@ -2488,25 +2506,40 @@
             }
           },
           {
-            "name": "roleIds",
-            "required": false,
-            "in": "query",
-            "description": "Role facet: keep members holding any of these assigned roles; repeat the parameter to select several",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          },
-          {
             "name": "search",
             "required": false,
             "in": "query",
             "description": "Filter by member name, email, organization role or assigned role name",
             "schema": {
+              "maxLength": 200,
               "type": "string"
+            }
+          },
+          {
+            "name": "roleIds",
+            "required": false,
+            "in": "query",
+            "description": "Role facet: keep members holding any of these assigned roles; repeat the parameter to select several",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                }
+              ],
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
             }
           }
         ],
@@ -4587,8 +4620,8 @@
             "minLength": 8
           },
           "revokeOtherSessions": {
-            "type": "boolean",
-            "default": true
+            "default": true,
+            "type": "boolean"
           }
         },
         "required": ["currentPassword", "newPassword"]
@@ -4941,7 +4974,8 @@
           },
           "principalId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
           "resourceType": {
             "type": "string",
@@ -4951,11 +4985,13 @@
           "resourceId": {
             "type": "string",
             "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "nullable": true
           },
           "expiresAt": {
             "type": "string",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
             "nullable": true
           }
         },
@@ -5057,6 +5093,7 @@
             "maxLength": 255
           },
           "permissions": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "object",
@@ -5088,8 +5125,7 @@
                 }
               },
               "required": ["action", "subject"]
-            },
-            "default": []
+            }
           }
         },
         "required": ["name"]
@@ -5184,7 +5220,8 @@
             "type": "array",
             "items": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
           }
         },
@@ -5530,16 +5567,18 @@
         "properties": {
           "userId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
           "role": {
+            "default": "member",
             "type": "string",
-            "enum": ["owner", "admin", "member"],
-            "default": "member"
+            "enum": ["owner", "admin", "member"]
           },
           "teamId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
         "required": ["userId"]
@@ -5559,16 +5598,18 @@
         "properties": {
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
           },
           "role": {
+            "default": "member",
             "type": "string",
-            "enum": ["owner", "admin", "member"],
-            "default": "member"
+            "enum": ["owner", "admin", "member"]
           },
           "teamId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
         "required": ["email"]
@@ -5607,7 +5648,8 @@
           },
           "organizationId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
         "required": ["name"]
@@ -5647,7 +5689,8 @@
         "properties": {
           "userId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         },
         "required": ["userId"]

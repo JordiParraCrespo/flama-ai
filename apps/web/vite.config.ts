@@ -3,7 +3,7 @@ import { vendorChunks } from '@flama/tsconfig/vite-chunks.mjs';
 import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defaultClientConditions, defineConfig } from 'vite';
 import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
@@ -37,6 +37,11 @@ export default defineConfig({
     // copies. Without this a package's useTranslation() finds no instance:
     // `t` returns keys and `i18n.exists` is undefined.
     dedupe: ['i18next', 'react-i18next'],
+    // `@flama/shared` builds to CommonJS for the API's sake, and a CommonJS
+    // `require('zod')` drags in all of Zod 4 (every locale) beside the copy the
+    // frontend packages import as ESM. Its `flama-source` export hands the
+    // bundler the TypeScript source instead, so one tree-shaken Zod ships.
+    conditions: ['flama-source', ...defaultClientConditions],
   },
   optimizeDeps: {
     // Workspace packages are linked, not installed, so dev has to be told to

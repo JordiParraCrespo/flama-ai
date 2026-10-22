@@ -158,7 +158,9 @@ the note in the repo-root `AGENTS.md`. For forms this means:
   that reads the scope catalog, say — stays out of the form: the form declares
   its value type locally and validates with React Hook Form's built-in rules
   instead.
-- A new narrow subpath needs an `exports` entry in `packages/shared/package.json`
+- A new narrow subpath needs an `exports` entry in `packages/shared/package.json`,
+  with a `flama-source` condition naming its `src/*.ts` as the others do (the
+  web build reads the source, so one tree-shaken Zod ships),
   **and** an entry in `optimizeDeps.include` in `apps/web/vite.config.ts`;
   workspace `dist` folders sit outside `node_modules`, so Vite will not
   pre-bundle the CommonJS build without being told.

@@ -52,7 +52,10 @@ export const webAuthClient: IAuthClient = {
   async enableTwoFactor(password) {
     const result = await authClient.twoFactor.enable({ password });
     unwrap(result);
-    return { totpURI: result.data?.totpURI ?? '', backupCodes: result.data?.backupCodes ?? [] };
+    // `enable` defaults to the authenticator-app method, the only one that
+    // hands back a URI and codes; an `otp` answer carries neither.
+    const totp = result.data?.method === 'totp' ? result.data : undefined;
+    return { totpURI: totp?.totpURI ?? '', backupCodes: totp?.backupCodes ?? [] };
   },
 
   async confirmTwoFactor(code) {

@@ -8,7 +8,7 @@ import { z } from 'zod';
 export const permissionSchema = z.object({
   action: z.string().min(1),
   subject: z.string().min(1),
-  conditions: z.record(z.unknown()).optional(),
+  conditions: z.record(z.string(), z.unknown()).optional(),
   fields: z.array(z.string().min(1)).optional(),
   inverted: z.boolean().optional(),
   reason: z.string().optional(),

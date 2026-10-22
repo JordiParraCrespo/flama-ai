@@ -7,60 +7,70 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "flama-source": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./schemas": {
       "types": "./dist/schemas/index.d.ts",
+      "flama-source": "./src/schemas/index.ts",
       "import": "./dist/schemas/index.js",
       "require": "./dist/schemas/index.js",
       "default": "./dist/schemas/index.js"
     },
     "./schemas/auth": {
       "types": "./dist/schemas/auth.schema.d.ts",
+      "flama-source": "./src/schemas/auth.schema.ts",
       "import": "./dist/schemas/auth.schema.js",
       "require": "./dist/schemas/auth.schema.js",
       "default": "./dist/schemas/auth.schema.js"
     },
     "./schemas/profile": {
       "types": "./dist/schemas/profile.schema.d.ts",
+      "flama-source": "./src/schemas/profile.schema.ts",
       "import": "./dist/schemas/profile.schema.js",
       "require": "./dist/schemas/profile.schema.js",
       "default": "./dist/schemas/profile.schema.js"
     },
     "./schemas/organization": {
       "types": "./dist/schemas/organization.schema.d.ts",
+      "flama-source": "./src/schemas/organization.schema.ts",
       "import": "./dist/schemas/organization.schema.js",
       "require": "./dist/schemas/organization.schema.js",
       "default": "./dist/schemas/organization.schema.js"
     },
     "./schemas/role": {
       "types": "./dist/schemas/role.schema.d.ts",
+      "flama-source": "./src/schemas/role.schema.ts",
       "import": "./dist/schemas/role.schema.js",
       "require": "./dist/schemas/role.schema.js",
       "default": "./dist/schemas/role.schema.js"
     },
     "./types": {
       "types": "./dist/types/index.d.ts",
+      "flama-source": "./src/types/index.ts",
       "import": "./dist/types/index.js",
       "require": "./dist/types/index.js",
       "default": "./dist/types/index.js"
     },
     "./permissions": {
       "types": "./dist/permissions/index.d.ts",
+      "flama-source": "./src/permissions/index.ts",
       "import": "./dist/permissions/index.js",
       "require": "./dist/permissions/index.js",
       "default": "./dist/permissions/index.js"
     },
     "./constants": {
       "types": "./dist/constants/index.d.ts",
+      "flama-source": "./src/constants/index.ts",
       "import": "./dist/constants/index.js",
       "require": "./dist/constants/index.js",
       "default": "./dist/constants/index.js"
     },
     "./scopes": {
       "types": "./dist/scopes/index.d.ts",
+      "flama-source": "./src/scopes/index.ts",
       "import": "./dist/scopes/index.js",
       "require": "./dist/scopes/index.js",
       "default": "./dist/scopes/index.js"
@@ -75,12 +85,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@casl/ability": "^6.8.1",
-    "zod": "^3.25.76"
+    "@casl/ability": "^7.0.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@flama/tsconfig": "workspace:^",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.5"
   }
 }

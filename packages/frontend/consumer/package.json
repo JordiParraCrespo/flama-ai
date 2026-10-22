@@ -43,21 +43,21 @@
     "@flama/api-client": "workspace:*",
     "@flama/frontend-core": "workspace:*",
     "@flama/shared": "workspace:*",
-    "@tanstack/query-core": "^5.102.8",
+    "@tanstack/query-core": "^5.104.5",
     "inversify": "^8.2.3",
     "reflect-metadata": "^0.2.2",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@flama/tsconfig": "workspace:^",
-    "@tanstack/react-query": "^5.102.8",
+    "@tanstack/react-query": "^5.104.5",
     "@testing-library/react": "^16.3.3",
-    "@types/react": "19.2.14",
-    "dependency-cruiser": "^18.1.0",
-    "jsdom": "^30.0.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "@types/react": "19.3.0",
+    "dependency-cruiser": "^18.7.0",
+    "jsdom": "^30.1.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.5"
   }
 }

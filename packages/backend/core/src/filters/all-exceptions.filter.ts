@@ -12,7 +12,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
-import type { ZodError, ZodIssue } from 'zod';
+import { ZodError, type ZodIssue } from 'zod';
 import { AppError } from '../errors/app.error';
 import {
   buildProblemDetails,
@@ -174,7 +174,13 @@ function retryAfterOf(exception: unknown): number | null {
 }
 
 /** Flattens Zod issues into RFC 7807's `invalid-params` shape. */
-function toInvalidParams(error: ZodError): InvalidParam[] {
+/**
+ * nestjs-zod types the exception's payload `unknown`. Every pipe that throws it
+ * hands over the parse's `ZodError`; anything else lists no fields rather than
+ * failing inside the filter.
+ */
+function toInvalidParams(error: unknown): InvalidParam[] | undefined {
+  if (!(error instanceof ZodError)) return undefined;
   return error.issues.map((issue: ZodIssue) => ({
     name: issue.path.length ? issue.path.join('.') : '(root)',
     reason: issue.message,

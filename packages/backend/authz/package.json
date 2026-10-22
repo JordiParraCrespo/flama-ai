@@ -20,21 +20,21 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@casl/ability": "^6.8.1",
+    "@casl/ability": "^7.0.2",
     "@flama/backend-core": "workspace:*",
     "@flama/shared": "workspace:*",
-    "@nestjs/common": "^11.1.28",
-    "@nestjs/core": "^11.1.28"
+    "@nestjs/common": "^12.2.0",
+    "@nestjs/core": "^12.2.0"
   },
   "peerDependencies": {
-    "typeorm": "^0.3.28"
+    "typeorm": "^1.1.2"
   },
   "devDependencies": {
     "@flama/tsconfig": "workspace:^",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "typeorm": "^0.3.28",
+    "typeorm": "^1.1.2",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.5"
   }
 }
