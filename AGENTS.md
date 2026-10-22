@@ -206,6 +206,9 @@ installed it also needs a row in `apps/docs/docs/errors.md`. See
 
 - `integrations.md` — calls to a system we do not run respect its rate limit,
   through `UpstreamLimiter` (`@flama/backend-core`)
+- `provider-integrations.md` — a third-party service is a capability behind
+  one interface, each vendor a provider in one ordered list; the
+  `/integrate-provider` skill is the order of work
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
 - `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, scoped credentials
 
