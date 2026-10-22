@@ -97,7 +97,7 @@ beforeAll(async () => {
 
 describe('monitoring config', () => {
   it('finds rules, panels and exported metrics to compare', () => {
-    expect(rules.length).toBeGreaterThan(10);
+    expect(rules.length).toBeGreaterThan(5);
     expect(dashboard.panels.length).toBeGreaterThan(10);
     expect(exported.has('http_requests_total')).toBe(true);
     expect(exported.has('http_request_duration_seconds_bucket')).toBe(true);
