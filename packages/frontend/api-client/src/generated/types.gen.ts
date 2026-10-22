@@ -836,21 +836,21 @@ export type FindAllData = {
     path?: never;
     query?: {
         /**
-         * Search by name or email; `%` and `_` match literally
+         * Page number (default: 1)
          */
-        search?: string;
-        /**
-         * Filter by role name
-         */
-        role?: string;
+        page?: number;
         /**
          * Items per page (default: 20, max: 100)
          */
         limit?: number;
         /**
-         * Page number (default: 1)
+         * Filter by role name
          */
-        page?: number;
+        role?: string;
+        /**
+         * Search by name or email; `%` and `_` match literally
+         */
+        search?: string;
     };
     url: '/api/v1/users';
 };
@@ -1051,13 +1051,13 @@ export type ListData = {
     path?: never;
     query?: {
         /**
-         * Items per page (default: 20, max: 100)
-         */
-        limit?: number;
-        /**
          * Page number (default: 1)
          */
         page?: number;
+        /**
+         * Items per page (default: 20, max: 100)
+         */
+        limit?: number;
     };
     url: '/api/v1/access-grants';
 };
@@ -1151,17 +1151,17 @@ export type FindAll2Data = {
     path?: never;
     query?: {
         /**
-         * Search by role name or description; `%` and `_` match literally
+         * Page number (default: 1)
          */
-        search?: string;
+        page?: number;
         /**
          * Items per page (default: 20, max: 100)
          */
         limit?: number;
         /**
-         * Page number (default: 1)
+         * Search by role name or description; `%` and `_` match literally
          */
-        page?: number;
+        search?: string;
     };
     url: '/api/v1/roles';
 };
@@ -1801,13 +1801,13 @@ export type List3Data = {
     };
     query?: {
         /**
-         * Role facet: keep members holding any of these assigned roles; repeat the parameter to select several
-         */
-        roleIds?: Array<string>;
-        /**
          * Filter by member name, email, organization role or assigned role name
          */
         search?: string;
+        /**
+         * Role facet: keep members holding any of these assigned roles; repeat the parameter to select several
+         */
+        roleIds?: string | Array<string>;
     };
     url: '/api/v1/organizations/{orgId}/members';
 };

@@ -80,6 +80,9 @@ Full context in [`.agents/rules/forms.md`](../../.agents/rules/forms.md).
 - `apps/web` cannot import runtime values from the package root (CASL and the
   scope catalog would land in the browser bundle). A schema the web app needs
   wants a narrow `exports` subpath — `./schemas/auth` is the worked example.
+  Every subpath also carries a `flama-source` condition naming its `src/*.ts`:
+  `apps/web` resolves that, because this package's CommonJS `require('zod')`
+  would bundle a second, untree-shaken Zod beside the frontend's.
 - After schema changes that affect API DTOs, regenerate the client
   (`pnpm generate:api-client`).
 

@@ -93,7 +93,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
           title: 'Validation failed',
           detail: 'The request body or query string did not match the expected schema.',
           code: 'VALIDATION_FAILED',
-          invalidParams: toInvalidParams(exception.getZodError()),
+          // nestjs-zod types the payload `unknown`; every pipe that throws
+          // this exception (ours and its own) hands it the parse's ZodError.
+          invalidParams: toInvalidParams(exception.getZodError() as ZodError),
         },
         context,
       );

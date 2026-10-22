@@ -1,6 +1,9 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
+    // React Native 0.88 types its strict API by default; NativeWind's
+    // `className` augmentation targets the legacy types this condition selects.
+    "customConditions": ["react-native-legacy-deep-imports"],
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM"],
     "skipLibCheck": true,

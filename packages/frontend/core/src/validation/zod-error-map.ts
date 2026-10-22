@@ -1,4 +1,4 @@
-import type { ZodErrorMap, ZodIssueOptionalMessage } from 'zod';
+import type { core } from 'zod';
 
 /**
  * Keys {@link createZodErrorMap} resolves. Every locale in `@flama/translations`
@@ -40,7 +40,7 @@ function isValidationMessageKey(value: unknown): value is ValidationMessageKey {
  * is wrong". A union reports one set of issues per branch; these are the
  * branches that never applied.
  */
-const WRONG_BRANCH = new Set<string>(['invalid_type', 'invalid_literal']);
+const WRONG_BRANCH = new Set<string>(['invalid_type', 'invalid_value']);
 
 /**
  * The schemas in `@flama/shared` are shared with the API, so they state
@@ -55,50 +55,53 @@ const WRONG_BRANCH = new Set<string>(['invalid_type', 'invalid_literal']);
  * 'validation.tooLong' } })`. Other params are interpolated. A `refine` that
  * names none reads as the generic `validation.invalid`.
  */
-export function createZodErrorMap(t: TranslateFn): ZodErrorMap {
-  return (issue: ZodIssueOptionalMessage) => {
+export function createZodErrorMap(t: TranslateFn): core.$ZodErrorMap {
+  return (issue) => {
     switch (issue.code) {
       case 'invalid_type':
-        return issue.received === 'undefined' || issue.received === 'null'
-          ? { message: t('validation.required') }
+        if (issue.input === undefined || issue.input === null) {
+          return { message: t('validation.required') };
+        }
+        // `z.date()` handed an Invalid Date reports the type it expected.
+        return issue.expected === 'date' && issue.input instanceof Date
+          ? { message: t('validation.date') }
           : { message: t('validation.invalid') };
 
-      case 'invalid_string':
-        if (issue.validation === 'email') return { message: t('validation.email') };
-        if (issue.validation === 'url') return { message: t('validation.url') };
+      case 'invalid_format':
+        if (issue.format === 'email') return { message: t('validation.email') };
+        if (issue.format === 'url') return { message: t('validation.url') };
         // A regex, a uuid, a datetime, a prefix: the value has the wrong shape.
         return { message: t('validation.format') };
 
       case 'invalid_union': {
+        // A discriminated union whose discriminator matched no option.
+        if ('discriminator' in issue) return { message: t('validation.choice') };
         // An optional field is often `schema.or(z.literal(''))`, so an empty
         // control can mean "none"; a failure then reports at the union, which
         // says nothing. The branch that applied is the one whose issues are
         // about the value rather than about its type — surface its first
         // issue, already worded by this map when Zod raised it.
-        const specific = issue.unionErrors
-          .flatMap((error) => error.issues)
-          .find((candidate) => !WRONG_BRANCH.has(candidate.code));
+        const specific = issue.errors.flat().find((candidate) => !WRONG_BRANCH.has(candidate.code));
         return { message: specific?.message ?? t('validation.invalid') };
       }
 
-      case 'invalid_enum_value':
-      case 'invalid_union_discriminator':
-        return { message: t('validation.choice') };
-
-      case 'invalid_date':
-        return { message: t('validation.date') };
+      case 'invalid_value':
+        // An enum offers a choice; a literal has only the one value.
+        return issue.values.length > 1
+          ? { message: t('validation.choice') }
+          : { message: t('validation.invalid') };
 
       case 'too_small': {
         const min = Number(issue.minimum);
-        if (issue.type === 'string') {
+        if (issue.origin === 'string') {
           return min <= 1
             ? { message: t('validation.required') }
             : { message: t('validation.minLength', { min }) };
         }
-        if (issue.type === 'array' || issue.type === 'set') {
+        if (issue.origin === 'array' || issue.origin === 'set') {
           return { message: t('validation.minItems', { min }) };
         }
-        if (issue.type === 'number' || issue.type === 'bigint') {
+        if (issue.origin === 'number' || issue.origin === 'int' || issue.origin === 'bigint') {
           return { message: t('validation.min', { min }) };
         }
         return { message: t('validation.invalid') };
@@ -106,18 +109,18 @@ export function createZodErrorMap(t: TranslateFn): ZodErrorMap {
 
       case 'too_big': {
         const max = Number(issue.maximum);
-        if (issue.type === 'string') return { message: t('validation.maxLength', { max }) };
-        if (issue.type === 'array' || issue.type === 'set') {
+        if (issue.origin === 'string') return { message: t('validation.maxLength', { max }) };
+        if (issue.origin === 'array' || issue.origin === 'set') {
           return { message: t('validation.maxItems', { max }) };
         }
-        if (issue.type === 'number' || issue.type === 'bigint') {
+        if (issue.origin === 'number' || issue.origin === 'int' || issue.origin === 'bigint') {
           return { message: t('validation.max', { max }) };
         }
         return { message: t('validation.invalid') };
       }
 
       case 'not_multiple_of':
-        return { message: t('validation.multipleOf', { step: Number(issue.multipleOf) }) };
+        return { message: t('validation.multipleOf', { step: Number(issue.divisor) }) };
 
       case 'custom': {
         const { i18nKey, ...params } = (issue.params ?? {}) as Record<string, unknown>;
@@ -126,9 +129,8 @@ export function createZodErrorMap(t: TranslateFn): ZodErrorMap {
           : { message: t('validation.invalid') };
       }
 
-      // invalid_literal, unrecognized_keys, invalid_arguments,
-      // invalid_return_type, invalid_intersection_types, not_finite: nothing
-      // more specific to say to a person filling in a form.
+      // unrecognized_keys, invalid_key, invalid_element: nothing more specific
+      // to say to a person filling in a form.
       default:
         return { message: t('validation.invalid') };
     }

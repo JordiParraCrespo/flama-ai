@@ -9,10 +9,8 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
+import { cleanupOpenApiDoc, ZodValidationPipe } from 'nestjs-zod';
 import { AppModule } from './app.module';
-
-patchNestJsSwagger();
 
 export function createSwaggerConfig() {
   return new DocumentBuilder()
@@ -26,12 +24,16 @@ export function createSwaggerConfig() {
 export function createSwaggerDocument(
   app: ReturnType<typeof NestFactory.create> extends Promise<infer T> ? T : never,
 ) {
-  return SwaggerModule.createDocument(app, createSwaggerConfig(), {
-    operationIdFactory: (_controller, method) => method,
-    // Every error response references this schema (RFC 7807), so it must be in
-    // the document even if a route documents its failures loosely.
-    extraModels: [ProblemDetailsDto],
-  });
+  // nestjs-zod emits each Zod DTO as a placeholder the cleanup turns into its
+  // JSON Schema.
+  return cleanupOpenApiDoc(
+    SwaggerModule.createDocument(app, createSwaggerConfig(), {
+      operationIdFactory: (_controller, method) => method,
+      // Every error response references this schema (RFC 7807), so it must be in
+      // the document even if a route documents its failures loosely.
+      extraModels: [ProblemDetailsDto],
+    }),
+  );
 }
 
 async function bootstrap() {
