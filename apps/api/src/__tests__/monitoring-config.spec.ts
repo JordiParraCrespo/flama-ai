@@ -41,7 +41,9 @@ interface Panel {
   type: string;
   targets?: { expr: string }[];
 }
-const dashboard = JSON.parse(readFileSync(join(MONITORING, 'grafana/dashboards/api.json'), 'utf8')) as {
+const dashboard = JSON.parse(
+  readFileSync(join(MONITORING, 'grafana/dashboards/api.json'), 'utf8'),
+) as {
   uid: string;
   panels: Panel[];
 };
