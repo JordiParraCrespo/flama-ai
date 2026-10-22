@@ -8,6 +8,8 @@ export abstract class StorageService {
   /** Store `file` under `key`, overwriting what was there; resolves to the key. */
   abstract upload(file: Buffer, key: string, mimeType: string): Promise<string>;
   abstract delete(key: string): Promise<void>;
+  /** The bytes stored under `key`, for a caller that serves or forwards a private file itself. */
+  abstract download(key: string): Promise<Buffer>;
   /**
    * A URL a browser can load `key` from. An object store signs it for
    * `expiresIn` seconds; the local back-end serves a stable public URL and
