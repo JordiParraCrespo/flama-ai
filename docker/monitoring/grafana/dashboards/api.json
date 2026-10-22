@@ -126,7 +126,7 @@
       "type": "stat",
       "title": "p95 latency",
       "id": 4,
-      "description": "Every route but the event stream, whose duration is a session length.",
+      "description": "Every route.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
