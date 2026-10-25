@@ -63,3 +63,6 @@ dump.rdb
 
 # Claude Code agent worktrees (isolated checkouts, never repo content)
 .claude/worktrees/
+
+# Local storage (STORAGE_PROVIDER=local, UPLOAD_DIR=./uploads): files the API and the e2e suite write
+uploads/

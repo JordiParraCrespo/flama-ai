@@ -19,7 +19,8 @@ export interface AccessScope {
    */
   grants: ReadonlyMap<string, ReadonlySet<string> | 'all'>;
   /**
-   * Skip scoping entirely — the platform tier, or a `manage all` holder.
+   * Skip the slice within the tenant (team, own, grant) — the platform tier, or
+   * a `manage all` holder. The tenant still holds while `organizationId` is set.
    * Always audited when true, and never set for an impersonated session.
    */
   bypass: boolean;
