@@ -27,12 +27,15 @@ export function applyAccessScope<T extends ObjectLiteral>(
   const { keys, scopes } = resource;
 
   if (scopes.includes('organization') && keys.organization) {
-    // A caller with no active organization can see no tenant-scoped row,
-    // unless it is the platform tier acting globally.
-    if (!scope.organizationId) return scope.bypass ? qb : qb.andWhere('1 = 0');
-    qb.andWhere(`${alias}.${keys.organization} = :authzOrganizationId`, {
-      authzOrganizationId: scope.organizationId,
-    });
+    if (scope.organizationId) {
+      qb.andWhere(`${alias}.${keys.organization} = :authzOrganizationId`, {
+        authzOrganizationId: scope.organizationId,
+      });
+    } else if (!scope.bypass) {
+      // A caller with no active organization can see no tenant-scoped row,
+      // unless it is the platform tier acting globally.
+      return qb.andWhere('1 = 0');
+    }
   }
 
   // A bypass skips the slice within the tenant, never the tenant itself.
