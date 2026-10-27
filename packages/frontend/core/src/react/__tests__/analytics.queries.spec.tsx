@@ -7,6 +7,11 @@ import { ANALYTICS_EVENTS, type AnalyticsEvent } from '../../modules/analytics/a
 import { useCaptureEvent, useCaptureOnMount, usePageView } from '../analytics.queries';
 import { FlamaProvider } from '../context';
 
+function Banner() {
+  useCaptureOnMount(ANALYTICS_EVENTS.USER_SIGNED_UP);
+  return null;
+}
+
 function setup() {
   const capture = vi.fn();
   const pageView = vi.fn();
@@ -142,11 +147,6 @@ describe('useCaptureOnMount', () => {
 
   it('captures once per mounted component, not once per tree', async () => {
     const { wrapper: Wrapper, capture } = setup();
-
-    function Banner() {
-      useCaptureOnMount(ANALYTICS_EVENTS.USER_SIGNED_UP);
-      return null;
-    }
 
     render(
       <Wrapper>
