@@ -23,6 +23,8 @@
     "check:singletons": "node --test scripts/check-singletons.test.mjs && node scripts/check-singletons.mjs",
     "check:compiler": "node --test scripts/check-react-compiler.test.mjs && node scripts/check-react-compiler.mjs",
     "ci:local": "node scripts/ci/local.mjs",
+    "monitoring:up": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/monitoring/compose.mjs up -d",
+    "monitoring:down": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/monitoring/compose.mjs down",
     "test:scripts": "node --test scripts/lib/*.test.mjs scripts/plugins/*.test.mjs scripts/ci/*.test.mjs scripts/check-backend-public-api.test.mjs",
     "plugin:add": "node scripts/plugins/plugin.mjs add",
     "plugin:remove": "node scripts/plugins/plugin.mjs remove",

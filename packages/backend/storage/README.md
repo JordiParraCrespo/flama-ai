@@ -26,6 +26,8 @@ constructor(private readonly storage: StorageService) {}
 const key = await this.storage.upload(file, 'avatars/u/1.png', 'image/png');
 // Resolve it per response (signed and expiring on an object store).
 const url = await this.storage.getSignedUrl(key);
+// Or read the bytes yourself, for a private file you serve or forward.
+const bytes = await this.storage.download(key);
 ```
 
 ## Scripts

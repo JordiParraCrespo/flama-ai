@@ -1,0 +1,127 @@
+# Prometheus alerting rules for the API, loaded by the local monitoring stack
+# (docker/docker-compose.monitoring.yml) and by any Prometheus you point at the
+# same file (`rule_files:`). Every series the API exports carries `app="api"`
+# from `MetricsModule.forRoot` in `apps/api/src/app.module.ts`; adjust the
+# matcher if your stack relabels it. A queue or outbox backlog needs its own
+# gauges: add them with `createMetricsProvider` and their rules here.
+
+groups:
+  - name: api.availability
+    rules:
+      # A metric the API itself exports, not `up`: `up` carries the scrape
+      # job's labels, which live in the stack's config rather than here.
+      - alert: ApiAbsent
+        expr: absent(process_start_time_seconds{app="api"})
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "The API has not answered a scrape for 5 minutes"
+          description: >-
+            Either the API is down or the scrape is failing (a wrong
+            METRICS_TOKEN answers 404). Check the API process and its log.
+
+      - alert: ApiRestarting
+        expr: changes(process_start_time_seconds{app="api"}[30m]) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "The API restarted {{ $value }} times in 30 minutes"
+          description: >-
+            Liveness checks no dependency, so a restart is a crash or an
+            out-of-memory exit. The API log before each start says which.
+
+  - name: api.http
+    rules:
+      # Ratios are guarded by a minimum rate so a quiet night with one failed
+      # request is not an incident.
+      - alert: ApiServerErrors
+        expr: |
+          (
+            sum(rate(http_requests_total{app="api", status_class="5xx"}[5m]))
+              /
+            sum(rate(http_requests_total{app="api", status_class!="aborted"}[5m]))
+          ) > 0.05
+          and sum(rate(http_requests_total{app="api"}[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $value | humanizePercentage }} of API responses are 5xx"
+          description: >-
+            More than 5 % of answered requests failed on the server for 10
+            minutes. Break it down by `route` on the dashboard; the problem
+            documents' correlation ids lead to the log lines.
+
+      - alert: ApiServerErrorsByRoute
+        expr: |
+          (
+            sum by (route) (rate(http_requests_total{app="api", status_class="5xx"}[15m]))
+              /
+            sum by (route) (rate(http_requests_total{app="api", status_class!="aborted"}[15m]))
+          ) > 0.2
+          and sum by (route) (rate(http_requests_total{app="api"}[15m])) > 0.02
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.route }}: {{ $value | humanizePercentage }} of responses are 5xx"
+
+      - alert: ApiSlowResponses
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le, route) (rate(http_request_duration_seconds_bucket{app="api"}[5m]))
+          ) > 2
+          and sum by (route) (rate(http_request_duration_seconds_count{app="api"}[5m])) > 0.05
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.route }}: p95 latency is {{ $value | humanizeDuration }}"
+          description: >-
+            The 95th percentile has been over 2 s for 15 minutes. Check the
+            database pool (`DB_POOL_MAX`) and statement timeouts first.
+
+      - alert: ApiClientsAborting
+        expr: |
+          (
+            sum(rate(http_requests_total{app="api", status_class="aborted"}[15m]))
+              /
+            sum(rate(http_requests_total{app="api"}[15m]))
+          ) > 0.1
+          and sum(rate(http_requests_total{app="api"}[15m])) > 0.1
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $value | humanizePercentage }} of API requests are abandoned by the client"
+          description: >-
+            Clients are hanging up before the answer: usually responses slow
+            enough that a proxy or a browser gives up first.
+
+  - name: api.process
+    rules:
+      - alert: ApiEventLoopLag
+        expr: nodejs_eventloop_lag_p99_seconds{app="api"} > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "The API's event loop p99 lag is {{ $value | humanizeDuration }}"
+          description: >-
+            Something synchronous is holding the loop: every request on the
+            process waits behind it.
+
+      # A heap near its ceiling is an alert, not a liveness failure: the
+      # probe restarting a busy process at its peak is what this replaced.
+      - alert: ApiHeapNearLimit
+        expr: |
+          sum(nodejs_heap_space_size_used_bytes{app="api"})
+            /
+          sum(nodejs_heap_space_size_total_bytes{app="api"}) > 0.9
+          and sum(nodejs_heap_size_used_bytes{app="api"}) > 512 * 1024 * 1024
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "The API heap is over 90 % of its size and above 512 MiB"
