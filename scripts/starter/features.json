@@ -191,14 +191,14 @@
           "file": "package.json",
           "path": ["pnpm", "overrides"],
           "set": {
-            "react-native": "0.86.3"
+            "react-native": "0.88.0"
           }
         },
         {
           "file": "apps/api/package.json",
           "path": ["dependencies"],
           "set": {
-            "@better-auth/expo": "^1.6.25"
+            "@better-auth/expo": "^1.7.12"
           }
         },
         {

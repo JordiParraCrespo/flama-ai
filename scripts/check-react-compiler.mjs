@@ -119,7 +119,9 @@ async function oxcCompiler(require) {
   return async (file, source) => {
     const result = await transform(file, source, {
       jsx: { runtime: 'automatic' },
-      reactCompiler: {},
+      // Bail-outs are recoverable diagnostics, which oxc keeps out of
+      // `errors` unless asked; the code it returns is the same either way.
+      reactCompiler: { reportDiagnostics: true },
       sourcemap: false,
     });
     return result.errors.map((error) => {
