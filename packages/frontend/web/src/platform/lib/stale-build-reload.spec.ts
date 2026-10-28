@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { reloadOnStaleBuild, type StaleBuildWindow } from './stale-build-reload';
+import { reloadOnStaleBuild } from './stale-build-reload';
 
 /**
  * A stale hashed chunk reloads the page once, then falls through to the
@@ -13,7 +13,7 @@ function fakeWindow({ storageRefused = false } = {}) {
   const refuse = () => {
     throw new DOMException('denied', 'SecurityError');
   };
-  const win: StaleBuildWindow = {
+  const win = {
     addEventListener: target.addEventListener.bind(target),
     sessionStorage: storageRefused
       ? { getItem: refuse, setItem: refuse }
@@ -23,29 +23,33 @@ function fakeWindow({ storageRefused = false } = {}) {
         },
     location: { reload },
   };
+  vi.stubGlobal('window', win);
   const fail = () => {
     const event = new Event('vite:preloadError', { cancelable: true });
     target.dispatchEvent(event);
     return event;
   };
-  return { win, reload, fail };
+  return { reload, fail };
 }
 
 describe('reloadOnStaleBuild', () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
 
   it('reloads on a chunk that failed to load, and keeps the error from surfacing', () => {
-    const { win, reload, fail } = fakeWindow();
-    reloadOnStaleBuild(win);
+    const { reload, fail } = fakeWindow();
+    reloadOnStaleBuild();
     const event = fail();
     expect(reload).toHaveBeenCalledOnce();
     expect(event.defaultPrevented).toBe(true);
   });
 
   it('lets a second failure right after a reload through, instead of looping', () => {
-    const { win, reload, fail } = fakeWindow();
-    reloadOnStaleBuild(win);
+    const { reload, fail } = fakeWindow();
+    reloadOnStaleBuild();
     fail();
     vi.advanceTimersByTime(2_000);
     const again = fail();
@@ -54,16 +58,16 @@ describe('reloadOnStaleBuild', () => {
   });
 
   it('never reloads when storage refuses the guard, which would loop on a chunk every load asks for', () => {
-    const { win, reload, fail } = fakeWindow({ storageRefused: true });
-    reloadOnStaleBuild(win);
+    const { reload, fail } = fakeWindow({ storageRefused: true });
+    reloadOnStaleBuild();
     const event = fail();
     expect(reload).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
   });
 
   it('restarts the quiet window on every failure, so a burst reloads once', () => {
-    const { win, reload, fail } = fakeWindow();
-    reloadOnStaleBuild(win);
+    const { reload, fail } = fakeWindow();
+    reloadOnStaleBuild();
     fail();
     vi.advanceTimersByTime(8_000);
     fail();
@@ -73,8 +77,8 @@ describe('reloadOnStaleBuild', () => {
   });
 
   it('reloads again once the guard has passed', () => {
-    const { win, reload, fail } = fakeWindow();
-    reloadOnStaleBuild(win);
+    const { reload, fail } = fakeWindow();
+    reloadOnStaleBuild();
     fail();
     vi.advanceTimersByTime(60_000);
     fail();

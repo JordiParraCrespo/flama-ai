@@ -7,12 +7,6 @@ const FAILED_AT_KEY = 'flama:stale-build-reload';
 /** A failure this soon after the last one is not a stale build: leave it to the screen. */
 const RELOAD_GUARD_MS = 10_000;
 
-/** The parts of `window` this reads, so a spec can hand it a fake one. */
-export type StaleBuildWindow = Pick<Window, 'addEventListener'> & {
-  sessionStorage: Pick<Storage, 'getItem' | 'setItem'>;
-  location: Pick<Location, 'reload'>;
-};
-
 /**
  * Reload the page when a lazily loaded chunk fails to load because a deploy
  * replaced it. Every chunk name is a content hash, so a tab opened before a
@@ -27,13 +21,13 @@ export type StaleBuildWindow = Pick<Window, 'addEventListener'> & {
  * reloads again; those failures go on to the screen's own error state. So
  * does every failure in a tab whose storage refuses the stamp.
  */
-export function reloadOnStaleBuild(target: StaleBuildWindow = window): void {
-  target.addEventListener('vite:preloadError', (event) => {
+export function reloadOnStaleBuild(): void {
+  window.addEventListener('vite:preloadError', (event) => {
     const now = Date.now();
     let last: number;
     try {
-      last = Number(target.sessionStorage.getItem(FAILED_AT_KEY)) || 0;
-      target.sessionStorage.setItem(FAILED_AT_KEY, String(now));
+      last = Number(window.sessionStorage.getItem(FAILED_AT_KEY)) || 0;
+      window.sessionStorage.setItem(FAILED_AT_KEY, String(now));
     } catch {
       // Storage refused: a reload nothing records could not tell the next
       // failure from this one, and a chunk every load asks for (a locale
@@ -42,6 +36,6 @@ export function reloadOnStaleBuild(target: StaleBuildWindow = window): void {
     }
     if (now - last < RELOAD_GUARD_MS) return;
     event.preventDefault();
-    target.location.reload();
+    window.location.reload();
   });
 }
