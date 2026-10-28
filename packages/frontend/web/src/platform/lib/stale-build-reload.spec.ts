@@ -2,10 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { reloadOnStaleBuild, type StaleBuildWindow } from './stale-build-reload';
 
 /**
- * A tab opened before a deploy asks for chunks the deploy removed. Without the
- * reload, the row menu's Delete threw into the session list's boundary and
- * emptied it under "Could not reach the server"; with a reload on every
- * failure, a chunk that is really gone would reload the page for ever.
+ * A stale hashed chunk reloads the page once, then falls through to the
+ * screen's own error state; a storage that refuses the stamp never reloads,
+ * since a chunk that is really gone would otherwise reload the page for ever.
  */
 function fakeWindow({ storageRefused = false } = {}) {
   const target = new EventTarget();

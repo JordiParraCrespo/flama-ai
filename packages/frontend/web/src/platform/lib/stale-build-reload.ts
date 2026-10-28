@@ -17,10 +17,8 @@ export type StaleBuildWindow = Pick<Window, 'addEventListener'> & {
  * Reload the page when a lazily loaded chunk fails to load because a deploy
  * replaced it. Every chunk name is a content hash, so a tab opened before a
  * release asks for files the release removed, and nginx answers those with
- * `index.html`: the import fails and the error lands in the nearest boundary,
- * where it reads as "Could not reach the server" (the row menu's Delete
- * emptied the whole session list this way). The reload fetches the current
- * `index.html` and its chunk names.
+ * `index.html`: the import fails and the error lands in the nearest boundary.
+ * The reload fetches the current `index.html` and its chunk names.
  *
  * Vite fires `vite:preloadError` for every failed dynamic import in a build.
  * Every failure is stamped, and only one with ten quiet seconds before it
