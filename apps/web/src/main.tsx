@@ -1,10 +1,13 @@
-import { i18nReady, ThemeProvider } from '@flama/frontend-web';
+import { i18nReady, reloadOnStaleBuild, ThemeProvider } from '@flama/frontend-web';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { FlamaAppProvider } from '@/providers/flama-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { App } from './app';
 import './styles/globals.css';
+
+// Before anything can import lazily: a tab older than the deploy reloads onto it.
+reloadOnStaleBuild();
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 
