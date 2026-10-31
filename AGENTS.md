@@ -370,6 +370,20 @@ pnpm generate:api-client # Regenerate typed API client (no database needed)
 pnpm changeset          # Create a changeset for versioning
 ```
 
+## Cursor Cloud
+
+Node is 26, from `.nvmrc`. Login shells select it with nvm. Postgres and Redis
+are `pnpm docker:dev`. On a new database, run
+`pnpm --filter @flama/api migration:run` before the API process starts: Better
+Auth checks its tables once at startup and keeps a miss for the life of that
+process, and `nest start --watch` does not restart after that crash until a
+file changes. The web dev server answers on `http://localhost:3000` (IPv6);
+`http://127.0.0.1:3001/api/v1/health` and `/api/v1/ready` are the API probes.
+Sign-up is `POST /api/auth/sign-up/email` and needs `Origin: http://localhost:3000`.
+`pnpm dev` also starts the Expo app, which needs a device; a headless session
+can use `pnpm exec turbo run dev --filter=!@flama/mobile --concurrency=20`
+(Turbo wants one slot per persistent task).
+
 ## Deployment
 
 - Docker Compose (`docker/`) for the API, Postgres and Redis
