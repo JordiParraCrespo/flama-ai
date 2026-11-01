@@ -85,12 +85,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@casl/ability": "^7.0.2",
+    "@casl/ability": "^7.1.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@flama/tsconfig": "workspace:^",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   }
 }
