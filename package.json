@@ -43,6 +43,7 @@
     "docker:prod": "docker compose --env-file .env -f docker/docker-compose.prod.yml up -d",
     "docker:prod:down": "docker compose --env-file .env -f docker/docker-compose.prod.yml down",
     "generate:openapi": "pnpm --filter @flama/api generate:openapi",
+    "migration:new": "pnpm --filter @flama/api migration:new",
     "generate:api-client": "pnpm generate:openapi && pnpm --filter @flama/api-client generate",
     "changeset": "changeset",
     "version-packages": "changeset version",
