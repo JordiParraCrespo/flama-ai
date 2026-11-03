@@ -22,8 +22,10 @@ jobs:
           node-version: 26
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # v2 of the action drives @changesets/cli v3 and refuses the v2 CLI this
+      # repo pins; it moves with the CLI (dependabot.yml holds it back until then).
       - name: Create Release Pull Request
-        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v1
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           commit: "chore: release packages"
           title: "chore: release packages"

@@ -10,12 +10,18 @@ import { loadMigrations } from './run-migrations';
  * claim.
  */
 describe('the outbox lease (integration)', () => {
-  const LEASE_MS = 400;
-  const SLOW_MS = 1_500;
+  // A renewal lands one delivery plus two round trips (mark, renew) after the
+  // last, so the lease must outlast a row by more than a slow runner's round
+  // trips: half the lease leaves room for 250 ms of them.
+  const LEASE_MS = 1_000;
+  const ROW_MS = LEASE_MS / 2;
+  const SLOW_MS = LEASE_MS * 3;
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   let pgContainer: StartedTestContainer;
   let dataSource: DataSource;
+  /** Every relay a test built; stopped after it, so a failure cannot leave one polling the next test's rows. */
+  const relays: OutboxRelay[] = [];
 
   beforeAll(async () => {
     pgContainer = await new GenericContainer('postgres:18-alpine')
@@ -37,19 +43,27 @@ describe('the outbox lease (integration)', () => {
     await pgContainer?.stop();
   });
 
+  const relay = (owner: string, deliveries: string[], delayMs: number, leaseMs: number) => {
+    const built = new OutboxRelay(
+      new OutboxService(dataSource),
+      async (message: OutboxMessageRecord) => {
+        deliveries.push(`${owner}:${message.id}`);
+        await sleep(delayMs);
+      },
+      { owner, leaseMs, pollIntervalMs: 50 },
+    );
+    relays.push(built);
+    return built;
+  };
+
   /** Two relays on the same table: `a` claims first and is slow, `b` polls every 50 ms. */
   const twoRelays = (delayMs: number) => {
     const deliveries: string[] = [];
-    const relay = (owner: string, delay: number) =>
-      new OutboxRelay(
-        new OutboxService(dataSource),
-        async (message: OutboxMessageRecord) => {
-          deliveries.push(`${owner}:${message.id}`);
-          await sleep(delay);
-        },
-        { owner, leaseMs: LEASE_MS, pollIntervalMs: 50 },
-      );
-    return { deliveries, a: relay('relay:a', delayMs), b: relay('relay:b', 0) };
+    return {
+      deliveries,
+      a: relay('relay:a', deliveries, delayMs, LEASE_MS),
+      b: relay('relay:b', deliveries, 0, LEASE_MS),
+    };
   };
 
   const rows = async () =>
@@ -69,21 +83,26 @@ describe('the outbox lease (integration)', () => {
     await dataSource.query(`TRUNCATE "outbox_message"`);
   });
 
+  afterEach(async () => {
+    await Promise.all(relays.splice(0).map((built) => built.stop()));
+  });
+
   it('keeps the rows waiting behind a slow one: each row renews them first', async () => {
-    // Three rows of 300 ms against a 400 ms lease: without renewal the third
-    // lapses at 400 ms and `b` would claim it mid-batch.
-    await seed(3);
-    const { deliveries, a, b } = twoRelays(300);
+    // Four rows of half a lease each: without renewal the claim lapses while
+    // `a` is on the third row, and `b` would claim the fourth mid-batch.
+    await seed(4);
+    const { deliveries, a, b } = twoRelays(ROW_MS);
     const draining = a.drainOnce();
     await sleep(50);
     b.start();
-    await expect(draining).resolves.toBe(3);
+    await expect(draining).resolves.toBe(4);
     await sleep(200);
     await b.stop();
 
     const all = await rows();
     expect(deliveries.filter((entry) => entry.startsWith('relay:b'))).toEqual([]);
     expect(all.map((row) => [row.status, row.attempts])).toEqual([
+      ['processed', 1],
       ['processed', 1],
       ['processed', 1],
       ['processed', 1],
@@ -95,17 +114,11 @@ describe('the outbox lease (integration)', () => {
     // fence guarantees is that `a` finishing late does not mark `b`'s claim
     // processed or release it.
     await seed(1);
-    const { deliveries, a, b } = twoRelays(SLOW_MS);
+    const deliveries: string[] = [];
+    const a = relay('relay:a', deliveries, SLOW_MS, LEASE_MS);
     const draining = a.drainOnce();
     await sleep(50);
-    const slowB = new OutboxRelay(
-      new OutboxService(dataSource),
-      async (message) => {
-        deliveries.push(`relay:b:${message.id}`);
-        await sleep(SLOW_MS * 2);
-      },
-      { owner: 'relay:b', leaseMs: 60_000, pollIntervalMs: 50 },
-    );
+    const slowB = relay('relay:b', deliveries, SLOW_MS, 60_000);
     slowB.start();
     await draining;
 
@@ -125,7 +138,6 @@ describe('the outbox lease (integration)', () => {
     expect((await rows())[0]).toMatchObject({ status: 'pending', lockedBy: 'relay:b' });
 
     await slowB.stop();
-    await b.stop();
     expect((await rows())[0].status).toBe('processed');
   }, 20_000);
 });
