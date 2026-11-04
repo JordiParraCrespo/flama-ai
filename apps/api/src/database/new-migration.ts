@@ -23,5 +23,11 @@ if ('error' in file) {
 }
 
 const path = resolve(MIGRATIONS_DIR, file.fileName);
-writeFileSync(path, file.source, { flag: 'wx' });
+try {
+  writeFileSync(path, file.source, { flag: 'wx' });
+} catch (error) {
+  if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+  console.error(`${file.fileName} was just created by another run; run the command again.`);
+  process.exit(1);
+}
 console.log(`Created ${relative(workspaceRoot(__dirname), path)} (${file.className})`);

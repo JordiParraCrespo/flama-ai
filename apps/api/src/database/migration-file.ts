@@ -23,8 +23,8 @@ const NAME = /^[A-Z][A-Za-z]*$/;
 /** `<13-digit timestamp>-<Name>.ts`, the one shape a migration's file name takes. */
 const FILE_NAME = /^(\d{13})-([A-Z][A-Za-z]*)\.ts$/;
 
-/** `export class <Name><13-digit timestamp> implements MigrationInterface`, as TypeORM reads it. */
-const CLASS_DECLARATION = /export class ([A-Z][A-Za-z]*?)(\d{13}) implements MigrationInterface/;
+/** `export class <Name><13-digit timestamp> implements MigrationInterface`, as TypeORM reads it. The skeleton in `newMigrationFile` and this pattern are co-owned: change one, change both. */
+const CLASS_DECLARATION = /export\s+class\s+([A-Z][A-Za-z]*?)(\d{13})\s+implements\s+MigrationInterface\b/;
 
 export interface MigrationStamp {
   timestamp: string;
