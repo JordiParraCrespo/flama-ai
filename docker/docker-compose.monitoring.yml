@@ -20,7 +20,7 @@ services:
   prometheus:
     # quay.io, Prometheus' own registry, rather than Docker Hub, which answers
     # anonymous pulls from a shared address with 429.
-    image: quay.io/prometheus/prometheus:v3.5.0
+    image: quay.io/prometheus/prometheus:v3.15.1
     restart: unless-stopped
     # An empty METRICS_TOKEN (the .env.example default) gives no secret file
     # rather than an error, and Prometheus would start with every scrape of
@@ -62,7 +62,7 @@ services:
   # above, at http://localhost:3030. Anonymous and an Admin, with no login
   # form: it is published on loopback only and holds nothing but local data.
   grafana:
-    image: grafana/grafana:12.1.1
+    image: grafana/grafana:13.3.0
     restart: unless-stopped
     depends_on: [prometheus]
     environment:
