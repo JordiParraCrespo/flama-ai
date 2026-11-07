@@ -24,11 +24,13 @@ export function canGrantScope(
   grant: AccessGrantInput,
   resource: Pick<ResourceDefinition, 'keys'> | undefined,
 ): boolean {
-  // A person's own rows are passed on only by name, and only by someone already
-  // granted that row (`isPersonOwned`). A type the registry does not know is
-  // held to the same rule, so leaving the definition out never reopens it.
-  const personOwned = resource === undefined || isPersonOwned(resource.keys);
-  if (actorScope.bypass && !personOwned) return true;
+  // A type the registry does not know is held to the person-owned rule, so
+  // leaving the definition out never reopens it.
+  if (resource === undefined || isPersonOwned(resource.keys)) {
+    return canPassOnHeldRow(actorScope, grant);
+  }
+
+  if (actorScope.bypass) return true;
 
   // A grant is always written inside one tenant, and never a different one.
   if (!actorScope.organizationId) return false;
@@ -36,7 +38,20 @@ export function canGrantScope(
 
   const held = actorScope.grants.get(grant.resourceType);
 
-  if (grant.resourceId === null) return !personOwned && held === 'all';
-  if (held === 'all') return !personOwned;
+  if (grant.resourceId === null) return held === 'all';
+  if (held === 'all') return true;
   return held?.has(grant.resourceId) ?? false;
+}
+
+/**
+ * A person's own rows are passed on by name only, and only by someone already
+ * granted that row: no bypass, no `'all'`, no "every row".
+ */
+function canPassOnHeldRow(actorScope: AccessScope, grant: AccessGrantInput): boolean {
+  if (!actorScope.organizationId) return false;
+  if (grant.organizationId !== actorScope.organizationId) return false;
+  if (grant.resourceId === null) return false;
+
+  const held = actorScope.grants.get(grant.resourceType);
+  return held !== undefined && held !== 'all' && held.has(grant.resourceId);
 }

@@ -9,10 +9,12 @@ import type { AccessScope } from './access-scope';
  * The organization key is applied conjunctively — a tenant boundary is not
  * something another dimension may override, a bypass included: a platform
  * operator acting in a workspace sees that workspace, and only a bypass with no
- * active organization reaches every tenant. A resource with no organization
- * key belongs to a person, not a tenant, so neither a bypass nor an `'all'`
- * grant widens it: its rows are the caller's own and the ones granted by id. Team / own / grant are applied
+ * active organization reaches every tenant. Team / own / grant are applied
  * disjunctively: satisfying any one of them makes a row visible.
+ *
+ * A resource with no organization key belongs to a person, so neither a bypass
+ * nor an `'all'` grant short-circuits it: its rows are the caller's own and the
+ * ones granted by id.
  *
  * **Fails closed.** If no dimension yields a clause, the caller can reach
  * nothing of this type and the query is made unsatisfiable. Returning the
