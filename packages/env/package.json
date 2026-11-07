@@ -34,12 +34,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "dotenv": "^18.0.8"
+    "dotenv": "^18.0.9"
   },
   "devDependencies": {
     "@flama/tsconfig": "workspace:^",
-    "@types/node": "^26.6.5",
-    "typescript": "^6.0.3",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   }
 }
