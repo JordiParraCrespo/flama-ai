@@ -46,6 +46,15 @@ const OrgOnly = defineResource({
   scopes: ['organization'],
 });
 
+const PersonOwned = defineResource({
+  subject: 'Host',
+  label: 'Hosts',
+  group: 'platform',
+  actions: [{ name: 'read' }],
+  keys: { owner: 'ownerId', id: 'id' },
+  scopes: ['own', 'grant'],
+});
+
 function scope(overrides: Partial<AccessScope> = {}): AccessScope {
   return {
     userId: 'user-1',
@@ -58,6 +67,14 @@ function scope(overrides: Partial<AccessScope> = {}): AccessScope {
 }
 
 describe('applyAccessScope', () => {
+  it("does not let a bypass or an 'all' grant widen a person's own rows", () => {
+    for (const overrides of [{ bypass: true }, { grants: new Map([['Host', 'all' as const]]) }]) {
+      const qb = fakeQueryBuilder('host');
+      applyAccessScope(qb, PersonOwned, scope(overrides));
+      expect(qb.calls[0]?.clause).toContain('host.ownerId = :authzUserId');
+    }
+  });
+
   it('keeps a bypass scope inside its active organization, and drops only the slice', () => {
     // An admin's lists crossed workspaces when the bypass skipped the tenant
     // clause too.

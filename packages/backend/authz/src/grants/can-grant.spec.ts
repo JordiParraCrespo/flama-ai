@@ -4,6 +4,16 @@ import type { AccessScope } from '../scope/access-scope';
 import { canGrant, ungrantablePermissions } from './can-grant';
 import { canGrantScope } from './can-grant-scope';
 
+const tenantOwned = { keys: { organization: 'organizationId', id: 'id' } };
+const personOwned = { keys: { owner: 'ownerId', id: 'id' } };
+const grantOn =
+  (resource: Parameters<typeof canGrantScope>[2]) =>
+  (actor: Parameters<typeof canGrantScope>[0], grant: Parameters<typeof canGrantScope>[1]) =>
+    canGrantScope(actor, grant, resource);
+const grantTenant = grantOn(tenantOwned);
+const grantPerson = grantOn(personOwned);
+const grantUnregistered = grantOn(undefined);
+
 const abilityOf = (rules: Parameters<typeof defineAbilitiesFromPermissions>[0]) =>
   defineAbilitiesFromPermissions(rules);
 
@@ -59,7 +69,7 @@ describe('canGrantScope', () => {
   it('allows granting a row the actor holds', () => {
     const actor = scope({ grants: new Map([['Lead', new Set(['lead-1'])]]) });
     expect(
-      canGrantScope(actor, {
+      grantTenant(actor, {
         organizationId: 'org-1',
         resourceType: 'Lead',
         resourceId: 'lead-1',
@@ -70,7 +80,7 @@ describe('canGrantScope', () => {
   it('blocks granting a row the actor does not hold', () => {
     const actor = scope({ grants: new Map([['Lead', new Set(['lead-1'])]]) });
     expect(
-      canGrantScope(actor, {
+      grantTenant(actor, {
         organizationId: 'org-1',
         resourceType: 'Lead',
         resourceId: 'lead-2',
@@ -87,14 +97,14 @@ describe('canGrantScope', () => {
       resourceId: null,
     };
 
-    expect(canGrantScope(partial, request)).toBe(false);
-    expect(canGrantScope(full, request)).toBe(true);
+    expect(grantTenant(partial, request)).toBe(false);
+    expect(grantTenant(full, request)).toBe(true);
   });
 
   it('never crosses a tenant boundary', () => {
     const actor = scope({ grants: new Map([['Lead', 'all']]) });
     expect(
-      canGrantScope(actor, {
+      grantTenant(actor, {
         organizationId: 'org-2',
         resourceType: 'Lead',
         resourceId: null,
@@ -104,11 +114,32 @@ describe('canGrantScope', () => {
 
   it('lets the platform tier through', () => {
     expect(
-      canGrantScope(scope({ bypass: true }), {
+      grantTenant(scope({ bypass: true }), {
         organizationId: 'org-2',
         resourceType: 'Lead',
         resourceId: null,
       }),
     ).toBe(true);
+  });
+
+  describe("a person's own rows (no organization key)", () => {
+    const grant = { organizationId: 'org-1', resourceType: 'Host', resourceId: 'host-1' };
+    const every = { ...grant, resourceId: null };
+
+    it('are not passed on by the platform tier or by an "all" holder', () => {
+      expect(grantPerson(scope({ bypass: true }), grant)).toBe(false);
+      const all = scope({ grants: new Map([['Host', 'all']]) });
+      expect(grantPerson(all, grant)).toBe(false);
+      expect(grantPerson(all, every)).toBe(false);
+    });
+
+    it('are passed on by someone already granted that row, by id', () => {
+      const holder = scope({ grants: new Map([['Host', new Set(['host-1'])]]) });
+      expect(grantPerson(holder, grant)).toBe(true);
+    });
+
+    it('hold a type the registry does not know to the same rule', () => {
+      expect(grantUnregistered(scope({ bypass: true }), grant)).toBe(false);
+    });
   });
 });
