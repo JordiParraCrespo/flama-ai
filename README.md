@@ -152,7 +152,8 @@ pnpm arch                 # Check architecture boundaries (apps/api and the fron
 pnpm check                # Biome check + fix
 pnpm ci:local             # Pull request CI's checks, locally, over what this branch affects
 pnpm docker:dev           # Start dev infrastructure
-pnpm monitoring:up        # Prometheus + Grafana over the local API (needs METRICS_TOKEN)
+pnpm monitoring:up        # Prometheus, Loki + Grafana over the local API (needs METRICS_TOKEN; LOG_FILE for logs)
+pnpm logs                 # LogQL over the local Loki (docker/monitoring/README.md)
 pnpm docker:dev:down      # Stop dev infrastructure
 pnpm docker:prod          # Start production stack (requires the root .env and BETTER_AUTH_SECRET)
 pnpm docker:prod:down     # Stop production stack, keeping its volumes

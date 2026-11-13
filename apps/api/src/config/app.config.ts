@@ -1,6 +1,21 @@
+import { isAbsolute, resolve } from 'node:path';
+import { findWorkspaceRoot } from '@flama/env';
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
 import { parseEnv } from './env';
+
+/**
+ * `LOG_FILE` as the path the loggers write to. **Optional**: a file the API
+ * also writes its log lines to, as JSON, for a shipper to tail
+ * (`pnpm monitoring:up` runs Grafana Alloy over `.logs/`, into Loki); unset
+ * or blank, logs go to stdout only. A relative path is taken from the
+ * repository root, so `.logs/api.log` is the same file wherever the API is
+ * started from. Read once, in `app.module.ts`, for both loggers.
+ */
+export function resolveLogFile(value: string | undefined): string | undefined {
+  if (!value?.trim()) return undefined;
+  return isAbsolute(value) ? value : resolve(findWorkspaceRoot() ?? process.cwd(), value);
+}
 
 const schema = z.object({
   port: z.coerce.number().default(3001),
