@@ -21,8 +21,35 @@ export const CacheMetrics: ModuleMetrics = {
  */
 const MAX_NAMESPACES = 20;
 const NAMESPACE = /^[a-z][a-z0-9_-]{0,31}$/;
-const OPERATIONS: readonly CacheReadOperation[] = ['get'];
-const RESULTS: readonly CacheReadResult[] = ['hit', 'miss', 'error'];
+/**
+ * Every operation and result the cache reports, written as records keyed by
+ * the cache's own types: one it adds fails to compile here until it is listed,
+ * so the zeroed series cannot fall behind what `observe` counts.
+ */
+const OPERATIONS = Object.keys({ get: true } satisfies Record<
+  CacheReadOperation,
+  true
+>) as CacheReadOperation[];
+const RESULTS = Object.keys({ hit: true, miss: true, error: true } satisfies Record<
+  CacheReadResult,
+  true
+>) as CacheReadResult[];
+
+/**
+ * The label a namespace is counted under, given the ones admitted so far, and
+ * whether this read is the one that admits it. Pure: the caller records the
+ * admission and zeroes the new series.
+ */
+function admitNamespace(
+  admitted: ReadonlySet<string>,
+  namespace: string,
+): { label: string; newlyAdmitted: boolean } {
+  if (admitted.has(namespace)) return { label: namespace, newlyAdmitted: false };
+  if (!NAMESPACE.test(namespace) || admitted.size >= MAX_NAMESPACES) {
+    return { label: 'other', newlyAdmitted: false };
+  }
+  return { label: namespace, newlyAdmitted: true };
+}
 
 interface CounterLike {
   inc(labels: Record<string, string>, value?: number): void;
@@ -42,16 +69,13 @@ export class CacheReadMetricsAdapter {
   }
 
   readonly observe: CacheReadObserver = ({ operation, namespace, result }) => {
-    this.reads.inc({ namespace: this.label(namespace), operation, result });
+    const { label, newlyAdmitted } = admitNamespace(this.namespaces, namespace);
+    if (newlyAdmitted) {
+      this.namespaces.add(label);
+      this.zero(label);
+    }
+    this.reads.inc({ namespace: label, operation, result });
   };
-
-  private label(namespace: string): string {
-    if (this.namespaces.has(namespace)) return namespace;
-    if (!NAMESPACE.test(namespace) || this.namespaces.size >= MAX_NAMESPACES) return 'other';
-    this.namespaces.add(namespace);
-    this.zero(namespace);
-    return namespace;
-  }
 
   /**
    * Every result of every operation at zero for a namespace when it first

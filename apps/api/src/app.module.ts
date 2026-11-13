@@ -50,6 +50,13 @@ import { CredentialThrottlerGuard } from './throttling/guards/credential-throttl
 import { RedisThrottlerStorage } from './throttling/infrastructure/redis-throttler.adapter';
 import { ThrottlingModule } from './throttling/throttling.module';
 import { UsersModule } from './users/user.module';
+
+/**
+ * Where both loggers also write, resolved once. The Better Auth route logger
+ * is built when this module is declared, before config is, so the request
+ * logger reads the same value rather than its own copy through config.
+ */
+const logFile = resolveLogFile(process.env.LOG_FILE);
 // flama:plugins api-module-imports
 
 @Module({
@@ -69,7 +76,7 @@ import { UsersModule } from './users/user.module';
         // SQL query lines are emitted at debug; the opt-in is pointless if
         // the logger's threshold (info by default) swallows them.
         level: configService.get('database.logQueries') ? 'debug' : undefined,
-        file: configService.get('app.logFile'),
+        file: logFile,
       }),
     }),
     // The registry `/api/v1/metrics` renders; every module's metrics register
@@ -156,7 +163,7 @@ import { UsersModule } from './users/user.module';
       // Its lines go to LOG_FILE too, so sign-ins reach Loki with the rest.
       middleware: createAuthRouteLoggingMiddleware({
         pretty: process.env.NODE_ENV !== 'production',
-        file: resolveLogFile(process.env.LOG_FILE),
+        file: logFile,
       }),
     }),
     OutboxModule,

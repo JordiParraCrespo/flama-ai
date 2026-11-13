@@ -1,4 +1,11 @@
-import { type DynamicModule, Global, Module, type ModuleMetadata } from '@nestjs/common';
+import {
+  type DynamicModule,
+  Global,
+  type InjectionToken,
+  Module,
+  type ModuleMetadata,
+  type OptionalFactoryDependency,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from './cache.service';
 import { type RedisCacheOptions, RedisCacheService } from './redis-cache.service';
@@ -8,10 +15,13 @@ import { type RedisCacheOptions, RedisCacheService } from './redis-cache.service
  * needs one (an `onRead` observer that counts reads on a metric).
  */
 export interface CacheModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-  // biome-ignore lint/suspicious/noExplicitAny: mirrors Nest's async-options factory contract
-  inject?: any[];
-  // biome-ignore lint/suspicious/noExplicitAny: mirrors Nest's async-options factory contract
-  useFactory: (...args: any[]) => RedisCacheOptions;
+  inject?: (InjectionToken | OptionalFactoryDependency)[];
+  /**
+   * Gets the `inject` providers, in order, and returns the cache's options.
+   * `never[]` lets a factory name its own parameter types without the
+   * module's public type widening to `any`.
+   */
+  useFactory: (...args: never[]) => RedisCacheOptions;
 }
 
 const CACHE_OPTIONS = Symbol('CACHE_OPTIONS');
