@@ -22,7 +22,7 @@ services:
   prometheus:
     # quay.io, Prometheus' own registry, rather than Docker Hub, which answers
     # anonymous pulls from a shared address with 429.
-    image: quay.io/prometheus/prometheus:v3.5.0
+    image: quay.io/prometheus/prometheus:v3.16.0
     restart: unless-stopped
     # An empty METRICS_TOKEN (the .env.example default) gives no secret file
     # rather than an error, and Prometheus would start with every scrape of
@@ -63,7 +63,7 @@ services:
   # Log storage, queried with LogQL by Grafana and `pnpm logs`
   # (scripts/monitoring/logs.mjs). Config: monitoring/loki/loki.yaml.
   loki:
-    image: grafana/loki:3.5.3
+    image: grafana/loki:3.7.9
     restart: unless-stopped
     command: [-config.file=/etc/loki/loki.yaml]
     ports:
@@ -78,7 +78,7 @@ services:
   # belongs to you, not to the root Docker would create it as, and the API
   # can write into it.
   alloy:
-    image: grafana/alloy:v1.10.2
+    image: grafana/alloy:v1.21.3
     restart: unless-stopped
     depends_on: [loki]
     command:
@@ -96,7 +96,7 @@ services:
   # Admin, with no login form: it is published on loopback only and holds
   # nothing but local data.
   grafana:
-    image: grafana/grafana:12.1.1
+    image: grafana/grafana:13.3.0
     restart: unless-stopped
     depends_on: [prometheus, loki]
     environment:
