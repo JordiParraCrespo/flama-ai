@@ -10,8 +10,8 @@ const RELOAD_GUARD_MS = 10_000;
 /**
  * Reload the page when a lazily loaded chunk fails to load because a deploy
  * replaced it. Every chunk name is a content hash, so a tab opened before a
- * release asks for files the release removed, and nginx answers those with
- * `index.html`: the import fails and the error lands in the nearest boundary.
+ * release asks for files the release removed: the import fails and the error
+ * lands in the nearest boundary.
  * The reload fetches the current `index.html` and its chunk names.
  *
  * Vite fires `vite:preloadError` for every failed dynamic import in a build.
@@ -20,9 +20,16 @@ const RELOAD_GUARD_MS = 10_000;
  * unreachable, and a burst of failures is one stale build, so neither
  * reloads again; those failures go on to the screen's own error state. So
  * does every failure in a tab whose storage refuses the stamp.
+ *
+ * The event is never cancelled. Vite's import helper turns a cancelled
+ * failure into an import that *resolves* to `undefined`, and the reload is
+ * not instant: in that gap the router read its lazy route's `component` off
+ * the missing module and threw "Cannot read properties of undefined (reading
+ * 'component')", which hides the real cause. Left alone, the import rejects
+ * with the loader's own error until the page goes.
  */
 export function reloadOnStaleBuild(): void {
-  window.addEventListener('vite:preloadError', (event) => {
+  window.addEventListener('vite:preloadError', () => {
     const now = Date.now();
     let last: number;
     try {
@@ -35,7 +42,6 @@ export function reloadOnStaleBuild(): void {
       return;
     }
     if (now - last < RELOAD_GUARD_MS) return;
-    event.preventDefault();
     window.location.reload();
   });
 }
