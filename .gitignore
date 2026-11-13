@@ -37,6 +37,8 @@ Thumbs.db
 
 # Docker
 docker/**/*.log
+# The API's log file for Alloy and Loki (LOG_FILE, pnpm monitoring:up).
+.logs/
 
 # Test
 coverage/

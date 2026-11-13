@@ -125,3 +125,19 @@ groups:
           severity: warning
         annotations:
           summary: "The API heap is over 90 % of its size and above 512 MiB"
+
+  # The Redis cache (`cache_reads_total`, every read through `CacheService`).
+  - name: api.cache
+    rules:
+      - alert: CacheReadsFailing
+        expr: >-
+          sum(rate(cache_reads_total{app="api", result="error"}[5m]))
+          / sum(rate(cache_reads_total{app="api"}[5m])) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Over 5% of cache reads have failed for 10 minutes"
+          description: >-
+            Redis is the usual cause (`/api/v1/ready`). The log has each
+            failure: `pnpm logs '{app="api", level="error"}'`.

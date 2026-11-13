@@ -30,8 +30,11 @@ import { AuthModule } from './auth/auth.module';
 import { ScopesGuard } from './auth/guards/scopes.guard';
 import { auth } from './auth/infrastructure/better-auth.config';
 import { AuthzModule } from './authz/authz.module';
+import { CacheMetricsModule } from './cache/cache.module';
+import { CacheReadMetricsAdapter } from './cache/infrastructure/cache-metrics.adapter';
 import { CapabilitiesModule } from './capabilities/capabilities.module';
 import { configs } from './config';
+import { resolveLogFile } from './config/app.config';
 import { emailDrivers } from './config/email.config';
 import { storageDrivers } from './config/storage.config';
 import { TypeOrmQueryLogger } from './config/typeorm-query.logger';
@@ -66,6 +69,7 @@ import { UsersModule } from './users/user.module';
         // SQL query lines are emitted at debug; the opt-in is pointless if
         // the logger's threshold (info by default) swallows them.
         level: configService.get('database.logQueries') ? 'debug' : undefined,
+        file: configService.get('app.logFile'),
       }),
     }),
     // The registry `/api/v1/metrics` renders; every module's metrics register
@@ -132,7 +136,12 @@ import { UsersModule } from './users/user.module';
     CapabilitiesModule,
     EmailModule.register(emailDrivers),
     StorageModule.register(storageDrivers),
-    CacheModule.register(),
+    // Every read is counted (`cache_reads_total`), for the hit rate.
+    CacheModule.registerAsync({
+      imports: [CacheMetricsModule],
+      inject: [CacheReadMetricsAdapter],
+      useFactory: (metrics: CacheReadMetricsAdapter) => ({ onRead: metrics.observe }),
+    }),
     // `bodyParser.rawBody` attaches the raw request buffer to `req.rawBody`,
     // which a webhook controller needs to verify the sender's signature.
     //
@@ -144,8 +153,10 @@ import { UsersModule } from './users/user.module';
       auth,
       disableGlobalAuthGuard: true,
       bodyParser: { rawBody: true },
+      // Its lines go to LOG_FILE too, so sign-ins reach Loki with the rest.
       middleware: createAuthRouteLoggingMiddleware({
         pretty: process.env.NODE_ENV !== 'production',
+        file: resolveLogFile(process.env.LOG_FILE),
       }),
     }),
     OutboxModule,

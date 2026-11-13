@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
+  createMetricsProvider,
   HttpMetricsModule,
   METRICS_REGISTRY,
   MetricsModule,
@@ -9,6 +10,7 @@ import {
 import { Test } from '@nestjs/testing';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
+import { CacheMetrics } from '../cache/infrastructure/cache-metrics.adapter';
 import { apiHttpMetricsOptions } from '../health/infrastructure/http-metrics.config';
 
 /**
@@ -16,8 +18,10 @@ import { apiHttpMetricsOptions } from '../health/infrastructure/http-metrics.con
  * by string, so a renamed metric leaves an alert that can never fire and a
  * panel that draws nothing, silently. This parses both files and checks every
  * metric they name against what the API's registry actually exports (its
- * process metrics and the HTTP metrics, registered as the app registers
- * them). It does not evaluate PromQL: there is no `promtool` in the toolchain.
+ * process metrics, the HTTP metrics and the cache's, registered as the app
+ * registers them). Loki panels name log streams, not metrics, and are
+ * skipped. It does not evaluate PromQL: there is no `promtool` in the
+ * toolchain.
  */
 
 const MONITORING = resolve(__dirname, '../../../../docker/monitoring');
@@ -39,7 +43,8 @@ const rules: Rule[] = (
 interface Panel {
   id: number;
   type: string;
-  targets?: { expr: string }[];
+  datasource?: { type?: string };
+  targets?: { expr: string; datasource?: { type?: string } }[];
 }
 const dashboard = JSON.parse(
   readFileSync(join(MONITORING, 'grafana/dashboards/api.json'), 'utf8'),
@@ -47,6 +52,13 @@ const dashboard = JSON.parse(
   uid: string;
   panels: Panel[];
 };
+
+/** The PromQL targets of the dashboard; LogQL ones (Loki's) name streams, not metrics. */
+const promTargets = dashboard.panels.flatMap((panel) =>
+  (panel.targets ?? [])
+    .filter((target) => (target.datasource?.type ?? panel.datasource?.type) !== 'loki')
+    .map((target) => [`panel ${panel.id}`, target.expr] as const),
+);
 
 /** PromQL words that look like metric names but are functions, keywords or labels. */
 const PROMQL = new Set([
@@ -84,6 +96,7 @@ let exported: Set<string>;
 beforeAll(async () => {
   const moduleRef = await Test.createTestingModule({
     imports: [MetricsModule.forRoot(), HttpMetricsModule.register(apiHttpMetricsOptions)],
+    providers: [...createMetricsProvider(CacheMetrics)],
   }).compile();
   await moduleRef.init();
   const registry = moduleRef.get<Registry>(METRICS_REGISTRY);
@@ -102,6 +115,7 @@ describe('monitoring config', () => {
     expect(exported.has('http_requests_total')).toBe(true);
     expect(exported.has('http_request_duration_seconds_bucket')).toBe(true);
     expect(exported.has('nodejs_eventloop_lag_p99_seconds')).toBe(true);
+    expect(exported.has('cache_reads_total')).toBe(true);
   });
 
   it('gives every rule a name, an expression, a severity and a summary', () => {
@@ -126,9 +140,7 @@ describe('monitoring config', () => {
   it('names only metrics the API exports, in rules and panels alike', () => {
     const expressions = [
       ...rules.map((rule) => [`rule ${rule.alert}`, rule.expr ?? ''] as const),
-      ...dashboard.panels.flatMap((panel) =>
-        (panel.targets ?? []).map((target) => [`panel ${panel.id}`, target.expr] as const),
-      ),
+      ...promTargets,
     ];
     const unknown = expressions.flatMap(([where, expr]) =>
       metricsIn(expr)

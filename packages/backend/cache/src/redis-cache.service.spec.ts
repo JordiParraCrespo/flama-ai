@@ -2,7 +2,7 @@ import type { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const RedisCtor = vi.fn();
-const get = vi.fn(async () => null);
+const get = vi.fn<(key: string) => Promise<string | null>>(async () => null);
 const quit = vi.fn(async () => 'OK');
 const disconnect = vi.fn();
 
@@ -78,5 +78,48 @@ describe('RedisCacheService', () => {
 
     expect(quit).toHaveBeenCalledOnce();
     expect(disconnect).toHaveBeenCalledOnce();
+  });
+
+  // A hit rate is only as good as what is counted: a read that is not
+  // reported, or reported with its whole key (ids, tickets), skews it or
+  // grows Prometheus without bound.
+  describe('read observer', () => {
+    function observed() {
+      const reads: { operation: string; namespace: string; result: string }[] = [];
+      const cache = new RedisCacheService(config({}), { onRead: (read) => reads.push(read) });
+      return { reads, cache };
+    }
+
+    it('reports a hit or a miss per read, under the key’s first segment only', async () => {
+      const { reads, cache } = observed();
+      get.mockResolvedValueOnce('1').mockResolvedValueOnce(null);
+
+      await cache.get('user:profile:42');
+      await cache.get('session');
+
+      expect(reads).toEqual([
+        { operation: 'get', namespace: 'user', result: 'hit' },
+        { operation: 'get', namespace: 'session', result: 'miss' },
+      ]);
+    });
+
+    it('reports a failed read as an error and still fails it', async () => {
+      const { reads, cache } = observed();
+      get.mockRejectedValueOnce(new Error('down'));
+
+      await expect(cache.get('k:1')).rejects.toThrow('down');
+      expect(reads).toEqual([{ operation: 'get', namespace: 'k', result: 'error' }]);
+    });
+
+    it('never fails a read because the observer threw', async () => {
+      get.mockResolvedValueOnce('1');
+      const cache = new RedisCacheService(config({}), {
+        onRead: () => {
+          throw new Error('observer broke');
+        },
+      });
+
+      await expect(cache.get('k')).resolves.toBe(1);
+    });
   });
 });

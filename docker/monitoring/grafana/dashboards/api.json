@@ -1,7 +1,7 @@
 {
   "title": "Flama API",
   "uid": "flama-api",
-  "description": "HTTP traffic, latency and process health of the API. Source of truth: docker/monitoring/.",
+  "description": "HTTP traffic, latency, process health, the Redis cache and the logs of the API. Source of truth: docker/monitoring/.",
   "tags": ["flama", "api"],
   "timezone": "utc",
   "schemaVersion": 39,
@@ -19,6 +19,15 @@
         "label": "Prometheus",
         "type": "datasource",
         "query": "prometheus",
+        "current": {},
+        "hide": 0,
+        "refresh": 1
+      },
+      {
+        "name": "DS_LOKI",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
         "current": {},
         "hide": 0,
         "refresh": 1
@@ -635,6 +644,322 @@
           },
           "expr": "rate(process_cpu_seconds_total{app=\"api\"}[$__rate_interval])",
           "legendFormat": "cpu"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Cache",
+      "id": 21,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "Cache hit rate",
+      "id": 22,
+      "description": "Redis cache reads that found a value, over all of them.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 40
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        },
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(cache_reads_total{app=\"api\", result=\"hit\"}[$__rate_interval])) / sum(rate(cache_reads_total{app=\"api\"}[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Cache reads / s",
+      "id": 23,
+      "description": "Every cache read (get).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 40
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        },
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(cache_reads_total{app=\"api\"}[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Cache errors / s",
+      "id": 24,
+      "description": "Reads Redis failed; the caller sees the error.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 40
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        },
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(cache_reads_total{app=\"api\", result=\"error\"}[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Cache hit rate by namespace",
+      "id": 25,
+      "description": "A key's first `:`-separated segment; past twenty, or for one that is not a short identifier, `other`.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 44
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (namespace) (rate(cache_reads_total{app=\"api\", result=\"hit\"}[$__rate_interval])) / sum by (namespace) (rate(cache_reads_total{app=\"api\"}[$__rate_interval]))",
+          "legendFormat": "{{namespace}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Cache reads by result",
+      "id": 26,
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 44
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (result) (rate(cache_reads_total{app=\"api\"}[$__rate_interval]))",
+          "legendFormat": "{{result}}"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Logs",
+      "id": 27,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Log lines by level",
+      "id": 28,
+      "description": "From Loki (Alloy ships .logs/api.log when LOG_FILE is set).",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "stacking": {
+              "mode": "normal"
+            },
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum by (level) (count_over_time({app=\"api\"}[1m]))",
+          "legendFormat": "{{level}}"
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "Errors and warnings",
+      "id": 29,
+      "description": "The API's warn, error and fatal lines. Explore → Loki for any query; `pnpm logs` from a terminal.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 59
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "{app=\"api\", level=~\"warn|error|fatal\"}"
         }
       ]
     }

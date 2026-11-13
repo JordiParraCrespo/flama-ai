@@ -1,6 +1,19 @@
+import { isAbsolute, resolve } from 'node:path';
+import { findWorkspaceRoot } from '@flama/env';
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
 import { parseEnv } from './env';
+
+/**
+ * `LOG_FILE` as the path the loggers write to: a relative one is taken from
+ * the repository root, blank is none. Shared by the request logger (through
+ * this config) and the Better Auth route logger, which is built before
+ * config is.
+ */
+export function resolveLogFile(value: string | undefined): string | undefined {
+  if (!value?.trim()) return undefined;
+  return isAbsolute(value) ? value : resolve(findWorkspaceRoot() ?? process.cwd(), value);
+}
 
 const schema = z.object({
   port: z.coerce.number().default(3001),
@@ -24,6 +37,12 @@ const schema = z.object({
   // API-token IP allowlists and audit logs record it. Never blindly trust all
   // proxies (`true`), which lets a client spoof `X-Forwarded-For`.
   trustProxy: z.coerce.number().int().min(0).default(0),
+  // **Optional** — a file the API also writes its log lines to, as JSON, for a
+  // shipper to tail (`pnpm monitoring:up` runs Grafana Alloy over `.logs/`,
+  // into Loki). Unset, logs go to stdout only. A relative path is taken from
+  // the repository root, so `.logs/api.log` is the same file wherever the
+  // API is started from.
+  logFile: z.string().optional().transform(resolveLogFile),
 });
 
 export const appConfig = registerAs('app', () =>
@@ -39,5 +58,6 @@ export const appConfig = registerAs('app', () =>
     // flama:plugins config-env
     errorTypeBaseUrl: 'ERROR_TYPE_BASE_URL',
     trustProxy: 'TRUST_PROXY',
+    logFile: 'LOG_FILE',
   }),
 );
