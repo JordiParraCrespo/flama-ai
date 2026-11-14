@@ -51,14 +51,14 @@
     "release": "changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.2",
-    "@changesets/cli": "^2.31.1",
+    "@biomejs/biome": "^2.6.4",
+    "@changesets/cli": "^3.0.3",
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
     "@shadcn/lint": "0.2.3",
-    "oxlint": "1.89.0",
+    "oxlint": "1.90.0",
     "turbo": "^2.11.10",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "yaml": "2.9.1"
   },
   "pnpm": {

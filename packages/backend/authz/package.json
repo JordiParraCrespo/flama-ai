@@ -20,11 +20,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@casl/ability": "^7.0.2",
+    "@casl/ability": "^7.1.1",
     "@flama/backend-core": "workspace:*",
     "@flama/shared": "workspace:*",
-    "@nestjs/common": "^12.2.0",
-    "@nestjs/core": "^12.2.0"
+    "@nestjs/common": "^12.3.2",
+    "@nestjs/core": "^12.3.2"
   },
   "peerDependencies": {
     "typeorm": "^1.1.2"
@@ -34,7 +34,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "typeorm": "^1.1.2",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   }
 }
