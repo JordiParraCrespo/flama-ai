@@ -169,7 +169,8 @@ Biome (`overrides` in `biome.json`) — no `useEffect` outside `hooks/`, no
   copy throws from `signUp` instead. The scheme comes from
   `EXPO_PUBLIC_MOBILE_SCHEME` (default `flama`) and must match `app.config.ts`
   and `MOBILE_SCHEME` on the API, or the OAuth and password-reset deep links do
-  not resolve back into the app. `getAuthHeaders` sends the stored cookie, since
+  not resolve back into the app. The API has no default: unset, it trusts no
+  app scheme at all. `getAuthHeaders` sends the stored cookie, since
   there is no browser to do it.
 - **`query.ts`** — `createQueryPersistence({ nonPersistedFeatures:
   CONSUMER_NON_PERSISTED_FEATURES })`. That list is the consumer product's:
