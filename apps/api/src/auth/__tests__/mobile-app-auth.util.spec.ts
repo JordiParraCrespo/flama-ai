@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth';
+import { describe, expect, it } from 'vitest';
 import { appSchemeOrigins } from '../infrastructure/mobile-app-auth.util';
 
 /**
