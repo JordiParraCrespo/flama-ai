@@ -33,7 +33,11 @@
       "title": "Consumer mobile app",
       "summary": "apps/mobile — Expo app for end users (NativeWind, expo-router)",
       "identifiers": ["apps/mobile", "@flama/mobile"],
-      "paths": ["apps/mobile"],
+      "paths": [
+        "apps/mobile",
+        "apps/api/src/auth/infrastructure/mobile-app-auth.util.ts",
+        "apps/api/src/auth/__tests__/mobile-app-auth.util.spec.ts"
+      ],
       "slots": {
         ".agents/hooks/arch-check.sh": ["admin-web"],
         ".env.example": ["admin-mobile", "mobile-env"],
