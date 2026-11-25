@@ -100,6 +100,38 @@ single-responsibility is enforced (no god-services).
   the same transaction as the write (see "Event-driven async processing").
 - Inject the port through a DI token (see `nestjs-di.md`), never the concrete class.
 
+### A limit, a side effect or a loop is part of the write
+
+A repository's `save` makes one aggregate consistent. The races around it
+are the handler's to close:
+
+- **A cap is checked in the statement or the lock that inserts.** "Count,
+  then insert if under 50" in two statements lets two requests both see 49.
+  Serialize per owner in the insert's transaction (`SELECT … FOR UPDATE` on
+  the owner's row, or `pg_advisory_xact_lock(hashtext(owner))`), or make the
+  insert one statement that counts
+  (`INSERT … SELECT … WHERE (SELECT count(*) …) < $cap`) and read `affected`.
+- **What a save implies happens in the save's transaction, or through the
+  outbox.** Revoking the credentials a removed member held, invalidating the
+  invitation a new one replaced: done as a call after the commit, a failure
+  leaves the two disagreeing.
+- **Clearing a pending value is conditional on it still being yours.** A
+  failed send that clears "the pending verification code" can clear a newer
+  request's code: clear `WHERE code = $theOneThisCallCreated`.
+- **Claim before you classify.** A batch that decides who owns a row and then
+  acts on it claims the row first (`FOR UPDATE SKIP LOCKED`, as the outbox
+  relay does), or a later item in the same batch, or another replica, acts on
+  it too or not at all.
+- **A loop of writes is one transaction, or reports what it changed.** A
+  failure halfway through a bulk update leaves earlier items changed; either
+  roll them back or answer with the ones that applied.
+- **A slot is held until the work behind it is done.** A concurrency limit
+  released when an upstream's response headers arrive, before the body is
+  read, lets the next request start while this one still streams.
+- **An older observation never overwrites a newer record.** A replayed event,
+  a late webhook or a job retried after a newer one compares a version or a
+  timestamp before it writes.
+
 ## Mapper
 
 Use the `Mapper<DomainEntity, OrmEntity, ResponseDto>` interface from

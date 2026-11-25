@@ -83,6 +83,29 @@ scan (`route-scopes.ts`) fails closed: keep route paths, scopes and `@Version`
 as string literals and one controller class per `*.controller.ts` file, or the
 spec refuses to guess.
 
+## A scope grants no more than its name
+
+A scope is read by the person who grants it: `users:write` reads as "edit
+the people in my directory", not "sign in as any of them".
+
+- **A route that hands over control or binds an identity needs a scope of
+  its own**, never the area's `:write`. Impersonating a user, issuing a
+  credential or a delegated session, setting someone else's password,
+  transferring an organization's ownership: each is its own catalog entry
+  (or the `admin` group, above), named for the power it gives, and absent
+  from every level that did not already grant it.
+- **A check that decides whether something dangerous may run fails
+  closed.** A grant that cannot be read, an input that cannot be parsed, a
+  model answer that does not fit the schema: each is a refusal, never
+  "safe". A denylist is the last line, not the only one: it normalises its
+  input first (case, encoding, path segments, global options such as
+  `git -C dir`) and covers every equivalent form of what it names.
+- **Work done for a less trusted caller gets only that caller's context.** A
+  guest, an invited member or a restricted credential is not the owner: a
+  job, an export or a model call run for them loads only what they may read,
+  and only the tools and actions granted to them, including a vendor's own
+  built-in ones, which are off unless granted.
+
 ## Credential handling
 
 The starter accepts sessions only. A scoped credential is a module that binds
