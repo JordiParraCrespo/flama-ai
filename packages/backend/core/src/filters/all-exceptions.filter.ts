@@ -23,6 +23,7 @@ import {
   problemTypeFor,
   titleForStatus,
 } from '../errors/problem-details';
+import { recordErrorCode } from '../logging/pino-http-options';
 import { RequestContextService } from '../services/request-context.service';
 
 /** What a 5xx tells the client. Anything more would leak internals. */
@@ -73,6 +74,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception instanceof Error ? exception.stack : String(exception),
       );
     }
+
+    recordErrorCode(response, problem.code);
 
     const retryAfter = retryAfterOf(exception);
     if (retryAfter !== null) response.setHeader('Retry-After', String(retryAfter));
