@@ -171,7 +171,14 @@ skeleton. Boundaries are enforced by `apps/api/.dependency-cruiser.cjs`
 (`pnpm arch`, run in CI and by a Claude Code Stop hook).
 
 Detailed rules live in `.agents/rules/`, each scoped by a `paths` glob so it
-loads only for the code it governs. Three are frontend:
+loads only for the code it governs. One holds on every tier:
+
+- `edge-cases.md` — where most bugs come from: text cut on code points and
+  stripped for Postgres, IME input, limits other layers own, ids over names,
+  heuristics that fail safe, schedules and timers, removals and migrations,
+  and copy that promises only what the code does
+
+Four are frontend:
 
 - `frontend-architecture.md` — the placement grid (kernel, product package,
   platform kit, feature), the kind directories and what each may import, the
@@ -181,11 +188,13 @@ loads only for the code it governs. Three are frontend:
 - `frontend-ui.md` — reaching for the design system before writing markup, the
   colour vocabulary, where helpers and route files live, placeholder data,
   translating exports, and e2e coverage
+- `client-state.md` — failures never drawn as answers, late answers that
+  never win, data other people change, selection, widths and focus
 
 The rest are backend (scoped to `apps/api`, `packages/backend`, and—for `rbac-roles.md`—`packages/shared`):
 
 - `nestjs-di.md` — DI import rules, `import type` restrictions, repository-port DI tokens
-- `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, mappers, errors, events
+- `nestjs-architecture.md` — DDD vertical slices, CQRS handlers, domain layer, ports/adapters, the limits, side effects and loops that are part of a write, mappers, errors, events
 - `typeorm.md` — Union-typed column rules, persistence-model (ORM) conventions
 - `testing-backend.md` — Vitest tiers (domain, handler, adapter,
   testcontainers integration, seam, meta), where each spec lives, and the
@@ -210,7 +219,7 @@ installed it also needs a row in `apps/docs/docs/errors.md`. See
   one interface, each vendor a provider in one ordered list; the
   `/integrate-provider` skill is the order of work
 - `rbac-roles.md` — database-backed roles & permissions, `@CheckPolicies`/`PoliciesGuard`, resource scoping, role-management endpoints
-- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, scoped credentials
+- `scopes-and-credentials.md` — the scope catalog, `@RequireScopes`/`ScopesGuard`, a scope that grants no more than its name, scoped credentials
 
 #### Authorization (roles & permissions)
 
