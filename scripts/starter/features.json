@@ -202,7 +202,7 @@
           "file": "apps/api/package.json",
           "path": ["dependencies"],
           "set": {
-            "@better-auth/expo": "^1.7.12"
+            "@better-auth/expo": "^1.7.14"
           }
         },
         {
