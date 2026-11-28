@@ -4,7 +4,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: ${DB_USERNAME:-flama}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-flama}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in the root .env}
       POSTGRES_DB: ${DB_DATABASE:-flama}
     # Postgres 18 images keep data in a versioned directory under
     # /var/lib/postgresql (here /var/lib/postgresql/18/docker), so the volume
@@ -54,9 +54,10 @@ services:
     # `postgres` service above was created with — interpolated from the same
     # source as its own, so the two can never disagree. Nothing here may be a
     # `${VAR}` that is also in `.env` for the API's own sake: an interpolation
-    # that resolves blank overrides the real value from `env_file`. The one
-    # exception is `BETTER_AUTH_SECRET`, whose `:?` cannot resolve blank — an
-    # unset or empty secret stops Compose before any container starts.
+    # that resolves blank overrides the real value from `env_file`. The
+    # exceptions are `BETTER_AUTH_SECRET` and `DB_PASSWORD`, whose `:?` cannot
+    # resolve blank — an unset or empty value stops Compose before any
+    # container starts, rather than booting on a password everyone knows.
     environment:
       NODE_ENV: production
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in the root .env (openssl rand -base64 32)}
@@ -64,7 +65,7 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: ${DB_USERNAME:-flama}
-      DB_PASSWORD: ${DB_PASSWORD:-flama}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in the root .env}
       DB_DATABASE: ${DB_DATABASE:-flama}
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -80,8 +81,13 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    # Loopback only: a reverse proxy on the host (TLS, the public name) fronts
+    # it, and clients that call the API directly reach it through that proxy.
+    # Published on every interface, the port would be open to the internet
+    # past any host firewall: Docker writes its own iptables rules, which
+    # bypass ufw.
     ports:
-      - "3001:3001"
+      - "127.0.0.1:3001:3001"
 
   # flama:begin web
   web:
