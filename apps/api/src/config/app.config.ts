@@ -27,7 +27,10 @@ const schema = z.object({
   betterAuthUrl: z.string().url().default('http://localhost:3001'),
   frontendUrl: z.string().url().default('http://localhost:3000'),
   // flama:begin mobile
-  mobileScheme: z.string().default('flama'),
+  // **Optional**, with no default: the phone app's deep-link scheme, which
+  // Better Auth trusts only when a deployment names it
+  // (`auth/infrastructure/mobile-app-auth.util.ts` says why and checks it).
+  mobileScheme: z.string().optional(),
   // flama:end mobile
   // flama:plugins config-schema
   // Base of the RFC 7807 `type` URIs in error responses. Point it at wherever

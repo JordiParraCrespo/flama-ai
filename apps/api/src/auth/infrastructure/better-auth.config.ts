@@ -12,6 +12,9 @@ import { adminAc, defaultAc, userAc } from 'better-auth/plugins/admin/access';
 import { Pool } from 'pg';
 import { orUndefined } from '../../config/env';
 import { emailQueue, enqueueEmailBestEffort } from './email-queue.util';
+// flama:begin mobile
+import { appSchemeOrigins } from './mobile-app-auth.util';
+// flama:end mobile
 import { accountLinking, socialProviders } from './oauth-providers.config';
 // flama:plugins auth-plugin-imports
 
@@ -44,7 +47,9 @@ const superadminAc = defaultAc.newRole({
 
 const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 // flama:begin mobile
-const mobileScheme = process.env.MOBILE_SCHEME ?? 'flama';
+// The phone app's deep-link scheme, trusted only when this deployment names it
+// (`appSchemeOrigins` says why there is no default).
+const mobileAppOrigins = appSchemeOrigins({ MOBILE_SCHEME: process.env.MOBILE_SCHEME });
 // flama:end mobile
 // flama:plugins auth-consts
 
@@ -87,7 +92,7 @@ export const auth = betterAuth({
   trustedOrigins: [
     frontendUrl,
     // flama:begin mobile
-    `${mobileScheme}://`,
+    ...mobileAppOrigins,
     // flama:end mobile
     // flama:plugins trusted-origins
   ],

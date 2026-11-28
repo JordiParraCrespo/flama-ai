@@ -40,6 +40,7 @@ export {
   buildPinoHttpOptions,
   type LoggingOptions,
 } from './logging/pino-http-options';
+export { QuietBootLogger } from './logging/quiet-boot.logger';
 export { UserContextInterceptor } from './logging/user-context.interceptor';
 export { HTTP_LATENCY_BUCKETS_SECONDS, MILLISECOND_LATENCY_BUCKETS } from './metrics/buckets';
 export {

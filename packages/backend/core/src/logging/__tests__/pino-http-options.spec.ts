@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pinoHttp } from 'pino-http';
 import { describe, expect, it, vi } from 'vitest';
-import { buildPinoHttpOptions } from '../pino-http-options';
+import { buildPinoHttpOptions, recordErrorCode } from '../pino-http-options';
 
 type SerializerFn = (value: Record<string, unknown>) => Record<string, unknown>;
 
@@ -125,5 +125,60 @@ describe('buildPinoHttpOptions', () => {
     expect(line).toMatchObject({ level: 30, msg: 'hello', req: { url: '/x' } });
     expect(line.req.headers).toBeUndefined();
     await rm(dir, { recursive: true, force: true });
+  });
+
+  type LevelFn = (req: { url?: string }, res: { statusCode: number }, err?: Error) => string;
+
+  // A refused request logged at info is invisible to `{level="warn"}`: a
+  // client stuck on a 404 loop reads as routine traffic.
+  it('logs a request at the level its outcome deserves', () => {
+    const levelOf = buildPinoHttpOptions().customLogLevel as unknown as LevelFn;
+
+    expect(levelOf({ url: '/api/v1/users' }, { statusCode: 200 })).toBe('info');
+    expect(levelOf({ url: '/api/v1/users' }, { statusCode: 404 })).toBe('warn');
+    expect(levelOf({ url: '/api/v1/users' }, { statusCode: 503 })).toBe('error');
+    expect(levelOf({ url: '/api/v1/users' }, { statusCode: 200 }, new Error('x'))).toBe('error');
+  });
+
+  it('drops a quiet path only while it succeeds', () => {
+    const levelOf = buildPinoHttpOptions({ quietPaths: ['/api/v1/health'] })
+      .customLogLevel as unknown as LevelFn;
+
+    expect(levelOf({ url: '/api/v1/health' }, { statusCode: 200 })).toBe('silent');
+    expect(levelOf({ url: '/api/v1/health?probe=1' }, { statusCode: 200 })).toBe('silent');
+    expect(levelOf({ url: '/api/v1/health' }, { statusCode: 503 })).toBe('error');
+    expect(levelOf({ url: '/api/v1/health/capabilities' }, { statusCode: 200 })).toBe('info');
+  });
+
+  it('carries the problem code the response answered with', () => {
+    const props = buildPinoHttpOptions().customProps as unknown as (
+      req: object,
+      res: object,
+    ) => Record<string, unknown>;
+    const res = {};
+
+    expect(props({}, res)).toEqual({});
+    recordErrorCode(res, 'USER_001');
+    expect(props({}, res)).toEqual({ errorCode: 'USER_001' });
+  });
+
+  // Nest's loggers pass `{ message, ...fields }`; written as is, some lines
+  // had `message` and the rest `msg`.
+  it("writes every line's text under msg", () => {
+    const lines: Record<string, unknown>[] = [];
+    const { logger } = pinoHttp(buildPinoHttpOptions(), {
+      write: (line: string) => {
+        lines.push(JSON.parse(line));
+      },
+    });
+
+    logger.info({ message: 'user signed in', userId: 'u1' });
+    logger.info({ userId: 'u2' }, 'plain');
+    logger.error({ err: new Error('boom') });
+
+    expect(lines[0]).toMatchObject({ msg: 'user signed in', userId: 'u1' });
+    expect(lines[0]).not.toHaveProperty('message');
+    expect(lines[1]).toMatchObject({ msg: 'plain', userId: 'u2' });
+    expect(lines[2]).toMatchObject({ err: { message: 'boom' } });
   });
 });

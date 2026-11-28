@@ -1,7 +1,7 @@
 import '@flama/env/load';
 import type { ServerResponse } from 'node:http';
 import { resolve } from 'node:path';
-import { ProblemDetailsDto, SanitizePipe } from '@flama/backend-core';
+import { ProblemDetailsDto, QuietBootLogger, SanitizePipe } from '@flama/backend-core';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -47,7 +47,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = app.get(Logger);
 
-  app.useLogger(logger);
+  app.useLogger(new QuietBootLogger(logger));
 
   // Trust the configured number of reverse-proxy hops so `req.ip` is the real
   // client (the throttler keys on it, and API-token IP allowlists and audit
