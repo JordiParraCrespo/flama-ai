@@ -884,7 +884,7 @@ export const list3Options = (options: Options<List3Data>) => queryOptions<List3R
 });
 
 /**
- * Add an existing user as a member
+ * Add an existing user as a member (platform administrators)
  */
 export const addMutation = (options?: Partial<Options<AddData>>): UseMutationOptions<AddResponse, AddError, Options<AddData>> => {
     const mutationOptions: UseMutationOptions<AddResponse, AddError, Options<AddData>> = {

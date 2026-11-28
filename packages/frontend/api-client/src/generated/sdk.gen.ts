@@ -444,7 +444,7 @@ export const list3 = <ThrowOnError extends boolean = false>(options: Options<Lis
 });
 
 /**
- * Add an existing user as a member
+ * Add an existing user as a member (platform administrators)
  */
 export const add = <ThrowOnError extends boolean = false>(options: Options<AddData, ThrowOnError>): RequestResult<AddResponses, AddErrors, ThrowOnError> => (options.client ?? client).post<AddResponses, AddErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

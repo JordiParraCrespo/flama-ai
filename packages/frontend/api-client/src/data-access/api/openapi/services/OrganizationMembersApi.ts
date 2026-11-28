@@ -66,7 +66,7 @@ export class OrganizationMembersApi {
         });
     }
     /**
-     * Add an existing user as a member
+     * Add an existing user as a member (platform administrators)
      * @param orgId
      * @param requestBody
      * @returns MemberResponseDto

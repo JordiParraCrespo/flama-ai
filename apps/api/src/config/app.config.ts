@@ -17,7 +17,7 @@ export function resolveLogFile(value: string | undefined): string | undefined {
   return isAbsolute(value) ? value : resolve(findWorkspaceRoot() ?? process.cwd(), value);
 }
 
-const schema = z.object({
+const fields = z.object({
   port: z.coerce.number().default(3001),
   nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
   // **Required** — the app must fail fast and loud at boot without it. Only
@@ -39,6 +39,20 @@ const schema = z.object({
   // API-token IP allowlists and audit logs record it. Never blindly trust all
   // proxies (`true`), which lets a client spoof `X-Forwarded-For`.
   trustProxy: z.coerce.number().int().min(0).default(0),
+});
+
+// Everything signed with the secret (session cookies) can be forged by whoever
+// knows it, so production refuses the value `.env.example` ships and anything
+// short enough to guess.
+const schema = fields.superRefine((config, context) => {
+  if (config.nodeEnv !== 'production') return;
+  if (config.betterAuthSecret.length < 32 || /change-me/i.test(config.betterAuthSecret)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['betterAuthSecret'],
+      message: 'must be at least 32 random characters in production (openssl rand -base64 32)',
+    });
+  }
 });
 
 export const appConfig = registerAs('app', () =>
